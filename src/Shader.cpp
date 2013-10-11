@@ -3,12 +3,9 @@
 #include "Vertex.h"
 #include "Shader.h"
 
-namespace Shader
-{
-
 bool GetUniformLocation( Handle shader, const char* name, int* location )
 {
-    Shader::Bind(shader);
+    BindShader(shader);
     *location = glGetUniformLocation(shader, name);
     if(*location >= 0)
         return true;
@@ -50,7 +47,7 @@ char* LoadFile( const char* path, int* sizeOut )
     FILE* f = fopen(path, "r");
     if(!f)
     {
-        fprintf(stderr, "Can't open file\n");
+        Error("Can't open file %s", path);
         return 0;
     }
 
@@ -61,7 +58,7 @@ char* LoadFile( const char* path, int* sizeOut )
     char* b = new char[size];
     if(fread(b, 1, size, f) != size)
     {
-        fprintf(stderr, "Can't read file\n");
+        Error("Can't read file %s", path);
         delete[] b;
         fclose(f);
         return 0;
@@ -91,7 +88,7 @@ void ShowShaderLog( Handle handle )
 
     if(log)
     {
-        printf("%s\n", log);
+        Log("%s", log);
         delete[] log;
     }
 }
@@ -110,7 +107,7 @@ void ShowProgramLog( Handle handle )
 
     if(log)
     {
-        printf("%s\n", log);
+        Log("%s", log);
         delete[] log;
     }
 }
@@ -134,9 +131,9 @@ Handle CreateShaderObject( const char* file, int type )
     glGetShaderiv(handle, GL_COMPILE_STATUS, &state);
     ShowShaderLog(handle);
     if(state)
-        puts("Compiled shader object successfully");
+        Log("%s: Compiled shader object successfully", file);
     else
-        fprintf(stderr, "Error compiling shader object\n");
+        Error("Error compiling shader object %s", file);
 
     if(!state)
         return 0;
@@ -144,7 +141,7 @@ Handle CreateShaderObject( const char* file, int type )
     return handle;
 }
 
-Handle Load( const char* vert, const char* frag )
+Handle LoadShader( const char* vert, const char* frag )
 {
     Handle vertObject = CreateShaderObject(vert, GL_VERTEX_SHADER);
     if(!vertObject)
@@ -157,7 +154,7 @@ Handle Load( const char* vert, const char* frag )
     Handle program = glCreateProgram();
     glAttachShader(program, vertObject);
     glAttachShader(program, fragObject);
-    Vertex::BindAttributes(program);
+    BindVertexAttributes(program);
 
     glLinkProgram(program);
     {
@@ -165,9 +162,9 @@ Handle Load( const char* vert, const char* frag )
         glGetProgramiv(program, GL_LINK_STATUS, &state);
         ShowProgramLog(program);
         if(state)
-            puts("Linked shader program successfully");
+            Log("Linked shader program successfully");
         else
-            fprintf(stderr, "Error linking shader program\n");
+            Error("Error linking shader program");
 
         if(!state)
             return 0;
@@ -179,22 +176,20 @@ Handle Load( const char* vert, const char* frag )
         glGetProgramiv(program, GL_VALIDATE_STATUS, &state);
         ShowProgramLog(program);
         if(state)
-            puts("Validated shader program successfully");
+            Log("Validated shader program successfully");
         else
-            puts("Error validating shader program");
+            Log("Error validating shader program");
     }
 
     return program;
 }
 
-void Bind( Handle handle )
+void BindShader( Handle handle )
 {
     glUseProgram(handle);
 }
 
-void Free( Handle handle )
+void FreeShader( Handle handle )
 {
     glDeleteProgram(handle);
-}
-
 }

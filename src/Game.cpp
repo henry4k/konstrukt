@@ -3,43 +3,38 @@
 #include "OpenGL.h"
 #include "Game.h"
 
-namespace Game
-{
-
 void OnWindowResize( int width, int height )
 {
-    printf("window resize\n");
+    Log("window resize");
 }
 
 void OnMouseButtonAction( int button, bool pressed )
 {
-    printf("mouse button action\n");
+    Log("mouse button action");
 }
 
 void OnMouseScroll( double xoffset, double yoffset )
 {
-    printf("mouse scroll\n");
+    Log("mouse scroll");
 }
 
 void OnMouseMove( double x, double y, double xoffset, double yoffset )
 {
-    printf("mouse move\n");
+    Log("mouse move");
 }
 
 void OnKeyAction( int key, bool pressed )
 {
-    printf("key action\n");
+    Log("key action");
 }
 
-int Loop()
+int GameLoop()
 {
-    Window::Init("Apoapsis", 800, 600);
-    while(!Window::ShouldClose())
+    InitWindow("Apoapsis", 800, 600);
+    while(!WindowShouldClose())
     {
-        Window::SwapBuffers();
+        SwapBuffers();
     }
-    Window::Deinit();
+    DeinitWindow();
     return 0;
-}
-
 }

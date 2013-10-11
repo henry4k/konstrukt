@@ -5,7 +5,7 @@
 #include "Image.h"
 #include "Texture.h"
 
-bool Texture::Create2d( Texture* texture, int options, const Image* image )
+bool Create2dTexture( Texture* texture, int options, const Image* image )
 {
     Handle id;
     glGenTextures(1, &id);
@@ -33,17 +33,17 @@ bool Texture::Create2d( Texture* texture, int options, const Image* image )
     return true;
 }
 
-bool Texture::Load2d( Texture* texture, int options, const char* file )
+bool Load2dTexture( Texture* texture, int options, const char* file )
 {
     Image image;
-    if(!Image::Load(&image, file))
+    if(!LoadImage(&image, file))
         return false;
-    bool r = Texture::Create2d(texture, options, &image);
-    Image::Free(&image);
+    bool r = Create2dTexture(texture, options, &image);
+    FreeImage(&image);
     return r;
 }
 
-bool Texture::CreateCube( Texture* texture, int options, const Image* images )
+bool CreateCubeTexture( Texture* texture, int options, const Image* images )
 {
     Handle id;
     glGenTextures(1, &id);
@@ -75,7 +75,7 @@ bool Texture::CreateCube( Texture* texture, int options, const Image* images )
     return true;
 }
 
-bool Texture::LoadCube( Texture* texture, int options, const char* path, const char* extension )
+bool LoadCubeTexture( Texture* texture, int options, const char* path, const char* extension )
 {
     Image images[6];
     static const char* names[6] = { "Right","Left","Bottom","Top","Front","Back" };
@@ -87,19 +87,19 @@ bool Texture::LoadCube( Texture* texture, int options, const char* path, const c
         int namelen = strlen(names[i]);
         strncpy(buffer+pos, names[i], 512-pos);
         strncpy(buffer+pos+namelen, extension, 512-(pos+namelen));
-        printf("%s\n", buffer);
-        if(!Image::Load(&images[i], buffer))
+        Log("%s", buffer);
+        if(!LoadImage(&images[i], buffer))
             return false;
     }
-    bool r = Texture::CreateCube(texture, options, images);
+    bool r = CreateCubeTexture(texture, options, images);
     for(int i = 0; i < 6; i++)
     {
-        Image::Free(&images[i]);
+        FreeImage(&images[i]);
     }
     return r;
 }
 
-void Texture::Free( const Texture* texture )
+void FreeTexture( const Texture* texture )
 {
     glDeleteTextures(1, &texture->name);
 }
@@ -114,7 +114,7 @@ int InitTextureLayers()
     return 0;
 }
 
-void Texture::Bind( const Texture* texture, int layer )
+void BindTexture( const Texture* texture, int layer )
 {
     static int unused = InitTextureLayers();
     glActiveTexture(GL_TEXTURE0+layer);

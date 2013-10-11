@@ -7,9 +7,9 @@ struct Image
     int bpp;
     int format, type;
     char* data;
-
-    static bool Load( Image* image, const char* file );
-    static void Free( const Image* image );
 };
+
+bool LoadImage( Image* image, const char* file );
+void FreeImage( const Image* image );
 
 #endif

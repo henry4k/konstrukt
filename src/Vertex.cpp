@@ -10,7 +10,7 @@ enum
     VERTEX_COLOR
 };
 
-void Vertex::EnableVertexArrays()
+void EnableVertexArrays()
 {
     glEnableVertexAttribArray(VERTEX_POSITION);
     glEnableVertexAttribArray(VERTEX_TEXCOORD);
@@ -19,7 +19,7 @@ void Vertex::EnableVertexArrays()
 //  glEnableVertexAttribArray(VERTEX_COLOR);
 }
 
-void Vertex::BindAttributes( Handle shader )
+void BindVertexAttributes( Handle shader )
 {
     glBindAttribLocation(shader, VERTEX_POSITION, "VertexPosition");
     glBindAttribLocation(shader, VERTEX_TEXCOORD, "VertexTexCoord");
@@ -28,7 +28,7 @@ void Vertex::BindAttributes( Handle shader )
 //  glBindAttribLocation(shader, VERTEX_COLOR,    "VertexColor");
 }
 
-void Vertex::SetAttributePointers()
+void SetVertexAttributePointers()
 {
     long offset = 0;
 #define AttribPointer(Name,Count,TypeName,Type) glVertexAttribPointer( Name , Count , TypeName, GL_TRUE, sizeof(Vertex), (void*)offset); offset += sizeof( Type ) * Count;

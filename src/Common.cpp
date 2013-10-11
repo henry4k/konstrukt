@@ -4,6 +4,25 @@
 
 #include "Common.h"
 
+void Log( const char* format, ... )
+{
+    va_list vl;
+    va_start(vl, format);
+        vprintf(format, vl);
+    va_end(vl);
+    printf("\n");
+}
+
+void Error( const char* format, ... )
+{
+    fprintf(stderr, "ERROR: ");
+    va_list vl;
+    va_start(vl, format);
+        vfprintf(stderr, format, vl);
+    va_end(vl);
+    fprintf(stderr, "\n");
+}
+
 void FatalError( const char* format, ... )
 {
     fprintf(stderr, "FATAL ERROR: ");

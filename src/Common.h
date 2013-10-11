@@ -8,6 +8,8 @@
 
 typedef unsigned int Handle;
 
+void Log( const char* format, ... );
+void Error( const char* format, ... );
 void FatalError( const char* format, ... );
 
 #endif

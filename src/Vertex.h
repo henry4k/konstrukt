@@ -10,10 +10,10 @@ struct Vertex
     glm::vec2 texCoord;
     glm::vec3 normal;
     glm::vec4 tangent;
-
-    static void EnableVertexArrays();
-    static void BindAttributes( Handle shader );
-    static void SetAttributePointers();
 };
+
+void EnableVertexArrays();
+void BindVertexAttributes( Handle shader );
+void SetVertexAttributePointers();
 
 #endif

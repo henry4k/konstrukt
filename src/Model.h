@@ -10,11 +10,11 @@ struct Model
     Handle indexBuffer;
     int primitiveType;
     int size;
-
-    static bool Create( Model* model, const Mesh* mesh );
-    static bool Load( Model* model, const char* mesh );
-    static void Free( const Model* model );
-    static void Draw( const Model* model );
 };
+
+bool CreateModel( Model* model, const Mesh* mesh );
+bool LoadModel( Model* model, const char* mesh );
+void FreeModel( const Model* model );
+void DrawModel( const Model* model );
 
 #endif

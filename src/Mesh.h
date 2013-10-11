@@ -10,9 +10,9 @@ struct Mesh
 
     unsigned short* indices;
     int indexCount;
-
-    static bool Load( Mesh* mesh, const char* file );
-    static void Free( const Mesh* mesh );
 };
+
+bool LoadMesh( Mesh* mesh, const char* file );
+void FreeMesh( const Mesh* mesh );
 
 #endif

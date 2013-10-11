@@ -1,6 +1,6 @@
-#include "Common.h"
 #include <string.h>
 
+#include "Common.h"
 #include "Mesh.h"
 
 
@@ -153,13 +153,13 @@ bool ReadHeader( MeshInfo* info )
 {
     if(!LineEqual(info, "ply"))
     {
-        fprintf(stderr, "Incorrect magic bytes\n");
+        Error("Incorrect magic bytes");
         return false;
     }
 
     if(!LineEqual(info, "format ascii 1.0"))
     {
-        fprintf(stderr, "Incorrect format\n");
+        Error("Incorrect format");
         return false;
     }
 
@@ -167,7 +167,7 @@ bool ReadHeader( MeshInfo* info )
     {
         if(!ReadLine(info))
         {
-            fprintf(stderr, "Unexpected EOF\n");
+            Error("Unexpected EOF");
             return false;
         }
 
@@ -221,7 +221,7 @@ bool ReadVertices( MeshInfo* info )
         ReadLine(info);
 
         if(ReadInt(info) != 3)
-            printf("Invalid face (only triangles are supported)\n");
+            Error("Invalid face (only triangles are supported)");
 
         mesh->indices[i] = ReadInt(info);
         mesh->indices[i+1] = ReadInt(info);
@@ -312,12 +312,12 @@ void FreeMeshInfo( const MeshInfo* info )
         fclose(info->file);
 }
 
-bool Mesh::Load( Mesh* mesh, const char* file )
+bool LoadMesh( Mesh* mesh, const char* file )
 {
     FILE* f = fopen(file, "r");
     if(!f)
     {
-        fprintf(stderr, "Can't read mesh '%s'\n", file);
+        Error("Can't read mesh '%s'", file);
         return false;
     }
 
@@ -333,17 +333,17 @@ bool Mesh::Load( Mesh* mesh, const char* file )
 
     if(!ReadHeader(&info))
     {
-        fprintf(stderr, "Failed while parsing line %d\n", info.lineNumber);
+        Error("Failed while parsing line %d", info.lineNumber);
         FreeMeshInfo(&info);
-        Mesh::Free(mesh);
+        FreeMesh(mesh);
         return false;
     }
 
     if(!ReadVertices(&info))
     {
-        fprintf(stderr, "Failed while parsing line %d\n", info.lineNumber);
+        Error("Failed while parsing line %d", info.lineNumber);
         FreeMeshInfo(&info);
-        Mesh::Free(mesh);
+        FreeMesh(mesh);
         return false;
     }
 
@@ -353,7 +353,7 @@ bool Mesh::Load( Mesh* mesh, const char* file )
     return true;
 }
 
-void Mesh::Free( const Mesh* mesh )
+void FreeMesh( const Mesh* mesh )
 {
     if(mesh->vertices)
         delete[] mesh->vertices;

@@ -1,7 +1,7 @@
 #include "OpenGL.h"
 #include "Model.h"
 
-bool Model::Create( Model* model, const Mesh* mesh )
+bool CreateModel( Model* model, const Mesh* mesh )
 {
     glGenBuffers(1, &model->vertexBuffer);
     glGenBuffers(1, &model->indexBuffer);
@@ -18,29 +18,29 @@ bool Model::Create( Model* model, const Mesh* mesh )
     return true;
 }
 
-bool Model::Load( Model* model, const char* mesh )
+bool LoadModel( Model* model, const char* mesh )
 {
     Mesh m;
-    if(!Mesh::Load(&m, mesh))
+    if(!LoadMesh(&m, mesh))
         return false;
 
-    bool r = Model::Create(model, &m);
+    bool r = CreateModel(model, &m);
 
-    Mesh::Free(&m);
+    FreeMesh(&m);
     return r;
 }
 
-void Model::Free( const Model* model )
+void FreeModel( const Model* model )
 {
     glDeleteBuffers(1, &model->vertexBuffer);
     glDeleteBuffers(1, &model->indexBuffer);
 }
 
-void Model::Draw( const Model* model )
+void DrawModel( const Model* model )
 {
     glBindBuffer(GL_ARRAY_BUFFER, model->vertexBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->indexBuffer);
 
-    Vertex::SetAttributePointers();
+    SetVertexAttributePointers();
     glDrawElements(model->primitiveType, model->size, GL_UNSIGNED_SHORT, 0);
 }

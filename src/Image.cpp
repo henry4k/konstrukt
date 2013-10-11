@@ -1,5 +1,6 @@
 #include <png.h>
 
+#include "Common.h"
 #include "OpenGL.h"
 #include "Image.h"
 
@@ -150,11 +151,11 @@ bool LoadPngImage( Image* image, const char* file )
 }
 
 
-bool Image::Load( Image* image, const char* file )
+bool LoadImage( Image* image, const char* file )
 {
     if(!LoadPngImage(image, file))
     {
-        fprintf(stderr, "Can't load '%s'\n", file);
+        Error("Can't load '%s'", file);
         return false;
     }
 
@@ -177,7 +178,7 @@ bool Image::Load( Image* image, const char* file )
             break;
 
         default:
-            fprintf(stderr, "Can't load '%s' (Unknown BPP -> %d)\n", file, image->bpp);
+            Error("Can't load '%s' (Unknown BPP -> %d)", file, image->bpp);
             delete[] image->data;
             return false;
     }
@@ -188,7 +189,7 @@ bool Image::Load( Image* image, const char* file )
 }
 
 
-void Image::Free( const Image* image )
+void FreeImage( const Image* image )
 {
     if(image->data)
         delete[] image->data;
