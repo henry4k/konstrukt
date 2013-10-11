@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "Common.h"
 #include "OpenGL.h"
 #include "Game.h"
 #include "Window.h"
@@ -14,6 +15,13 @@ int g_Width = 0;
 int g_Height = 0;
 double g_LastMouseX;
 double g_LastMouseY;
+
+void GLFW_OnError( int code, const char* description );
+void GLFW_OnResize( GLFWwindow* window, int width, int height );
+void GLFW_OnMouseButtonAction( GLFWwindow* window, int button, int action );
+void GLFW_OnMouseScroll( GLFWwindow* window, double xoffset, double yoffset );
+void GLFW_OnMouseMove( GLFWwindow* window, double x, double y );
+void GLFW_OnKeyAction( GLFWwindow* window, int key, int action );
 
 void Init( const char* name, int width, int height )
 {
@@ -41,10 +49,10 @@ void Init( const char* name, int width, int height )
     glfwSetInputMode(g_Window, GLFW_STICKY_MOUSE_BUTTONS, GL_FALSE);
 
     glfwSetWindowSizeCallback(g_Window, GLFW_OnResize);
-    glfwSetMouseButtonCallback(g_Window, GLFW_OnMouseButton);
+    glfwSetMouseButtonCallback(g_Window, GLFW_OnMouseButtonAction);
     glfwSetScrollCallback(g_Window, GLFW_OnMouseScroll);
     glfwSetCursorPosCallback(g_Window, GLFW_OnMouseMove);
-    glfwSetKeyCallback(g_Window, GLFW_OnKey);
+    glfwSetKeyCallback(g_Window, GLFW_OnKeyAction);
 }
 
 void Deinit()
@@ -65,7 +73,7 @@ bool ShouldClose()
 
 void GLFW_OnError( int code, const char* description )
 {
-    fprint(stderr, "GLFW error %d: %s\n", code, description);
+    fprintf(stderr, "GLFW error %d: %s\n", code, description);
 }
 
 void GLFW_OnResize( GLFWwindow* window, int width, int height )
@@ -78,7 +86,7 @@ void GLFW_OnResize( GLFWwindow* window, int width, int height )
     Game::OnWindowResize(width, height);
 }
 
-void GLFW_OnMouseButton( GLFWwindow* window, int button, int action )
+void GLFW_OnMouseButtonAction( GLFWwindow* window, int button, int action )
 {
     Game::OnMouseButtonAction(button, action!=GLFW_RELEASE);
 }
@@ -99,11 +107,11 @@ void GLFW_OnMouseMove( GLFWwindow* window, double x, double y )
     Game::OnMouseMove(x, y, dx, dy);
 }
 
-void GLFW_OnKeyWrapper( GLFWwindow* window, int key, int action )
+void GLFW_OnKeyAction( GLFWwindow* window, int key, int action )
 {
     // Callback didn't handle the event.
     if(key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
-        m_ShouldClose = true;
+        g_ShouldClose = true;
 
     Game::OnKeyAction(key, action!=GLFW_RELEASE);
 }
