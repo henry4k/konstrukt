@@ -5,11 +5,11 @@
 #include "Image.h"
 #include "Texture.h"
 
-bool Create2dTexture( Texture* texture, int options, const Image* image )
+GLuint Create2dTexture( int options, const Image* image )
 {
-    Handle id;
-    glGenTextures(1, &id);
-    glBindTexture(GL_TEXTURE_2D, id);
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -28,26 +28,24 @@ bool Create2dTexture( Texture* texture, int options, const Image* image )
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    texture->name = id;
-    texture->type = GL_TEXTURE_2D;
-    return true;
+    return texture;
 }
 
-bool Load2dTexture( Texture* texture, int options, const char* file )
+GLuint Load2dTexture( int options, const char* file )
 {
     Image image;
     if(!LoadImage(&image, file))
         return false;
-    bool r = Create2dTexture(texture, options, &image);
+    const GLuint r = Create2dTexture(options, &image);
     FreeImage(&image);
     return r;
 }
 
-bool CreateCubeTexture( Texture* texture, int options, const Image* images )
+GLuint CreateCubeTexture( int options, const Image* images )
 {
-    Handle id;
-    glGenTextures(1, &id);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
 
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -70,12 +68,10 @@ bool CreateCubeTexture( Texture* texture, int options, const Image* images )
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
-    texture->name = id;
-    texture->type = GL_TEXTURE_CUBE_MAP;
-    return true;
+    return texture;
 }
 
-bool LoadCubeTexture( Texture* texture, int options, const char* path, const char* extension )
+GLuint LoadCubeTexture( int options, const char* path )
 {
     Image images[6];
     static const char* names[6] = { "Right","Left","Bottom","Top","Front","Back" };
@@ -84,14 +80,10 @@ bool LoadCubeTexture( Texture* texture, int options, const char* path, const cha
     int pos = strlen(path);
     for(int i = 0; i < 6; i++)
     {
-        int namelen = strlen(names[i]);
-        strncpy(buffer+pos, names[i], 512-pos);
-        strncpy(buffer+pos+namelen, extension, 512-(pos+namelen));
-        Log("%s", buffer);
-        if(!LoadImage(&images[i], buffer))
-            return false;
+        if(!LoadImage(&images[i], Format(path, names[i])))
+            return 0;
     }
-    bool r = CreateCubeTexture(texture, options, images);
+    bool r = CreateCubeTexture(options, images);
     for(int i = 0; i < 6; i++)
     {
         FreeImage(&images[i]);
@@ -99,9 +91,9 @@ bool LoadCubeTexture( Texture* texture, int options, const char* path, const cha
     return r;
 }
 
-void FreeTexture( const Texture* texture )
+void FreeTexture( GLuint texture )
 {
-    glDeleteTextures(1, &texture->name);
+    glDeleteTextures(1, &texture);
 }
 
 static const int MaxTextureLayers = 8;
@@ -114,14 +106,14 @@ int InitTextureLayers()
     return 0;
 }
 
-void BindTexture( const Texture* texture, int layer )
+void BindTexture( GLenum target, const GLuint texture, int layer )
 {
     static int unused = InitTextureLayers();
     glActiveTexture(GL_TEXTURE0+layer);
-    if(CurTextureTargets[layer] && (CurTextureTargets[layer] != texture->type))
+    if(CurTextureTargets[layer] && (CurTextureTargets[layer] != target))
     {
         glBindTexture(CurTextureTargets[layer], 0);
-        CurTextureTargets[layer] = texture->type;
+        CurTextureTargets[layer] = target;
     }
-    glBindTexture(texture->type, texture->name);
+    glBindTexture(target, texture);
 }

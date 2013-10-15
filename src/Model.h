@@ -1,13 +1,13 @@
 #ifndef __MODEL__
 #define __MODEL__
 
-#include "Common.h"
+#include "OpenGL.h"
 #include "Mesh.h"
 
 struct Model
 {
-    Handle vertexBuffer;
-    Handle indexBuffer;
+    GLuint vertexBuffer;
+    GLuint indexBuffer;
     int primitiveType;
     int size;
 };

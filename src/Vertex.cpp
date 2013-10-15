@@ -19,7 +19,7 @@ void EnableVertexArrays()
 //  glEnableVertexAttribArray(VERTEX_COLOR);
 }
 
-void BindVertexAttributes( Handle shader )
+void BindVertexAttributes( GLuint shader )
 {
     glBindAttribLocation(shader, VERTEX_POSITION, "VertexPosition");
     glBindAttribLocation(shader, VERTEX_TEXCOORD, "VertexTexCoord");

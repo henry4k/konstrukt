@@ -1,27 +1,22 @@
 #ifndef __TEXTURE__
 #define __TEXTURE__
 
-#include "Common.h"
+#include "OpenGL.h"
+#include "Image.h"
 
-enum TextureOptions
+enum GLuintOptions
 {
     TEX_MIPMAP,
     TEX_FILTER
 };
 
-struct Texture
-{
-    Handle name;
-    int type;
-};
+GLuint Create2dTexture( int options, const Image* image );
+GLuint Load2dTexture( int options, const char* file );
 
-bool Create2dTexture( Texture* texture, int options, const Image* image );
-bool Load2dTexture( Texture* texture, int options, const char* file );
+GLuint CreateCubeTexture( int options, const Image* images );
+GLuint LoadCubeTexture( int options, const char* path );
 
-bool CreateCubeTexture( Texture* texture, int options, const Image* images );
-bool LoadCubeTexture( Texture* texture, int options, const char* path, const char* extension ); // "Foo/Right.png" usw.
-
-void BindTexture( const Texture* texture, int layer );
-void FreeTexture( const Texture* texture );
+void BindTexture( GLenum target, GLuint texture, int layer );
+void FreeTexture( GLuint texture );
 
 #endif

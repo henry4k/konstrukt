@@ -1,8 +1,8 @@
 #ifndef __VERTEX__
 #define __VERTEX__
 
-#include "Common.h"
 #include "Math.h"
+#include "OpenGL.h"
 
 struct Vertex
 {
@@ -13,7 +13,7 @@ struct Vertex
 };
 
 void EnableVertexArrays();
-void BindVertexAttributes( Handle shader );
+void BindVertexAttributes( GLuint shader );
 void SetVertexAttributePointers();
 
 #endif

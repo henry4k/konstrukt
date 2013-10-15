@@ -1,40 +1,88 @@
-#include "Common.h"
+#include "Math.h"
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "Window.h"
 #include "OpenGL.h"
+#include "Background.h"
 #include "Game.h"
 
-void OnWindowResize( int width, int height )
+void OnFramebufferResize( int width, int height );
+
+bool InitGame()
 {
-    Log("window resize");
+	if(!InitWindow(320, 240, "Apoapsis"))
+		return false;
+
+	if(!InitBackground())
+		return false;
+
+	SetFrambufferFn(OnFramebufferResize);
+
+	return true;
 }
 
-void OnMouseButtonAction( int button, bool pressed )
+void FreeGame()
 {
-    Log("mouse button action");
+	FreeBackground();
+	FreeWindow();
 }
 
-void OnMouseScroll( double xoffset, double yoffset )
+void RunGame()
 {
-    Log("mouse scroll");
-}
+    using namespace glm;
 
-void OnMouseMove( double x, double y, double xoffset, double yoffset )
-{
-    Log("mouse move");
-}
+    glClearColor(0.5, 0.5, 0.5, 1);
 
-void OnKeyAction( int key, bool pressed )
-{
-    Log("key action");
-}
-
-int GameLoop()
-{
-    InitWindow("Apoapsis", 800, 600);
+    //double lastTime = glfwGetTime();
     while(!WindowShouldClose())
     {
+        glClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
+
+        const mat4 lookAtMatrix = lookAt(
+            vec3(4,4,4),
+            vec3(0,0,0),
+            vec3(0,1,0)
+        );
+        glLoadMatrixf(value_ptr(lookAtMatrix));
+
+        glRotatef((float) glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
+        glBegin(GL_TRIANGLES);
+            glColor3f(1.f, 0.f, 0.f); glVertex3f(-0.6f, -0.4f, 0.f);
+            glColor3f(0.f, 1.f, 0.f); glVertex3f( 0.6f, -0.4f, 0.f);
+            glColor3f(0.f, 0.f, 1.f); glVertex3f(  0.f,  0.6f, 0.f);
+        glEnd();
+
+        /*
+        // Simulation
+        const double curTime = glfwGetTime();
+        // TODO: Simulate stuff here!
+        lastTime = curTime;
+
+        // Render world
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glLoadIdentity();
+        // TODO: Render world here!
+
+        // Render HUD
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glLoadIdentity();
+        // TODO: Render HUD here!
+        */
+
         SwapBuffers();
     }
-    DeinitWindow();
-    return 0;
+}
+
+void OnFramebufferResize( int width, int height )
+{
+    using namespace glm;
+
+    glViewport(0, 0, width, height);
+
+    glMatrixMode(GL_PROJECTION);
+    const float aspect = float(width) / float(height);
+    const mat4 perspectivicMatrix = perspective(90.0f, aspect, 0.1f, 100.0f);
+    glLoadMatrixf(value_ptr(perspectivicMatrix));
+
+    glMatrixMode(GL_MODELVIEW);
 }

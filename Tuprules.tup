@@ -1,30 +1,52 @@
 .gitignore
 
-CC = gcc
-CXX = g++
+### Tools ###
 
-FLAGS += -g
+ifdef CC
+  CC = @(CC)
+else
+  CC = cc
+endif
 
-CFLAGS += $(FLAGS)
-CFLAGS += -I$(TUP_CWD)/thirdparty/glm
+ifdef CXX
+  CXX = @(CXX)
+else
+  CXX = c++
+endif
+
+
+### Flags ###
+
+CFLAGS += @(CFLAGS)
+CFLAGS += -I$(TUP_CWD)/thirdparty
 CFLAGS += -Werror -Wall -Wextra -pedantic
 CFLAGS += -Wmissing-include-dirs -Wpointer-arith -Wcast-qual -Winit-self
 CFLAGS += -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter
 
-LDFLAGS += $(FLAGS)
+CXXFLAGS += $(CFLAGS)
+CXXFLAGS += @(CXXFLAGS)
+
+LDFLAGS += @(LDFLAGS)
+
+
+### Packages ###
 
 export PKG_CONFIG_PATH
 
-# zlib, libpng, gl, glew, glfw3
-CFLAGS += `pkg-config zlib libpng gl glew glfw3 --cflags`
-LDFLAGS += `pkg-config zlib libpng gl glew glfw3 --libs`
+ifdef PACKAGES
+  PACKAGES = @(PACKAGES)
+else
+  PACKAGES = gl glew glfw3 libpng openal
+endif
 
-# TinyThread++
-#CFLAGS += -I$(TUP_CWD)/tinythreadpp
-#TINYTHREADPP_OBJS = $(TUP_CWD)/tinythreadpp/tinythread.o
+CFLAGS += `pkg-config $(PACKAGES) --cflags`
+LDFLAGS += `pkg-config $(PACKAGES) --libs`
+
+
+### Rules ###
 
 !cc = |> ^ CC %f^ $(CC) -c %f -o %o $(CFLAGS) |> %B.o
-!cxx = |> ^ CXX %f^ $(CXX) -c %f -o %o $(CFLAGS) |> %B.o
+!cxx = |> ^ CXX %f^ $(CXX) -c %f -o %o $(CXXFLAGS) |> %B.o
 !ld = |> ^ LINK %o^ $(CXX) %f -o %o $(LDFLAGS) |>
 !ar = |> ^ AR %o^ ar crs %o %f |>
 !cp = |> ^ CP %f -> %o^ cp %f %o |>

@@ -6,8 +6,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-typedef unsigned int Handle;
-
+const char* Format( const char* format, ... );
 void Log( const char* format, ... );
 void Error( const char* format, ... );
 void FatalError( const char* format, ... );

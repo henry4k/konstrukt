@@ -1,0 +1,6 @@
+CONFIG_CC=clang
+CONFIG_CXX=clang++
+CONFIG_CFLAGS=-I/System/Library/Frameworks/OpenGL.framework -I/opt/local/include
+CONFIG_CXXFLAGS=
+CONFIG_LDFLAGS=-framework OpenGL -L/opt/local/lib -lGLEW
+CONFIG_PACKAGES=glfw3 libpng openal

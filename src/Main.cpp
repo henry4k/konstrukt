@@ -1,6 +1,11 @@
+#include "Common.h"
 #include "Game.h"
 
 int main()
 {
-    return GameLoop();
+	if(!InitGame())
+		return EXIT_FAILURE;
+	RunGame();
+	FreeGame();
+    return EXIT_SUCCESS;
 }

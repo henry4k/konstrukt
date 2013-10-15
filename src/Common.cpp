@@ -4,6 +4,18 @@
 
 #include "Common.h"
 
+const char* Format( const char* format, ... )
+{
+	static char buffer[512];
+
+    va_list vl;
+    va_start(vl, format);
+        vsprintf(buffer, format, vl);
+    va_end(vl);
+
+    return buffer;
+}
+
 void Log( const char* format, ... )
 {
     va_list vl;

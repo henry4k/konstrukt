@@ -3,7 +3,7 @@
 #include "Vertex.h"
 #include "Shader.h"
 
-bool GetUniformLocation( Handle shader, const char* name, int* location )
+bool GetUniformLocation( GLuint shader, const char* name, int* location )
 {
     BindShader(shader);
     *location = glGetUniformLocation(shader, name);
@@ -13,21 +13,21 @@ bool GetUniformLocation( Handle shader, const char* name, int* location )
     return false;
 }
 
-void SetUniform( Handle shader, const char* name, int value )
+void SetUniform( GLuint shader, const char* name, int value )
 {
     int loc;
     if(GetUniformLocation(shader,name,&loc))
         glUniform1i(loc, value);
 }
 
-void SetUniform( Handle shader, const char* name, float value )
+void SetUniform( GLuint shader, const char* name, float value )
 {
     int loc;
     if(GetUniformLocation(shader,name,&loc))
         glUniform1f(loc, value);
 }
 
-void SetUniform( Handle shader, const char* name, int length, float* value )
+void SetUniform( GLuint shader, const char* name, int length, float* value )
 {
     int loc;
     if(GetUniformLocation(shader,name,&loc))
@@ -74,7 +74,7 @@ void FreeFile( const char* fileData )
     delete[] fileData;
 }
 
-void ShowShaderLog( Handle handle )
+void ShowShaderLog( GLuint handle )
 {
     GLint length = 0;
     glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &length);
@@ -93,7 +93,7 @@ void ShowShaderLog( Handle handle )
     }
 }
 
-void ShowProgramLog( Handle handle )
+void ShowProgramLog( GLuint handle )
 {
     GLint length = 0;
     glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &length);
@@ -112,9 +112,9 @@ void ShowProgramLog( Handle handle )
     }
 }
 
-Handle CreateShaderObject( const char* file, int type )
+GLuint CreateShaderObject( const char* file, int type )
 {
-    Handle handle = glCreateShader(type);
+    GLuint handle = glCreateShader(type);
 
     int size;
     const char* source = LoadFile(file, &size);
@@ -141,17 +141,17 @@ Handle CreateShaderObject( const char* file, int type )
     return handle;
 }
 
-Handle LoadShader( const char* vert, const char* frag )
+GLuint LoadShader( const char* vert, const char* frag )
 {
-    Handle vertObject = CreateShaderObject(vert, GL_VERTEX_SHADER);
+    GLuint vertObject = CreateShaderObject(vert, GL_VERTEX_SHADER);
     if(!vertObject)
         return 0;
 
-    Handle fragObject = CreateShaderObject(frag, GL_FRAGMENT_SHADER);
+    GLuint fragObject = CreateShaderObject(frag, GL_FRAGMENT_SHADER);
     if(!fragObject)
         return 0;
 
-    Handle program = glCreateProgram();
+    const GLuint program = glCreateProgram();
     glAttachShader(program, vertObject);
     glAttachShader(program, fragObject);
     BindVertexAttributes(program);
@@ -184,12 +184,12 @@ Handle LoadShader( const char* vert, const char* frag )
     return program;
 }
 
-void BindShader( Handle handle )
+void BindShader( GLuint handle )
 {
     glUseProgram(handle);
 }
 
-void FreeShader( Handle handle )
+void FreeShader( GLuint handle )
 {
     glDeleteProgram(handle);
 }

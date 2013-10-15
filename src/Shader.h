@@ -1,13 +1,13 @@
 #ifndef __SHADER__
 #define __SHADER__
 
-#include "Common.h"
+#include "OpenGL.h"
 
-Handle LoadShader( const char* vert, const char* frag );
-void FreeShader( Handle handle );
-void BindShader( Handle handle );
-void SetUniform( Handle shader, const char* name, int value );
-void SetUniform( Handle shader, const char* name, float value );
-void SetUniform( Handle shader, const char* name, int length, float* value );
+GLuint LoadShader( const char* vert, const char* frag );
+void FreeShader( GLuint handle );
+void BindShader( GLuint handle );
+void SetUniform( GLuint shader, const char* name, int value );
+void SetUniform( GLuint shader, const char* name, float value );
+void SetUniform( GLuint shader, const char* name, int length, float* value );
 
 #endif
