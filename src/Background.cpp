@@ -14,7 +14,7 @@ bool InitBackground()
     if(!g_SkyboxShader)
         return false;
 
-    g_SkyboxTexture = LoadCubeTexture(TEX_MIPMAP|TEX_FILTER, "Textures/Debug/%s.png");
+    g_SkyboxTexture = LoadCubeTexture(TEX_MIPMAP|TEX_FILTER, "Textures/NightSky/%s.png");
     if(!g_SkyboxTexture)
         return false;
 
@@ -34,22 +34,15 @@ void DestroyBackground()
 void DrawBackground()
 {
     glPushMatrix();
-    //glScalef(25,25,25);
-    glDepthMask(false);
+    glScalef(100,100,100);
+    glDepthFunc(GL_ALWAYS);
+    //glDepthMask(GL_FALSE);
 
-    glRotatef((float) glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
-    glBegin(GL_TRIANGLES);
-        glColor3f(1.f, 0.f, 0.f); glVertex3f(-0.6f, -0.4f, 0.f);
-        glColor3f(0.f, 1.f, 0.f); glVertex3f( 0.6f, -0.4f, 0.f);
-        glColor3f(0.f, 0.f, 1.f); glVertex3f(  0.f,  0.6f, 0.f);
-    glEnd();
-
-    /*
     BindShader(g_SkyboxShader);
     BindTexture(GL_TEXTURE_CUBE_MAP, g_SkyboxTexture, 0);
-    */
     DrawModel(&g_SkyboxModel);
 
-    glDepthMask(true);
+    glDepthMask(GL_TRUE);
+    //glDepthFunc(GL_LESS);
     glPopMatrix();
 }

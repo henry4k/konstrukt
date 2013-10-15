@@ -271,6 +271,7 @@ void OnDebugEvent( GLenum source, GLenum type, GLuint id, GLenum severity, GLsiz
     }
 
     Error("%s severity %s %s %d, %s", severityName, sourceName, typeName, id, message);
+    //Error("%s severity %s %s %d:\n%s", severityName, sourceName, typeName, id, message);
 }
 
 void OnWindowResize( GLFWwindow* window, int width, int height )

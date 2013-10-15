@@ -9,5 +9,5 @@ attribute vec4 VertexTangent;
 void main()
 {
     gl_Position = gl_ModelViewProjectionMatrix * vec4(VertexPosition, 1.0);
-    TexCoord = normalize( VertexPosition );
+    TexCoord = -normalize( VertexPosition );
 }

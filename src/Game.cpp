@@ -5,6 +5,7 @@
 #include "Window.h"
 #include "OpenGL.h"
 #include "Background.h"
+#include "Vertex.h"
 #include "Game.h"
 
 void OnFramebufferResize( int width, int height );
@@ -16,6 +17,9 @@ bool InitGame( const int argc, char** argv )
 
     if(!InitWindow())
         return false;
+
+    EnableVertexArrays();
+    glEnable(GL_DEPTH_TEST);
 
     if(!InitBackground())
         return false;
@@ -41,43 +45,27 @@ void RunGame()
     //double lastTime = glfwGetTime();
     while(!WindowShouldClose())
     {
-        glClear(GL_DEPTH_BUFFER_BIT);
-        //glClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
-
         const mat4 lookAtMatrix = lookAt(
             vec3(4,4,4),
             vec3(0,0,0),
             vec3(0,1,0)
         );
-        glLoadMatrixf(value_ptr(lookAtMatrix));
 
-        DrawBackground();
-
-        /*
-        glRotatef((float) glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
-        glBegin(GL_TRIANGLES);
-            glColor3f(1.f, 0.f, 0.f); glVertex3f(-0.6f, -0.4f, 0.f);
-            glColor3f(0.f, 1.f, 0.f); glVertex3f( 0.6f, -0.4f, 0.f);
-            glColor3f(0.f, 0.f, 1.f); glVertex3f(  0.f,  0.6f, 0.f);
-        glEnd();
-        */
-
-        /*
         // Simulation
-        const double curTime = glfwGetTime();
+        //const double curTime = glfwGetTime();
         // TODO: Simulate stuff here!
-        lastTime = curTime;
+        //lastTime = curTime;
 
         // Render world
         glClear(GL_DEPTH_BUFFER_BIT);
-        glLoadIdentity();
+        glLoadMatrixf(value_ptr(lookAtMatrix));
+        DrawBackground();
         // TODO: Render world here!
 
         // Render HUD
         glClear(GL_DEPTH_BUFFER_BIT);
         glLoadIdentity();
         // TODO: Render HUD here!
-        */
 
         SwapBuffers();
     }

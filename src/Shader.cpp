@@ -185,9 +185,9 @@ GLuint LoadShader( const char* vert, const char* frag )
         glGetProgramiv(program, GL_VALIDATE_STATUS, &state);
         ShowProgramLog(program);
         if(state)
-            Log("Validated shader program successfully");
+            Log("Validated shader program successfully (%s, %s)", vert, frag);
         else
-            Log("Error validating shader program");
+            Log("Error validating shader program (%s, %s)", vert, frag);
     }
 
     return program;
