@@ -2,7 +2,7 @@
 #define __BACKGROUND__
 
 bool InitBackground();
-void FreeBackground();
+void DestroyBackground();
 void DrawBackground();
 
 #endif

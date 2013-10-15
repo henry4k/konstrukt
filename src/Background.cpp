@@ -11,20 +11,20 @@ Model   g_SkyboxModel;
 bool InitBackground()
 {
     g_SkyboxShader = LoadShader("Shaders/Skybox.vert", "Shaders/Skybox.frag");
-	if(!g_SkyboxShader)
-		return false;
+    if(!g_SkyboxShader)
+        return false;
 
     g_SkyboxTexture = LoadCubeTexture(TEX_MIPMAP|TEX_FILTER, "Textures/Debug/%s.png");
-	if(!g_SkyboxTexture)
-		return false;
+    if(!g_SkyboxTexture)
+        return false;
 
     if(!LoadModel(&g_SkyboxModel, "Meshes/Skybox.ply"))
-		return false;
+        return false;
 
-	return true;
+    return true;
 }
 
-void FreeBackground()
+void DestroyBackground()
 {
     FreeModel(&g_SkyboxModel);
     FreeTexture(g_SkyboxTexture);

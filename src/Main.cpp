@@ -1,11 +1,11 @@
 #include "Common.h"
 #include "Game.h"
 
-int main()
+int main( const int argc, char** argv )
 {
-	if(!InitGame())
-		return EXIT_FAILURE;
-	RunGame();
-	FreeGame();
+    if(!InitGame(argc, argv))
+        return EXIT_FAILURE;
+    RunGame();
+    DestroyGame();
     return EXIT_SUCCESS;
 }

@@ -317,7 +317,7 @@ bool LoadMesh( Mesh* mesh, const char* file )
     FILE* f = fopen(file, "r");
     if(!f)
     {
-        Error("Can't read mesh '%s'", file);
+        Error("Can't read mesh %s", file);
         return false;
     }
 
@@ -333,7 +333,7 @@ bool LoadMesh( Mesh* mesh, const char* file )
 
     if(!ReadHeader(&info))
     {
-        Error("Failed while parsing line %d", info.lineNumber);
+        Error("Parser error at %s:%d", file, info.lineNumber);
         FreeMeshInfo(&info);
         FreeMesh(mesh);
         return false;
@@ -341,7 +341,7 @@ bool LoadMesh( Mesh* mesh, const char* file )
 
     if(!ReadVertices(&info))
     {
-        Error("Failed while parsing line %d", info.lineNumber);
+        Error("Parser error at %s:%d", file, info.lineNumber);
         FreeMeshInfo(&info);
         FreeMesh(mesh);
         return false;
@@ -350,6 +350,7 @@ bool LoadMesh( Mesh* mesh, const char* file )
     CalculateTangentArray(mesh->vertexCount, mesh->vertices, mesh->indexCount/3, (Triangle*)mesh->indices);
 
     FreeMeshInfo(&info);
+    Log("Loaded %s", file);
     return true;
 }
 

@@ -9,8 +9,8 @@ typedef void (*MouseScrollFn)( double xoffset, double yoffset );
 typedef void (*KeyActionFn)( int key, int scancode, bool pressed );
 
 // General
-bool InitWindow( int width, int height, const char* title );
-void FreeWindow();
+bool InitWindow();
+void DestroyWindow();
 void FlagWindowForClose();
 bool WindowShouldClose();
 void SwapBuffers();

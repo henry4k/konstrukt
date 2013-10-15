@@ -6,7 +6,7 @@
 
 const char* Format( const char* format, ... )
 {
-	static char buffer[512];
+    static char buffer[512];
 
     va_list vl;
     va_start(vl, format);

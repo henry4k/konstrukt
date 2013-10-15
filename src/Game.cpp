@@ -1,6 +1,7 @@
 #include "Math.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Config.h"
 #include "Window.h"
 #include "OpenGL.h"
 #include "Background.h"
@@ -8,23 +9,27 @@
 
 void OnFramebufferResize( int width, int height );
 
-bool InitGame()
+bool InitGame( const int argc, char** argv )
 {
-	if(!InitWindow(320, 240, "Apoapsis"))
-		return false;
+    if(!InitConfig(argc, argv))
+        return false;
 
-	if(!InitBackground())
-		return false;
+    if(!InitWindow())
+        return false;
 
-	SetFrambufferFn(OnFramebufferResize);
+    if(!InitBackground())
+        return false;
 
-	return true;
+    SetFrambufferFn(OnFramebufferResize);
+
+    return true;
 }
 
-void FreeGame()
+void DestroyGame()
 {
-	FreeBackground();
-	FreeWindow();
+    DestroyBackground();
+    DestroyWindow();
+    DestroyConfig();
 }
 
 void RunGame()

@@ -38,6 +38,10 @@ GLuint Load2dTexture( int options, const char* file )
         return false;
     const GLuint r = Create2dTexture(options, &image);
     FreeImage(&image);
+    if(r > 0)
+        Log("Loaded %s", file);
+    else
+        Error("Failed to load %s", file);
     return r;
 }
 
@@ -81,13 +85,20 @@ GLuint LoadCubeTexture( int options, const char* path )
     for(int i = 0; i < 6; i++)
     {
         if(!LoadImage(&images[i], Format(path, names[i])))
+        {
+            Error("Failed to load %s", Format(path, names[i]));
             return 0;
+        }
     }
     bool r = CreateCubeTexture(options, images);
     for(int i = 0; i < 6; i++)
     {
         FreeImage(&images[i]);
     }
+    if(r > 0)
+        Log("Loaded %s", Format(path, "*"));
+    else
+        Error("Failed to load %s", Format(path, "*"));
     return r;
 }
 

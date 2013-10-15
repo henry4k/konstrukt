@@ -1,3 +1,5 @@
+# vim: set filetype=tup:
+
 .gitignore
 
 ### Tools ###
@@ -18,15 +20,17 @@ endif
 ### Flags ###
 
 CFLAGS += @(CFLAGS)
+CFLAGS += -g -O0
 CFLAGS += -I$(TUP_CWD)/thirdparty
+CFLAGS += -I$(TUP_CWD)/thirdparty/inih
 CFLAGS += -Werror -Wall -Wextra -pedantic
 CFLAGS += -Wmissing-include-dirs -Wpointer-arith -Wcast-qual -Winit-self
 CFLAGS += -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter
 
-CXXFLAGS += $(CFLAGS)
 CXXFLAGS += @(CXXFLAGS)
 
 LDFLAGS += @(LDFLAGS)
+LDFLAGS += -g
 
 
 ### Packages ###
@@ -43,10 +47,17 @@ CFLAGS += `pkg-config $(PACKAGES) --cflags`
 LDFLAGS += `pkg-config $(PACKAGES) --libs`
 
 
+### Internal dependencies ###
+
+INI_A = $(TUP_CWD)/thirdparty/inih/ini.a
+
+
 ### Rules ###
 
-!cc = |> ^ CC %f^ $(CC) -c %f -o %o $(CFLAGS) |> %B.o
-!cxx = |> ^ CXX %f^ $(CXX) -c %f -o %o $(CXXFLAGS) |> %B.o
-!ld = |> ^ LINK %o^ $(CXX) %f -o %o $(LDFLAGS) |>
-!ar = |> ^ AR %o^ ar crs %o %f |>
-!cp = |> ^ CP %f -> %o^ cp %f %o |>
+!cc = |> ^ Compling %f^ $(CC) -c %f -o %o $(CFLAGS) |> %B.o
+!ld = |> ^ Linking %o^ ld %f -o %o $(LDFLAGS) |>
+!ar = |> ^ Archiving %o^ ar crs %o %f |>
+!cp = |> ^ Copying %f to %o^ cp %f %o |>
+
+!cxx = |> ^ Compiling %f^ $(CXX) -c %f -o %o $(CFLAGS) $(CXXFLAGS) |> %B.o
+!ldcxx = |> ^ Linking %o^ $(CXX) %f -o %o $(LDFLAGS) |>

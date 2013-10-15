@@ -1,3 +1,6 @@
 include_rules
-: foreach *.cpp |> !cxx |>
-: *.o |> !ld |> apoapsis
+
+: foreach *.cpp |> !cxx |> %B.o {objects}
+
+LDFLAGS += $(INI_A)
+: {objects} | $(INI_A) |> !ldcxx |> apoapsis

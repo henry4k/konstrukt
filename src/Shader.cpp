@@ -79,8 +79,8 @@ void ShowShaderLog( GLuint handle )
     GLint length = 0;
     glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &length);
 
-    char* log = 0;
-    if(length)
+    char* log = NULL;
+    if(length > 1) // Some drivers wan't me to log single newline characters.
     {
         log = new char[length];
         glGetShaderInfoLog(handle, length, NULL, log);
@@ -98,8 +98,8 @@ void ShowProgramLog( GLuint handle )
     GLint length = 0;
     glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &length);
 
-    char* log = 0;
-    if(length)
+    char* log = NULL;
+    if(length > 1) // See ShowShaderLog
     {
         log = new char[length];
         glGetProgramInfoLog(handle, length, NULL, log);
@@ -119,7 +119,10 @@ GLuint CreateShaderObject( const char* file, int type )
     int size;
     const char* source = LoadFile(file, &size);
     if(!source)
+    {
+        Error("Failed to read shader source %s", file);
         return 0;
+    }
 
     glShaderSource(handle, 1, &source, &size);
     FreeFile(source);
@@ -130,13 +133,16 @@ GLuint CreateShaderObject( const char* file, int type )
     GLint state;
     glGetShaderiv(handle, GL_COMPILE_STATUS, &state);
     ShowShaderLog(handle);
-    if(state)
-        Log("%s: Compiled shader object successfully", file);
-    else
-        Error("Error compiling shader object %s", file);
 
-    if(!state)
+    if(state)
+    {
+        Log("Compiled shader object successfully: %s", file);
+    }
+    else
+    {
+        Error("Error compiling shader object %s", file);
         return 0;
+    }
 
     return handle;
 }
@@ -161,13 +167,16 @@ GLuint LoadShader( const char* vert, const char* frag )
         GLint state;
         glGetProgramiv(program, GL_LINK_STATUS, &state);
         ShowProgramLog(program);
-        if(state)
-            Log("Linked shader program successfully");
-        else
-            Error("Error linking shader program");
 
-        if(!state)
+        if(state)
+        {
+            Log("Linked shader program successfully (%s, %s)", vert, frag);
+        }
+        else
+        {
+            Error("Error linking shader programm (%s, %s)", vert, frag);
             return 0;
+        }
     }
 
     glValidateProgram(program);

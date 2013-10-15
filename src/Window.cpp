@@ -1,4 +1,5 @@
 #include "Common.h"
+#include "Config.h"
 #include "OpenGL.h"
 #include "Window.h"
 
@@ -19,6 +20,7 @@ MouseScrollFn       g_MouseScrollFn = NULL;
 KeyActionFn         g_KeyActionFn = NULL;
 
 
+
 /****** General *******/
 
 void OnGLFWError( int code, const char* description );
@@ -30,27 +32,37 @@ void OnMouseScroll( GLFWwindow* window, double xoffset, double yoffset );
 void OnCursorMove( GLFWwindow* window, double x, double y );
 void OnKeyAction( GLFWwindow* window, int key, int scancode, int action, int mods );
 
-bool InitWindow( int width, int height, const char* title )
+bool InitWindow()
 {
+    const int width  = GetConfigInt("window.width",  640);
+    const int height = GetConfigInt("window.height", 480);
+    const char* title = GetConfigString("window.title", "Apoapsis");
+
+    const int versionMajor = GetConfigInt("opengl.major", 2);
+    const int versionMinor = GetConfigInt("opengl.minor", 1);
+    const bool debug = GetConfigBool("opengl.debug", false);
+    const bool vsync = GetConfigBool("opengl.vsync", true);
+    const bool experimentalDrivers = GetConfigBool("opengl.experimental-drivers", false);
+
     assert(g_Window == NULL);
     glfwSetErrorCallback(OnGLFWError);
     if(!glfwInit())
-	{
+    {
         Error("GLFW init failed.");
-		return false;
-	}
+        return false;
+    }
 
     glfwDefaultWindowHints();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, versionMajor);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, versionMinor);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, debug ? GL_TRUE : GL_FALSE);
 
     g_Window = glfwCreateWindow(width, height, title, NULL, NULL);
     if(!g_Window)
-	{
+    {
         Error("Window creation failed.");
-		return false;
-	}
+        return false;
+    }
 
     glfwGetWindowSize(g_Window, &g_WindowWidth, &g_WindowHeight);
     glfwGetFramebufferSize(g_Window, &g_FramebufferWidth, &g_FramebufferHeight);
@@ -60,14 +72,39 @@ bool InitWindow( int width, int height, const char* title )
 
     glfwMakeContextCurrent(g_Window);
 
+    glewExperimental = experimentalDrivers ? GL_TRUE : GL_FALSE;
+    GLenum glewErrorCode = glewInit();
+    if(glewErrorCode != GLEW_OK)
+    {
+        Error("GLEW Error: %s", glewGetErrorString(glewErrorCode));
+        return false;
+    }
+
+    Log(
+        "Using OpenGL %s\n"
+        "Vendor: %s\n"
+        "Renderer: %s\n"
+        "GLSL: %s\n"
+        "GLEW: %s",
+
+        glGetString(GL_VERSION),
+        glGetString(GL_VENDOR),
+        glGetString(GL_RENDERER),
+        glGetString(GL_SHADING_LANGUAGE_VERSION),
+        glewGetString(GLEW_VERSION)
+    );
+
+    if(vsync)
+    {
 #if defined(_WIN32)
-    if(glfwExtensionSupported("WGL_EXT_swap_control_tear"))
+        if(glfwExtensionSupported("WGL_EXT_swap_control_tear"))
 #else
-    if(glfwExtensionSupported("GLX_EXT_swap_control_tear"))
+        if(glfwExtensionSupported("GLX_EXT_swap_control_tear"))
 #endif
-        glfwSwapInterval(-1); // enable vsync (allow the driver to swap even if a frame arrives a little bit late)
-    else
-        glfwSwapInterval(1); // enable vsync
+            glfwSwapInterval(-1); // enable vsync (allow the driver to swap even if a frame arrives a little bit late)
+        else
+            glfwSwapInterval(1); // enable vsync
+    }
 
     glfwSetInputMode(g_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     glfwSetInputMode(g_Window, GLFW_STICKY_KEYS, GL_FALSE);
@@ -79,11 +116,18 @@ bool InitWindow( int width, int height, const char* title )
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     }
 
-    if(GLEW_ARB_debug_output)
+    if(debug)
     {
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-        glDebugMessageCallbackARB(OnDebugEvent, NULL);
-        Log("Debug output supported! You may receive debug messages from your OpenGL driver.");
+        if(GLEW_ARB_debug_output)
+        {
+            glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+            glDebugMessageCallbackARB(OnDebugEvent, NULL);
+            Log("Debug output supported! You may receive debug messages from your OpenGL driver.");
+        }
+        else
+        {
+            Error("Debug output requested, but it's not supported!");
+        }
     }
 
     glfwSetWindowSizeCallback(g_Window, OnWindowResize);
@@ -96,7 +140,7 @@ bool InitWindow( int width, int height, const char* title )
     return true;
 }
 
-void FreeWindow()
+void DestroyWindow()
 {
     assert(g_Window != NULL);
     glfwDestroyWindow(g_Window);
