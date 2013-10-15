@@ -33,14 +33,23 @@ void DestroyBackground()
 
 void DrawBackground()
 {
-    glDepthMask(false);
     glPushMatrix();
-    glScalef(25,25,25);
+    //glScalef(25,25,25);
+    glDepthMask(false);
 
+    glRotatef((float) glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
+    glBegin(GL_TRIANGLES);
+        glColor3f(1.f, 0.f, 0.f); glVertex3f(-0.6f, -0.4f, 0.f);
+        glColor3f(0.f, 1.f, 0.f); glVertex3f( 0.6f, -0.4f, 0.f);
+        glColor3f(0.f, 0.f, 1.f); glVertex3f(  0.f,  0.6f, 0.f);
+    glEnd();
+
+    /*
     BindShader(g_SkyboxShader);
     BindTexture(GL_TEXTURE_CUBE_MAP, g_SkyboxTexture, 0);
+    */
     DrawModel(&g_SkyboxModel);
 
-    glPopMatrix();
     glDepthMask(true);
+    glPopMatrix();
 }

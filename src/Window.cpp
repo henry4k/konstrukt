@@ -270,7 +270,7 @@ void OnDebugEvent( GLenum source, GLenum type, GLuint id, GLenum severity, GLsiz
         case GL_DEBUG_SEVERITY_LOW_ARB: severityName = "Low"; break;
     }
 
-    Error("%s severity %s %s %d, %s\n", severityName, sourceName, typeName, id, message);
+    Error("%s severity %s %s %d, %s", severityName, sourceName, typeName, id, message);
 }
 
 void OnWindowResize( GLFWwindow* window, int width, int height )

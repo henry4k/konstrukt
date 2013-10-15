@@ -41,7 +41,8 @@ void RunGame()
     //double lastTime = glfwGetTime();
     while(!WindowShouldClose())
     {
-        glClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        //glClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
 
         const mat4 lookAtMatrix = lookAt(
             vec3(4,4,4),
@@ -50,12 +51,16 @@ void RunGame()
         );
         glLoadMatrixf(value_ptr(lookAtMatrix));
 
+        DrawBackground();
+
+        /*
         glRotatef((float) glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
         glBegin(GL_TRIANGLES);
             glColor3f(1.f, 0.f, 0.f); glVertex3f(-0.6f, -0.4f, 0.f);
             glColor3f(0.f, 1.f, 0.f); glVertex3f( 0.6f, -0.4f, 0.f);
             glColor3f(0.f, 0.f, 1.f); glVertex3f(  0.f,  0.6f, 0.f);
         glEnd();
+        */
 
         /*
         // Simulation
