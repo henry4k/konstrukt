@@ -3,12 +3,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Config.h"
 #include "Window.h"
+#include "Controls.h"
 #include "OpenGL.h"
 #include "Background.h"
 #include "Vertex.h"
+#include "Player.h"
 #include "Game.h"
 
 void OnFramebufferResize( int width, int height );
+void OnExitKey( const char* name, bool pressed );
 
 bool InitGame( const int argc, char** argv )
 {
@@ -21,7 +24,16 @@ bool InitGame( const int argc, char** argv )
     EnableVertexArrays();
     glEnable(GL_DEPTH_TEST);
 
+    if(!InitControls())
+        return false;
+
+    if(!RegisterKeyControl("exit", OnExitKey, NULL))
+        return false;
+
     if(!InitBackground())
+        return false;
+
+    if(!InitPlayer())
         return false;
 
     SetFrambufferFn(OnFramebufferResize);
@@ -31,7 +43,9 @@ bool InitGame( const int argc, char** argv )
 
 void DestroyGame()
 {
+    DestroyPlayer();
     DestroyBackground();
+    DestroyControls();
     DestroyWindow();
     DestroyConfig();
 }
@@ -42,7 +56,7 @@ void RunGame()
 
     glClearColor(0.5, 0.5, 0.5, 1);
 
-    //double lastTime = glfwGetTime();
+    double lastTime = glfwGetTime();
     while(!WindowShouldClose())
     {
         const mat4 lookAtMatrix = lookAt(
@@ -52,20 +66,23 @@ void RunGame()
         );
 
         // Simulation
-        //const double curTime = glfwGetTime();
-        // TODO: Simulate stuff here!
-        //lastTime = curTime;
+        const double curTime = glfwGetTime();
+        const double timeDelta = curTime-lastTime;
+        UpdateControls(timeDelta);
+        UpdatePlayer(timeDelta);
+        lastTime = curTime;
 
         // Render world
         glClear(GL_DEPTH_BUFFER_BIT);
         glLoadMatrixf(value_ptr(lookAtMatrix));
+        RotateWorld();
+        TranslateWorld();
         DrawBackground();
-        // TODO: Render world here!
 
         // Render HUD
-        glClear(GL_DEPTH_BUFFER_BIT);
-        glLoadIdentity();
-        // TODO: Render HUD here!
+        //glClear(GL_DEPTH_BUFFER_BIT);
+        //glLoadIdentity();
+        //DrawPlayer();
 
         SwapBuffers();
     }
@@ -83,4 +100,10 @@ void OnFramebufferResize( int width, int height )
     glLoadMatrixf(value_ptr(perspectivicMatrix));
 
     glMatrixMode(GL_MODELVIEW);
+}
+
+void OnExitKey( const char* name, bool pressed )
+{
+    if(pressed)
+        FlagWindowForClose();
 }
