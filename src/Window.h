@@ -3,7 +3,7 @@
 
 // Callback functions
 typedef void (*FramebufferResizeFn)( int width, int height );
-typedef void (*CursorMoveFn)( double x, double y, double dx, double dy );
+typedef void (*CursorMoveFn)( double x, double y );
 typedef void (*MouseButtonActionFn)( int button, bool pressed );
 typedef void (*MouseScrollFn)( double xoffset, double yoffset );
 typedef void (*KeyActionFn)( int key, int scancode, bool pressed );
@@ -14,14 +14,10 @@ void DestroyWindow();
 void FlagWindowForClose();
 bool WindowShouldClose();
 void SwapBuffers();
+void* GetGLFWwindow();
 
 // Input
-bool IsKeyPressed( int key );
-bool IsMouseButtonPressed( int button );
-double GetCursorX();
-double GetCursorY();
 void SetCursorMode( int mode );
-void* GetGLFWwindow();
 
 // Callbacks setter
 void SetWindowTitle( const char* title );

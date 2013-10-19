@@ -9,11 +9,12 @@
 
 static const int MAX_CONTROL_NAME_LENGTH = 31;
 
-void OnCursorMove( double x, double y, double dx, double dy );
+void OnCursorMove( double x, double y );
 void OnMouseButtonAction( int button, bool pressed );
 void OnMouseScroll( double xoffset, double yoffset );
 void OnKeyAction( int key, int keycode, bool pressed );
 
+void OnCursorGrabEvent( const char* name, bool pressed );
 bool CreateKeyBindingFromString( const char* str, int keyControl );
 bool CreateAxisBindingFromString( const char* str, int axisControl );
 
@@ -98,6 +99,8 @@ MouseButtonBinding       g_MouseButtonBindings[MOUSE_BUTTON_COUNT];
 //MouseScrollBinding     g_MouseScrollBindings[4]; // TODO: Enum for this please. (+x, -x, +y, -y)
 MouseAxisBinding         g_MouseAxisBindings[2];
 
+bool g_CursorGrabbed;
+
 
 bool InitControls()
 {
@@ -113,6 +116,9 @@ bool InitControls()
     memset(g_MouseButtonBindings, 0, sizeof(g_MouseButtonBindings));
     //memset(g_MouseScrollBindings, 0, sizeof(g_MouseScrollBindings));
     memset(g_MouseAxisBindings, 0, sizeof(g_MouseAxisBindings));
+
+    g_CursorGrabbed = false;
+    RegisterKeyControl("grab-cursor", OnCursorGrabEvent, NULL);
 
     return true;
 }
@@ -303,13 +309,42 @@ void HandleAxisEvent( int axisControlIndex, float value )
     }
 }
 
-void OnCursorMove( double x, double y, double dx, double dy )
+void OnCursorMove( double x, double y )
 {
-    if(g_MouseAxisBindings[0].isEnabled)
-        HandleAxisEvent(g_MouseAxisBindings[0].axisControl, x);
+    if(g_CursorGrabbed)
+    {
+        static double totalX = 0;
+        static double totalY = 0;
 
-    if(g_MouseAxisBindings[1].isEnabled)
-        HandleAxisEvent(g_MouseAxisBindings[1].axisControl, y);
+        totalX += x;
+        totalY += y;
+
+        if(g_MouseAxisBindings[0].isEnabled)
+            HandleAxisEvent(g_MouseAxisBindings[0].axisControl, totalX);
+
+        if(g_MouseAxisBindings[1].isEnabled)
+            HandleAxisEvent(g_MouseAxisBindings[1].axisControl, totalY);
+
+        glfwSetCursorPos((GLFWwindow*)GetGLFWwindow(), 0, 0);
+    }
+}
+
+void OnCursorGrabEvent( const char* name, bool pressed )
+{
+    if(pressed)
+    {
+        if(g_CursorGrabbed)
+        {
+            SetCursorMode(GLFW_CURSOR_NORMAL);
+            g_CursorGrabbed = false;
+        }
+        else
+        {
+            SetCursorMode(GLFW_CURSOR_DISABLED);
+            g_CursorGrabbed = true;
+            glfwSetCursorPos((GLFWwindow*)GetGLFWwindow(), 0, 0);
+        }
+    }
 }
 
 void OnMouseButtonAction( int button, bool pressed )
@@ -405,14 +440,14 @@ bool CreateKeyBindingFromString( const char* str, int keyControl )
 #undef KEYCODE
 
 #define MOUSE_BUTTON(N,B) if(strcmp(str, (N)) == 0) return CreateMouseButtonBinding((B), keyControl);
-    MOUSE_BUTTON("mouse-button:1", 0)
-    MOUSE_BUTTON("mouse-button:2", 1)
-    MOUSE_BUTTON("mouse-button:3", 2)
-    MOUSE_BUTTON("mouse-button:4", 3)
-    MOUSE_BUTTON("mouse-button:5", 4)
-    MOUSE_BUTTON("mouse-button:6", 5)
-    MOUSE_BUTTON("mouse-button:7", 6)
-    MOUSE_BUTTON("mouse-button:8", 7)
+    MOUSE_BUTTON("mouse-button:0", 0)
+    MOUSE_BUTTON("mouse-button:1", 1)
+    MOUSE_BUTTON("mouse-button:2", 2)
+    MOUSE_BUTTON("mouse-button:3", 3)
+    MOUSE_BUTTON("mouse-button:4", 4)
+    MOUSE_BUTTON("mouse-button:5", 5)
+    MOUSE_BUTTON("mouse-button:6", 6)
+    MOUSE_BUTTON("mouse-button:7", 7)
     // Everything beyond is clearly insane. : )
 #undef MOUSE_BUTTON
 

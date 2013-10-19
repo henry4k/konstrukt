@@ -1,3 +1,4 @@
+#include "Common.h"
 #include "Math.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -15,28 +16,36 @@ void OnExitKey( const char* name, bool pressed );
 
 bool InitGame( const int argc, char** argv )
 {
+    Log("----------- Config ------------");
     if(!InitConfig(argc, argv))
-        return false;
+    return false;
 
+    Log("----------- Window ------------");
     if(!InitWindow())
         return false;
 
     EnableVertexArrays();
     glEnable(GL_DEPTH_TEST);
 
+    Log("---------- Controls -----------");
     if(!InitControls())
         return false;
 
     if(!RegisterKeyControl("exit", OnExitKey, NULL))
         return false;
 
+    Log("--------- Background ----------");
     if(!InitBackground())
         return false;
 
+    Log("----------- Player ------------");
     if(!InitPlayer())
         return false;
 
+    Log("-------------------------------");
+
     SetFrambufferFn(OnFramebufferResize);
+    glEnable(GL_CULL_FACE);
 
     return true;
 }
@@ -96,7 +105,7 @@ void OnFramebufferResize( int width, int height )
 
     glMatrixMode(GL_PROJECTION);
     const float aspect = float(width) / float(height);
-    const mat4 perspectivicMatrix = perspective(90.0f, aspect, 0.1f, 100.0f);
+    const mat4 perspectivicMatrix = perspective(glm::radians(90.0f), aspect, 0.1f, 100.0f);
     glLoadMatrixf(value_ptr(perspectivicMatrix));
 
     glMatrixMode(GL_MODELVIEW);

@@ -11,8 +11,6 @@ int g_WindowWidth  = 0;
 int g_WindowHeight = 0;
 int g_FramebufferWidth  = 0;
 int g_FramebufferHeight = 0;
-double g_LastCursorX = 0;
-double g_LastCursorY = 0;
 FramebufferResizeFn g_FramebufferResizeFn = NULL;
 CursorMoveFn        g_CursorMoveFn = NULL;
 MouseButtonActionFn g_MouseButtonActionFn = NULL;
@@ -66,9 +64,6 @@ bool InitWindow()
 
     glfwGetWindowSize(g_Window, &g_WindowWidth, &g_WindowHeight);
     glfwGetFramebufferSize(g_Window, &g_FramebufferWidth, &g_FramebufferHeight);
-    glfwGetCursorPos(g_Window, &g_LastCursorX, &g_LastCursorY);
-    g_LastCursorX *= g_FramebufferWidth / g_WindowWidth;
-    g_LastCursorX *= g_FramebufferHeight / g_WindowHeight;
 
     glfwMakeContextCurrent(g_Window);
 
@@ -175,26 +170,6 @@ void* GetGLFWwindow()
 
 
 /****** Input ******/
-
-bool IsKeyPressed( int key )
-{
-    return glfwGetKey(g_Window, key) != GLFW_RELEASE;
-}
-
-bool IsMouseButtonPressed( int button )
-{
-    return glfwGetMouseButton(g_Window, button) != GLFW_RELEASE;
-}
-
-double GetCursorX()
-{
-    return g_LastCursorX;
-}
-
-double GetCursorY()
-{
-    return g_LastCursorY;
-}
 
 void SetCursorMode( int mode )
 {
@@ -309,14 +284,8 @@ void OnCursorMove( GLFWwindow* window, double x, double y )
     x *= g_FramebufferWidth / g_WindowWidth;
     y *= g_FramebufferHeight / g_WindowHeight;
 
-    const double dx = x - g_LastCursorX;
-    const double dy = y - g_LastCursorY;
-
-    g_LastCursorX = x;
-    g_LastCursorY = y;
-
     if(g_CursorMoveFn)
-        g_CursorMoveFn(x, y, dx, dy);
+        g_CursorMoveFn(x, y);
 }
 
 void OnKeyAction( GLFWwindow* window, int key, int scancode, int action, int mods )
