@@ -4,15 +4,12 @@
 #include "Controls.h"
 #include "Player.h"
 
-//#include <glm/gtc/matrix_transform.hpp>
-//#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
-static const float WALK_FORCE = 0.01f;
-static const float WALK_DAMPING = 0.99f;
-
-glm::vec2 g_PlayerPosition;
-glm::vec2 g_PlayerVelocity;
-glm::vec2 g_PlayerRotation;
+static const float MAX_MOVEMENT_SPEED = 999;
+static const float MOVEMENT_ACCELERATION = 20;
+static const float MOVEMENT_FRICTION = 0.999;
 
 bool g_ForwardKey;
 bool g_BackwardKey;
@@ -21,11 +18,14 @@ bool g_LeftKey;
 float g_LookX;
 float g_LookY;
 
+glm::vec3 g_PlayerPosition;
+glm::vec3 g_PlayerVelocity;
+glm::quat g_PlayerOrientation;
+
 bool InitPlayer()
 {
-    g_PlayerPosition = glm::vec2(0,0);
-    g_PlayerVelocity = glm::vec2(0,0);
-    g_PlayerRotation = glm::vec2(0,0);
+    g_PlayerPosition = glm::vec3(0,0,0);
+    g_PlayerVelocity = glm::vec3(0,0,0);
 
     return
         RegisterKeyControl("forward",  NULL, &g_ForwardKey) &&
@@ -42,65 +42,65 @@ void DestroyPlayer()
 
 void RotateWorld()
 {
-    //glLoadMatrixf(glm::value_ptr(g_PlayerRotation.mat4_cast()));
-    glRotatef(g_LookX, 0,1,0);
-    //glRotatef(g_PlayerRotation.y, 0,0,1);
+    //glLoadMatrixf(glm::value_ptr(glm::mat4_cast(g_PlayerOrientation)));
+    glLoadMatrixf(glm::value_ptr(glm::lookAt(
+        g_PlayerPosition,
+        g_PlayerPosition + (g_PlayerOrientation*glm::vec3(0,0,1)),
+        glm::vec3(0,1,0)
+    )));
 }
 
 void TranslateWorld()
 {
-    glTranslatef(g_PlayerPosition.x, 0, g_PlayerPosition.y);
+    //glTranslatef(g_PlayerPosition.x, g_PlayerPosition.y, g_PlayerPosition.z);
 }
 
 void DrawPlayer()
 {
 }
 
+void UpdatePlayerOrientation()
+{
+    using namespace glm;
+
+    static const vec3 up(0,1,0);
+    static const vec3 right(1,0,0);
+
+    const quat xRotation = angleAxis(radians(-g_LookX), up);
+    const quat yRotation = angleAxis(radians(g_LookY), right);
+
+    g_PlayerOrientation = xRotation;
+    g_PlayerOrientation = g_PlayerOrientation * yRotation;
+    g_PlayerOrientation = normalize(g_PlayerOrientation);
+}
+
 void UpdatePlayer( float timeDelta )
 {
-    timeDelta = 1.0f;
+    using namespace glm;
 
-    glm::vec2 direction(0,0);
+    UpdatePlayerOrientation();
+
+    vec3 direction(0,0,0);
 
     if(g_ForwardKey)
-        direction.y += 1;
+        direction.z += 1;
     if(g_BackwardKey)
-        direction.y -= 1;
-    if(g_RightKey)
-        direction.x += 1;
+        direction.z -= 1;
     if(g_LeftKey)
+        direction.x += 1;
+    if(g_RightKey)
         direction.x -= 1;
 
-    glm::vec2 force(0,0);
+    if(length(direction) > 0.1f)
+    {
+        direction = normalize(g_PlayerOrientation * normalize(direction));
+        g_PlayerVelocity += direction * (MOVEMENT_ACCELERATION * timeDelta);
+    }
 
-    g_PlayerVelocity += direction * WALK_FORCE * timeDelta;
-    g_PlayerVelocity *= WALK_DAMPING * (1.0f/timeDelta);
+    if(g_PlayerVelocity.length() > MAX_MOVEMENT_SPEED)
+        g_PlayerVelocity *= MAX_MOVEMENT_SPEED / g_PlayerVelocity.length();
 
     g_PlayerPosition += g_PlayerVelocity * timeDelta;
 
-    //Log("%f", g_PlayerPosition.x);
+    g_PlayerVelocity *= 1.0f - timeDelta * MOVEMENT_FRICTION;
 }
-
-/*
-void OnMouseButtonAction( int button, bool pressed )
-{
-    //Log("mouse button action");
-}
-
-void OnMouseScroll( double xoffset, double yoffset )
-{
-    //Log("mouse scroll");
-}
-
-void OnCursorMove( double x, double y, double xoffset, double yoffset )
-{
-    Log("%f %f", xoffset, yoffset);
-    g_PlayerRotation.x += xoffset;
-    g_PlayerRotation.y += yoffset;
-}
-
-void OnKeyAction( int key, int scancode, bool pressed )
-{
-    if(key == GLFW_KEY_ESCAPE && pressed)
-}
-*/

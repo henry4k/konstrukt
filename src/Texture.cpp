@@ -79,7 +79,7 @@ GLuint CreateCubeTexture( int options, const Image* images )
 GLuint LoadCubeTexture( int options, const char* path )
 {
     Image images[6];
-    static const char* names[6] = { "Right","Left","Bottom","Top","Front","Back" };
+    static const char* names[6] = { "px","nx","ny","py","pz","nz" };
     char buffer[512];
     strncpy(buffer, path, 512);
     int pos = strlen(path);
