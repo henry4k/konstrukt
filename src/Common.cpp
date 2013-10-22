@@ -37,14 +37,14 @@ void LogV( LogLevel level, const char* format, va_list vl )
             break;
 
         case LOG_ERROR:
-            //prefix = "\033[31mERROR: ";
-            //postfix = "\033[0m";
+            prefix = "\033[31mERROR: ";
+            postfix = "\033[0m";
             file = stderr;
             break;
 
         case LOG_FATAL_ERROR:
-            //prefix = "\033[31;1mFATAL ERROR: ";
-            //postfix = "\033[0m";
+            prefix = "\033[31;1mFATAL ERROR: ";
+            postfix = "\033[0m";
             file = stderr;
             break;
     }

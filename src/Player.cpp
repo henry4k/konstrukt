@@ -2,6 +2,7 @@
 #include "Math.h"
 #include "OpenGL.h"
 #include "Controls.h"
+#include "Audio.h"
 #include "Player.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -103,4 +104,6 @@ void UpdatePlayer( float timeDelta )
     g_PlayerPosition += g_PlayerVelocity * timeDelta;
 
     g_PlayerVelocity *= 1.0f - timeDelta * MOVEMENT_FRICTION;
+
+	UpdateAudioListener(g_PlayerPosition, g_PlayerVelocity, g_PlayerOrientation*glm::vec3(0,0,1), glm::vec3(0,1,0));
 }
