@@ -33,7 +33,7 @@ struct KeyControl
 
 struct AxisControl
 {
-    char name[MAX_CONTROL_NAME_LENGTH];
+    char name[MAX_CONTROL_NAME_LENGTH+1];
     AxisControlActionFn callback;
     float* value;
     float lastValue; // Needed to generate deltas

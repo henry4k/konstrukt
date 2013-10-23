@@ -8,6 +8,7 @@
 #include "OpenGL.h"
 #include "Background.h"
 #include "Vertex.h"
+#include "Audio.h"
 #include "Player.h"
 #include "Map.h"
 #include "Test.h"
@@ -28,6 +29,10 @@ bool InitGame( const int argc, char** argv )
 
     EnableVertexArrays();
     glEnable(GL_DEPTH_TEST);
+
+    Log("------------ Audio ------------");
+    if(!InitAudio())
+        return false;
 
     Log("---------- Controls -----------");
     if(!InitControls())
@@ -67,13 +72,28 @@ void DestroyGame()
     DestroyPlayer();
     DestroyBackground();
     DestroyControls();
+    DestroyAudio();
     DestroyWindow();
     DestroyConfig();
+}
+
+void ManualLoopOnStop( AudioSource source, void* context )
+{
+    const AudioBuffer buffer = *(AudioBuffer*)context;
+    EnqueueAudioBuffer(source, buffer);
+    PlayAudioSource(source);
+    // TODO: This is buggy! Rework it. :O
 }
 
 void RunGame()
 {
     using namespace glm;
+
+    AudioBuffer audioBuffer = LoadAudioBuffer("Audio/Test.flac");
+    AudioSource audioSource = CreateAudioSource(ManualLoopOnStop, &audioBuffer);
+
+    EnqueueAudioBuffer(audioSource, audioBuffer);
+    PlayAudioSource(audioSource);
 
     glClearColor(0.5, 0.5, 0.5, 1);
 
@@ -89,6 +109,7 @@ void RunGame()
         // Simulation
         const double curTime = glfwGetTime();
         const double timeDelta = curTime-lastTime;
+        UpdateAudio(timeDelta);
         UpdateControls(timeDelta);
         UpdatePlayer(timeDelta);
         lastTime = curTime;
@@ -108,6 +129,9 @@ void RunGame()
 
         SwapBuffers();
     }
+
+    FreeAudioSource(audioSource);
+    FreeAudioBuffer(audioBuffer);
 }
 
 void OnFramebufferResize( int width, int height )

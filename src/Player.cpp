@@ -3,6 +3,7 @@
 #include "OpenGL.h"
 #include "Controls.h"
 #include "Map.h"
+#include "Audio.h"
 #include "Player.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -112,4 +113,7 @@ void UpdatePlayer( float timeDelta )
         collisionResult.y = 0;
         g_PlayerPosition += collisionResult;
     }
+
+    // --- Update listener ---
+    UpdateAudioListener(g_PlayerPosition, g_PlayerVelocity, g_PlayerOrientation*glm::vec3(0,0,1), glm::vec3(0,1,0));
 }
