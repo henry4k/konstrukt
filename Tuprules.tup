@@ -28,6 +28,8 @@ CFLAGS += -Wmissing-include-dirs -Wpointer-arith -Wcast-qual -Winit-self
 CFLAGS += -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter
 
 CXXFLAGS += @(CXXFLAGS)
+CXXFLAGS += --std=c++11
+CXXFLAGS += -x c++
 
 LDFLAGS += @(LDFLAGS)
 LDFLAGS += -g
@@ -54,10 +56,20 @@ INI_A = $(TUP_CWD)/thirdparty/inih/ini.a
 
 ### Rules ###
 
-!cc = |> ^ Compling %f^ $(CC) -c %f -o %o $(CFLAGS) |> %B.o
-!ld = |> ^ Linking %o^ ld %f -o %o $(LDFLAGS) |>
-!ar = |> ^ Archiving %o^ ar crs %o %f |>
-!cp = |> ^ Copying %f to %o^ cp %f %o |>
+!cc = |> ^o Compling %f^ $(CC) -c %f -o %o $(CFLAGS) |> %B.o
+!ld = |> ^o Linking %o^ ld %f -o %o $(LDFLAGS) |>
+!ar = |> ^o Archiving %o^ ar crs %o %f |>
+!cp = |> ^o Copying %f to %o^ cp %f %o |>
 
-!cxx = |> ^ Compiling %f^ $(CXX) -c %f -o %o $(CFLAGS) $(CXXFLAGS) |> %B.o
-!ldcxx = |> ^ Linking %o^ $(CXX) %f -o %o $(LDFLAGS) |>
+!cxx = |> ^o Compiling %f^ $(CXX) $(CFLAGS) $(CXX_FLAGS) -c %f -o %o |> %B.o
+!ldcxx = |> ^o Linking %o^ $(CXX) %f -o %o $(LDFLAGS) |>
+
+CLANG_DB = $(TUP_CWD)/support/clang_db.py
+CLANG_JOIN_DB = $(TUP_CWD)/support/clang_join_db.py
+
+!cc-db  = |> ^o Generating clang db for %f^ $(CLANG_DB) --file %f --command $(CC) $(CFLAGS) -c %f -o %B.o > %o |> %f.clang-db.json
+!cxx-db = |> ^o Generating clang db for %f^ $(CLANG_DB) --file %f --command $(CXX) $(CFLAGS) $(CXXFLAGS) -c %f -o %B.o > %o |> %f.clang-db.json
+!join-db = |> ^o Joining clang dbs to %o^ $(CLANG_JOIN_DB) %f > %o |> compile_commands.json
+
+MOONC = moonc
+!moonc = |> ^o Compiling %f^ $(MOONC) -p %f > %o |> %B.lua

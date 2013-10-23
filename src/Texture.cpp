@@ -5,9 +5,9 @@
 #include "Image.h"
 #include "Texture.h"
 
-GLuint Create2dTexture( int options, const Image* image )
+Texture Create2dTexture( int options, const Image* image )
 {
-    GLuint texture;
+    Texture texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -31,12 +31,12 @@ GLuint Create2dTexture( int options, const Image* image )
     return texture;
 }
 
-GLuint Load2dTexture( int options, const char* file )
+Texture Load2dTexture( int options, const char* file )
 {
     Image image;
     if(!LoadImage(&image, file))
         return false;
-    const GLuint r = Create2dTexture(options, &image);
+    const Texture r = Create2dTexture(options, &image);
     FreeImage(&image);
     if(r > 0)
         Log("Loaded %s", file);
@@ -45,9 +45,9 @@ GLuint Load2dTexture( int options, const char* file )
     return r;
 }
 
-GLuint CreateCubeTexture( int options, const Image* images )
+Texture CreateCubeTexture( int options, const Image* images )
 {
-    GLuint texture;
+    Texture texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
 
@@ -76,7 +76,7 @@ GLuint CreateCubeTexture( int options, const Image* images )
     return texture;
 }
 
-GLuint LoadCubeTexture( int options, const char* path )
+Texture LoadCubeTexture( int options, const char* path )
 {
     Image images[6];
     static const char* names[6] = { "px","nx","ny","py","pz","nz" };
@@ -103,7 +103,7 @@ GLuint LoadCubeTexture( int options, const char* path )
     return r;
 }
 
-void FreeTexture( GLuint texture )
+void FreeTexture( Texture texture )
 {
     glDeleteTextures(1, &texture);
 }
@@ -118,7 +118,7 @@ int InitTextureLayers()
     return 0;
 }
 
-void BindTexture( GLenum target, const GLuint texture, int layer )
+void BindTexture( GLenum target, const Texture texture, int layer )
 {
     static int unused = InitTextureLayers();
     glActiveTexture(GL_TEXTURE0+layer);

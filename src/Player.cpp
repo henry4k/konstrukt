@@ -2,14 +2,17 @@
 #include "Math.h"
 #include "OpenGL.h"
 #include "Controls.h"
+#include "Map.h"
 #include "Player.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-static const float MAX_MOVEMENT_SPEED = 999;
-static const float MOVEMENT_ACCELERATION = 20;
-static const float MOVEMENT_FRICTION = 0.999;
+static const float MAX_MOVEMENT_SPEED = 100;
+static const float MOVEMENT_ACCELERATION = 30;
+//static const float MOVEMENT_ACCELERATION = 7;
+static const float MOVEMENT_FRICTION = 6;
+static const glm::vec3 PLAYER_HALF_WIDTH(0.25, 0.7, 0.25);
 
 bool g_ForwardKey;
 bool g_BackwardKey;
@@ -32,8 +35,8 @@ bool InitPlayer()
         RegisterKeyControl("backward", NULL, &g_BackwardKey) &&
         RegisterKeyControl("right",    NULL, &g_RightKey) &&
         RegisterKeyControl("left",     NULL, &g_LeftKey) &&
-        RegisterAxisControl("look-x", NULL, &g_LookX) &&
-        RegisterAxisControl("look-y", NULL, &g_LookY);
+        RegisterAxisControl("look-x",  NULL, &g_LookX) &&
+        RegisterAxisControl("look-y",  NULL, &g_LookY);
 }
 
 void DestroyPlayer()
@@ -59,10 +62,11 @@ void DrawPlayer()
 {
 }
 
-void UpdatePlayerOrientation()
+void UpdatePlayer( float timeDelta )
 {
     using namespace glm;
 
+    // --- Update orientation
     static const vec3 up(0,1,0);
     static const vec3 right(1,0,0);
 
@@ -72,14 +76,8 @@ void UpdatePlayerOrientation()
     g_PlayerOrientation = xRotation;
     g_PlayerOrientation = g_PlayerOrientation * yRotation;
     g_PlayerOrientation = normalize(g_PlayerOrientation);
-}
 
-void UpdatePlayer( float timeDelta )
-{
-    using namespace glm;
-
-    UpdatePlayerOrientation();
-
+    // --- Calculate walk direction
     vec3 direction(0,0,0);
 
     if(g_ForwardKey)
@@ -92,15 +90,26 @@ void UpdatePlayer( float timeDelta )
         direction.x -= 1;
 
     if(length(direction) > 0.1f)
-    {
         direction = normalize(g_PlayerOrientation * normalize(direction));
-        g_PlayerVelocity += direction * (MOVEMENT_ACCELERATION * timeDelta);
-    }
+
+    // --- Update velocity and position
+    g_PlayerVelocity += direction * (MOVEMENT_ACCELERATION * timeDelta);
 
     if(g_PlayerVelocity.length() > MAX_MOVEMENT_SPEED)
         g_PlayerVelocity *= MAX_MOVEMENT_SPEED / g_PlayerVelocity.length();
 
+    g_PlayerVelocity.y = 0;
+    g_PlayerPosition.y = 1.4;
+
     g_PlayerPosition += g_PlayerVelocity * timeDelta;
 
     g_PlayerVelocity *= 1.0f - timeDelta * MOVEMENT_FRICTION;
+
+    // --- Resolve collisions ---
+    vec3 collisionResult(0,0,0);
+    if(CollidesWithMap(&collisionResult, g_PlayerPosition, PLAYER_HALF_WIDTH))
+    {
+        collisionResult.y = 0;
+        g_PlayerPosition += collisionResult;
+    }
 }

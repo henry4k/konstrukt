@@ -3,34 +3,36 @@
 #include "Vertex.h"
 #include "Shader.h"
 
-bool GetUniformLocation( GLuint shader, const char* name, int* location )
+typedef GLuint Shader;
+
+bool GetUniformLocation( Program program, const char* name, int* location )
 {
-    BindShader(shader);
-    *location = glGetUniformLocation(shader, name);
+    BindProgram(program);
+    *location = glGetUniformLocation(program, name);
     if(*location >= 0)
         return true;
     glGetError(); // reset error (cause glGetUniformLocation sets an error value in this case <.<)
     return false;
 }
 
-void SetUniform( GLuint shader, const char* name, int value )
+void SetUniform( Program program, const char* name, int value )
 {
     int loc;
-    if(GetUniformLocation(shader,name,&loc))
+    if(GetUniformLocation(program,name,&loc))
         glUniform1i(loc, value);
 }
 
-void SetUniform( GLuint shader, const char* name, float value )
+void SetUniform( Program program, const char* name, float value )
 {
     int loc;
-    if(GetUniformLocation(shader,name,&loc))
+    if(GetUniformLocation(program,name,&loc))
         glUniform1f(loc, value);
 }
 
-void SetUniform( GLuint shader, const char* name, int length, float* value )
+void SetUniform( Program program, const char* name, int length, float* value )
 {
     int loc;
-    if(GetUniformLocation(shader,name,&loc))
+    if(GetUniformLocation(program,name,&loc))
     {
         switch(length)
         {
@@ -74,16 +76,16 @@ void FreeFile( const char* fileData )
     delete[] fileData;
 }
 
-void ShowShaderLog( GLuint handle )
+void ShowShaderLog( Shader shader )
 {
     GLint length = 0;
-    glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &length);
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 
     char* log = NULL;
     if(length > 1) // Some drivers wan't me to log single newline characters.
     {
         log = new char[length];
-        glGetShaderInfoLog(handle, length, NULL, log);
+        glGetShaderInfoLog(shader, length, NULL, log);
     }
 
     if(log)
@@ -93,16 +95,16 @@ void ShowShaderLog( GLuint handle )
     }
 }
 
-void ShowProgramLog( GLuint handle )
+void ShowProgramLog( Program program )
 {
     GLint length = 0;
-    glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &length);
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
 
     char* log = NULL;
-    if(length > 1) // See ShowShaderLog
+    if(length > 1) // See ShowProgramLog
     {
         log = new char[length];
-        glGetProgramInfoLog(handle, length, NULL, log);
+        glGetProgramInfoLog(program, length, NULL, log);
     }
 
     if(log)
@@ -112,9 +114,9 @@ void ShowProgramLog( GLuint handle )
     }
 }
 
-GLuint CreateShaderObject( const char* file, int type )
+GLuint CreateShader( const char* file, int type )
 {
-    GLuint handle = glCreateShader(type);
+    Shader shader = glCreateShader(type);
 
     int size;
     const char* source = LoadFile(file, &size);
@@ -124,42 +126,42 @@ GLuint CreateShaderObject( const char* file, int type )
         return 0;
     }
 
-    glShaderSource(handle, 1, &source, &size);
+    glShaderSource(shader, 1, &source, &size);
     FreeFile(source);
 
-    glCompileShader(handle);
+    glCompileShader(shader);
 
 
     GLint state;
-    glGetShaderiv(handle, GL_COMPILE_STATUS, &state);
-    ShowShaderLog(handle);
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &state);
+    ShowShaderLog(shader);
 
     if(state)
     {
-        Log("Compiled shader object successfully: %s", file);
+        Log("Compiled program object successfully: %s", file);
     }
     else
     {
-        Error("Error compiling shader object %s", file);
+        Error("Error compiling program object %s", file);
         return 0;
     }
 
-    return handle;
+    return shader;
 }
 
-GLuint LoadShader( const char* vert, const char* frag )
+GLuint LoadProgram( const char* vert, const char* frag )
 {
-    GLuint vertObject = CreateShaderObject(vert, GL_VERTEX_SHADER);
-    if(!vertObject)
+    const Shader vertShader = CreateShader(vert, GL_VERTEX_SHADER);
+    if(!vertShader)
         return 0;
 
-    GLuint fragObject = CreateShaderObject(frag, GL_FRAGMENT_SHADER);
-    if(!fragObject)
+    const Shader fragShader = CreateShader(frag, GL_FRAGMENT_SHADER);
+    if(!fragShader)
         return 0;
 
-    const GLuint program = glCreateProgram();
-    glAttachShader(program, vertObject);
-    glAttachShader(program, fragObject);
+    const Program program = glCreateProgram();
+    glAttachShader(program, vertShader);
+    glAttachShader(program, fragShader);
     BindVertexAttributes(program);
 
     glLinkProgram(program);
@@ -170,11 +172,11 @@ GLuint LoadShader( const char* vert, const char* frag )
 
         if(state)
         {
-            Log("Linked shader program successfully (%s, %s)", vert, frag);
+            Log("Linked program program successfully (%s, %s)", vert, frag);
         }
         else
         {
-            Error("Error linking shader programm (%s, %s)", vert, frag);
+            Error("Error linking program programm (%s, %s)", vert, frag);
             return 0;
         }
     }
@@ -185,20 +187,20 @@ GLuint LoadShader( const char* vert, const char* frag )
         glGetProgramiv(program, GL_VALIDATE_STATUS, &state);
         ShowProgramLog(program);
         if(state)
-            Log("Validated shader program successfully (%s, %s)", vert, frag);
+            Log("Validated program program successfully (%s, %s)", vert, frag);
         else
-            Log("Error validating shader program (%s, %s)", vert, frag);
+            Log("Error validating program program (%s, %s)", vert, frag);
     }
 
     return program;
 }
 
-void BindShader( GLuint handle )
+void BindProgram( Program program )
 {
-    glUseProgram(handle);
+    glUseProgram(program);
 }
 
-void FreeShader( GLuint handle )
+void FreeProgram( Program program )
 {
-    glDeleteProgram(handle);
+    glDeleteProgram(program);
 }

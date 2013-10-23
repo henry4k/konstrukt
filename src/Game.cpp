@@ -9,6 +9,8 @@
 #include "Background.h"
 #include "Vertex.h"
 #include "Player.h"
+#include "Map.h"
+#include "Test.h"
 #include "Game.h"
 
 void OnFramebufferResize( int width, int height );
@@ -42,6 +44,14 @@ bool InitGame( const int argc, char** argv )
     if(!InitPlayer())
         return false;
 
+    Log("----------- Map ------------");
+    if(!InitMap())
+        return false;
+
+    Log("----------- Test-Game ------------");
+    if(!InitTest())
+        return false;
+
     Log("-------------------------------");
 
     SetFrambufferFn(OnFramebufferResize);
@@ -52,6 +62,8 @@ bool InitGame( const int argc, char** argv )
 
 void DestroyGame()
 {
+    DestroyTest();
+    DestroyMap();
     DestroyPlayer();
     DestroyBackground();
     DestroyControls();
@@ -86,6 +98,7 @@ void RunGame()
         glLoadMatrixf(value_ptr(lookAtMatrix));
         RotateWorld();
         TranslateWorld();
+        DrawMap();
         DrawBackground();
 
         // Render HUD
