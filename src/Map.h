@@ -21,6 +21,6 @@ void UpdateMap( int startX, int startZ, int endX, int endZ );
 
 int GetTileDefinitionAt( int x, int z );
 void SetTileAt( int x, int z, int definition );
-bool CollidesWithMap( glm::vec3* out, glm::vec3 position, glm::vec3 halfWidth );
+void SimulateBoxInMap( Box* box );
 
 #endif

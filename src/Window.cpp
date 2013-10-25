@@ -53,6 +53,9 @@ bool InitWindow()
     glfwDefaultWindowHints();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, versionMajor);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, versionMinor);
+    glfwWindowHint(GLFW_DEPTH_BITS, GetConfigInt("opengl.depth-bits", 24));
+    glfwWindowHint(GLFW_STENCIL_BITS, 0);
+    glfwWindowHint(GLFW_SAMPLES, GetConfigInt("opengl.samples", 0));
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, debug ? GL_TRUE : GL_FALSE);
 
     g_Window = glfwCreateWindow(width, height, title, NULL, NULL);

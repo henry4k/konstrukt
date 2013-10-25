@@ -14,14 +14,12 @@ bool InitBackground()
     if(!g_SkyboxProgram)
         return false;
 
-    g_SkyboxTexture = LoadCubeTexture(TEX_MIPMAP|TEX_FILTER, "Textures/NightSky/%s.png");
+    g_SkyboxTexture = LoadCubeTexture(TEX_MIPMAP|TEX_FILTER, "Textures/Debug/%s.png");
     if(!g_SkyboxTexture)
         return false;
 
     if(!LoadModel(&g_SkyboxModel, "Meshes/Skybox.ply"))
         return false;
-
-    return "";
 
     return true;
 }

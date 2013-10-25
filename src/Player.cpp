@@ -46,17 +46,20 @@ void DestroyPlayer()
 
 void RotateWorld()
 {
-    //glLoadMatrixf(glm::value_ptr(glm::mat4_cast(g_PlayerOrientation)));
-    glLoadMatrixf(glm::value_ptr(glm::lookAt(
-        g_PlayerPosition,
-        g_PlayerPosition + (g_PlayerOrientation*glm::vec3(0,0,1)),
+    glMultMatrixf(glm::value_ptr(glm::lookAt(
+        glm::vec3(0,0,0),
+        g_PlayerOrientation*glm::vec3(0,0,1),
         glm::vec3(0,1,0)
     )));
 }
 
 void TranslateWorld()
 {
-    //glTranslatef(g_PlayerPosition.x, g_PlayerPosition.y, g_PlayerPosition.z);
+	glTranslatef(
+		g_PlayerPosition.x,
+		g_PlayerPosition.y,
+		g_PlayerPosition.z
+	);
 }
 
 void DrawPlayer()
@@ -107,12 +110,14 @@ void UpdatePlayer( float timeDelta )
     g_PlayerVelocity *= 1.0f - timeDelta * MOVEMENT_FRICTION;
 
     // --- Resolve collisions ---
-    vec3 collisionResult(0,0,0);
-    if(CollidesWithMap(&collisionResult, g_PlayerPosition, PLAYER_HALF_WIDTH))
-    {
-        collisionResult.y = 0;
-        g_PlayerPosition += collisionResult;
-    }
+	Box playerBox;
+	playerBox.position  = g_PlayerPosition;
+	playerBox.halfWidth = PLAYER_HALF_WIDTH;
+	playerBox.velocity  = g_PlayerVelocity;
+
+	SimulateBoxInMap(&playerBox);
+	g_PlayerPosition = playerBox.position;
+	g_PlayerVelocity = playerBox.velocity;
 
     // --- Update listener ---
     UpdateAudioListener(g_PlayerPosition, g_PlayerVelocity, g_PlayerOrientation*glm::vec3(0,0,1), glm::vec3(0,1,0));
