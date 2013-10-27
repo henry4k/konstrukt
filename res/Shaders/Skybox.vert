@@ -1,6 +1,7 @@
 varying vec3 TexCoord;
 
 attribute vec3 VertexPosition;
+//attribute vec3 VertexColor;
 //attribute vec2 VertexTexCoord;
 //attribute vec3 VertexNormal;
 //attribute vec4 VertexTangent;

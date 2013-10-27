@@ -5,6 +5,7 @@
 #include "Shader.h"
 #include "Mesh.h"
 #include "Model.h"
+#include "Debug.h"
 #include "Map.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -232,11 +233,11 @@ bool CollidesWithMap( glm::vec3* out, glm::vec3 position, glm::vec3 halfWidth )
                 glm::max(out->x, result.x);
                 *out += result;
                 collision = true;
-                Log("Collision at (%d|%d): (%.4f|%.4f|%.4f)", x, z, result.x, result.y, result.z);
+                //Log("Collision at (%d|%d): (%.4f|%.4f|%.4f)", x, z, result.x, result.y, result.z);
             }
             else
             {
-                Log("No collision at (%d|%d): (%.4f|%.4f|%.4f)", x, z, result.x, result.y, result.z);
+                //Log("No collision at (%d|%d): (%.4f|%.4f|%.4f)", x, z, result.x, result.y, result.z);
             }
         }
     }

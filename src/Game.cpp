@@ -11,6 +11,7 @@
 #include "Audio.h"
 #include "Player.h"
 #include "Map.h"
+#include "Debug.h"
 #include "Test.h"
 #include "Game.h"
 
@@ -39,6 +40,10 @@ bool InitGame( const int argc, char** argv )
         return false;
 
     if(!RegisterKeyControl("exit", OnExitKey, NULL))
+        return false;
+
+    Log("------------ Debug -------------");
+    if(!InitDebug())
         return false;
 
     Log("--------- Background ----------");
@@ -71,29 +76,16 @@ void DestroyGame()
     DestroyMap();
     DestroyPlayer();
     DestroyBackground();
+    DestroyDebug();
     DestroyControls();
     DestroyAudio();
     DestroyWindow();
     DestroyConfig();
 }
 
-void ManualLoopOnStop( AudioSource source, void* context )
-{
-    const AudioBuffer buffer = *(AudioBuffer*)context;
-    EnqueueAudioBuffer(source, buffer);
-    PlayAudioSource(source);
-    // TODO: This is buggy! Rework it. :O
-}
-
 void RunGame()
 {
     using namespace glm;
-
-    AudioBuffer audioBuffer = LoadAudioBuffer("Audio/Test.flac");
-    AudioSource audioSource = CreateAudioSource(ManualLoopOnStop, &audioBuffer);
-
-    EnqueueAudioBuffer(audioSource, audioBuffer);
-    PlayAudioSource(audioSource);
 
     glClearColor(0.5, 0.5, 0.5, 1);
 
@@ -129,9 +121,6 @@ void RunGame()
 
         SwapBuffers();
     }
-
-    FreeAudioSource(audioSource);
-    FreeAudioBuffer(audioBuffer);
 }
 
 void OnFramebufferResize( int width, int height )

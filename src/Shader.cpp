@@ -114,7 +114,7 @@ void ShowProgramLog( Program program )
     }
 }
 
-GLuint CreateShader( const char* file, int type )
+Shader CreateShader( const char* file, int type )
 {
     Shader shader = glCreateShader(type);
 
@@ -149,7 +149,7 @@ GLuint CreateShader( const char* file, int type )
     return shader;
 }
 
-GLuint LoadProgram( const char* vert, const char* frag )
+Program LoadProgram( const char* vert, const char* frag )
 {
     const Shader vertShader = CreateShader(vert, GL_VERTEX_SHADER);
     if(!vertShader)

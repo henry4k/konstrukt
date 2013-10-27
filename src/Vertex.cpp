@@ -4,6 +4,7 @@
 enum
 {
     VERTEX_POSITION = 1, // begins with 1 because 0 is an invalid/reserved attribute name
+    VERTEX_COLOR,
     VERTEX_TEXCOORD,
     VERTEX_NORMAL,
     VERTEX_TANGENT
@@ -12,6 +13,7 @@ enum
 void EnableVertexArrays()
 {
     glEnableVertexAttribArray(VERTEX_POSITION);
+    glEnableVertexAttribArray(VERTEX_COLOR);
     glEnableVertexAttribArray(VERTEX_TEXCOORD);
     glEnableVertexAttribArray(VERTEX_NORMAL);
     glEnableVertexAttribArray(VERTEX_TANGENT);
@@ -20,16 +22,19 @@ void EnableVertexArrays()
 void BindVertexAttributes( GLuint shader )
 {
     glBindAttribLocation(shader, VERTEX_POSITION, "VertexPosition");
+    glBindAttribLocation(shader, VERTEX_COLOR,    "VertexColor");
     glBindAttribLocation(shader, VERTEX_TEXCOORD, "VertexTexCoord");
     glBindAttribLocation(shader, VERTEX_NORMAL,   "VertexNormal");
     glBindAttribLocation(shader, VERTEX_TANGENT,  "VertexTangent");
 }
 
-void SetVertexAttributePointers()
+void SetVertexAttributePointers( const void* data )
 {
     long offset = 0;
-#define AttribPointer(Name,Count,TypeName,Type) glVertexAttribPointer( Name , Count , TypeName, GL_TRUE, sizeof(Vertex), (void*)offset); offset += sizeof( Type ) * Count;
+#define AttribPointer(Name,Count,TypeName,Type) \
+    glVertexAttribPointer( Name, Count, TypeName, GL_TRUE, sizeof(Vertex), reinterpret_cast<const char*>(data)+offset); offset += sizeof( Type ) * Count;
     AttribPointer(VERTEX_POSITION,3,GL_FLOAT,float);
+    AttribPointer(VERTEX_COLOR,3,GL_FLOAT,float);
     AttribPointer(VERTEX_TEXCOORD,2,GL_FLOAT,float);
     AttribPointer(VERTEX_NORMAL,3,GL_FLOAT,float);
     AttribPointer(VERTEX_TANGENT,4,GL_FLOAT,float);

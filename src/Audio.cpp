@@ -1,8 +1,16 @@
 #include <string.h>
-#include <al.h>
-#include <alc.h>
-//#include <alext.h>
-#include <OpenAL/alure.h>
+
+#if defined(__APPLE__)
+    #include <al.h>
+    #include <alc.h>
+    //#include <alext.h>
+    #include <OpenAL/alure.h>
+#else
+    #include <AL/al.h>
+    #include <AL/alc.h>
+    #include <AL/alure.h>
+#endif
+
 #include "Common.h"
 #include "Config.h"
 #include "Audio.h"

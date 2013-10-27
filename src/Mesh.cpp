@@ -356,9 +356,13 @@ bool LoadMesh( Mesh* mesh, const char* file )
 
 void FreeMesh( const Mesh* mesh )
 {
-    if(mesh->vertices)
-        delete[] mesh->vertices;
+    assert(mesh->vertices);
+    assert(mesh->vertexCount > 0);
+    delete[] mesh->vertices;
 
     if(mesh->indices)
+    {
+        assert(mesh->indexCount > 0);
         delete[] mesh->indices;
+    }
 }

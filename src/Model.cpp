@@ -1,19 +1,37 @@
+#include "Common.h"
 #include "OpenGL.h"
 #include "Model.h"
 
 bool CreateModel( Model* model, const Mesh* mesh )
 {
+    assert(model);
+    assert(mesh);
+    assert(mesh->vertexCount > 0);
+    assert(mesh->vertices);
+
+    model->primitiveType = GL_TRIANGLES; // Default to triangles (can be changed later)
+
     glGenBuffers(1, &model->vertexBuffer);
-    glGenBuffers(1, &model->indexBuffer);
 
     glBindBuffer(GL_ARRAY_BUFFER, model->vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER, mesh->vertexCount*sizeof(Vertex), mesh->vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->indexCount*sizeof(unsigned short), mesh->indices, GL_STATIC_DRAW);
+    if(mesh->indexCount > 0)
+    {
+        assert(mesh->indices);
 
-    model->size = mesh->indexCount;
-    model->primitiveType = GL_TRIANGLES;
+        glGenBuffers(1, &model->indexBuffer);
+        Log("OOOO indexBuffer = %d", model->indexBuffer);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->indexBuffer);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->indexCount*sizeof(unsigned short), mesh->indices, GL_STATIC_DRAW);
+
+        model->size = mesh->indexCount;
+    }
+    else
+    {
+        model->size = mesh->vertexCount;
+    }
 
     return true;
 }
@@ -33,14 +51,23 @@ bool LoadModel( Model* model, const char* mesh )
 void FreeModel( const Model* model )
 {
     glDeleteBuffers(1, &model->vertexBuffer);
-    glDeleteBuffers(1, &model->indexBuffer);
+
+    if(model->indexBuffer)
+        glDeleteBuffers(1, &model->indexBuffer);
 }
 
 void DrawModel( const Model* model )
 {
     glBindBuffer(GL_ARRAY_BUFFER, model->vertexBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->indexBuffer);
+    SetVertexAttributePointers(NULL);
 
-    SetVertexAttributePointers();
-    glDrawElements(model->primitiveType, model->size, GL_UNSIGNED_SHORT, 0);
+    if(model->indexBuffer)
+    {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->indexBuffer);
+        glDrawElements(model->primitiveType, model->size, GL_UNSIGNED_SHORT, 0);
+    }
+    else
+    {
+        glDrawArrays(model->primitiveType, 0, model->size);
+    }
 }
