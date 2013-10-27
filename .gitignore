@@ -1,1 +1,4 @@
 /.tup
+/tup.config
+.DS_Store
+*.blend?

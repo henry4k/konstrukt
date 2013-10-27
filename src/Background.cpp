@@ -21,8 +21,6 @@ bool InitBackground()
     if(!LoadModel(&g_SkyboxModel, "Meshes/Skybox.ply"))
         return false;
 
-    return "";
-
     return true;
 }
 

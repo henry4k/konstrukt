@@ -9,6 +9,13 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-bool collides( glm::vec3* out, glm::vec3 aPosition, glm::vec3 aHalfWidth, glm::vec3 bPosition, glm::vec3 bHalfWidth );
+struct Box
+{
+	glm::vec3 position;
+    glm::vec3 halfWidth;
+    glm::vec3 velocity;
+};
+
+float SweptAABB( Box a, Box b, glm::vec3* normalOut );
 
 #endif

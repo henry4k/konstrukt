@@ -29,7 +29,9 @@ bool InitGame( const int argc, char** argv )
         return false;
 
     EnableVertexArrays();
-    glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_CULL_FACE);
+    glClearColor(0.5, 0.5, 0.5, 1);
 
     Log("------------ Audio ------------");
     if(!InitAudio())
@@ -65,7 +67,6 @@ bool InitGame( const int argc, char** argv )
     Log("-------------------------------");
 
     SetFrambufferFn(OnFramebufferResize);
-    glEnable(GL_CULL_FACE);
 
     return true;
 }
@@ -92,12 +93,6 @@ void RunGame()
     double lastTime = glfwGetTime();
     while(!WindowShouldClose())
     {
-        const mat4 lookAtMatrix = lookAt(
-            vec3(4,4,4),
-            vec3(0,0,0),
-            vec3(0,1,0)
-        );
-
         // Simulation
         const double curTime = glfwGetTime();
         const double timeDelta = curTime-lastTime;
@@ -106,13 +101,18 @@ void RunGame()
         UpdatePlayer(timeDelta);
         lastTime = curTime;
 
-        // Render world
+        // Render background
         glClear(GL_DEPTH_BUFFER_BIT);
-        glLoadMatrixf(value_ptr(lookAtMatrix));
+        glLoadIdentity();
+        RotateWorld();
+        DrawBackground();
+
+        // Render map
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glLoadIdentity();
         RotateWorld();
         TranslateWorld();
         DrawMap();
-        DrawBackground();
 
         // Render HUD
         //glClear(GL_DEPTH_BUFFER_BIT);

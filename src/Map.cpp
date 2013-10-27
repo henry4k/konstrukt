@@ -206,41 +206,31 @@ void SetTileAt( int x, int z, int definition )
     }
 }
 
-bool CollidesWithMap( glm::vec3* out, glm::vec3 position, glm::vec3 halfWidth )
+void SimulateBoxInMap( Box* box )
 {
     using namespace glm;
 
-    const int minX = max(0.0f, floor(position.x-halfWidth.x)-1.0f);
-    const int minZ = max(0.0f, floor(position.z-halfWidth.z)-1.0f);
+    const int minX = max(0.0f, floor(box->position.x - box->halfWidth.x)-1.0f);
+    const int minZ = max(0.0f, floor(box->position.z - box->halfWidth.z)-1.0f);
 
-    const int maxX = min(float(g_MapWidth), floor(position.x+halfWidth.x)+1.0f);
-    const int maxZ = min(float(g_MapDepth), floor(position.z+halfWidth.z)+1.0f);
-
-    *out = vec3(0,0,0);
-    bool collision = false;
+    const int maxX = min(float(g_MapWidth), floor(box->position.x + box->halfWidth.x)+1.0f);
+    const int maxZ = min(float(g_MapDepth), floor(box->position.z + box->halfWidth.z)+1.0f);
 
     for(int z = minZ; z <= maxZ; ++z)
     for(int x = minX; x <= maxX; ++x)
     {
         if(GetTileDefinitionAt(x,z) != 0)
         {
-            const vec3 tilePosition(x, 1.0f, z);
-            static const vec3 tileHalfWidth(0.5, 1.0, 0.5);
+            Box tileBox;
+            tileBox.position  = vec3(x, 1, z);
+            tileBox.halfWidth = vec3(0.5, 0.5, 0.5);
+            tileBox.velocity  = vec3(0, 0, 0);
 
-            vec3 result(0,0,0);
-            if(collides(&result, position, halfWidth, tilePosition, tileHalfWidth))
-            {
-                glm::max(out->x, result.x);
-                *out += result;
-                collision = true;
-                //Log("Collision at (%d|%d): (%.4f|%.4f|%.4f)", x, z, result.x, result.y, result.z);
-            }
-            else
-            {
-                //Log("No collision at (%d|%d): (%.4f|%.4f|%.4f)", x, z, result.x, result.y, result.z);
-            }
+            vec3 collisionNormal;
+            const float collisionTime = SweptAABB(*box, tileBox, &collisionNormal);
+            // will return 1.0f if no collision occures, so we don't need to change the algorithm
+            box->position += box->velocity * collisionTime;
+            const float remainingTime = 1.0f - collisionTime;
         }
     }
-
-    return collision;
 }
