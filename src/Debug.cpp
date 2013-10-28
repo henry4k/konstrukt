@@ -7,7 +7,15 @@
 #include "Shader.h"
 #include "Debug.h"
 
+static const char* DEBUG_MODE_NAMES[DEBUG_MODE_COUNT] =
+{
+	"debug.opengl",
+	"debug.lua",
+	"debug.collision"
+};
+
 bool g_DebugModes[DEBUG_MODE_COUNT];
+
 std::vector<Vertex> g_DebugVertexBuffer;
 glm::vec3 g_DebugLineColor;
 Program g_DebugProgram;
@@ -16,10 +24,16 @@ bool InitDebug()
 {
     memset(g_DebugModes, 0, sizeof(g_DebugModes));
 
-#define GET_DEBUG_MODE(I,N) g_DebugModes[(I)] = GetConfigBool((N), false);
-    GET_DEBUG_MODE(DEBUG_COLLISION, "debug.collision")
-#undef GET_DEBUG_MODE
+	for(int i = 0; i < DEBUG_MODE_COUNT; ++i)
+	{
+		g_DebugModes[i] = GetConfigBool(DEBUG_MODE_NAMES[i], false);
+	}
 
+	return true;
+}
+
+bool InitDebugGraphics()
+{
     g_DebugLineColor = glm::vec3(0,0,0);
 
     g_DebugProgram = LoadProgram("Shaders/Debug.vert", "Shaders/Debug.frag");

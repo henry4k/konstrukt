@@ -7,6 +7,17 @@
 #include <assert.h>
 
 const char* Format( const char* format, ... );
+
+
+enum LogLevel
+{
+    LOG_INFO,
+    LOG_ERROR,
+    LOG_FATAL_ERROR
+};
+
+void LogV( LogLevel level, const char* format, va_list vl );
+
 void Log( const char* format, ... );
 void Error( const char* format, ... );
 void FatalError( const char* format, ... );

@@ -16,13 +16,6 @@ const char* Format( const char* format, ... )
     return buffer;
 }
 
-enum LogLevel
-{
-    LOG_INFO,
-    LOG_ERROR,
-    LOG_FATAL_ERROR
-};
-
 void LogV( LogLevel level, const char* format, va_list vl )
 {
     const char* prefix = "";

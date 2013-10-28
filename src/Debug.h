@@ -6,6 +6,8 @@
 
 enum DebugMode
 {
+	DEBUG_OPENGL,
+	DEBUG_LUA,
     DEBUG_COLLISION,
     //DEBUG_PRESSURE,
     //DEBUG_LIGHTING
@@ -13,6 +15,7 @@ enum DebugMode
 };
 
 bool InitDebug();
+bool InitDebugGraphics();
 void DestroyDebug();
 
 bool IsDebugging( DebugMode mode );

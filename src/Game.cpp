@@ -24,6 +24,10 @@ bool InitGame( const int argc, char** argv )
     if(!InitConfig(argc, argv))
     return false;
 
+    Log("------------ Debug -------------");
+    if(!InitDebug())
+        return false;
+
     Log("----------- Window ------------");
     if(!InitWindow())
         return false;
@@ -34,6 +38,9 @@ bool InitGame( const int argc, char** argv )
     glEnable(GL_CULL_FACE);
     glClearColor(0.5, 0.5, 0.5, 1);
 
+	if(!InitDebugGraphics())
+		return false;
+
     Log("------------ Audio ------------");
     if(!InitAudio())
         return false;
@@ -43,10 +50,6 @@ bool InitGame( const int argc, char** argv )
         return false;
 
     if(!RegisterKeyControl("exit", OnExitKey, NULL))
-        return false;
-
-    Log("------------ Debug -------------");
-    if(!InitDebug())
         return false;
 
     Log("--------- Background ----------");
@@ -69,6 +72,8 @@ bool InitGame( const int argc, char** argv )
 
     SetFrambufferFn(OnFramebufferResize);
 
+	RunLuaFile("Scripts/Test.lua");
+
     return true;
 }
 
@@ -78,9 +83,9 @@ void DestroyGame()
     DestroyMap();
     DestroyPlayer();
     DestroyBackground();
-    DestroyDebug();
     DestroyControls();
     DestroyAudio();
+    DestroyDebug();
     DestroyWindow();
     DestroyConfig();
 }

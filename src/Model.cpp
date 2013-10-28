@@ -21,7 +21,6 @@ bool CreateModel( Model* model, const Mesh* mesh )
         assert(mesh->indices);
 
         glGenBuffers(1, &model->indexBuffer);
-        Log("OOOO indexBuffer = %d", model->indexBuffer);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->indexBuffer);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->indexCount*sizeof(unsigned short), mesh->indices, GL_STATIC_DRAW);

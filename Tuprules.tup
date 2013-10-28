@@ -29,6 +29,7 @@ CFLAGS += -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-com
 
 CXXFLAGS += @(CXXFLAGS)
 CXXFLAGS += --std=c++11
+CXXFLAGS += -fno-rtti -fno-exceptions
 CXXFLAGS += -x c++
 
 LDFLAGS += @(LDFLAGS)
@@ -42,7 +43,7 @@ export PKG_CONFIG_PATH
 ifdef PACKAGES
   PACKAGES = @(PACKAGES)
 else
-  PACKAGES = gl glew glfw3 libpng openal alure
+  PACKAGES = gl glew glfw3 libpng openal alure lua
 endif
 
 CFLAGS += `pkg-config $(PACKAGES) --cflags`
