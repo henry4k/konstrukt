@@ -22,7 +22,7 @@ void AddDebugLine( glm::vec3 startPosition, glm::vec3 startColor, glm::vec3 endP
 
 void SetDebugLineColor( glm::vec3 color );
 void AddDebugLine( glm::vec3 startPosition, glm::vec3 endPosition );
-void AddDebugQuad( glm::vec3 min, glm::vec3 max );
+void AddDebugCube( glm::vec3 min, glm::vec3 max );
 // ...
 
 bool CreateDebugModel( Model* model );

@@ -206,8 +206,57 @@ void SetTileAt( int x, int z, int definition )
     }
 }
 
+void DrawBoxCollisionInMap( const Box* box )
+{
+    using namespace glm;
+
+    FlushDebugMesh();
+
+    SetDebugLineColor(vec3(1,1,0));
+    AddDebugCube(
+        box->position-box->halfWidth,
+        box->position+box->halfWidth
+    );
+
+    const int minX = max(0.0f, floor(box->position.x - box->halfWidth.x)-1.0f);
+    const int minZ = max(0.0f, floor(box->position.z - box->halfWidth.z)-1.0f);
+
+    const int maxX = min(float(g_MapWidth), floor(box->position.x + box->halfWidth.x)+1.0f);
+    const int maxZ = min(float(g_MapDepth), floor(box->position.z + box->halfWidth.z)+1.0f);
+
+    for(int z = minZ; z <= maxZ; ++z)
+    for(int x = minX; x <= maxX; ++x)
+    {
+        if(GetTileDefinitionAt(x,z) != 0)
+        {
+            Box tileBox;
+            tileBox.position  = vec3(x, 1, z);
+            tileBox.halfWidth = vec3(0.5, 0.5, 0.5);
+            tileBox.velocity  = vec3(0, 0, 0);
+
+            vec3 collisionNormal;
+            const float collisionTime = SweptAABB(*box, tileBox, &collisionNormal);
+
+            if(collisionTime < 1.0f)
+                SetDebugLineColor(vec3(1,0,0));
+            else
+                SetDebugLineColor(vec3(0,1,0));
+
+            AddDebugCube(
+                tileBox.position-tileBox.halfWidth,
+                tileBox.position+tileBox.halfWidth
+            );
+        }
+    }
+
+    DrawDebugMesh();
+}
+
 void SimulateBoxInMap( Box* box )
 {
+    return;
+
+    /*
     using namespace glm;
 
     const int minX = max(0.0f, floor(box->position.x - box->halfWidth.x)-1.0f);
@@ -233,4 +282,5 @@ void SimulateBoxInMap( Box* box )
             const float remainingTime = 1.0f - collisionTime;
         }
     }
+    */
 }

@@ -26,6 +26,9 @@ bool InitDebug()
     if(!g_DebugProgram)
         return false;
 
+    glLineWidth(3);
+    //glEnable(GL_LINE_SMOOTH);
+
     return true;
 }
 
@@ -64,10 +67,27 @@ void AddDebugLine( glm::vec3 startPosition, glm::vec3 endPosition )
     AddDebugLine(startPosition, g_DebugLineColor, endPosition, g_DebugLineColor);
 }
 
-void AddDebugQuad( glm::vec3 min, glm::vec3 max )
+void AddDebugCube( glm::vec3 min, glm::vec3 max )
 {
-    // TODO
-    assert(false);
+    using namespace glm;
+
+    // Bottom quad
+    AddDebugLine(vec3(min.x, min.y, min.z), vec3(max.x, min.y, min.z));
+    AddDebugLine(vec3(max.x, min.y, min.z), vec3(max.x, min.y, max.z));
+    AddDebugLine(vec3(max.x, min.y, max.z), vec3(min.x, min.y, max.z));
+    AddDebugLine(vec3(min.x, min.y, max.z), vec3(min.x, min.y, min.z));
+
+    // Top quad
+    AddDebugLine(vec3(min.x, max.y, min.z), vec3(max.x, max.y, min.z));
+    AddDebugLine(vec3(max.x, max.y, min.z), vec3(max.x, max.y, max.z));
+    AddDebugLine(vec3(max.x, max.y, max.z), vec3(min.x, max.y, max.z));
+    AddDebugLine(vec3(min.x, max.y, max.z), vec3(min.x, max.y, min.z));
+
+    // Vertical stuff
+    AddDebugLine(vec3(min.x, min.y, min.z), vec3(min.x, max.y, min.z));
+    AddDebugLine(vec3(max.x, min.y, min.z), vec3(max.x, max.y, min.z));
+    AddDebugLine(vec3(max.x, min.y, max.z), vec3(max.x, max.y, max.z));
+    AddDebugLine(vec3(min.x, min.y, max.z), vec3(min.x, max.y, max.z));
 }
 
 bool CreateDebugModel( Model* model )
@@ -90,6 +110,7 @@ void DrawDebugModel( Model* model )
 
 void DrawDebugMesh()
 {
+    BindProgram(g_DebugProgram);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     SetVertexAttributePointers(&g_DebugVertexBuffer.front());
     glDrawArrays(GL_LINES, 0, g_DebugVertexBuffer.size());

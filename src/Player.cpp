@@ -55,15 +55,21 @@ void RotateWorld()
 
 void TranslateWorld()
 {
-	glTranslatef(
-		g_PlayerPosition.x,
-		g_PlayerPosition.y,
-		g_PlayerPosition.z
-	);
+    glTranslatef(
+        -g_PlayerPosition.x,
+        -g_PlayerPosition.y,
+        -g_PlayerPosition.z
+    );
 }
 
 void DrawPlayer()
 {
+    Box playerBox;
+    playerBox.position  = g_PlayerPosition;
+    playerBox.halfWidth = PLAYER_HALF_WIDTH;
+    playerBox.velocity  = g_PlayerVelocity;
+
+    DrawBoxCollisionInMap(&playerBox);
 }
 
 void UpdatePlayer( float timeDelta )
@@ -102,22 +108,23 @@ void UpdatePlayer( float timeDelta )
     if(g_PlayerVelocity.length() > MAX_MOVEMENT_SPEED)
         g_PlayerVelocity *= MAX_MOVEMENT_SPEED / g_PlayerVelocity.length();
 
-    g_PlayerVelocity.y = 0;
-    g_PlayerPosition.y = 1.4;
-
     g_PlayerPosition += g_PlayerVelocity * timeDelta;
 
     g_PlayerVelocity *= 1.0f - timeDelta * MOVEMENT_FRICTION;
 
     // --- Resolve collisions ---
-	Box playerBox;
-	playerBox.position  = g_PlayerPosition;
-	playerBox.halfWidth = PLAYER_HALF_WIDTH;
-	playerBox.velocity  = g_PlayerVelocity;
+    Box playerBox;
+    playerBox.position  = g_PlayerPosition;
+    playerBox.halfWidth = PLAYER_HALF_WIDTH;
+    playerBox.velocity  = g_PlayerVelocity;
 
-	SimulateBoxInMap(&playerBox);
-	g_PlayerPosition = playerBox.position;
-	g_PlayerVelocity = playerBox.velocity;
+    SimulateBoxInMap(&playerBox);
+    g_PlayerPosition = playerBox.position;
+    g_PlayerVelocity = playerBox.velocity;
+
+    // --- Final steps ---
+    g_PlayerVelocity.y = 0;
+    g_PlayerPosition.y = 1.4;
 
     // --- Update listener ---
     UpdateAudioListener(g_PlayerPosition, g_PlayerVelocity, g_PlayerOrientation*glm::vec3(0,0,1), glm::vec3(0,1,0));

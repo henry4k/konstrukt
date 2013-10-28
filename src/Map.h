@@ -21,6 +21,7 @@ void UpdateMap( int startX, int startZ, int endX, int endZ );
 
 int GetTileDefinitionAt( int x, int z );
 void SetTileAt( int x, int z, int definition );
+void DrawBoxCollisionInMap( const Box* box );
 void SimulateBoxInMap( Box* box );
 
 #endif

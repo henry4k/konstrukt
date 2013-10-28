@@ -29,8 +29,9 @@ bool InitGame( const int argc, char** argv )
         return false;
 
     EnableVertexArrays();
-    //glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glEnable(GL_CULL_FACE);
     glClearColor(0.5, 0.5, 0.5, 1);
 
     Log("------------ Audio ------------");
@@ -113,11 +114,11 @@ void RunGame()
         RotateWorld();
         TranslateWorld();
         DrawMap();
+        DrawPlayer();
 
         // Render HUD
         //glClear(GL_DEPTH_BUFFER_BIT);
         //glLoadIdentity();
-        //DrawPlayer();
 
         SwapBuffers();
     }
