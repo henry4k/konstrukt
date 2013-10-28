@@ -23,6 +23,8 @@ CFLAGS += @(CFLAGS)
 CFLAGS += -g -O0
 CFLAGS += -I$(TUP_CWD)/third-party
 CFLAGS += -I$(TUP_CWD)/third-party/inih
+CFLAGS += -I$(TUP_CWD)/third-party/squirrel/include
+CFLAGS += -I$(TUP_CWD)/third-party/squirrel/sqstdlib
 CFLAGS += -Werror -Wall -Wextra -pedantic
 CFLAGS += -Wmissing-include-dirs -Wpointer-arith -Wcast-qual -Winit-self
 CFLAGS += -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter
@@ -43,7 +45,7 @@ export PKG_CONFIG_PATH
 ifdef PACKAGES
   PACKAGES = @(PACKAGES)
 else
-  PACKAGES = gl glew glfw3 libpng openal alure lua
+  PACKAGES = gl glew glfw3 libpng openal alure
 endif
 
 CFLAGS += `pkg-config $(PACKAGES) --cflags`
@@ -53,6 +55,8 @@ LDFLAGS += `pkg-config $(PACKAGES) --libs`
 ### Internal dependencies ###
 
 INI_A = $(TUP_CWD)/third-party/inih/ini.a
+SQUIRREL_A = $(TUP_CWD)/third-party/squirrel/squirrel.a
+SQSTDLIB_A = $(TUP_CWD)/third-party/squirrel/sqstdlib.a
 
 
 ### Rules ###
@@ -64,13 +68,3 @@ INI_A = $(TUP_CWD)/third-party/inih/ini.a
 
 !cxx = |> ^o Compiling %f^ $(CXX) $(CFLAGS) $(CXX_FLAGS) -c %f -o %o |> %B.o
 !ldcxx = |> ^o Linking %o^ $(CXX) %f -o %o $(LDFLAGS) |>
-
-CLANG_DB = $(TUP_CWD)/support/clang_db.py
-CLANG_JOIN_DB = $(TUP_CWD)/support/clang_join_db.py
-
-!cc-db  = |> ^o Generating clang db for %f^ $(CLANG_DB) --file %f --command $(CC) $(CFLAGS) -c %f -o %B.o > %o |> %f.clang-db.json
-!cxx-db = |> ^o Generating clang db for %f^ $(CLANG_DB) --file %f --command $(CXX) $(CFLAGS) $(CXXFLAGS) -c %f -o %B.o > %o |> %f.clang-db.json
-!join-db = |> ^o Joining clang dbs to %o^ $(CLANG_JOIN_DB) %f > %o |> compile_commands.json
-
-MOONC = moonc
-!moonc = |> ^o Compiling %f^ $(MOONC) -p %f > %o |> %B.lua
