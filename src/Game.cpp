@@ -72,8 +72,6 @@ bool InitGame( const int argc, char** argv )
 
     SetFrambufferFn(OnFramebufferResize);
 
-	RunLuaFile("Scripts/Test.lua");
-
     return true;
 }
 

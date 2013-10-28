@@ -21,8 +21,8 @@ endif
 
 CFLAGS += @(CFLAGS)
 CFLAGS += -g -O0
-CFLAGS += -I$(TUP_CWD)/thirdparty
-CFLAGS += -I$(TUP_CWD)/thirdparty/inih
+CFLAGS += -I$(TUP_CWD)/third-party
+CFLAGS += -I$(TUP_CWD)/third-party/inih
 CFLAGS += -Werror -Wall -Wextra -pedantic
 CFLAGS += -Wmissing-include-dirs -Wpointer-arith -Wcast-qual -Winit-self
 CFLAGS += -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter
@@ -52,7 +52,7 @@ LDFLAGS += `pkg-config $(PACKAGES) --libs`
 
 ### Internal dependencies ###
 
-INI_A = $(TUP_CWD)/thirdparty/inih/ini.a
+INI_A = $(TUP_CWD)/third-party/inih/ini.a
 
 
 ### Rules ###
