@@ -4,5 +4,5 @@ include_rules
 
 : |> ^o Generating cflags file^ echo $(CFLAGS) $(CXXFLAGS) > cflags |> cflags
 
-LDFLAGS += $(INI_A) $(SQUIRREL) $(SQSTDLIB)
-: {objects} | $(INI_A) $(SQUIRREL) $(SQSTDLIB) |> !ldcxx |> apoapsis
+LDFLAGS += $(INI_A) $(SQUIRREL_A) $(SQSTDLIB_A)
+: {objects} | $(INI_A) $(SQUIRREL_A) $(SQSTDLIB_A) |> !ldcxx |> apoapsis
