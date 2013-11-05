@@ -235,7 +235,7 @@ void DrawBoxCollisionInMap( const Box* box )
             tileBox.velocity  = vec3(0, 0, 0);
 
             vec3 collisionNormal;
-            const float collisionTime = SweptAABB(*box, tileBox, &collisionNormal, 1.0f);
+            const float collisionTime = SweptAABB(*box, tileBox, &collisionNormal, 1);
 
             if(collisionTime < 1.0f)
                 SetDebugLineColor(vec3(1,0,0));
@@ -256,6 +256,9 @@ void SimulateBoxInMap( Box* box, float timeFrame )
 {
     using namespace glm;
 
+    const float BOUNCE = 1.0f;
+    const float SLIDE  = 1.0f;
+
     const int minX = max(0.0f, floor(box->position.x - box->halfWidth.x)-1.0f);
     const int minZ = max(0.0f, floor(box->position.z - box->halfWidth.z)-1.0f);
 
@@ -274,25 +277,22 @@ void SimulateBoxInMap( Box* box, float timeFrame )
 
             vec3 collisionNormal;
             const float collisionTime = SweptAABB(*box, tileBox, &collisionNormal, timeFrame);
+            float remainingTime = timeFrame-collisionTime;
+            Log("collisionTime = %.2f remainingTime = %.2f", collisionTime, remainingTime);
+
+            vec3 velocityChange(0,0,0);
+
+            for(int i = 0; i < 3; ++i)
+                if(abs(normal[i]) > 0.0001f)
+                    velocityChange[i] += BOUNCE * -a.velocity[i]*2;
+
+            //velocityChange += SLIDE * proj(a.velocity, normal);
+
+            Log("velocityChange = %.2f|%.2f|%.2f", velocityChange.x, velocityChange.y, velocityChange.z);
+
+            box->velocity += velocityChange;
 
             box->position += box->velocity * collisionTime;
-            const float remainingTime = timeFrame - collisionTime;
-
-            if(abs(collisionNormal.x) > 0.0001f)
-                box->velocity.x *= -1;
-            if(abs(collisionNormal.y) > 0.0001f)
-                box->velocity.y *= -1;
-            if(abs(collisionNormal.z) > 0.0001f)
-                box->velocity.z *= -1;
-
-            /*
-            Log("timeFrame = %.2f", timeFrame);
-            Log("collisionTime = %.2f", collisionTime);
-            const vec3 resolution = box->velocity*collisionTime;
-            Log("resolution = %.2f|%.2f|%.2f", resolution.x, resolution.y, resolution.z);
-            box->position -= box->velocity * collisionTime;
-            //const float remainingTime = 1.0f - collisionTime;
-            */
         }
     }
 }
