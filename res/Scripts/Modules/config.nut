@@ -1,0 +1,3 @@
+return {
+	"GetConfigValue": ::native.GetConfigValue
+}

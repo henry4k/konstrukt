@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "Common.h"
+#include "Squirrel.h"
 #include "Mesh.h"
 
 
@@ -366,3 +367,31 @@ void FreeMesh( const Mesh* mesh )
         delete[] mesh->indices;
     }
 }
+
+
+
+// --- Squirrel Bindings ---
+
+SQInteger OnReleaseMesh( void* userData, SQInteger size )
+{
+    FreeMesh((Mesh*)userData); // Some compilers can't cast pointers directly to smaller data types.
+    return 1;
+}
+
+SQInteger Squirrel_LoadMesh( HSQUIRRELVM vm )
+{
+    const char* fileName = NULL;
+    sq_getstring(vm, 2, &fileName);
+
+	Mesh* mesh = (Mesh*)CreateUserDataInSquirrel(vm, sizeof(Mesh), OnReleaseMesh);
+	if(!LoadMesh(mesh, fileName))
+	{
+		sq_pop(vm, 1);
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+RegisterStaticFunctionInSquirrel(LoadMesh, 2, ".s");

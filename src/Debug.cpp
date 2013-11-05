@@ -10,7 +10,7 @@
 static const char* DEBUG_MODE_NAMES[DEBUG_MODE_COUNT] =
 {
 	"debug.opengl",
-	"debug.lua",
+	"debug.squirrel",
 	"debug.collision"
 };
 

@@ -1,0 +1,3 @@
+return {
+	"LoadMesh": ::native.LoadMesh
+}

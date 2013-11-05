@@ -1,0 +1,3 @@
+return {
+	// ...	
+}.setdelegate(::native.string)

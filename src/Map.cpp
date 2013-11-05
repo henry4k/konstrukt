@@ -6,6 +6,7 @@
 #include "Mesh.h"
 #include "Model.h"
 #include "Debug.h"
+#include "Squirrel.h"
 #include "Map.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -296,3 +297,86 @@ void SimulateBoxInMap( Box* box, float timeFrame )
         }
     }
 }
+
+
+// --- Squirrel Bindings ---
+
+void OnSquirrelGenerateStaticTileMesh( int TileDefinition, int x, int z )
+{
+}
+
+SQInteger Squirrel_RegisterStaticTileMeshGeneratorCallback( HSQUIRRELVM vm )
+{
+    SetSquirrelCallback(SQCALLBACK_STATIC_TILE_MESH_GENRATOR, vm, 2);
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(RegisterStaticTileMeshGeneratorCallback, 2, ".c");
+
+void OnSquirrelGenerateStaticTileSolid( int TileDefinition, int x, int z )
+{
+}
+
+SQInteger Squirrel_RegisterStaticTileSolidGeneratorCallback( HSQUIRRELVM vm )
+{
+    SetSquirrelCallback(SQCALLBACK_STATIC_TILE_SOLID_GENRATOR, vm, 2);
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(RegisterStaticTileSolidGeneratorCallback, 2, ".c");
+
+SQInteger Squirrel_CreateTileDefinition( HSQUIRRELVM vm )
+{
+    const char* name = NULL;
+    sq_getstring(vm, 2, &name);
+
+    const int definitionId = CreateTileDefinition(
+		name,
+		OnSquirrelGenerateStaticTileMesh,
+		OnSquirrelGenerateStaticTileSolid
+	);
+
+    sq_pushinteger(vm, definitionId);
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(CreateTileDefinition, 2, ".s");
+
+SQInteger Squirrel_GenerateMap( HSQUIRRELVM vm )
+{
+    SQInteger width = 0;
+    sq_getinteger(vm, 2, &width);
+
+    SQInteger depth = 0;
+    sq_getinteger(vm, 3, &depth);
+
+    GenerateMap(width, depth);
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(GenerateMap, 3, ".ii");
+
+SQInteger Squirrel_GetTileDefinitionAt( HSQUIRRELVM vm )
+{
+    SQInteger x = 0;
+    sq_getinteger(vm, 2, &x);
+
+    SQInteger z = 0;
+    sq_getinteger(vm, 3, &z);
+
+    sq_pushinteger(vm, GetTileDefinitionAt(x,z));
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(GetTileDefinitionAt, 3, ".ii");
+
+SQInteger Squirrel_SetTileAt( HSQUIRRELVM vm )
+{
+    SQInteger x = 0;
+    sq_getinteger(vm, 2, &x);
+
+    SQInteger z = 0;
+    sq_getinteger(vm, 3, &z);
+
+    SQInteger definitionId = 0;
+    sq_getinteger(vm, 4, &definitionId);
+
+    SetTileAt(x,z,definitionId);
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(SetTileAt, 4, ".iii");
