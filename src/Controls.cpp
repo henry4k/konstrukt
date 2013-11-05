@@ -127,7 +127,7 @@ void DestroyControls()
 {
 }
 
-void UpdateControls( float timeDelta )
+void UpdateControls( float timeFrame )
 {
     for(int i = 0; i < g_AxisControls.size(); ++i)
     {
@@ -135,7 +135,7 @@ void UpdateControls( float timeDelta )
 
         if(axisControl->interpretation == AXIS_ACCELERATION_VALUE)
         {
-            const float delta = axisControl->currentAcceleration * timeDelta;
+            const float delta = axisControl->currentAcceleration * timeFrame;
             axisControl->lastValue += delta;
 
             if(axisControl->value)

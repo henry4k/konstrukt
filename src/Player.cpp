@@ -65,18 +65,18 @@ void TranslateWorld()
 
 void DrawPlayer()
 {
-	if(IsDebugging(DEBUG_COLLISION))
-	{
-		Box playerBox;
-		playerBox.position  = g_PlayerPosition;
-		playerBox.halfWidth = PLAYER_HALF_WIDTH;
-		playerBox.velocity  = g_PlayerVelocity;
+    if(IsDebugging(DEBUG_COLLISION))
+    {
+        Box playerBox;
+        playerBox.position  = g_PlayerPosition;
+        playerBox.halfWidth = PLAYER_HALF_WIDTH;
+        playerBox.velocity  = g_PlayerVelocity;
 
-		DrawBoxCollisionInMap(&playerBox);
-	}
+        DrawBoxCollisionInMap(&playerBox);
+    }
 }
 
-void UpdatePlayer( float timeDelta )
+void UpdatePlayer( float timeFrame )
 {
     using namespace glm;
 
@@ -107,14 +107,14 @@ void UpdatePlayer( float timeDelta )
         direction = normalize(g_PlayerOrientation * normalize(direction));
 
     // --- Update velocity and position
-    g_PlayerVelocity += direction * (MOVEMENT_ACCELERATION * timeDelta);
+    g_PlayerVelocity += direction * (MOVEMENT_ACCELERATION * timeFrame);
 
     if(g_PlayerVelocity.length() > MAX_MOVEMENT_SPEED)
         g_PlayerVelocity *= MAX_MOVEMENT_SPEED / g_PlayerVelocity.length();
 
-    g_PlayerPosition += g_PlayerVelocity * timeDelta;
+    g_PlayerPosition += g_PlayerVelocity * timeFrame;
 
-    g_PlayerVelocity *= 1.0f - timeDelta * MOVEMENT_FRICTION;
+    g_PlayerVelocity *= 1.0f - timeFrame * MOVEMENT_FRICTION;
 
     // --- Resolve collisions ---
     Box playerBox;
@@ -122,7 +122,7 @@ void UpdatePlayer( float timeDelta )
     playerBox.halfWidth = PLAYER_HALF_WIDTH;
     playerBox.velocity  = g_PlayerVelocity;
 
-    SimulateBoxInMap(&playerBox);
+    SimulateBoxInMap(&playerBox, timeFrame);
     g_PlayerPosition = playerBox.position;
     g_PlayerVelocity = playerBox.velocity;
 

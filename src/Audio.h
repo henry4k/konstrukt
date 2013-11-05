@@ -18,7 +18,7 @@ void FreeAudioSourceOnStop( AudioSource source, void* context );
 
 bool InitAudio();
 void DestroyAudio();
-void UpdateAudio( float timeDelta );
+void UpdateAudio( float timeFrame );
 
 void SetAudioGain( float gain );
 

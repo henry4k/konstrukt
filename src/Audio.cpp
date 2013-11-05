@@ -149,7 +149,7 @@ void DestroyAudio()
     alureShutdownDevice();
 }
 
-void UpdateAudio( float timeDelta )
+void UpdateAudio( float timeFrame )
 {
     for(int i = 0; i < g_AudioSourceCount; ++i)
     {

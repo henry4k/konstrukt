@@ -6,6 +6,6 @@ void DestroyPlayer();
 void RotateWorld();
 void TranslateWorld();
 void DrawPlayer();
-void UpdatePlayer( float timeDelta );
+void UpdatePlayer( float timeFrame );
 
 #endif

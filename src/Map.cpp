@@ -235,7 +235,7 @@ void DrawBoxCollisionInMap( const Box* box )
             tileBox.velocity  = vec3(0, 0, 0);
 
             vec3 collisionNormal;
-            const float collisionTime = SweptAABB(*box, tileBox, &collisionNormal);
+            const float collisionTime = SweptAABB(*box, tileBox, &collisionNormal, 1.0f);
 
             if(collisionTime < 1.0f)
                 SetDebugLineColor(vec3(1,0,0));
@@ -252,11 +252,8 @@ void DrawBoxCollisionInMap( const Box* box )
     DrawDebugMesh();
 }
 
-void SimulateBoxInMap( Box* box )
+void SimulateBoxInMap( Box* box, float timeFrame )
 {
-    return;
-
-    /*
     using namespace glm;
 
     const int minX = max(0.0f, floor(box->position.x - box->halfWidth.x)-1.0f);
@@ -271,16 +268,31 @@ void SimulateBoxInMap( Box* box )
         if(GetTileDefinitionAt(x,z) != 0)
         {
             Box tileBox;
-            tileBox.position  = vec3(x, 1, z);
-            tileBox.halfWidth = vec3(0.5, 0.5, 0.5);
+            tileBox.position  = vec3(x, 1.0, z);
+            tileBox.halfWidth = vec3(0.5, 1.0, 0.5);
             tileBox.velocity  = vec3(0, 0, 0);
 
             vec3 collisionNormal;
-            const float collisionTime = SweptAABB(*box, tileBox, &collisionNormal);
-            // will return 1.0f if no collision occures, so we don't need to change the algorithm
+            const float collisionTime = SweptAABB(*box, tileBox, &collisionNormal, timeFrame);
+
             box->position += box->velocity * collisionTime;
-            const float remainingTime = 1.0f - collisionTime;
+            const float remainingTime = timeFrame - collisionTime;
+
+            if(abs(collisionNormal.x) > 0.0001f)
+                box->velocity.x *= -1;
+            if(abs(collisionNormal.y) > 0.0001f)
+                box->velocity.y *= -1;
+            if(abs(collisionNormal.z) > 0.0001f)
+                box->velocity.z *= -1;
+
+            /*
+            Log("timeFrame = %.2f", timeFrame);
+            Log("collisionTime = %.2f", collisionTime);
+            const vec3 resolution = box->velocity*collisionTime;
+            Log("resolution = %.2f|%.2f|%.2f", resolution.x, resolution.y, resolution.z);
+            box->position -= box->velocity * collisionTime;
+            //const float remainingTime = 1.0f - collisionTime;
+            */
         }
     }
-    */
 }

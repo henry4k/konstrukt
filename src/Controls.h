@@ -6,7 +6,7 @@ typedef void (*AxisControlActionFn)( const char* name, float absolute, float del
 
 bool InitControls();
 void DestroyControls();
-void UpdateControls( float timeDelta );
+void UpdateControls( float timeFrame );
 
 /**
  * Key controls can either be pressed or released.

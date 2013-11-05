@@ -38,8 +38,8 @@ bool InitGame( const int argc, char** argv )
     glEnable(GL_CULL_FACE);
     glClearColor(0.5, 0.5, 0.5, 1);
 
-	if(!InitDebugGraphics())
-		return false;
+    if(!InitDebugGraphics())
+        return false;
 
     Log("------------ Audio ------------");
     if(!InitAudio())
@@ -92,17 +92,15 @@ void RunGame()
 {
     using namespace glm;
 
-    glClearColor(0.5, 0.5, 0.5, 1);
-
     double lastTime = glfwGetTime();
     while(!WindowShouldClose())
     {
         // Simulation
         const double curTime = glfwGetTime();
-        const double timeDelta = curTime-lastTime;
-        UpdateAudio(timeDelta);
-        UpdateControls(timeDelta);
-        UpdatePlayer(timeDelta);
+        const double timeFrame = curTime-lastTime;
+        UpdateAudio(timeFrame);
+        UpdateControls(timeFrame);
+        UpdatePlayer(timeFrame);
         lastTime = curTime;
 
         // Render background

@@ -1,6 +1,6 @@
 [debug]
 opengl=false
-lua=true
+squirrel=false
 collision=true
 
 [window]
