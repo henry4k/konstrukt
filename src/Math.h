@@ -16,6 +16,6 @@ struct Box
     glm::vec3 velocity;
 };
 
-float SweptAABB( Box a, Box b, glm::vec3* normalOut );
+float SweptAABB( Box a, Box b, glm::vec3* normalOut, float timeStep );
 
 #endif

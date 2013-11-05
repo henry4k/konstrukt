@@ -235,7 +235,7 @@ void DrawBoxCollisionInMap( const Box* box )
             tileBox.velocity  = vec3(0, 0, 0);
 
             vec3 collisionNormal;
-            const float collisionTime = SweptAABB(*box, tileBox, &collisionNormal);
+            const float collisionTime = SweptAABB(*box, tileBox, &collisionNormal, 1);
 
             if(collisionTime < 1.0f)
                 SetDebugLineColor(vec3(1,0,0));
@@ -252,12 +252,12 @@ void DrawBoxCollisionInMap( const Box* box )
     DrawDebugMesh();
 }
 
-void SimulateBoxInMap( Box* box )
+void SimulateBoxInMap( Box* box, float timeFrame )
 {
-    return;
-
-    /*
     using namespace glm;
+
+	const float BOUNCE = 1.0f;
+	const float SLIDE  = 1.0f;
 
     const int minX = max(0.0f, floor(box->position.x - box->halfWidth.x)-1.0f);
     const int minZ = max(0.0f, floor(box->position.z - box->halfWidth.z)-1.0f);
@@ -276,11 +276,23 @@ void SimulateBoxInMap( Box* box )
             tileBox.velocity  = vec3(0, 0, 0);
 
             vec3 collisionNormal;
-            const float collisionTime = SweptAABB(*box, tileBox, &collisionNormal);
-            // will return 1.0f if no collision occures, so we don't need to change the algorithm
+            const float collisionTime = SweptAABB(*box, tileBox, &collisionNormal, timeFrame);
+			float remainingTime = timeFrame-collisionTime;
+			Log("collisionTime = %.2f remainingTime = %.2f", collisionTime, remainingTime);
+
+			vec3 velocityChange(0,0,0);
+
+			for(int i = 0; i < 3; ++i)
+				if(abs(normal[i]) > 0.0001f)
+					velocityChange[i] += BOUNCE * -a.velocity[i]*2;
+
+			//velocityChange += SLIDE * proj(a.velocity, normal);
+
+			Log("velocityChange = %.2f|%.2f|%.2f", velocityChange.x, velocityChange.y, velocityChange.z);
+
+			box->velocity += velocityChange;
+
             box->position += box->velocity * collisionTime;
-            const float remainingTime = 1.0f - collisionTime;
         }
     }
-    */
 }

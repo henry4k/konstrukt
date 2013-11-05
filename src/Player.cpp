@@ -122,7 +122,7 @@ void UpdatePlayer( float timeDelta )
     playerBox.halfWidth = PLAYER_HALF_WIDTH;
     playerBox.velocity  = g_PlayerVelocity;
 
-    SimulateBoxInMap(&playerBox);
+    SimulateBoxInMap(&playerBox, timeDelta);
     g_PlayerPosition = playerBox.position;
     g_PlayerVelocity = playerBox.velocity;
 
