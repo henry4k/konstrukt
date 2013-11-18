@@ -42,4 +42,8 @@ bool RegisterKeyControl( const char* name, KeyControlActionFn callback, bool* va
  */
 bool RegisterAxisControl( const char* name, AxisControlActionFn callback, float* value );
 
+// Internal: (needed by the binding implementations)
+void HandleKeyEvent( int keyControlIndex, bool pressed );
+void HandleAxisEvent( int axisControlIndex, float value );
+
 #endif
