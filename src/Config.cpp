@@ -96,11 +96,15 @@ bool GetConfigBool( const char* key, bool defaultValue )
     switch(str[0])
     {
         case '0':
+        case 'n':
+        case 'N':
         case 'f':
         case 'F':
             return false;
 
         case '1':
+        case 'y':
+        case 'Y':
         case 't':
         case 'T':
             return true;
