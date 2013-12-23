@@ -13,6 +13,7 @@
 
 #include "Common.h"
 #include "Config.h"
+#include "Squirrel.h"
 #include "Audio.h"
 
 struct AudioSourceInfo
@@ -160,7 +161,7 @@ void UpdateAudio( float timeFrame )
             int state = 0;
             alGetSourcei(sourceInfo->handle, AL_SOURCE_STATE, &state);
 
-            if(!PrintALError("InitAudio") && state == AL_STOPPED) // TODO: Check enum values
+            if(!PrintALError("InitAudio") && (state == AL_STOPPED || state == AL_INITIAL)) // TODO: Check enum values
             {
                 sourceInfo->stopFn( sourceInfo->handle, sourceInfo->context );
             }
@@ -189,7 +190,7 @@ AudioBuffer LoadAudioBuffer( const char* fileName )
     const ALuint buffer = alureCreateBufferFromFile(fileName);
     if(buffer == AL_NONE || PrintALError("LoadAudioBuffer"))
     {
-        Error("Can't load %s%s", fileName, alureGetErrorString());
+        Error("Can't load %s: %s", fileName, alureGetErrorString());
         return AL_NONE;
     }
     else
@@ -316,3 +317,153 @@ void UpdateAudioSource( AudioSource source, glm::vec3 position, glm::vec3 veloci
     alSourcefv(s, AL_DIRECTION, glm::value_ptr(direction));
     PrintALError("UpdateAudioSource");
 }
+
+
+
+// --- Squirrel Bindings ---
+
+SQInteger OnReleaseAudioBuffer( void* userData, SQInteger size )
+{
+    FreeAudioBuffer(*(AudioBuffer*)userData); // Some compilers can't cast pointers directly to smaller data types.
+    return 1;
+}
+
+SQInteger Squirrel_LoadAudioBuffer( HSQUIRRELVM vm )
+{
+    const char* fileName = NULL;
+    sq_getstring(vm, 2, &fileName);
+
+    const AudioBuffer buffer = LoadAudioBuffer(fileName);
+    if(buffer)
+    {
+        PushUserDataToSquirrel(vm, &buffer, sizeof(buffer), OnReleaseAudioBuffer);
+        return 1;
+    }
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(LoadAudioBuffer, 2, ".s");
+
+void OnStopSquirrelAudioSource( AudioSource source, void* context )
+{
+    HSQUIRRELVM vm = GetSquirrelVM();
+    sq_pushinteger(vm, source);
+    FireSquirrelCallback(SQCALLBACK_AUDIO_SOURCE_STOP, 1, false);
+}
+
+SQInteger Squirrel_RegisterAudioSourceStopCallback( HSQUIRRELVM vm )
+{
+    SetSquirrelCallback(SQCALLBACK_AUDIO_SOURCE_STOP, vm, 2);
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(RegisterAudioSourceStopCallback, 2, ".c");
+
+SQInteger Squirrel_CreateAudioSource( HSQUIRRELVM vm )
+{
+    SQBool triggerCallback = false;
+    sq_getbool(vm, 2, &triggerCallback);
+
+    const AudioSource handle = CreateAudioSource(
+        triggerCallback ? OnStopSquirrelAudioSource : NULL,
+        NULL
+    );
+
+    sq_pushinteger(vm, handle);
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(CreateAudioSource, 2, ".cb");
+
+SQInteger Squirrel_SetAudioSourceRelative( HSQUIRRELVM vm )
+{
+    SQInteger source;
+    sq_getinteger(vm, 2, &source);
+
+    SQBool relative = false;
+    sq_getbool(vm, 3, &relative);
+
+    SetAudioSourceRelative((AudioSource)source, relative);
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(SetAudioSourceRelative, 3, ".ib");
+
+SQInteger Squirrel_SetAudioSourceLooping( HSQUIRRELVM vm )
+{
+    SQInteger source;
+    sq_getinteger(vm, 2, &source);
+
+    SQBool loop = false;
+    sq_getbool(vm, 3, &loop);
+
+    SetAudioSourceRelative(source, loop);
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(SetAudioSourceLooping, 3, ".ib");
+
+SQInteger Squirrel_SetAudioSourcePitch( HSQUIRRELVM vm )
+{
+    SQInteger source;
+    sq_getinteger(vm, 2, &source);
+
+    SQFloat pitch = false;
+    sq_getfloat(vm, 3, &pitch);
+
+    SetAudioSourceRelative(source, pitch);
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(SetAudioSourcePitch, 3, ".if");
+
+SQInteger Squirrel_SetAudioSourceGain( HSQUIRRELVM vm )
+{
+    SQInteger source;
+    sq_getinteger(vm, 2, &source);
+
+    SQFloat gain = false;
+    sq_getfloat(vm, 3, &gain);
+
+    SetAudioSourceRelative(source, gain);
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(SetAudioSourceGain, 3, ".if");
+
+SQInteger Squirrel_EnqueueAudioBuffer( HSQUIRRELVM vm )
+{
+    SQInteger source;
+    sq_getinteger(vm, 2, &source);
+
+    AudioBuffer* buffer = NULL;
+    sq_getuserdata(vm, 3, (void**)&buffer, NULL);
+
+    EnqueueAudioBuffer(source, *buffer);
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(EnqueueAudioBuffer, 3, ".iu");
+
+SQInteger Squirrel_PlayAudioSource( HSQUIRRELVM vm )
+{
+    SQInteger source;
+    sq_getinteger(vm, 2, &source);
+
+    PlayAudioSource(source);
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(PlayAudioSource, 2, ".i");
+
+SQInteger Squirrel_PauseAudioSource( HSQUIRRELVM vm )
+{
+    SQInteger source;
+    sq_getinteger(vm, 2, &source);
+
+    PauseAudioSource(source);
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(PauseAudioSource, 2, ".i");
+
+SQInteger Squirrel_FreeAudioSource( HSQUIRRELVM vm )
+{
+    SQInteger source;
+    sq_getinteger(vm, 2, &source);
+
+    FreeAudioSource(source);
+    source = AL_NONE;
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(FreeAudioSource, 2, ".i");

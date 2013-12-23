@@ -9,9 +9,9 @@
 
 static const char* DEBUG_MODE_NAMES[DEBUG_MODE_COUNT] =
 {
-	"debug.opengl",
-	"debug.lua",
-	"debug.collision"
+    "debug.opengl",
+    "debug.squirrel",
+    "debug.collision"
 };
 
 bool g_DebugModes[DEBUG_MODE_COUNT];
@@ -24,12 +24,12 @@ bool InitDebug()
 {
     memset(g_DebugModes, 0, sizeof(g_DebugModes));
 
-	for(int i = 0; i < DEBUG_MODE_COUNT; ++i)
-	{
-		g_DebugModes[i] = GetConfigBool(DEBUG_MODE_NAMES[i], false);
-	}
+    for(int i = 0; i < DEBUG_MODE_COUNT; ++i)
+    {
+        g_DebugModes[i] = GetConfigBool(DEBUG_MODE_NAMES[i], false);
+    }
 
-	return true;
+    return true;
 }
 
 bool InitDebugGraphics()

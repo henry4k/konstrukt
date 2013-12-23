@@ -1,5 +1,6 @@
 #include "Common.h"
 #include "OpenGL.h"
+#include "Squirrel.h"
 #include "Model.h"
 
 bool CreateModel( Model* model, const Mesh* mesh )
@@ -70,3 +71,31 @@ void DrawModel( const Model* model )
         glDrawArrays(model->primitiveType, 0, model->size);
     }
 }
+
+
+
+// --- Squirrel Bindings ---
+
+SQInteger OnReleaseModel( void* userData, SQInteger size )
+{
+    FreeModel((Model*)userData); // Some compilers can't cast pointers directly to smaller data types.
+    return 1;
+}
+
+SQInteger Squirrel_LoadModel( HSQUIRRELVM vm )
+{
+    const char* fileName = NULL;
+    sq_getstring(vm, 2, &fileName);
+
+    Model* model = (Model*)CreateUserDataInSquirrel(vm, sizeof(Model), OnReleaseModel);
+    if(!LoadModel(model, fileName))
+    {
+        sq_pop(vm, 1);
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
+RegisterStaticFunctionInSquirrel(LoadModel, 2, ".s");

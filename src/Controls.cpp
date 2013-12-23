@@ -5,6 +5,7 @@
 #include "Config.h"
 #include "OpenGL.h"
 #include "Window.h"
+#include "Squirrel.h"
 #include "Controls.h"
 #include "KeyboardBindings.h"
 #include "MouseBindings.h"
@@ -25,6 +26,7 @@ struct KeyControl
 {
     char name[MAX_CONTROL_NAME_LENGTH+1];
     KeyControlActionFn callback;
+    void* context;
     bool* value;
 };
 
@@ -32,6 +34,7 @@ struct AxisControl
 {
     char name[MAX_CONTROL_NAME_LENGTH+1];
     AxisControlActionFn callback;
+    void* context;
     float* value;
     float lastValue; // Needed to generate deltas
     float currentAcceleration; // Used when interpretation mode is acceleration.
@@ -74,7 +77,7 @@ void UpdateControls( float timeFrame )
                 *axisControl->value = axisControl->lastValue;
 
             if(axisControl->callback)
-                axisControl->callback(axisControl->name, axisControl->lastValue, delta);
+                axisControl->callback(axisControl->name, axisControl->lastValue, delta, axisControl->context);
         }
     }
 }
@@ -108,7 +111,7 @@ bool ControlNameIsOkay( const char* name )
     return true;
 }
 
-bool RegisterKeyControl( const char* name, KeyControlActionFn callback, bool* value )
+bool RegisterKeyControl( const char* name, KeyControlActionFn callback, void* context, bool* value )
 {
     if(!ControlNameIsOkay(name))
         return false;
@@ -117,6 +120,7 @@ bool RegisterKeyControl( const char* name, KeyControlActionFn callback, bool* va
     strncpy(keyControl.name, name, MAX_CONTROL_NAME_LENGTH);
     keyControl.name[MAX_CONTROL_NAME_LENGTH] = '\0';
     keyControl.callback = callback;
+    keyControl.context = context;
     keyControl.value = value;
 
     const int keyControlIndex = g_KeyControls.size();
@@ -144,7 +148,7 @@ bool RegisterKeyControl( const char* name, KeyControlActionFn callback, bool* va
     return true;
 }
 
-bool RegisterAxisControl( const char* name, AxisControlActionFn callback, float* value )
+bool RegisterAxisControl( const char* name, AxisControlActionFn callback, void* context, float* value )
 {
     if(!ControlNameIsOkay(name))
         return false;
@@ -153,6 +157,7 @@ bool RegisterAxisControl( const char* name, AxisControlActionFn callback, float*
     strncpy(axisControl.name, name, MAX_CONTROL_NAME_LENGTH);
     axisControl.name[MAX_CONTROL_NAME_LENGTH] = '\0';
     axisControl.callback = callback;
+    axisControl.context = context;
     axisControl.value = value;
     axisControl.lastValue = 0;
     axisControl.currentAcceleration = 0;
@@ -211,7 +216,7 @@ void HandleKeyEvent( int keyControlIndex, bool pressed )
         *keyControl->value = pressed;
 
     if(keyControl->callback)
-        keyControl->callback(keyControl->name, pressed);
+        keyControl->callback(keyControl->name, pressed, keyControl->context);
 }
 
 void HandleAxisEvent( int axisControlIndex, float value )
@@ -230,7 +235,7 @@ void HandleAxisEvent( int axisControlIndex, float value )
             if(axisControl->callback)
             {
                 const float delta = value - axisControl->lastValue;
-                axisControl->callback(axisControl->name, value, delta);
+                axisControl->callback(axisControl->name, value, delta, axisControl->context);
             }
 
             axisControl->lastValue = value;
@@ -265,3 +270,61 @@ bool CreateAxisBindingFromString( const char* str, int axisControl )
 
     return false;
 }
+
+
+// --- Squirrel Bindings ---
+
+SQInteger Squirrel_RegisterKeyControlCallback( HSQUIRRELVM vm )
+{
+    SetSquirrelCallback(SQCALLBACK_KEY_CONTROL, vm, 2);
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(RegisterKeyControlCallback, 2, ".c");
+
+void OnSquirrelKeyControlAction( const char* name, bool pressed, void* context )
+{
+    HSQUIRRELVM vm = GetSquirrelVM();
+    sq_pushstring(vm, name, -1);
+    sq_pushbool(vm, pressed);
+    FireSquirrelCallback(SQCALLBACK_KEY_CONTROL, 2, false);
+}
+
+SQInteger Squirrel_RegisterKeyControl( HSQUIRRELVM vm )
+{
+    const char* name = NULL;
+    sq_getstring(vm, 2, &name);
+
+    const bool success = RegisterKeyControl(name, OnSquirrelKeyControlAction, NULL, NULL);
+    sq_pushbool(vm, success);
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(RegisterKeyControl, 2, ".s");
+
+
+
+SQInteger Squirrel_RegisterAxisControlCallback( HSQUIRRELVM vm )
+{
+    SetSquirrelCallback(SQCALLBACK_AXIS_CONTROL, vm, 2);
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(RegisterAxisControlCallback, 2, ".c");
+
+void OnSquirrelAxisControlAction( const char* name, float absolute, float delta, void* context )
+{
+    HSQUIRRELVM vm = GetSquirrelVM();
+    sq_pushstring(vm, name, -1);
+    sq_pushfloat(vm, absolute);
+    sq_pushfloat(vm, delta);
+    FireSquirrelCallback(SQCALLBACK_AXIS_CONTROL, 3, false);
+}
+
+SQInteger Squirrel_RegisterAxisControl( HSQUIRRELVM vm )
+{
+    const char* name = NULL;
+    sq_getstring(vm, 2, &name);
+
+    const bool success = RegisterAxisControl(name, OnSquirrelAxisControlAction, NULL, NULL);
+    sq_pushbool(vm, success);
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(RegisterAxisControl, 2, ".s");

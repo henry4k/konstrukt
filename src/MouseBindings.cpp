@@ -11,7 +11,7 @@ void OnCursorMove( double x, double y );
 void OnMouseButtonAction( int button, bool pressed );
 void OnMouseScroll( double xoffset, double yoffset );
 
-void OnCursorGrabEvent( const char* name, bool pressed );
+void OnCursorGrabEvent( const char* name, bool pressed, void* context );
 
 struct MouseButtonBinding
 {
@@ -56,7 +56,7 @@ bool InitMouseBindings()
     memset(g_MouseAxisBindings, 0, sizeof(g_MouseAxisBindings));
 
     g_CursorGrabbed = false;
-    RegisterKeyControl("grab-cursor", OnCursorGrabEvent, NULL);
+    RegisterKeyControl("grab-cursor", OnCursorGrabEvent, NULL, NULL);
 
     return true;
 }
@@ -85,7 +85,7 @@ void OnCursorMove( double x, double y )
     }
 }
 
-void OnCursorGrabEvent( const char* name, bool pressed )
+void OnCursorGrabEvent( const char* name, bool pressed, void* context )
 {
     if(pressed)
     {

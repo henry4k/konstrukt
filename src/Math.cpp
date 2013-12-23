@@ -1,4 +1,5 @@
 #include "Common.h"
+#include "Squirrel.h"
 #include "Math.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/projection.hpp>
@@ -180,3 +181,125 @@ float SweptAABB( Box a, Box b, vec3* normalOut, float timeFrame )
     }
 }
 
+
+// --- Squirrel Bindings ---
+
+SQInteger Squirrel_CreateMatrix4( HSQUIRRELVM vm )
+{
+    const mat4 matrix;
+    PushUserDataToSquirrel(vm, &matrix, sizeof(matrix), NULL);
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(CreateMatrix4, 1, ".");
+
+SQInteger Squirrel_AddMatrix4( HSQUIRRELVM vm )
+{
+    mat4* a;
+    sq_getuserdata(vm, 2, (SQUserPointer*)&a, NULL);
+
+    mat4* b;
+    sq_getuserdata(vm, 3, (SQUserPointer*)&b, NULL);
+
+    const mat4 r = *a + *b;
+    PushUserDataToSquirrel(vm, &r, sizeof(r), NULL);
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(AddMatrix4, 3, ".uu");
+
+SQInteger Squirrel_SubMatrix4( HSQUIRRELVM vm )
+{
+    mat4* a;
+    sq_getuserdata(vm, 2, (SQUserPointer*)&a, NULL);
+
+    mat4* b;
+    sq_getuserdata(vm, 3, (SQUserPointer*)&b, NULL);
+
+    const mat4 r = *a - *b;
+    PushUserDataToSquirrel(vm, &r, sizeof(r), NULL);
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(SubMatrix4, 3, ".uu");
+
+SQInteger Squirrel_MulMatrix4( HSQUIRRELVM vm )
+{
+    mat4* a;
+    sq_getuserdata(vm, 2, (SQUserPointer*)&a, NULL);
+
+    mat4* b;
+    sq_getuserdata(vm, 3, (SQUserPointer*)&b, NULL);
+
+    const mat4 r = *a * *b;
+    PushUserDataToSquirrel(vm, &r, sizeof(r), NULL);
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(MulMatrix4, 3, ".uu");
+
+SQInteger Squirrel_DivMatrix4( HSQUIRRELVM vm )
+{
+    mat4* a;
+    sq_getuserdata(vm, 2, (SQUserPointer*)&a, NULL);
+
+    mat4* b;
+    sq_getuserdata(vm, 3, (SQUserPointer*)&b, NULL);
+
+    const mat4 r = *a / *b;
+    PushUserDataToSquirrel(vm, &r, sizeof(r), NULL);
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(DivMatrix4, 3, ".uu");
+
+SQInteger Squirrel_TranslateMatrix4( HSQUIRRELVM vm )
+{
+    mat4* a;
+    sq_getuserdata(vm, 2, (SQUserPointer*)&a, NULL);
+
+    float x, y, z;
+    sq_getfloat(vm, 3, &x);
+    sq_getfloat(vm, 4, &x);
+    sq_getfloat(vm, 5, &x);
+
+    const vec3 t(x,y,z);
+
+    mat4 r = translate(*a, t);
+    PushUserDataToSquirrel(vm, &r, sizeof(r), NULL);
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(TranslateMatrix4, 5, ".ufff");
+
+SQInteger Squirrel_ScaleMatrix4( HSQUIRRELVM vm )
+{
+    mat4* a;
+    sq_getuserdata(vm, 2, (SQUserPointer*)&a, NULL);
+
+    float x, y, z;
+    sq_getfloat(vm, 3, &x);
+    sq_getfloat(vm, 4, &x);
+    sq_getfloat(vm, 5, &x);
+
+    const vec3 s(x,y,z);
+
+    mat4 r = scale(*a, s);
+    PushUserDataToSquirrel(vm, &r, sizeof(r), NULL);
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(ScaleMatrix4, 5, ".ufff");
+
+SQInteger Squirrel_RotateMatrix4( HSQUIRRELVM vm )
+{
+    mat4* a;
+    sq_getuserdata(vm, 2, (SQUserPointer*)&a, NULL);
+
+    float x, y, z;
+    sq_getfloat(vm, 3, &x);
+    sq_getfloat(vm, 4, &x);
+    sq_getfloat(vm, 5, &x);
+
+    mat4 r = *a;
+    r = rotate(r, x, vec3(1,0,0));
+    r = rotate(r, y, vec3(0,1,0));
+    r = rotate(r, z, vec3(0,0,1));
+
+    PushUserDataToSquirrel(vm, &r, sizeof(r), NULL);
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(RotateMatrix4, 5, ".ufff");

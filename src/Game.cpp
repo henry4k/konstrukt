@@ -12,13 +12,11 @@
 #include "Player.h"
 #include "Map.h"
 #include "Debug.h"
-#include "Test.h"
+#include "Squirrel.h"
 #include "Game.h"
 
 void OnFramebufferResize( int width, int height );
-void OnExitKey( const char* name, bool pressed );
-
-float g_CurrentTimeFrame = 0;
+void OnExitKey( const char* name, bool pressed, void* context );
 
 bool InitGame( const int argc, char** argv )
 {
@@ -28,6 +26,10 @@ bool InitGame( const int argc, char** argv )
 
     Log("------------ Debug -------------");
     if(!InitDebug())
+        return false;
+
+    Log("---------- Squirrel -----------");
+    if(!InitSquirrel())
         return false;
 
     Log("----------- Window ------------");
@@ -53,7 +55,7 @@ bool InitGame( const int argc, char** argv )
     if(!InitControls())
         return false;
 
-    if(!RegisterKeyControl("exit", OnExitKey, NULL))
+    if(!RegisterKeyControl("exit", OnExitKey, NULL, NULL))
         return false;
 
     Log("--------- Background ----------");
@@ -68,20 +70,25 @@ bool InitGame( const int argc, char** argv )
     if(!InitMap())
         return false;
 
-    Log("----------- Test-Game ------------");
-    if(!InitTest())
+
+    SetFrambufferFn(OnFramebufferResize);
+
+
+    Log("--------- Core Script ----------");
+    if(!RunSquirrelFile("Scripts/Core.nut"))
         return false;
 
     Log("-------------------------------");
 
-    SetFrambufferFn(OnFramebufferResize);
+
+    RunSquirrelFile("Scripts/Test.nut");
 
     return true;
 }
 
 void DestroyGame()
 {
-    DestroyTest();
+    DestroySquirrel();
     DestroyMap();
     DestroyPlayer();
     DestroyBackground();
@@ -101,11 +108,11 @@ void RunGame()
     {
         // Simulation
         const double curTime = glfwGetTime();
-        const double timeFrame = curTime-lastTime;
-        g_CurrentTimeFrame = timeFrame;
-        UpdateAudio(timeFrame);
-        UpdateControls(timeFrame);
-        UpdatePlayer(timeFrame);
+        const double timeDelta = curTime-lastTime;
+        UpdateSquirrel(timeDelta);
+        UpdateAudio(timeDelta);
+        UpdateControls(timeDelta);
+        UpdatePlayer(timeDelta);
         lastTime = curTime;
 
         // Render background
@@ -144,14 +151,9 @@ void OnFramebufferResize( int width, int height )
     glMatrixMode(GL_MODELVIEW);
 }
 
-void OnExitKey( const char* name, bool pressed )
+void OnExitKey( const char* name, bool pressed, void* context )
 {
     if(pressed)
         FlagWindowForClose();
-}
-
-float CurrentTimeFrame()
-{
-    return g_CurrentTimeFrame;
 }
 

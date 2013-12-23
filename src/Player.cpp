@@ -34,12 +34,12 @@ bool InitPlayer()
     g_PlayerVelocity = glm::vec3(0,0,0);
 
     return
-        RegisterKeyControl("forward",  NULL, &g_ForwardKey) &&
-        RegisterKeyControl("backward", NULL, &g_BackwardKey) &&
-        RegisterKeyControl("right",    NULL, &g_RightKey) &&
-        RegisterKeyControl("left",     NULL, &g_LeftKey) &&
-        RegisterAxisControl("look-x",  NULL, &g_LookX) &&
-        RegisterAxisControl("look-y",  NULL, &g_LookY);
+        RegisterKeyControl("forward",  NULL, NULL, &g_ForwardKey) &&
+        RegisterKeyControl("backward", NULL, NULL, &g_BackwardKey) &&
+        RegisterKeyControl("right",    NULL, NULL, &g_RightKey) &&
+        RegisterKeyControl("left",     NULL, NULL, &g_LeftKey) &&
+        RegisterAxisControl("look-x",  NULL, NULL, &g_LookX) &&
+        RegisterAxisControl("look-y",  NULL, NULL, &g_LookY);
 }
 
 void DestroyPlayer()
