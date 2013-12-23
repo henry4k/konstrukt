@@ -42,8 +42,8 @@ bool InitTest()
 {
     g_Void = CreateTileDefinition("Void", NULL, NULL);
 
-    LoadMesh(&g_WallMesh, "Meshes/Block.ply");
-    g_Wall = CreateTileDefinition("Wall", OnGenerateStaticTileMesh, OnGenerateStaticTileSolids);
+    LoadMesh(&g_WallMesh, "Meshes/Wall-1x1.ply");
+    g_Wall = CreateTileDefinition("Wall-1x1", OnGenerateStaticTileMesh, OnGenerateStaticTileSolids);
 
     GenerateMap(MAP_WIDTH, MAP_DEPTH);
 

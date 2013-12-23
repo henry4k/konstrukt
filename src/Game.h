@@ -4,5 +4,6 @@
 bool InitGame( const int argc, char** argv );
 void DestroyGame();
 void RunGame();
+float CurrentTimeFrame();
 
 #endif

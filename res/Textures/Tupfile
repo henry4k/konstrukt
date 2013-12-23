@@ -1,0 +1,9 @@
+include_rules
+
+ifdef XCF2PNG
+    : foreach *.xcf |> ^o Exporting %f^ @(XCF2PNG) %f -o %o |> %B.png
+else
+ifdef GIMP
+    : foreach *.xcf |> ^o Exporting %f^ ./xcf2png.sh @(GIMP) %f %o |> %B.png
+endif
+endif

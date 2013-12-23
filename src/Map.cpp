@@ -5,6 +5,7 @@
 #include "Shader.h"
 #include "Mesh.h"
 #include "Model.h"
+#include "Game.h"
 #include "Debug.h"
 #include "Map.h"
 
@@ -12,6 +13,7 @@
 
 static const int MAX_TILE_NAME_LENGTH = 31;
 static const int MAX_TILE_CHARS = 7;
+const glm::vec3 TILE_SIZE(0.5, 2.0, 0.5);
 
 struct TileDefinition
 {
@@ -132,7 +134,7 @@ bool GenerateStaticMapModel( Model* target, int startX, int startZ, int endX, in
 
         if(tileDef->staticMeshFn)
         {
-            g_MapBufferOffset = glm::vec3(x,0,z);
+            g_MapBufferOffset = glm::vec3(x,0,z)*TILE_SIZE;
             tileDef->staticMeshFn(tile->definition, x, z);
         }
     }
@@ -218,11 +220,25 @@ void DrawBoxCollisionInMap( const Box* box )
         box->position+box->halfWidth
     );
 
-    const int minX = max(0.0f, floor(box->position.x - box->halfWidth.x)-1.0f);
-    const int minZ = max(0.0f, floor(box->position.z - box->halfWidth.z)-1.0f);
+    const int minX = max(0.0f, floor((box->position.x - box->halfWidth.x)/TILE_SIZE.x));
+    const int minZ = max(0.0f, floor((box->position.z - box->halfWidth.z)/TILE_SIZE.z));
 
-    const int maxX = min(float(g_MapWidth), floor(box->position.x + box->halfWidth.x)+1.0f);
-    const int maxZ = min(float(g_MapDepth), floor(box->position.z + box->halfWidth.z)+1.0f);
+    const int maxX = min(ceil((box->position.x + box->halfWidth.x)/TILE_SIZE.x), float(g_MapWidth-1));
+    const int maxZ = min(ceil((box->position.z + box->halfWidth.z)/TILE_SIZE.z), float(g_MapDepth-1));
+
+    /*
+    Log("min: %.2f,%.2f => %d,%d  max: %.2f,%.2f => %d,%d",
+        box->position.x - box->halfWidth.x,
+        box->position.z - box->halfWidth.z,
+        minX,
+        minZ,
+        box->position.x + box->halfWidth.x,
+        box->position.z + box->halfWidth.z,
+        maxX,
+        maxZ
+    );
+    return;
+    */
 
     for(int z = minZ; z <= maxZ; ++z)
     for(int x = minX; x <= maxX; ++x)
@@ -230,14 +246,11 @@ void DrawBoxCollisionInMap( const Box* box )
         if(GetTileDefinitionAt(x,z) != 0)
         {
             Box tileBox;
-            tileBox.position  = vec3(x, 1, z);
-            tileBox.halfWidth = vec3(0.5, 0.5, 0.5);
+            tileBox.position  = vec3(x, 0.5f, z) * TILE_SIZE;
+            tileBox.halfWidth = TILE_SIZE*0.5f;
             tileBox.velocity  = vec3(0, 0, 0);
 
-            vec3 collisionNormal;
-            const float collisionTime = SweptAABB(*box, tileBox, &collisionNormal, 1);
-
-            if(collisionTime < 1.0f)
+            if(TestAABBOverlap(*box, tileBox))
                 SetDebugLineColor(vec3(1,0,0));
             else
                 SetDebugLineColor(vec3(0,1,0));
@@ -259,11 +272,11 @@ void SimulateBoxInMap( Box* box, float timeFrame )
     const float BOUNCE = 1.0f;
     const float SLIDE  = 1.0f;
 
-    const int minX = max(0.0f, floor(box->position.x - box->halfWidth.x)-1.0f);
-    const int minZ = max(0.0f, floor(box->position.z - box->halfWidth.z)-1.0f);
+    const int minX = max(0.0f, floor((box->position.x - box->halfWidth.x)/TILE_SIZE.x));
+    const int minZ = max(0.0f, floor((box->position.z - box->halfWidth.z)/TILE_SIZE.z));
 
-    const int maxX = min(float(g_MapWidth), floor(box->position.x + box->halfWidth.x)+1.0f);
-    const int maxZ = min(float(g_MapDepth), floor(box->position.z + box->halfWidth.z)+1.0f);
+    const int maxX = min(ceil((box->position.x + box->halfWidth.x)/TILE_SIZE.x), float(g_MapWidth-1));
+    const int maxZ = min(ceil((box->position.z + box->halfWidth.z)/TILE_SIZE.z), float(g_MapDepth-1));
 
     for(int z = minZ; z <= maxZ; ++z)
     for(int x = minX; x <= maxX; ++x)
@@ -271,28 +284,34 @@ void SimulateBoxInMap( Box* box, float timeFrame )
         if(GetTileDefinitionAt(x,z) != 0)
         {
             Box tileBox;
-            tileBox.position  = vec3(x, 1.0, z);
-            tileBox.halfWidth = vec3(0.5, 1.0, 0.5);
+            tileBox.position  = vec3(x, 0.5f, z) * TILE_SIZE;
+            tileBox.halfWidth = TILE_SIZE*0.5f;
             tileBox.velocity  = vec3(0, 0, 0);
 
-            vec3 collisionNormal;
-            const float collisionTime = SweptAABB(*box, tileBox, &collisionNormal, timeFrame);
-            float remainingTime = timeFrame-collisionTime;
-            Log("collisionTime = %.2f remainingTime = %.2f", collisionTime, remainingTime);
+            vec3 penetration;
+            if(TestAABBOverlap(*box, tileBox, &penetration))
+            {
+                box->position += penetration;
+            }
+            else
+            {
+                vec3 normal;
+                const float collisionTime = SweptAABB(*box, tileBox, &normal, timeFrame);
+                //Log("collisionTime = %.2f", collisionTime);
 
-            vec3 velocityChange(0,0,0);
+                box->position += box->velocity * collisionTime;
 
-            for(int i = 0; i < 3; ++i)
-                if(abs(normal[i]) > 0.0001f)
-                    velocityChange[i] += BOUNCE * -a.velocity[i]*2;
+                for(int i = 0; i < 3; ++i)
+                    if(abs(normal[i]) > 0.0001f)
+                        box->velocity[i] *= -1;
 
-            //velocityChange += SLIDE * proj(a.velocity, normal);
+                //velocityChange += SLIDE * proj(a.velocity, normal);
 
-            Log("velocityChange = %.2f|%.2f|%.2f", velocityChange.x, velocityChange.y, velocityChange.z);
-
-            box->velocity += velocityChange;
-
-            box->position += box->velocity * collisionTime;
+                const float remainingTime = timeFrame-collisionTime;
+                timeFrame = remainingTime;
+            }
         }
     }
+
+    box->position += box->velocity * timeFrame;
 }

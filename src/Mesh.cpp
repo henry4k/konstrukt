@@ -297,7 +297,8 @@ void CalculateTangentArray( int vertexCount, Vertex* vertex, int triangleCount, 
 
         // Gram-Schmidt orthogonalize
         glm::vec3* tangent3 = (glm::vec3*)&vertex[a].tangent;
-        *tangent3 = glm::normalize(t - n*glm::dot(n,t));
+        //*tangent3 = glm::normalize(t - n*glm::dot(n,t));
+        *tangent3 = t - n*glm::dot(n,t);
 
         // Calculate handedness
         vertex[a].tangent.w = (glm::dot(glm::cross(n, t), tan2[a]) < 0.0F) ? -1.0F : 1.0F;
@@ -317,7 +318,7 @@ bool LoadMesh( Mesh* mesh, const char* file )
     FILE* f = fopen(file, "r");
     if(!f)
     {
-        Error("Can't read mesh %s", file);
+        Error("Can't read %s", file);
         return false;
     }
 

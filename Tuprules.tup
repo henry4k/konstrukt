@@ -27,7 +27,7 @@ CFLAGS += -I$(TUP_CWD)/third-party/squirrel/include
 CFLAGS += -I$(TUP_CWD)/third-party/squirrel/sqstdlib
 CFLAGS += -Werror -Wall -Wextra -pedantic
 CFLAGS += -Wmissing-include-dirs -Wpointer-arith -Wcast-qual -Winit-self
-CFLAGS += -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter -Wno-int-to-void-pointer-cast
+CFLAGS += -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter
 
 CXXFLAGS += @(CXXFLAGS)
 CXXFLAGS += --std=c++11

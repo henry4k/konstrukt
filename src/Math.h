@@ -11,11 +11,13 @@
 
 struct Box
 {
-	glm::vec3 position;
+    glm::vec3 position;
     glm::vec3 halfWidth;
     glm::vec3 velocity;
 };
 
+bool TestAABBOverlap( Box a, Box b );
+bool TestAABBOverlap( Box a, Box b, glm::vec3* penetrationOut );
 float SweptAABB( Box a, Box b, glm::vec3* normalOut, float timeStep );
 
 #endif

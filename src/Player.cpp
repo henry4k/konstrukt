@@ -14,7 +14,8 @@ static const float MAX_MOVEMENT_SPEED = 100;
 static const float MOVEMENT_ACCELERATION = 30;
 //static const float MOVEMENT_ACCELERATION = 7;
 static const float MOVEMENT_FRICTION = 6;
-static const glm::vec3 PLAYER_HALF_WIDTH(0.25, 0.7, 0.25);
+static const glm::vec3 PLAYER_HALF_WIDTH(0.3, 0.8, 0.3);
+static const float PLAYER_HEAD_OFFSET = 0.6;
 
 bool g_ForwardKey;
 bool g_BackwardKey;
@@ -58,7 +59,7 @@ void TranslateWorld()
 {
     glTranslatef(
         -g_PlayerPosition.x,
-        -g_PlayerPosition.y,
+        -(g_PlayerPosition.y + PLAYER_HEAD_OFFSET),
         -g_PlayerPosition.z
     );
 }
@@ -106,15 +107,12 @@ void UpdatePlayer( float timeFrame )
     if(length(direction) > 0.1f)
         direction = normalize(g_PlayerOrientation * normalize(direction));
 
-    // --- Update velocity and position
+    // --- Update velocity
     g_PlayerVelocity += direction * (MOVEMENT_ACCELERATION * timeFrame);
 
     if(g_PlayerVelocity.length() > MAX_MOVEMENT_SPEED)
         g_PlayerVelocity *= MAX_MOVEMENT_SPEED / g_PlayerVelocity.length();
 
-    g_PlayerPosition += g_PlayerVelocity * timeFrame;
-
-    g_PlayerVelocity *= 1.0f - timeFrame * MOVEMENT_FRICTION;
 
     // --- Resolve collisions ---
     Box playerBox;
@@ -126,9 +124,14 @@ void UpdatePlayer( float timeFrame )
     g_PlayerPosition = playerBox.position;
     g_PlayerVelocity = playerBox.velocity;
 
+
     // --- Final steps ---
     g_PlayerVelocity.y = 0;
-    g_PlayerPosition.y = 1.4;
+    g_PlayerPosition.y = PLAYER_HALF_WIDTH.y;
+
+    //g_PlayerPosition += g_PlayerVelocity * timeFrame;
+    g_PlayerVelocity *= 1.0f - timeFrame * MOVEMENT_FRICTION;
+
 
     // --- Update listener ---
     UpdateAudioListener(g_PlayerPosition, g_PlayerVelocity, g_PlayerOrientation*glm::vec3(0,0,1), glm::vec3(0,1,0));

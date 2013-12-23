@@ -18,6 +18,8 @@
 void OnFramebufferResize( int width, int height );
 void OnExitKey( const char* name, bool pressed );
 
+float g_CurrentTimeFrame = 0;
+
 bool InitGame( const int argc, char** argv )
 {
     Log("----------- Config ------------");
@@ -36,6 +38,8 @@ bool InitGame( const int argc, char** argv )
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glClearColor(0.5, 0.5, 0.5, 1);
 
     if(!InitDebugGraphics())
@@ -98,6 +102,7 @@ void RunGame()
         // Simulation
         const double curTime = glfwGetTime();
         const double timeFrame = curTime-lastTime;
+        g_CurrentTimeFrame = timeFrame;
         UpdateAudio(timeFrame);
         UpdateControls(timeFrame);
         UpdatePlayer(timeFrame);
@@ -144,3 +149,9 @@ void OnExitKey( const char* name, bool pressed )
     if(pressed)
         FlagWindowForClose();
 }
+
+float CurrentTimeFrame()
+{
+    return g_CurrentTimeFrame;
+}
+
