@@ -215,7 +215,7 @@ bool FireSquirrelCallback( SquirrelCallback callback, int argumentCount, bool pu
     }
 
     const bool success = SQ_SUCCEEDED( sq_call(vm, argumentCount+1, pushReturnValue, true) );
-
+    // TODO: Has sq_call been handled correctly?
     if(pushReturnValue)
     {
         HSQOBJECT tmp;

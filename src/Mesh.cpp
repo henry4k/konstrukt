@@ -375,7 +375,7 @@ void FreeMesh( const Mesh* mesh )
 
 SQInteger OnReleaseMesh( void* userData, SQInteger size )
 {
-    FreeMesh((Mesh*)userData); // Some compilers can't cast pointers directly to smaller data types.
+    FreeMesh((Mesh*)userData);
     return 1;
 }
 

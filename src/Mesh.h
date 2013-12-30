@@ -2,6 +2,7 @@
 #define __MESH__
 
 #include "Vertex.h"
+#include "Squirrel.h"
 
 struct Mesh
 {
@@ -14,5 +15,7 @@ struct Mesh
 
 bool LoadMesh( Mesh* mesh, const char* file );
 void FreeMesh( const Mesh* mesh );
+
+SQInteger OnReleaseMesh( void* userData, SQInteger size );
 
 #endif

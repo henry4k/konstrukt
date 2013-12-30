@@ -186,11 +186,20 @@ float SweptAABB( Box a, Box b, vec3* normalOut, float timeFrame )
 
 SQInteger Squirrel_CreateMatrix4( HSQUIRRELVM vm )
 {
-    const mat4 matrix;
+    const mat4 matrix(1.0f);
     PushUserDataToSquirrel(vm, &matrix, sizeof(matrix), NULL);
     return 1;
 }
 RegisterStaticFunctionInSquirrel(CreateMatrix4, 1, ".");
+
+SQInteger Squirrel_CopyMatrix4( HSQUIRRELVM vm )
+{
+    mat4* matrix;
+    sq_getuserdata(vm, 2, (SQUserPointer*)&matrix, NULL);
+    PushUserDataToSquirrel(vm, matrix, sizeof(mat4), NULL);
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(CopyMatrix4, 2, ".u");
 
 SQInteger Squirrel_AddMatrix4( HSQUIRRELVM vm )
 {
@@ -255,8 +264,8 @@ SQInteger Squirrel_TranslateMatrix4( HSQUIRRELVM vm )
 
     float x, y, z;
     sq_getfloat(vm, 3, &x);
-    sq_getfloat(vm, 4, &x);
-    sq_getfloat(vm, 5, &x);
+    sq_getfloat(vm, 4, &y);
+    sq_getfloat(vm, 5, &z);
 
     const vec3 t(x,y,z);
 
@@ -273,8 +282,8 @@ SQInteger Squirrel_ScaleMatrix4( HSQUIRRELVM vm )
 
     float x, y, z;
     sq_getfloat(vm, 3, &x);
-    sq_getfloat(vm, 4, &x);
-    sq_getfloat(vm, 5, &x);
+    sq_getfloat(vm, 4, &y);
+    sq_getfloat(vm, 5, &z);
 
     const vec3 s(x,y,z);
 
@@ -289,17 +298,15 @@ SQInteger Squirrel_RotateMatrix4( HSQUIRRELVM vm )
     mat4* a;
     sq_getuserdata(vm, 2, (SQUserPointer*)&a, NULL);
 
-    float x, y, z;
-    sq_getfloat(vm, 3, &x);
+    float angle, x, y, z;
+    sq_getfloat(vm, 3, &angle);
     sq_getfloat(vm, 4, &x);
-    sq_getfloat(vm, 5, &x);
+    sq_getfloat(vm, 5, &y);
+    sq_getfloat(vm, 6, &z);
 
-    mat4 r = *a;
-    r = rotate(r, x, vec3(1,0,0));
-    r = rotate(r, y, vec3(0,1,0));
-    r = rotate(r, z, vec3(0,0,1));
+    mat4 r = rotate(*a, angle, vec3(x,y,z));
 
     PushUserDataToSquirrel(vm, &r, sizeof(r), NULL);
     return 1;
 }
-RegisterStaticFunctionInSquirrel(RotateMatrix4, 5, ".ufff");
+RegisterStaticFunctionInSquirrel(RotateMatrix4, 6, ".uffff");

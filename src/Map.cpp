@@ -28,17 +28,22 @@ struct Tile
     unsigned short definition;
 };
 
-Program g_MapProgram;
-Texture g_MapTexture;
 std::vector<TileDefinition> g_TileDefinitions;
 int g_MapWidth = 0;
 int g_MapDepth = 0;
 Tile* g_MapTileData = NULL;
 
+Program g_MapProgram;
+Texture g_MapTexture;
+MeshBuffer g_MapMeshBuffer;
 Model g_MapModel;
 
 bool InitMap()
 {
+    g_TileDefinitions.clear();
+    g_MapTileData = NULL;
+
+
     g_MapProgram = LoadProgram("Shaders/Default.vert", "Shaders/Default.frag");
     if(!g_MapProgram)
         return false;
@@ -47,10 +52,8 @@ bool InitMap()
     if(!g_MapTexture)
         return false;
 
-    g_TileDefinitions.clear();
+    CreateMeshBuffer(&g_MapMeshBuffer);
     memset(&g_MapModel, 0, sizeof(Model));
-
-    g_MapTileData = NULL;
 
     return true;
 }
@@ -60,6 +63,7 @@ void DestroyMap()
     FreeProgram(g_MapProgram);
     FreeTexture(g_MapTexture);
     FreeModel(&g_MapModel);
+    FreeMeshBuffer(&g_MapMeshBuffer);
 }
 
 /**
@@ -80,52 +84,10 @@ int CreateTileDefinition( const char* name, StaticTileMeshFn staticMeshFn, Stati
     return g_TileDefinitions.size()-1;
 }
 
-std::vector<Vertex> g_MapVertexBuffer;
-std::vector<unsigned short> g_MapIndexBuffer;
-
-void AddMeshToMapBuffer( const Mesh* source, const glm::mat4* transform )
-{
-    // Allocate memory
-    g_MapVertexBuffer.reserve(g_MapVertexBuffer.size()+source->vertexCount);
-    g_MapIndexBuffer.reserve(g_MapIndexBuffer.size()+source->indexCount);
-
-    const unsigned short indexOffset = g_MapVertexBuffer.size();
-
-    for(int i = 0; i < source->vertexCount; ++i)
-    {
-        Vertex vertex = source->vertices[i];
-        const glm::vec4 transformedPosition = *transform * glm::vec4(vertex.position, 1);
-        vertex.position.x = transformedPosition.x;
-        vertex.position.y = transformedPosition.y;
-        vertex.position.z = transformedPosition.z;
-
-        g_MapVertexBuffer.push_back(vertex);
-    }
-
-    for(int i = 0; i < source->indexCount; ++i)
-    {
-        g_MapIndexBuffer.push_back( indexOffset + source->indices[i] );
-    }
-}
-
-glm::vec3 g_MapBufferOffset;
-static const glm::mat4 MAT4_IDENTITY;
-
-void AddMeshToTile( const Mesh* mesh, glm::vec3 translate, glm::vec3 rotate, glm::vec3 scale )
-{
-    glm::mat4 transform = glm::translate(MAT4_IDENTITY, g_MapBufferOffset+translate);
-    transform = glm::rotate(transform, rotate.x, glm::vec3(1,0,0));
-    transform = glm::rotate(transform, rotate.y, glm::vec3(0,1,0));
-    transform = glm::rotate(transform, rotate.z, glm::vec3(0,0,1));
-    transform = glm::scale(transform, scale);
-
-    AddMeshToMapBuffer(mesh, &transform);
-}
-
 bool GenerateStaticMapModel( Model* target, int startX, int startZ, int endX, int endZ )
 {
-    g_MapVertexBuffer.clear();
-    g_MapIndexBuffer.clear();
+    FreeMeshBuffer(&g_MapMeshBuffer);
+    CreateMeshBuffer(&g_MapMeshBuffer);
 
     for(int z = startZ; z < endZ; ++z)
     for(int x = startX; x < endX; ++x)
@@ -135,20 +97,12 @@ bool GenerateStaticMapModel( Model* target, int startX, int startZ, int endX, in
 
         if(tileDef->staticMeshFn)
         {
-            g_MapBufferOffset = glm::vec3(x,0,z)*TILE_SIZE;
-            tileDef->staticMeshFn(tile->definition, x, z);
+            tileDef->staticMeshFn(tile->definition, x, z, &g_MapMeshBuffer);
         }
     }
 
-    const int vertexCount = g_MapVertexBuffer.size();
-    const int indexCount = g_MapIndexBuffer.size();
-
     Mesh mesh;
-    mesh.vertexCount = vertexCount;
-    mesh.vertices = &g_MapVertexBuffer.front();
-    mesh.indexCount = indexCount;
-    mesh.indices = &g_MapIndexBuffer.front();
-
+    BuildMesh(&g_MapMeshBuffer, &mesh);
     Log("Created map chunk mesh from %d,%d to %d,%d with %d vertices and %d indices.", startX, startZ, endX, endZ, mesh.vertexCount, mesh.indexCount);
 
     return CreateModel(target, &mesh);
@@ -320,8 +274,14 @@ void SimulateBoxInMap( Box* box, float timeFrame )
 
 // --- Squirrel Bindings ---
 
-void OnSquirrelGenerateStaticTileMesh( int TileDefinition, int x, int z )
+void OnSquirrelGenerateStaticTileMesh( int tileDefinition, int x, int z, MeshBuffer* buffer )
 {
+    HSQUIRRELVM vm = GetSquirrelVM();
+    sq_pushinteger(vm, tileDefinition);
+    sq_pushinteger(vm, x);
+    sq_pushinteger(vm, z);
+    PushUserDataToSquirrel(vm, &buffer, sizeof(MeshBuffer*), NULL);
+    FireSquirrelCallback(SQCALLBACK_STATIC_TILE_MESH_GENRATOR, 4, false);
 }
 
 SQInteger Squirrel_RegisterStaticTileMeshGeneratorCallback( HSQUIRRELVM vm )
@@ -370,6 +330,13 @@ SQInteger Squirrel_GenerateMap( HSQUIRRELVM vm )
     return 0;
 }
 RegisterStaticFunctionInSquirrel(GenerateMap, 3, ".ii");
+
+SQInteger Squirrel_UpdateMap( HSQUIRRELVM vm )
+{
+    UpdateMap(0,0,0,0);
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(UpdateMap, 1, ".");
 
 SQInteger Squirrel_GetTileDefinitionAt( HSQUIRRELVM vm )
 {
