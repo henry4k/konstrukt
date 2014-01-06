@@ -1,3 +1,3 @@
 return {
-    "GetConfigValue": ::native.GetConfigValue
+    GetConfigValue = ::native.GetConfigValue
 }

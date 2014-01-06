@@ -2,47 +2,96 @@
  * Core is loaded before any user or map specific scripts.
  */
 
+// --- Utils ---
+
+function ConcatArrays( ... )
+{
+    local a = []
+    foreach(v in vargv)
+        a.extend(v)
+    return a
+}
+
 
 // --- module system ---
 
 Modules <- {}
 RealRoot <- getroottable()
 
-function require( moduleName )
-{
-    local modules = ::RealRoot.Modules
+ModuleSearchPaths <- ["Scripts/Modules"]
 
-    if(moduleName in modules)
+function _fileExists( fileName )
+{
+    local file = ::RealRoot.native.io.file(fileName, "rb")
+    if(file)
     {
-        return modules[moduleName].exports
+        file.close()
+        return true
     }
     else
     {
-        print("Loading module "+moduleName)
+        return false
+    }
+}
 
-        local fileName = "Scripts/Modules/"+moduleName+".nut"
-        
-        local oldRoot = getroottable()
-        local moduleRoot = {}.setdelegate(::RealRoot)
+function _tryLoadModule( moduleName )
+{
+    local modules = ::RealRoot.Modules
+    local originalRoot = ::getroottable()
 
-        setroottable(moduleRoot)
-            local closure = ::RealRoot.native.io.loadfile(fileName, true)
-            local moduleExports = closure.call(moduleRoot)
-        setroottable(oldRoot)
+    if(moduleName in modules)
+    {
+        return modules[moduleName]._module.export
+    }
+    else
+    {
+        foreach(searchPath in ::ModuleSearchPaths)
+        {
+            local fileName = searchPath+"/"+moduleName+".nut"
+            if(!_fileExists(fileName))
+                continue
 
-        /*
-        foreach(k,v in moduleExports)
-            if(type(v) == "functions")
-                moduleExports[k] = v.bindenv(moduleRoot).setroot(moduleRoot)
-        */
+            local moduleRoot = {
+                _module = {
+                    name = moduleName,
+                    file = fileName,
+                    export = null
+                }
+            }.setdelegate(::RealRoot)
 
-        modules[moduleName] <- {
-            "root": moduleRoot,
-            "exports": moduleExports
+            ::setroottable(moduleRoot)
+            try
+            {
+                local closure = ::RealRoot.native.io.loadfile(fileName, true)
+                moduleRoot._module.export = closure.call(moduleRoot)
+            }
+            catch( e )
+            {
+                ::setroottable(originalRoot)
+                ::error("Exception while trying to load module '"+moduleName+"' from '"+fileName+"':")
+                ::error(e)
+                continue
+            }
+            ::setroottable(originalRoot)
+
+            if(moduleRoot._module.export == null)
+                throw "Module '"+moduleName+"' exports nothing!"
+
+            modules[moduleName] <- moduleRoot
+            return moduleRoot._module.export
         }
 
-        return moduleExports
+        return null
     }
+}
+
+function require( moduleName )
+{
+    local moduleExport = _tryLoadModule(moduleName)
+    if(moduleExport != null)
+        return moduleExport
+    else
+        throw "Can't load module '"+moduleName+"'"
 }
 
 

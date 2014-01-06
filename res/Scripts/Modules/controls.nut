@@ -31,6 +31,6 @@ function OnAxisControlAction( name, absolute, delta )
 
 
 return {
-    "RegisterKeyControl": RegisterKeyControl,
-    "RegisterAxisControl": RegisterAxisControl
+    RegisterKeyControl = RegisterKeyControl,
+    RegisterAxisControl = RegisterAxisControl
 }

@@ -8,6 +8,10 @@ out = argv[0]
 
 bpy.ops.export_mesh.ply(
     filepath=out,
+    use_mesh_modifiers=True,
+    use_uv_coords=True,
+    use_normals=True,
+    use_colors=False,
     axis_forward='-Z',
     axis_up='Y',
-    use_colors=False)
+    global_scale=1.0)

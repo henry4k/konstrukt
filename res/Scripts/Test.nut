@@ -1,45 +1,34 @@
-math <- require("math")
-map  <- require("map")
-mesh <- require("mesh")
-
 print("Squirrels in space!")
 
-MapWidth <- 10
-MapDepth <- 10
+map <- require("map")
+math <- require("math")
 
-WallMesh <- mesh.LoadMesh("Meshes/Wall-1x1.ply")
+local mapWidth = 20
+local mapDepth = 20
 
-Tiles <- [
-    map.CreateTileDefinition("Void", null, null),
-    map.CreateTileDefinition("Wall",
-        function( x, z, meshBuffer ) // staticTileMeshFn
-        {
-            meshBuffer.addMesh(
-                WallMesh,
-                math.Matrix4().translate(x,0,z).rotate(math.PI/2.0,0,1,0)
-            )
-        },
-        null // staticTileSolidFn
-    )
+local voidTileDef = map.FindTileDefinitionByName("Void")
+local tileDefs = [
+    map.FindTileDefinitionByName("Wall")
 ]
 
-map.GenerateMap(MapWidth, MapDepth)
-
-for(local z = 0.0; z < MapDepth; z+=map.TILE_SIZE.z)
-for(local x = 0.0; x < MapWidth; x+=map.TILE_SIZE.x)
+map.GenerateMap(mapWidth, mapDepth)
+for(local z = 0.0; z < mapDepth; z+=map.TILE_SIZE.z)
+for(local x = 0.0; x < mapWidth; x+=map.TILE_SIZE.x)
 {
-    map.SetTileAt(x,z, 0) //math.RandomTableEntry(Tiles))
+    local tileDef = null
+    if(math.Random() >= 0.9)
+        tileDef = math.RandomArrayElement(tileDefs)
+    else
+        tileDef = voidTileDef
+
+    local tile = tileDef.createTile(x,z)
+    tile.save()
 }
-map.SetTileAt(1.0, 0.0, 1)
-map.SetTileAt(1.5, 0.0, 1)
-map.SetTileAt(2.0, 0.0, 1)
-map.SetTileAt(2.5, 0.0, 1)
-map.SetTileAt(3.0, 0.0, 1)
 map.UpdateMap()
 
 
 
-controls = require("controls")
+controls <- require("controls")
 
 testkey <- controls.RegisterKeyControl("testkey", function( pressed )
 {

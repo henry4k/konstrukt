@@ -1,3 +1,1 @@
-return {
-    // ...
-}.setdelegate(::native.system)
+return {}.setdelegate(::native.system)

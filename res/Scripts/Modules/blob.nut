@@ -1,3 +1,1 @@
-return {
-    // ...
-}.setdelegate(::native.blob)
+return {}.setdelegate(::native.blob)

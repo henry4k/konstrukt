@@ -1,3 +1,3 @@
 return {
-    "LoadModel": ::native.LoadModel
+    LoadModel = ::native.LoadModel
 }

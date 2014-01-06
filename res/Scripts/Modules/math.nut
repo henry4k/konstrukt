@@ -5,10 +5,10 @@ function Random( min=0.0, max=1.0 )
     return min + rnd*delta
 }
 
-function RandomTableEntry( table )
+function RandomArrayElement( array )
 {
-    if(table.len() > 0)
-        return table[ Random(0, table.len()-1).tointeger() ]
+    if(array.len() > 0)
+        return array[ Random(0, array.len()-1+0.5).tointeger() ]
     else
         return null
 }
@@ -77,8 +77,9 @@ class Matrix4
     }
 }
 
+
 return {
-    "Random": Random,
-    "RandomTableEntry": RandomTableEntry,
-    "Matrix4": Matrix4
+    Random = Random,
+    RandomArrayElement = RandomArrayElement,
+    Matrix4 = Matrix4
 }.setdelegate(::native.math)

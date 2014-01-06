@@ -1,5 +1,6 @@
 #include <vector>
 #include <string.h>
+#include <stdint.h>
 #include "Common.h"
 #include "Texture.h"
 #include "Shader.h"
@@ -23,10 +24,13 @@ struct TileDefinition
     StaticTileSolidFn staticSolidFn;
 };
 
+
+const int TILE_DATA_SIZE = 6;
 struct Tile
 {
-    unsigned short definition;
-};
+    uint16_t definition;
+    uint8_t data[TILE_DATA_SIZE];
+}; // 16 + 8*6 = 64 (8 Byte)
 
 std::vector<TileDefinition> g_TileDefinitions;
 int g_MapWidth = 0;
@@ -366,3 +370,119 @@ SQInteger Squirrel_SetTileAt( HSQUIRRELVM vm )
     return 0;
 }
 RegisterStaticFunctionInSquirrel(SetTileAt, 4, ".iii");
+
+enum DataType
+{
+    DATA_TYPE_UINT8,
+    DATA_TYPE_INT8,
+    DATA_TYPE_UINT16,
+    DATA_TYPE_INT16,
+    DATA_TYPE_UINT32,
+    DATA_TYPE_INT32,
+    DATA_TYPE_FLOAT32,
+    DATA_TYPE_COUNT
+};
+
+static const int DATA_TYPE_SIZE[DATA_TYPE_COUNT] =
+{
+    sizeof(int8_t),
+    sizeof(uint8_t),
+    sizeof(int16_t),
+    sizeof(uint16_t),
+    sizeof(int32_t),
+    sizeof(uint32_t),
+    sizeof(float)
+};
+
+SQInteger Squirrel_GetTileDataAt( HSQUIRRELVM vm )
+{
+    SQInteger x = 0;
+    sq_getinteger(vm, 2, &x);
+
+    SQInteger z = 0;
+    sq_getinteger(vm, 3, &z);
+
+    SQInteger position = 0;
+    sq_getinteger(vm, 4, &position);
+
+    SQInteger type = 0;
+    sq_getinteger(vm, 5, &type);
+
+    if(type < 0 || type >= DATA_TYPE_COUNT)
+        return sq_throwerror(vm, "Invalid data type");
+
+    if(position+DATA_TYPE_SIZE[type] >= TILE_DATA_SIZE)
+        return sq_throwerror(vm, "Data segment out of bounds");
+
+    const Tile* tile = GetTileAt(x,z);
+    if(!tile)
+        return sq_throwerror(vm, "Position out of range");
+
+    const void* data = &tile->data[position];
+    switch(type)
+    {
+#define GET_VALUE(D,T) sq_push##D(vm, *reinterpret_cast< const T *>(data))
+        case DATA_TYPE_UINT8:   GET_VALUE(integer,uint8_t ); break;
+        case DATA_TYPE_INT8:    GET_VALUE(integer,uint8_t ); break;
+        case DATA_TYPE_UINT16:  GET_VALUE(integer,uint16_t); break;
+        case DATA_TYPE_INT16:   GET_VALUE(integer,uint16_t); break;
+        case DATA_TYPE_UINT32:  GET_VALUE(integer,uint32_t); break;
+        case DATA_TYPE_INT32:   GET_VALUE(integer,uint32_t); break;
+        case DATA_TYPE_FLOAT32: GET_VALUE(float,float   ); break;
+#undef GET_VALUE
+        default:
+            FatalError("Unknown enum value!");
+    }
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(GetTileDataAt, 5, ".iiii");
+
+SQInteger Squirrel_SetTileDataAt( HSQUIRRELVM vm )
+{
+    SQInteger x = 0;
+    sq_getinteger(vm, 2, &x);
+
+    SQInteger z = 0;
+    sq_getinteger(vm, 3, &z);
+
+    SQInteger position = 0;
+    sq_getinteger(vm, 4, &position);
+
+    SQInteger type = 0;
+    sq_getinteger(vm, 5, &type);
+
+    if(type < 0 || type >= DATA_TYPE_COUNT)
+        return sq_throwerror(vm, "Invalid data type");
+
+    if(position+DATA_TYPE_SIZE[type] >= TILE_DATA_SIZE)
+        return sq_throwerror(vm, "Data segment out of bounds");
+
+    SQFloat floatValue = 0;
+    SQInteger intValue = 0;
+    if(type == DATA_TYPE_FLOAT32)
+        sq_getfloat(vm, 6, &floatValue);
+    else
+        sq_getinteger(vm, 6, &intValue);
+
+    Tile* tile = GetTileAt(x,z);
+    if(!tile)
+        return sq_throwerror(vm, "Position out of range");
+
+    void* data = &tile->data[position];
+    switch(type)
+    {
+#define SET_VALUE(T,O) *reinterpret_cast< T *>(data) = O
+        case DATA_TYPE_UINT8:   SET_VALUE(uint8_t , intValue); break;
+        case DATA_TYPE_INT8:    SET_VALUE(uint8_t , intValue); break;
+        case DATA_TYPE_UINT16:  SET_VALUE(uint16_t, intValue); break;
+        case DATA_TYPE_INT16:   SET_VALUE(uint16_t, intValue); break;
+        case DATA_TYPE_UINT32:  SET_VALUE(uint32_t, intValue); break;
+        case DATA_TYPE_INT32:   SET_VALUE(uint32_t, intValue); break;
+        case DATA_TYPE_FLOAT32: SET_VALUE(float   , floatValue); break;
+#undef SET_VALUE
+        default:
+            FatalError("Unknown enum value!");
+    }
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(SetTileDataAt, 6, ".iiiii|f");
