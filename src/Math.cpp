@@ -6,8 +6,11 @@
 
 using namespace glm;
 
+//#define DEBUG_LOG(...) Log(__VA_ARGS__)
+#define DEBUG_LOG(...)
 
-bool TestAABBOverlap( Box a, Box b )
+
+bool TestAabbOverlap( Box a, Box b )
 {
     for(int i = 0; i < 3; ++i)
     {
@@ -18,7 +21,7 @@ bool TestAABBOverlap( Box a, Box b )
     return true;
 }
 
-bool TestAABBOverlap( Box a, Box b, vec3* penetrationOut )
+bool TestAabbOverlap( Box a, Box b, vec3* penetrationOut )
 {
     vec3 side;
     vec3 overlap;
@@ -45,11 +48,13 @@ bool TestAABBOverlap( Box a, Box b, vec3* penetrationOut )
     }
 
     if(penetrationOut->length() >= 0.01f)
-    Log("penetration = %.2f|%.2f|%.2f",
-        penetrationOut->x,
-        penetrationOut->y,
-        penetrationOut->z
-    );
+    {
+        DEBUG_LOG("penetration = %.2f|%.2f|%.2f",
+            penetrationOut->x,
+            penetrationOut->y,
+            penetrationOut->z
+        );
+    }
 
     return true;
 }
@@ -81,12 +86,12 @@ Box GetSweptBroadphaseBox( Box b )
 }
 */
 
-float SweptAABB( Box a, Box b, vec3* normalOut, float timeFrame )
+float SweptAabb( Box a, Box b, vec3* normalOut, float timeFrame )
 {
-    Log("=============================");
+    DEBUG_LOG("=============================");
 
-    Log("a.position.x = %.2f, min = %.2f, max = %.2f", a.position.x, a.position.x-a.halfWidth.x, a.position.x+a.halfWidth.x);
-    Log("b.position.x = %.2f, min = %.2f, max = %.2f", b.position.x, b.position.x-b.halfWidth.x, b.position.x+b.halfWidth.x);
+    DEBUG_LOG("a.position.x = %.2f, min = %.2f, max = %.2f", a.position.x, a.position.x-a.halfWidth.x, a.position.x+a.halfWidth.x);
+    DEBUG_LOG("b.position.x = %.2f, min = %.2f, max = %.2f", b.position.x, b.position.x-b.halfWidth.x, b.position.x+b.halfWidth.x);
 
     /*
     // find the distance between the objects on the near and far sides for both x and y
@@ -100,14 +105,14 @@ float SweptAABB( Box a, Box b, vec3* normalOut, float timeFrame )
     vec3 farDelta  = abs(b.position-a.position) + (b.halfWidth+a.halfWidth);
     vec3 nearDelta = abs(b.position-a.position) - (b.halfWidth+a.halfWidth);
 
-    Log("farDelta.x = %.2f", farDelta.x);
-    Log("nearDelta.x = %.2f", nearDelta.x);
+    DEBUG_LOG("farDelta.x = %.2f", farDelta.x);
+    DEBUG_LOG("nearDelta.x = %.2f", nearDelta.x);
 
 
     // find time of collision and time of leaving for each axis (if statement is to prevent divide by zero)
 
     const vec3 relativeVelocity = a.velocity - b.velocity;
-    Log("relativeddVelocity.x = %.2f", relativeVelocity.x);
+    DEBUG_LOG("relativeddVelocity.x = %.2f", relativeVelocity.x);
 
     vec3 axisEntryTime;
     vec3 axisExitTime;
@@ -125,8 +130,8 @@ float SweptAABB( Box a, Box b, vec3* normalOut, float timeFrame )
             axisExitTime[i]  =  farDelta[i] / relativeVelocity[i];
         }
 
-        Log("axisEntryTime[%d] = %.2f", i, axisEntryTime[i]);
-        Log(" axisExitTime[%d] = %.2f", i, axisExitTime[i]);
+        DEBUG_LOG("axisEntryTime[%d] = %.2f", i, axisEntryTime[i]);
+        DEBUG_LOG(" axisExitTime[%d] = %.2f", i, axisExitTime[i]);
     }
 
 
@@ -134,8 +139,8 @@ float SweptAABB( Box a, Box b, vec3* normalOut, float timeFrame )
     float entryTime = max(axisEntryTime.x, max(axisEntryTime.y, axisEntryTime.z));
     float exitTime  = min(axisExitTime.x, min(axisExitTime.y, axisExitTime.z));
 
-    Log("entryTime = %.2f", entryTime);
-    Log(" exitTime = %.2f", exitTime);
+    DEBUG_LOG("entryTime = %.2f", entryTime);
+    DEBUG_LOG(" exitTime = %.2f", exitTime);
 
 
     // if there was no collision
@@ -152,7 +157,7 @@ float SweptAABB( Box a, Box b, vec3* normalOut, float timeFrame )
         )
     )
     {
-        Log("No collision!");
+        DEBUG_LOG("No collision!");
         *normalOut = vec3(0,0,0);
         return timeFrame;
     }
@@ -176,7 +181,7 @@ float SweptAABB( Box a, Box b, vec3* normalOut, float timeFrame )
             *normalOut = vec3(0,0,-sign(farDelta.z));
         }
 
-        Log("=========== Collision! =============");
+        DEBUG_LOG("=========== Collision! =============");
         return entryTime;
     }
 }

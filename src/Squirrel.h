@@ -2,6 +2,7 @@
 #define __SQUIRREL__
 
 #include <squirrel.h>
+#include <sqstdblob.h>
 
 // --- Misc ---
 

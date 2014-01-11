@@ -9,6 +9,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+struct Aabb
+{
+    glm::vec3 position;
+    glm::vec3 halfWidth;
+};
+
 struct Box
 {
     glm::vec3 position;
@@ -16,8 +22,8 @@ struct Box
     glm::vec3 velocity;
 };
 
-bool TestAABBOverlap( Box a, Box b );
-bool TestAABBOverlap( Box a, Box b, glm::vec3* penetrationOut );
-float SweptAABB( Box a, Box b, glm::vec3* normalOut, float timeStep );
+bool TestAabbOverlap( Box a, Box b );
+bool TestAabbOverlap( Box a, Box b, glm::vec3* penetrationOut );
+float SweptAabb( Box a, Box b, glm::vec3* normalOut, float timeStep );
 
 #endif

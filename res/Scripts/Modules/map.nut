@@ -1,6 +1,5 @@
 MeshBuffer <- require("meshbuffer")
-mesh <- require("mesh")
-math <- require("math")
+SolidBuffer <- require("solidbuffer")
 
 TileNameToDefinition <- {}
 TileIdToDefinition   <- {}
@@ -93,7 +92,7 @@ function OnGenerateStaticTileMesh( id, x, z, meshBufferHandle )
     local definition = TileIdToDefinition[id]
     local tile = definition.createTile(worldCoord.x, worldCoord.z)
     tile.load()
-    return tile.generateStaticMesh(MeshBuffer(meshBufferHandle))
+    tile.generateStaticMesh(MeshBuffer(meshBufferHandle))
 }
 ::native.RegisterStaticTileMeshGeneratorCallback(OnGenerateStaticTileMesh)
 
@@ -103,10 +102,13 @@ function OnGenerateStaticTileSolid( id, x, z )
     local definition = TileIdToDefinition[id]
     local tile = definition.createTile(worldCoord.x, worldCoord.z)
     tile.load()
-    return tile.generateStaticSolid()
+    local solidBuffer = SolidBuffer()
+    tile.generateStaticSolid(solidBuffer)
+    return solidBuffer.handle
 }
 ::native.RegisterStaticTileSolidGeneratorCallback(OnGenerateStaticTileSolid)
 
+_MapSize <- {x=0, z=0}
 function GenerateMap( width, depth )
 {
     local mapCoord = WorldToMapCoord({x=width, z=depth})
@@ -114,11 +116,14 @@ function GenerateMap( width, depth )
         mapCoord.x,
         mapCoord.z
     )
+    _MapSize = mapCoord
 }
 
 function GetTileAt( x, z )
 {
     local mapCoord = WorldToMapCoord({x=x, z=z})
+    if(mapCoord.x < 0 || mapCoord.z < 0 || mapCoord.x >= _MapSize.x || mapCoord.z >= _MapSize.z)
+        return null // Weil out of range
     local id = ::native.GetTileDefinitionAt(
         mapCoord.x,
         mapCoord.z
@@ -139,15 +144,14 @@ function SetTileDefinitionAt( x, z, definition )
     )
 }
 
-enum DataType
-{
-    UINT8,
-    INT8,
-    UINT16,
-    INT16,
-    UINT32,
-    INT32,
-    FLOAT32
+DataType <- {
+    UINT8  = 0,
+    INT8   = 1,
+    UINT16 = 2,
+    INT16  = 3,
+    UINT32 = 4,
+    INT32  = 5,
+    FLOAT32 = 6
 }
 
 function GetTileDataAt( x, z, position, type )
@@ -171,135 +175,6 @@ function SetTileDataAt( x, z, position, type, value )
     )
 }
 
-// ---- Tiles ----
-
-class Tile
-{
-    definition = null
-    x = null
-    z = null
-
-    function constructor( definition, x, z )
-    {
-        this.definition = definition
-        this.x = x
-        this.z = z
-    }
-
-    function load()
-    {
-    }
-
-    function save()
-    {
-        SetTileDefinitionAt(x, z, definition)
-    }
-}
-
-class VoidTile extends Tile
-{
-    function constructor( definition, x, z )
-    {
-        base.constructor(definition, x, z)
-    }
-
-    function load()
-    {
-        base.load()
-    }
-
-    function save()
-    {
-        base.save()
-    }
-
-    function generateStaticMesh( meshBuffer )
-    {
-        // Nothing here - what have you expected?
-    }
-
-    function generateStaticSolid()
-    {
-        // Dito
-    }
-}
-
-RegisterTileDefinition({
-    id = null,
-    name = "Void",
-    createTile = function( x, z )
-    {
-        return VoidTile(this, x, z)
-    }
-})
-
-enum Rotation
-{
-    NORTH,
-    WEST,
-    SOUTH,
-    EAST
-}
-
-class WallTile extends Tile
-{
-    static wallMesh = mesh.LoadMesh("Meshes/Wall-1x1.ply")
-    static sideMesh = mesh.LoadMesh("Meshes/WallSide.ply")
-
-    rotation = null
-
-    function constructor( definition, x, z )
-    {
-        base.constructor(definition, x, z)
-        rotation = Rotation.NORTH
-    }
-
-    function load()
-    {
-        base.load()
-        rotation = GetTileDataAt(x, z, DataType.UINT8, 0)
-    }
-
-    function save()
-    {
-        base.save()
-        SetTileDataAt(x, z, DataType.UINT8, 0, rotation)
-    }
-
-    function generateStaticMesh( meshBuffer )
-    {
-        meshBuffer.addMesh(
-            wallMesh,
-            math.Matrix4().translate(x,0,z)
-        )
-
-        meshBuffer.addMesh(
-            sideMesh,
-            math.Matrix4().translate(x,0,z)
-        )
-
-        meshBuffer.addMesh(
-            sideMesh,
-            math.Matrix4().translate(x,0,z).rotate(math.PI,0,1,0)
-        )
-    }
-
-    function generateStaticSolid()
-    {
-        throw "Not implemented"
-    }
-}
-
-RegisterTileDefinition({
-    id = null,
-    name = "Wall",
-    createTile = function( x, z )
-    {
-        return WallTile(this, x, z)
-    }
-})
-
-
 return {
     TILE_SIZE = TILE_SIZE,
     RegisterTileDefinition = RegisterTileDefinition,
@@ -308,8 +183,7 @@ return {
     UpdateMap = ::native.UpdateMap,
     GetTileAt = GetTileAt,
     SetTileDefinitionAt = SetTileDefinitionAt,
-    //DataType = DataType,
+    DataType = DataType,
     GetTileDataAt = GetTileDataAt,
-    SetTileDataAt = SetTileDataAt,
-    //Rotation = Rotation
+    SetTileDataAt = SetTileDataAt
 }

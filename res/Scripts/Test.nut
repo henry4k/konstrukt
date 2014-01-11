@@ -1,13 +1,20 @@
 print("Squirrels in space!")
 
-map <- require("map")
 math <- require("math")
+map <- require("map")
+tiles <- require("tiles")
 
 local mapWidth = 20
 local mapDepth = 20
 
-local voidTileDef = map.FindTileDefinitionByName("Void")
-local tileDefs = [
+local spaceDefs = [
+    //map.FindTileDefinitionByName("Void"),
+    map.FindTileDefinitionByName("Floor"),
+    map.FindTileDefinitionByName("Floor"),
+    map.FindTileDefinitionByName("Floor")
+]
+
+local structureDefs = [
     map.FindTileDefinitionByName("Wall")
 ]
 
@@ -17,9 +24,9 @@ for(local x = 0.0; x < mapWidth; x+=map.TILE_SIZE.x)
 {
     local tileDef = null
     if(math.Random() >= 0.9)
-        tileDef = math.RandomArrayElement(tileDefs)
+        tileDef = math.RandomArrayElement(structureDefs)
     else
-        tileDef = voidTileDef
+        tileDef = math.RandomArrayElement(spaceDefs)
 
     local tile = tileDef.createTile(x,z)
     tile.save()

@@ -42,6 +42,8 @@ Texture g_MapTexture;
 MeshBuffer g_MapMeshBuffer;
 Model g_MapModel;
 
+SolidBuffer g_MapStaticSolid;
+
 bool InitMap()
 {
     g_TileDefinitions.clear();
@@ -112,6 +114,26 @@ bool GenerateStaticMapModel( Model* target, int startX, int startZ, int endX, in
     return CreateModel(target, &mesh);
 }
 
+bool GenerateStaticMapSolid( SolidBuffer* solid, int startX, int startZ, int endX, int endZ )
+{
+    solid->clear();
+
+    for(int z = startZ; z < endZ; ++z)
+    for(int x = startX; x < endX; ++x)
+    {
+        const Tile* tile = &g_MapTileData[z*g_MapWidth + x];
+        const TileDefinition* tileDef = &g_TileDefinitions[tile->definition];
+
+        if(tileDef->staticSolidFn)
+        {
+            tileDef->staticSolidFn(tile->definition, x, z, solid);
+        }
+    }
+
+    Log("Created map chunk solid from %d,%d to %d,%d with %d Aabbs.", startX, startZ, endX, endZ, solid->size());
+    return true;
+}
+
 void GenerateMap( int width, int depth )
 {
     if(g_MapTileData)
@@ -136,6 +158,8 @@ void UpdateMap( int startX, int startZ, int endX, int endZ )
 {
     FreeModel(&g_MapModel);
     GenerateStaticMapModel(&g_MapModel, 0,0, g_MapWidth, g_MapDepth);
+
+    GenerateStaticMapSolid(&g_MapStaticSolid, 0,0, g_MapWidth, g_MapDepth);
 }
 
 Tile* GetTileAt( int x, int z )
@@ -179,46 +203,24 @@ void DrawBoxCollisionInMap( const Box* box )
         box->position+box->halfWidth
     );
 
-    const int minX = max(0.0f, floor((box->position.x - box->halfWidth.x)/TILE_SIZE.x));
-    const int minZ = max(0.0f, floor((box->position.z - box->halfWidth.z)/TILE_SIZE.z));
-
-    const int maxX = min(ceil((box->position.x + box->halfWidth.x)/TILE_SIZE.x), float(g_MapWidth-1));
-    const int maxZ = min(ceil((box->position.z + box->halfWidth.z)/TILE_SIZE.z), float(g_MapDepth-1));
-
-    /*
-    Log("min: %.2f,%.2f => %d,%d  max: %.2f,%.2f => %d,%d",
-        box->position.x - box->halfWidth.x,
-        box->position.z - box->halfWidth.z,
-        minX,
-        minZ,
-        box->position.x + box->halfWidth.x,
-        box->position.z + box->halfWidth.z,
-        maxX,
-        maxZ
-    );
-    return;
-    */
-
-    for(int z = minZ; z <= maxZ; ++z)
-    for(int x = minX; x <= maxX; ++x)
+    for(int i = 0; i < g_MapStaticSolid.size(); ++i)
     {
-        if(GetTileDefinitionAt(x,z) != 0)
-        {
-            Box tileBox;
-            tileBox.position  = vec3(x, 0.5f, z) * TILE_SIZE;
-            tileBox.halfWidth = TILE_SIZE*0.5f;
-            tileBox.velocity  = vec3(0, 0, 0);
+        const Aabb aabb = g_MapStaticSolid[i];
 
-            if(TestAABBOverlap(*box, tileBox))
-                SetDebugLineColor(vec3(1,0,0));
-            else
-                SetDebugLineColor(vec3(0,1,0));
+        Box solidBox;
+        solidBox.position = aabb.position;
+        solidBox.halfWidth   = aabb.halfWidth;
+        solidBox.velocity    = vec3(0, 0, 0);
 
-            AddDebugCube(
-                tileBox.position-tileBox.halfWidth,
-                tileBox.position+tileBox.halfWidth
-            );
-        }
+        if(TestAabbOverlap(*box, solidBox))
+            SetDebugLineColor(vec3(1,0,0));
+        else
+            SetDebugLineColor(vec3(0,1,0));
+
+        AddDebugCube(
+            solidBox.position-solidBox.halfWidth,
+            solidBox.position+solidBox.halfWidth
+        );
     }
 
     DrawDebugMesh();
@@ -231,44 +233,36 @@ void SimulateBoxInMap( Box* box, float timeFrame )
     const float BOUNCE = 1.0f;
     const float SLIDE  = 1.0f;
 
-    const int minX = max(0.0f, floor((box->position.x - box->halfWidth.x)/TILE_SIZE.x));
-    const int minZ = max(0.0f, floor((box->position.z - box->halfWidth.z)/TILE_SIZE.z));
-
-    const int maxX = min(ceil((box->position.x + box->halfWidth.x)/TILE_SIZE.x), float(g_MapWidth-1));
-    const int maxZ = min(ceil((box->position.z + box->halfWidth.z)/TILE_SIZE.z), float(g_MapDepth-1));
-
-    for(int z = minZ; z <= maxZ; ++z)
-    for(int x = minX; x <= maxX; ++x)
+    for(int i = 0; i < g_MapStaticSolid.size(); ++i)
     {
-        if(GetTileDefinitionAt(x,z) != 0)
+        const Aabb aabb = g_MapStaticSolid[i];
+
+        Box solidBox;
+        solidBox.position = aabb.position;
+        solidBox.halfWidth   = aabb.halfWidth;
+        solidBox.velocity    = vec3(0, 0, 0);
+
+        vec3 penetration;
+        if(TestAabbOverlap(*box, solidBox, &penetration))
         {
-            Box tileBox;
-            tileBox.position  = vec3(x, 0.5f, z) * TILE_SIZE;
-            tileBox.halfWidth = TILE_SIZE*0.5f;
-            tileBox.velocity  = vec3(0, 0, 0);
+            box->position += penetration;
+        }
+        else
+        {
+            vec3 normal;
+            const float collisionTime = SweptAabb(*box, solidBox, &normal, timeFrame);
+            //Log("collisionTime = %.2f", collisionTime);
 
-            vec3 penetration;
-            if(TestAABBOverlap(*box, tileBox, &penetration))
-            {
-                box->position += penetration;
-            }
-            else
-            {
-                vec3 normal;
-                const float collisionTime = SweptAABB(*box, tileBox, &normal, timeFrame);
-                //Log("collisionTime = %.2f", collisionTime);
+            box->position += box->velocity * collisionTime;
 
-                box->position += box->velocity * collisionTime;
+            for(int i = 0; i < 3; ++i)
+                if(abs(normal[i]) > 0.0001f)
+                    box->velocity[i] *= -1;
 
-                for(int i = 0; i < 3; ++i)
-                    if(abs(normal[i]) > 0.0001f)
-                        box->velocity[i] *= -1;
+            //velocityChange += SLIDE * proj(a.velocity, normal);
 
-                //velocityChange += SLIDE * proj(a.velocity, normal);
-
-                const float remainingTime = timeFrame-collisionTime;
-                timeFrame = remainingTime;
-            }
+            const float remainingTime = timeFrame-collisionTime;
+            timeFrame = remainingTime;
         }
     }
 
@@ -295,8 +289,34 @@ SQInteger Squirrel_RegisterStaticTileMeshGeneratorCallback( HSQUIRRELVM vm )
 }
 RegisterStaticFunctionInSquirrel(RegisterStaticTileMeshGeneratorCallback, 2, ".c");
 
-void OnSquirrelGenerateStaticTileSolid( int TileDefinition, int x, int z )
+void OnSquirrelGenerateStaticTileSolid( int tileDefinition, int x, int z, SolidBuffer* buffer )
 {
+    HSQUIRRELVM vm = GetSquirrelVM();
+    sq_pushinteger(vm, tileDefinition);
+    sq_pushinteger(vm, x);
+    sq_pushinteger(vm, z);
+    if(FireSquirrelCallback(SQCALLBACK_STATIC_TILE_SOLID_GENRATOR, 3, true))
+    {
+        void* blob = NULL;
+        sqstd_getblob(vm, -1, (SQUserPointer*)&blob);
+        const int blobSize = sqstd_getblobsize(vm, -1);
+
+        if(blobSize % sizeof(Aabb) != 0)
+        {
+            Error("GenerateStaticMapSolid: Blob size is not a multiple of the aabb size!");
+            return;
+        }
+
+        const int aabbCount = blobSize / sizeof(Aabb);
+        const Aabb* aabbList = reinterpret_cast<const Aabb*>(blob);
+
+        for(int i = 0; i < aabbCount; ++i)
+        {
+            buffer->push_back(aabbList[i]);
+        }
+
+        sq_pop(vm, 1); // Pop return value.
+    }
 }
 
 SQInteger Squirrel_RegisterStaticTileSolidGeneratorCallback( HSQUIRRELVM vm )
@@ -422,13 +442,13 @@ SQInteger Squirrel_GetTileDataAt( HSQUIRRELVM vm )
     switch(type)
     {
 #define GET_VALUE(D,T) sq_push##D(vm, *reinterpret_cast< const T *>(data))
-        case DATA_TYPE_UINT8:   GET_VALUE(integer,uint8_t ); break;
-        case DATA_TYPE_INT8:    GET_VALUE(integer,uint8_t ); break;
-        case DATA_TYPE_UINT16:  GET_VALUE(integer,uint16_t); break;
-        case DATA_TYPE_INT16:   GET_VALUE(integer,uint16_t); break;
-        case DATA_TYPE_UINT32:  GET_VALUE(integer,uint32_t); break;
-        case DATA_TYPE_INT32:   GET_VALUE(integer,uint32_t); break;
-        case DATA_TYPE_FLOAT32: GET_VALUE(float,float   ); break;
+        case DATA_TYPE_UINT8:   GET_VALUE(integer, uint8_t ); break;
+        case DATA_TYPE_INT8:    GET_VALUE(integer, uint8_t ); break;
+        case DATA_TYPE_UINT16:  GET_VALUE(integer, uint16_t); break;
+        case DATA_TYPE_INT16:   GET_VALUE(integer, uint16_t); break;
+        case DATA_TYPE_UINT32:  GET_VALUE(integer, uint32_t); break;
+        case DATA_TYPE_INT32:   GET_VALUE(integer, uint32_t); break;
+        case DATA_TYPE_FLOAT32: GET_VALUE(float, float); break;
 #undef GET_VALUE
         default:
             FatalError("Unknown enum value!");
@@ -478,7 +498,7 @@ SQInteger Squirrel_SetTileDataAt( HSQUIRRELVM vm )
         case DATA_TYPE_INT16:   SET_VALUE(uint16_t, intValue); break;
         case DATA_TYPE_UINT32:  SET_VALUE(uint32_t, intValue); break;
         case DATA_TYPE_INT32:   SET_VALUE(uint32_t, intValue); break;
-        case DATA_TYPE_FLOAT32: SET_VALUE(float   , floatValue); break;
+        case DATA_TYPE_FLOAT32: SET_VALUE(float, floatValue); break;
 #undef SET_VALUE
         default:
             FatalError("Unknown enum value!");
