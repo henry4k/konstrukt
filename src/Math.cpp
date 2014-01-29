@@ -315,3 +315,50 @@ SQInteger Squirrel_RotateMatrix4( HSQUIRRELVM vm )
     return 1;
 }
 RegisterStaticFunctionInSquirrel(RotateMatrix4, 6, ".uffff");
+
+SQInteger Squirrel_Matrix4TransformVector( HSQUIRRELVM vm )
+{
+    mat4* a;
+    sq_getuserdata(vm, 2, (SQUserPointer*)&a, NULL);
+
+    float x, y, z, w;
+    sq_getfloat(vm, 3, &x);
+    sq_getfloat(vm, 4, &y);
+    sq_getfloat(vm, 5, &z);
+    sq_getfloat(vm, 6, &w);
+
+    vec4 v = *a * vec4(x,y,z,w);
+
+    sq_newarray(vm, 0);
+
+    sq_pushfloat(vm, v.x);
+    sq_arrayappend(vm, -2);
+
+    sq_pushfloat(vm, v.y);
+    sq_arrayappend(vm, -2);
+
+    sq_pushfloat(vm, v.z);
+    sq_arrayappend(vm, -2);
+
+    sq_pushfloat(vm, v.w);
+    sq_arrayappend(vm, -2);
+
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(Matrix4TransformVector, 6, ".uffff");
+
+SQInteger Squirrel_Matrix4ToRotationMatrix( HSQUIRRELVM vm )
+{
+    mat4* matrix;
+    sq_getuserdata(vm, 2, (SQUserPointer*)&matrix, NULL);
+
+    mat4 m = *matrix;
+    m[0].w = 0;
+    m[1].w = 0;
+    m[2].w = 0;
+    m[3] = vec4(0,0,0,1);
+
+    PushUserDataToSquirrel(vm, &m, sizeof(mat4), NULL);
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(Matrix4ToRotationMatrix, 2, ".u");

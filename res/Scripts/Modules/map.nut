@@ -175,6 +175,20 @@ function SetTileDataAt( x, z, position, type, value )
     )
 }
 
+RegisterTileDefinition({
+    id = null,
+    name = "Reference",
+    createTile = function( x, z )
+    {
+        local xoffset = GetTileDataAt(x, z, 0, DataType.INT8) // x offset -127 to +127
+        local zoffset = GetTileDataAt(x, z, 1, DataType.INT8) // z offset -127 to +127
+        local definition = GetTileDefinitionAt(x+xoffset, z+zoffset)
+        if(definition.name != "Reference")
+            throw "Reference tile points to another reference!"
+        return definition.createTile(x+xoffset, z+zoffset)
+    }
+})
+
 return {
     TILE_SIZE = TILE_SIZE,
     RegisterTileDefinition = RegisterTileDefinition,

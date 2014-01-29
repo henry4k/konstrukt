@@ -15,7 +15,8 @@ local spaceDefs = [
 ]
 
 local structureDefs = [
-    map.FindTileDefinitionByName("Wall")
+    map.FindTileDefinitionByName("Wall"),
+    map.FindTileDefinitionByName("Door")
 ]
 
 map.GenerateMap(mapWidth, mapDepth)

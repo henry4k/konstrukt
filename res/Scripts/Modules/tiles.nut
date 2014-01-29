@@ -264,6 +264,91 @@ map.RegisterTileDefinition({
 })
 
 
+
+
+class DoorTile extends Tile
+{
+    static doorMesh = mesh.LoadMesh("Meshes/Door.ply")
+
+    direction = null
+
+    function constructor( definition, x, z )
+    {
+        base.constructor(definition, x, z)
+        direction = Direction.NORTH
+    }
+
+    function load()
+    {
+        base.load()
+        direction = map.GetTileDataAt(x, z, map.DataType.UINT8, 0)
+    }
+
+    function save()
+    {
+        base.save()
+        map.SetTileDataAt(x, z, map.DataType.UINT8, 0, direction)
+    }
+
+    function coversDirection( direction )
+    {
+        if(this.rotation * NORTH == direction)
+            return true
+        else
+            return false
+
+        rotated = Rotate({x=1,z=0}, this.rotation)
+        rotated = {x=0,z=1}
+
+        return true
+    }
+
+    function generateStaticMesh( meshBuffer )
+    {
+        local rotation = DirectionToRotation(direction)
+        local meshMatrix = math.Matrix4().translate(x,0,z).rotate(rotation, 0,1,0)
+
+        meshBuffer.addMesh(
+            doorMesh,
+            meshMatrix
+        )
+    }
+
+    function generateStaticSolid( solidBuffer )
+    {
+        local rotation = DirectionToRotation(direction)
+        local solidMatrix = math.Matrix4().rotate(rotation, 0,1,0)
+
+        solidBuffer.addAabb(
+            {
+                position =
+                {
+                    x = x,
+                    y = map.TILE_SIZE.y / 2.0,
+                    z = z-0.25
+                },
+                halfWidth =
+                {
+                    x = map.TILE_SIZE.x / 2.0,
+                    y = map.TILE_SIZE.y / 2.0,
+                    z = (map.TILE_SIZE.z / 2.0) * 2.0
+                }
+            },
+            solidMatrix
+        )
+    }
+}
+
+map.RegisterTileDefinition({
+    id = null,
+    name = "Door",
+    createTile = function( x, z )
+    {
+        return DoorTile(this, x, z)
+    }
+})
+
+
 return {
     Direction = Direction,
     DirectionToRotation = DirectionToRotation,

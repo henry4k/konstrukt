@@ -17,8 +17,17 @@ class SolidBuffer
         }
     }
 
-    function addAabb( aabb )
+    function addAabb( aabb, transformation=null )
     {
+        if(transformation)
+        {
+            local originalAabb = aabb
+            local rotation = transformation.toRotationMatrix()
+            aabb = {}
+            aabb.position <- transformation.transformVector(originalAabb.position),
+            aabb.halfWidth <- rotation.transformVector(originalAabb.halfWidth)
+        }
+
         handle.writen(aabb.position.x, 'f')
         handle.writen(aabb.position.y, 'f')
         handle.writen(aabb.position.z, 'f')

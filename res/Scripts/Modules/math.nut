@@ -75,6 +75,21 @@ class Matrix4
     {
         return Matrix4( ::native.RotateMatrix4(handle, angle.tofloat(), x.tofloat(), y.tofloat(), z.tofloat()) )
     }
+
+    function transformVector( v )
+    {
+        local r = ::native.Matrix4TransformVector(handle, v.x, v.y, v.z, 1.0)
+        return {
+            x = r[0],
+            y = r[1],
+            z = r[2]
+        }
+    }
+
+    function toRotationMatrix()
+    {
+        return Matrix4( ::native.Matrix4ToRotationMatrix(handle) )
+    }
 }
 
 
