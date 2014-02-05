@@ -13,6 +13,7 @@
 #include "Map.h"
 #include "Debug.h"
 #include "Squirrel.h"
+#include "Effects.h"
 #include "Game.h"
 
 void OnFramebufferResize( int width, int height );
@@ -58,6 +59,10 @@ bool InitGame( const int argc, char** argv )
     if(!RegisterKeyControl("exit", OnExitKey, NULL, NULL))
         return false;
 
+    Log("--------- Effects ----------");
+    if(!InitEffects())
+        return false;
+
     Log("--------- Background ----------");
     if(!InitBackground())
         return false;
@@ -92,6 +97,7 @@ void DestroyGame()
     DestroyMap();
     DestroyPlayer();
     DestroyBackground();
+    DestroyEffects();
     DestroyControls();
     DestroyAudio();
     DestroyDebug();
@@ -126,6 +132,7 @@ void RunGame()
         glLoadIdentity();
         RotateWorld();
         TranslateWorld();
+        BindDefaultProgram();
         DrawMap();
         DrawPlayer();
 

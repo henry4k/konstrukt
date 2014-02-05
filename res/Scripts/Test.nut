@@ -37,9 +37,11 @@ map.UpdateMap()
 
 
 controls <- require("controls")
+effects <- require("effects")
 
 testkey <- controls.RegisterKeyControl("testkey", function( pressed )
 {
+    /*
     if(pressed)
     {
         local position    = ::native.GetPlayerPosition();
@@ -54,6 +56,24 @@ testkey <- controls.RegisterKeyControl("testkey", function( pressed )
         );
         local lengthStr = (length < 999) ? length.tostring() : "infinity"
         print("length: " + lengthStr);
+    }
+    */
+
+    if(pressed)
+    {
+        effects.SetLight(
+            {r=0.1, g=0.05, b=0.05},
+            {r=0.4, g=0.0, b=0.0},
+            {x=0, y=1, z=0}
+        )
+    }
+    else
+    {
+        effects.SetLight(
+            {r=0.1, g=0.1, b=0.1},
+            {r=0.9, g=0.9, b=0.9},
+            {x=1, y=1, z=1}
+        )
     }
 })
 

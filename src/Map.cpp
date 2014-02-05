@@ -38,7 +38,6 @@ int g_MapWidth = 0;
 int g_MapDepth = 0;
 Tile* g_MapTileData = NULL;
 
-Program g_MapProgram;
 Texture g_MapTexture;
 MeshBuffer g_MapMeshBuffer;
 Model g_MapModel;
@@ -50,10 +49,6 @@ bool InitMap()
     g_TileDefinitions.clear();
     g_MapTileData = NULL;
 
-
-    g_MapProgram = LoadProgram("Shaders/Default.vert", "Shaders/Default.frag");
-    if(!g_MapProgram)
-        return false;
 
     g_MapTexture = Load2dTexture(0, "Textures/Tiles.png");
     if(!g_MapTexture)
@@ -67,7 +62,6 @@ bool InitMap()
 
 void DestroyMap()
 {
-    FreeProgram(g_MapProgram);
     FreeTexture(g_MapTexture);
     FreeModel(&g_MapModel);
     FreeMeshBuffer(&g_MapMeshBuffer);
@@ -150,7 +144,6 @@ void GenerateMap( int width, int depth )
 
 void DrawMap()
 {
-    BindProgram(g_MapProgram);
     BindTexture(GL_TEXTURE_2D, g_MapTexture, 0);
     DrawModel(&g_MapModel);
 }
