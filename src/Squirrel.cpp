@@ -159,6 +159,26 @@ bool RunSquirrelFile( const char* file )
     return SQ_SUCCEEDED(sqstd_dofile(g_SquirrelVM, file, false, true));
 }
 
+void PushIntArrayToSquirrel( HSQUIRRELVM vm, const int* values, int length )
+{
+    sq_newarray(vm, length);
+    for(int i = 0; i < length; ++i)
+    {
+        sq_pushinteger(vm, values[i]);
+        sq_arrayinsert(vm, -2, i);
+    }
+}
+
+void PushFloatArrayToSquirrel( HSQUIRRELVM vm, const float* values, int length )
+{
+    sq_newarray(vm, length);
+    for(int i = 0; i < length; ++i)
+    {
+        sq_pushfloat(vm, values[i]);
+        sq_arrayinsert(vm, -2, i);
+    }
+}
+
 void Squirrel_print( HSQUIRRELVM vm, const char* format, ... )
 {
     va_list vl;

@@ -40,7 +40,21 @@ controls <- require("controls")
 
 testkey <- controls.RegisterKeyControl("testkey", function( pressed )
 {
-    print("testkey: "+pressed)
+    if(pressed)
+    {
+        local position    = ::native.GetPlayerPosition();
+        local orientation = ::native.GetPlayerOrientation();
+        local length = ::native.RayTestMap(
+            position[0],
+            position[1],
+            position[2],
+            orientation[0],
+            orientation[1],
+            orientation[2]
+        );
+        local lengthStr = (length < 999) ? length.tostring() : "infinity"
+        print("length: " + lengthStr);
+    }
 })
 
 testaxis <- controls.RegisterAxisControl("testaxis", function( absolute, delta )

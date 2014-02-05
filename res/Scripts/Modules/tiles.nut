@@ -48,16 +48,6 @@ function DirectionToOffset( direction )
     }
 }
 
-function IsTileSideCovered( tile, direction )
-{
-    local offset = DirectionToOffset(direction)
-    local otherTile = map.GetTileAt(tile.x+offset.x, tile.z+offset.z)
-    if(otherTile != null && "coversSide" in otherTile)
-        return otherTile.coversSide(InverseDirection(direction))
-    else
-        return false
-}
-
 
 
 class Tile
@@ -218,21 +208,21 @@ class WallTile extends Tile
 
         local offset = DirectionToOffset(direction)
 
-        if(IsTileSideCovered(this, direction) == false)
-        {
+        //if(IsTileSideCovered(this, direction) == false)
+        //{
             meshBuffer.addMesh(
                 sideMesh,
                 meshMatrix
             )
-        }
+        //}
 
-        if(IsTileSideCovered(this, InverseDirection(direction)) == false)
-        {
+        //if(IsTileSideCovered(this, InverseDirection(direction)) == false)
+        //{
             meshBuffer.addMesh(
                 sideMesh,
                 math.Matrix4(meshMatrix).rotate(math.PI,0,1,0)
             )
-        }
+        //}
     }
 
     function generateStaticSolid( solidBuffer )
@@ -275,7 +265,12 @@ class DoorTile extends Tile
     function constructor( definition, x, z )
     {
         base.constructor(definition, x, z)
-        direction = Direction.NORTH
+        direction = math.RandomArrayElement([
+            Direction.NORTH,
+            Direction.WEST,
+            Direction.SOUTH,
+            Direction.EAST
+        ])
     }
 
     function load()
@@ -290,6 +285,10 @@ class DoorTile extends Tile
         map.SetTileDataAt(x, z, map.DataType.UINT8, 0, direction)
     }
 
+    /*
+       Maybe just use tile physics information for determinging if a tile is solid (i.e. if gas can flow through it).
+       Because implementing coversDirection correctly seems to be pretty complex to me.
+    */
     function coversDirection( direction )
     {
         if(this.rotation * NORTH == direction)
@@ -317,15 +316,15 @@ class DoorTile extends Tile
     function generateStaticSolid( solidBuffer )
     {
         local rotation = DirectionToRotation(direction)
-        local solidMatrix = math.Matrix4().rotate(rotation, 0,1,0)
+        local solidMatrix = math.Matrix4().translate(x,0,z).rotate(rotation, 0,1,0)
 
         solidBuffer.addAabb(
             {
                 position =
                 {
-                    x = x,
+                    x = 0,
                     y = map.TILE_SIZE.y / 2.0,
-                    z = z-0.25
+                    z = -0.25
                 },
                 halfWidth =
                 {
@@ -352,6 +351,5 @@ map.RegisterTileDefinition({
 return {
     Direction = Direction,
     DirectionToRotation = DirectionToRotation,
-    DirectionToOffset = DirectionToOffset,
-    IsTileSideCovered = IsTileSideCovered
+    DirectionToOffset = DirectionToOffset
 }

@@ -9,6 +9,9 @@ using namespace glm;
 //#define DEBUG_LOG(...) Log(__VA_ARGS__)
 #define DEBUG_LOG(...)
 
+#define DEBUG_LOG_VEC3(V) DEBUG_LOG("%20s = { x=%.2f, y=%.2f, z=%.2f }", #V, V.x, V.y, V.z)
+#define DEBUG_LOG_IVEC3(V) DEBUG_LOG("%20s = { x=%d, y=%d, z=%d }", #V, V.x, V.y, V.z)
+
 
 bool TestAabbOverlap( Box a, Box b )
 {
@@ -187,6 +190,57 @@ float SweptAabb( Box a, Box b, vec3* normalOut, float timeFrame )
 }
 
 
+bool RayTestAabb( const Ray& ray, Aabb aabb, float* lengthOut )
+{
+    DEBUG_LOG_VEC3(ray.origin);
+    DEBUG_LOG_VEC3(ray.direction);
+    DEBUG_LOG_VEC3(ray.inverseDirection);
+    DEBUG_LOG_IVEC3(ray.sign);
+
+    DEBUG_LOG_VEC3(aabb.position);
+    DEBUG_LOG_VEC3(aabb.halfWidth);
+
+    const vec3 bounds[2] = {
+        aabb.position - aabb.halfWidth, // min
+        aabb.position + aabb.halfWidth  // max
+    };
+    DEBUG_LOG_VEC3(bounds[0]);
+    DEBUG_LOG_VEC3(bounds[1]);
+
+    float tmin = (bounds[  ray.sign.x].x - ray.origin.x) * ray.inverseDirection.x;
+    float tmax = (bounds[1-ray.sign.x].x - ray.origin.x) * ray.inverseDirection.x;
+    DEBUG_LOG("tmin = %.2f", tmin);
+    DEBUG_LOG("tmax = %.2f", tmax);
+
+    const float tymin = (bounds[  ray.sign.y].y - ray.origin.y) * ray.inverseDirection.y;
+    const float tymax = (bounds[1-ray.sign.y].y - ray.origin.y) * ray.inverseDirection.y;
+    DEBUG_LOG("tymin = %.2f", tymin);
+    DEBUG_LOG("tymax = %.2f", tymax);
+    if(tmin > tymax || tymin > tmax)
+        return false;
+    if(tymin > tmin)
+        tmin = tymin;
+    if(tymax < tmax)
+        tmax = tymax;
+
+    const float tzmin = (bounds[  ray.sign.z].z - ray.origin.z) * ray.inverseDirection.z;
+    const float tzmax = (bounds[1-ray.sign.z].z - ray.origin.z) * ray.inverseDirection.z;
+    DEBUG_LOG("tzmin = %.2f", tzmin);
+    DEBUG_LOG("tzmax = %.2f", tzmax);
+    if(tmin > tzmax || tzmin > tmax)
+        return false;
+    if(tzmin > tmin)
+        tmin = tzmin;
+    if(tzmax < tmax)
+        tmax = tzmax;
+
+    DEBUG_LOG("result min = %f", tmin);
+    DEBUG_LOG("result max = %f", tmax);
+    *lengthOut = tmin;
+    return true;
+}
+
+
 // --- Squirrel Bindings ---
 
 SQInteger Squirrel_CreateMatrix4( HSQUIRRELVM vm )
@@ -329,20 +383,7 @@ SQInteger Squirrel_Matrix4TransformVector( HSQUIRRELVM vm )
 
     vec4 v = *a * vec4(x,y,z,w);
 
-    sq_newarray(vm, 0);
-
-    sq_pushfloat(vm, v.x);
-    sq_arrayappend(vm, -2);
-
-    sq_pushfloat(vm, v.y);
-    sq_arrayappend(vm, -2);
-
-    sq_pushfloat(vm, v.z);
-    sq_arrayappend(vm, -2);
-
-    sq_pushfloat(vm, v.w);
-    sq_arrayappend(vm, -2);
-
+    PushFloatArrayToSquirrel(vm, &v.x, 4);
     return 1;
 }
 RegisterStaticFunctionInSquirrel(Matrix4TransformVector, 6, ".uffff");

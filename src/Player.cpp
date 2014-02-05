@@ -5,6 +5,7 @@
 #include "Map.h"
 #include "Audio.h"
 #include "Debug.h"
+#include "Squirrel.h"
 #include "Player.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -136,3 +137,20 @@ void UpdatePlayer( float timeFrame )
     // --- Update listener ---
     UpdateAudioListener(g_PlayerPosition, g_PlayerVelocity, g_PlayerOrientation*glm::vec3(0,0,1), glm::vec3(0,1,0));
 }
+
+SQInteger Squirrel_GetPlayerPosition( HSQUIRRELVM vm )
+{
+    using namespace glm;
+    PushFloatArrayToSquirrel(vm, &g_PlayerPosition.x, 3);
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(GetPlayerPosition, 1, ".");
+
+SQInteger Squirrel_GetPlayerOrientation( HSQUIRRELVM vm )
+{
+    using namespace glm;
+    const vec3 orientation = normalize(g_PlayerOrientation * vec3(0,0,1));
+    PushFloatArrayToSquirrel(vm, &orientation.x, 3);
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(GetPlayerOrientation, 1, ".");

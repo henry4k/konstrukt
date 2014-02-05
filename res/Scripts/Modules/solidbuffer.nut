@@ -1,3 +1,5 @@
+math <- require("math")
+
 class SolidBuffer
 {
     handle = null
@@ -26,6 +28,8 @@ class SolidBuffer
             aabb = {}
             aabb.position <- transformation.transformVector(originalAabb.position),
             aabb.halfWidth <- rotation.transformVector(originalAabb.halfWidth)
+            foreach(k,v in aabb.halfWidth)
+                aabb.halfWidth[k] = math.abs(v)
         }
 
         handle.writen(aabb.position.x, 'f')

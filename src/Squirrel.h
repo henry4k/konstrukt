@@ -12,6 +12,8 @@ void UpdateSquirrel( float timeDelta );
 HSQUIRRELVM GetSquirrelVM();
 bool RunSquirrelFile( const char* file );
 
+void PushIntArrayToSquirrel( HSQUIRRELVM vm, const int* values, int length );
+void PushFloatArrayToSquirrel( HSQUIRRELVM vm, const float* values, int length );
 
 // --- Native functions ---
 

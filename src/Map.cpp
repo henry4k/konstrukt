@@ -1,6 +1,7 @@
 #include <vector>
 #include <string.h>
 #include <stdint.h>
+#include <float.h>
 #include "Common.h"
 #include "Texture.h"
 #include "Shader.h"
@@ -191,6 +192,27 @@ void SetTileAt( int x, int z, int definition )
     }
 }
 
+float RayTestMap( glm::vec3 rayOrigin, glm::vec3 rayDirection, float maxLength )
+{
+    const Ray ray(rayOrigin, rayDirection);
+    float minLength = FLT_MAX;
+
+    for(int i = 0; i < g_MapStaticSolid.size(); ++i)
+    {
+        const Aabb aabb = g_MapStaticSolid[i];
+
+        float currentLength;
+        if(RayTestAabb(ray, aabb, &currentLength) &&
+           currentLength >= 0 &&
+           minLength > currentLength)
+        {
+            minLength = currentLength;
+        }
+    }
+
+    return minLength;
+}
+
 void DrawBoxCollisionInMap( const Box* box )
 {
     using namespace glm;
@@ -208,9 +230,9 @@ void DrawBoxCollisionInMap( const Box* box )
         const Aabb aabb = g_MapStaticSolid[i];
 
         Box solidBox;
-        solidBox.position = aabb.position;
-        solidBox.halfWidth   = aabb.halfWidth;
-        solidBox.velocity    = vec3(0, 0, 0);
+        solidBox.position  = aabb.position;
+        solidBox.halfWidth = aabb.halfWidth;
+        solidBox.velocity  = vec3(0, 0, 0);
 
         if(TestAabbOverlap(*box, solidBox))
             SetDebugLineColor(vec3(1,0,0));
@@ -238,9 +260,9 @@ void SimulateBoxInMap( Box* box, float timeFrame )
         const Aabb aabb = g_MapStaticSolid[i];
 
         Box solidBox;
-        solidBox.position = aabb.position;
-        solidBox.halfWidth   = aabb.halfWidth;
-        solidBox.velocity    = vec3(0, 0, 0);
+        solidBox.position  = aabb.position;
+        solidBox.halfWidth = aabb.halfWidth;
+        solidBox.velocity  = vec3(0, 0, 0);
 
         vec3 penetration;
         if(TestAabbOverlap(*box, solidBox, &penetration))
@@ -312,6 +334,11 @@ void OnSquirrelGenerateStaticTileSolid( int tileDefinition, int x, int z, SolidB
 
         for(int i = 0; i < aabbCount; ++i)
         {
+            const Aabb aabb = aabbList[i];
+            // A quick sanity check:
+            assert(aabb.halfWidth.x > 0);
+            assert(aabb.halfWidth.y > 0);
+            assert(aabb.halfWidth.z > 0);
             buffer->push_back(aabbList[i]);
         }
 
@@ -390,6 +417,24 @@ SQInteger Squirrel_SetTileAt( HSQUIRRELVM vm )
     return 0;
 }
 RegisterStaticFunctionInSquirrel(SetTileAt, 4, ".iii");
+
+SQInteger Squirrel_RayTestMap( HSQUIRRELVM vm )
+{
+    glm::vec3 rayOrigin;
+    sq_getfloat(vm, 2, &rayOrigin.x);
+    sq_getfloat(vm, 3, &rayOrigin.y);
+    sq_getfloat(vm, 4, &rayOrigin.z);
+
+    glm::vec3 rayDirection;
+    sq_getfloat(vm, 5, &rayDirection.x);
+    sq_getfloat(vm, 6, &rayDirection.y);
+    sq_getfloat(vm, 7, &rayDirection.z);
+
+    const float length = RayTestMap(rayOrigin, rayDirection, 42);
+    sq_pushfloat(vm, length);
+    return 1;
+}
+RegisterStaticFunctionInSquirrel(RayTestMap, 7, ".ffffff");
 
 enum DataType
 {

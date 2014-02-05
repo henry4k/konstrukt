@@ -78,7 +78,7 @@ class Matrix4
 
     function transformVector( v )
     {
-        local r = ::native.Matrix4TransformVector(handle, v.x, v.y, v.z, 1.0)
+        local r = ::native.Matrix4TransformVector(handle, v.x.tofloat(), v.y.tofloat(), v.z.tofloat(), 1.0)
         return {
             x = r[0],
             y = r[1],
@@ -92,9 +92,18 @@ class Matrix4
     }
 }
 
+/**
+ * Since the sqstdlib abs is only for integers!
+ */
+function abs( v )
+{
+    return (v < 0) ? -v : v;
+}
+
 
 return {
     Random = Random,
     RandomArrayElement = RandomArrayElement,
-    Matrix4 = Matrix4
+    Matrix4 = Matrix4,
+    abs = abs
 }.setdelegate(::native.math)
