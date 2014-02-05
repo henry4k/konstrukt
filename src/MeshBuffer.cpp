@@ -34,24 +34,21 @@ void BuildMesh( const MeshBuffer* buffer, Mesh* meshOut )
 
 void TransformMeshBufferRange( MeshBuffer* buffer, const glm::mat4* transformation, int firstVertex, int vertexCount )
 {
+    using namespace glm;
+
     assert(firstVertex >= 0);
     assert(vertexCount >= 0);
     assert(firstVertex+vertexCount <= buffer->vertices.size());
+
+    const mat3 rotation(*transformation);
 
     Vertex* vertex = &buffer->vertices[firstVertex];
     const Vertex* end = &buffer->vertices[firstVertex+vertexCount];
     for(; vertex != end; ++vertex)
     {
-        glm::vec4 v(
-            vertex->position.x,
-            vertex->position.y,
-            vertex->position.z,
-            1
-        );
-        v = *transformation * v;
-        vertex->position.x = v.x;
-        vertex->position.y = v.y;
-        vertex->position.z = v.z;
+        vertex->position = vec3( *transformation * vec4(vertex->position, 1) );
+        vertex->normal   = normalize(rotation * vertex->normal);
+        vertex->tangent  = *transformation * vertex->tangent;
     }
 }
 
