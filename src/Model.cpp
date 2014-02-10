@@ -7,8 +7,10 @@ bool CreateModel( Model* model, const Mesh* mesh )
 {
     assert(model);
     assert(mesh);
-    assert(mesh->vertexCount > 0);
     assert(mesh->vertices);
+    assert(mesh->vertexCount >= 0);
+    if(mesh->vertexCount == 0)
+        Error("Creating an empty model.");
 
     model->primitiveType = GL_TRIANGLES; // Default to triangles (can be changed later)
 

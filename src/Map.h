@@ -5,7 +5,15 @@
 #include "Math.h"
 #include "MeshBuffer.h"
 
-typedef std::vector<Aabb> SolidBuffer;
+struct Solid
+{
+    Aabb aabb;
+    short tileX;
+    short tileZ;
+    int userData;
+};
+
+typedef std::vector<Solid> SolidBuffer;
 
 static const int INVALID_TILE_DEFINITION = -1;
 

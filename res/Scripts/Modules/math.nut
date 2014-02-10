@@ -88,7 +88,7 @@ class Matrix4
 
     function toRotationMatrix()
     {
-        return Matrix4( ::native.Matrix4ToRotationMatrix(handle) )
+        return Matrix4( ::native.MakeRotationMatrix(handle) )
     }
 }
 

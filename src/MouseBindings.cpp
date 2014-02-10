@@ -20,15 +20,6 @@ struct MouseButtonBinding
     // button: see OnMouseButtonAction
 };
 
-/*
-struct MouseScrollBinding // TODO: Maybe this should be also an axis.
-{
-    bool isEnabled;
-    int keyControl;
-    // direction: see OnMouseScrollAction
-};
-*/
-
 struct MouseAxisBinding
 {
     bool isEnabled;
@@ -38,9 +29,17 @@ struct MouseAxisBinding
 
 static const int MOUSE_BUTTON_COUNT = GLFW_MOUSE_BUTTON_LAST+1;
 
-MouseButtonBinding       g_MouseButtonBindings[MOUSE_BUTTON_COUNT];
-//MouseScrollBinding     g_MouseScrollBindings[4]; // TODO: Enum for this please. (+x, -x, +y, -y)
-MouseAxisBinding         g_MouseAxisBindings[2];
+enum MouseAxis
+{
+    MOUSE_AXIS_X = 0,
+    MOUSE_AXIS_Y,
+    MOUSE_SCROLL_AXIS_X,
+    MOUSE_SCROLL_AXIS_Y,
+    MOUSE_AXIS_COUNT
+};
+
+MouseButtonBinding g_MouseButtonBindings[MOUSE_BUTTON_COUNT];
+MouseAxisBinding   g_MouseAxisBindings[MOUSE_AXIS_COUNT];
 
 bool g_CursorGrabbed;
 
@@ -52,7 +51,6 @@ bool InitMouseBindings()
     SetMouseScrollFn(OnMouseScroll);
 
     memset(g_MouseButtonBindings, 0, sizeof(g_MouseButtonBindings));
-    //memset(g_MouseScrollBindings, 0, sizeof(g_MouseScrollBindings));
     memset(g_MouseAxisBindings, 0, sizeof(g_MouseAxisBindings));
 
     g_CursorGrabbed = false;
@@ -75,11 +73,11 @@ void OnCursorMove( double x, double y )
         totalX += x;
         totalY += y;
 
-        if(g_MouseAxisBindings[0].isEnabled)
-            HandleAxisEvent(g_MouseAxisBindings[0].axisControl, totalX);
+        if(g_MouseAxisBindings[MOUSE_AXIS_X].isEnabled)
+            HandleAxisEvent(g_MouseAxisBindings[MOUSE_AXIS_X].axisControl, totalX);
 
-        if(g_MouseAxisBindings[1].isEnabled)
-            HandleAxisEvent(g_MouseAxisBindings[1].axisControl, totalY);
+        if(g_MouseAxisBindings[MOUSE_AXIS_Y].isEnabled)
+            HandleAxisEvent(g_MouseAxisBindings[MOUSE_AXIS_Y].axisControl, totalY);
 
         glfwSetCursorPos((GLFWwindow*)GetGLFWwindow(), 0, 0);
     }
@@ -112,7 +110,17 @@ void OnMouseButtonAction( int button, bool pressed )
 
 void OnMouseScroll( double xoffset, double yoffset )
 {
-    Log("scroll: %f %f", xoffset, yoffset);
+    static double totalX = 0;
+    static double totalY = 0;
+
+    totalX += xoffset;
+    totalY += yoffset;
+
+    if(g_MouseAxisBindings[MOUSE_SCROLL_AXIS_X].isEnabled)
+        HandleAxisEvent(g_MouseAxisBindings[MOUSE_SCROLL_AXIS_X].axisControl, totalX);
+
+    if(g_MouseAxisBindings[MOUSE_SCROLL_AXIS_Y].isEnabled)
+        HandleAxisEvent(g_MouseAxisBindings[MOUSE_SCROLL_AXIS_Y].axisControl, totalY);
 }
 
 bool CreateMouseButtonBinding( int button, int keyControl )
@@ -160,12 +168,12 @@ bool Mouse_CreateAxisBindingFromString( const char* str, int axisControl )
     // mouse:1
     // mouse-scroll:0
     // mouse-scroll:1
-    // xpad:0
-    // xpad:1
 
 #define MOUSE_AXIS(N,A) if(strcmp(str, (N)) == 0) return CreateMouseAxisBinding((A), axisControl);
     MOUSE_AXIS("mouse:0",0)
     MOUSE_AXIS("mouse:1",1)
+    MOUSE_AXIS("mouse-scroll:0",2)
+    MOUSE_AXIS("mouse-scroll:1",3)
 #undef MOUSE_AXIS
 
     return false;

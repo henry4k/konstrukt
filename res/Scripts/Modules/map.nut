@@ -1,3 +1,4 @@
+coord <- require("coord")
 MeshBuffer <- require("meshbuffer")
 SolidBuffer <- require("solidbuffer")
 
@@ -23,12 +24,6 @@ tile dao:
 
 REFERENCE_TILE_ID <- null
 
-TILE_SIZE <- {
-    x = 0.5,
-    y = 2.0,
-    z = 0.5
-}
-
 function IsTileDefinition( d )
 {
     return (
@@ -49,22 +44,6 @@ function IsTile( t )
         "generateStaticMesh" in t &&
         "generateStaticSolid" in t
     )
-}
-
-function WorldToMapCoord( w )
-{
-    return {
-        x = (w.x / TILE_SIZE.x).tointeger(),
-        z = (w.z / TILE_SIZE.z).tointeger()
-    }
-}
-
-function MapToWorldCoord( w )
-{
-    return {
-        x = w.x * TILE_SIZE.x,
-        z = w.z * TILE_SIZE.z
-    }
 }
 
 function RegisterTileDefinition( definition )
@@ -88,7 +67,7 @@ function FindTileDefinitionByName( name )
 
 function OnGenerateStaticTileMesh( id, x, z, meshBufferHandle )
 {
-    local worldCoord = MapToWorldCoord({x=x,z=z})
+    local worldCoord = coord.MapToWorldCoord({x=x,z=z})
     local definition = TileIdToDefinition[id]
     local tile = definition.createTile(worldCoord.x, worldCoord.z)
     tile.load()
@@ -98,7 +77,7 @@ function OnGenerateStaticTileMesh( id, x, z, meshBufferHandle )
 
 function OnGenerateStaticTileSolid( id, x, z )
 {
-    local worldCoord = MapToWorldCoord({x=x,z=z})
+    local worldCoord = coord.MapToWorldCoord({x=x,z=z})
     local definition = TileIdToDefinition[id]
     local tile = definition.createTile(worldCoord.x, worldCoord.z)
     tile.load()
@@ -111,7 +90,7 @@ function OnGenerateStaticTileSolid( id, x, z )
 _MapSize <- {x=0, z=0}
 function GenerateMap( width, depth )
 {
-    local mapCoord = WorldToMapCoord({x=width, z=depth})
+    local mapCoord = coord.WorldToMapCoord({x=width, z=depth})
     ::native.GenerateMap(
         mapCoord.x,
         mapCoord.z
@@ -121,7 +100,9 @@ function GenerateMap( width, depth )
 
 function GetTileAt( x, z )
 {
-    local mapCoord = WorldToMapCoord({x=x, z=z})
+    local mapCoord = coord.WorldToMapCoord({x=x, z=z})
+    print("x="+mapCoord.x+" z="+mapCoord.z)
+    print("mapx="+_MapSize.x+" mapz="+_MapSize.z)
     if(mapCoord.x < 0 || mapCoord.z < 0 || mapCoord.x >= _MapSize.x || mapCoord.z >= _MapSize.z)
         return null // Weil out of range
     local id = ::native.GetTileDefinitionAt(
@@ -136,7 +117,7 @@ function GetTileAt( x, z )
 
 function SetTileDefinitionAt( x, z, definition )
 {
-    local mapCoord = WorldToMapCoord({x=x, z=z})
+    local mapCoord = coord.WorldToMapCoord({x=x, z=z})
     ::native.SetTileAt(
         mapCoord.x,
         mapCoord.z,
@@ -156,9 +137,10 @@ DataType <- {
 
 function GetTileDataAt( x, z, position, type )
 {
+    local mapCoord = coord.WorldToMapCoord({x=x,z=z})
     return ::native.GetTileDataAt(
-        (x/TILE_SIZE.x).tointeger(),
-        (z/TILE_SIZE.z).tointeger(),
+        mapCoord.x,
+        mapCoord.z
         position,
         type
     )
@@ -166,9 +148,10 @@ function GetTileDataAt( x, z, position, type )
 
 function SetTileDataAt( x, z, position, type, value )
 {
+    local mapCoord = coord.WorldToMapCoord({x=x,z=z})
     ::native.SetTileDataAt(
-        (x/TILE_SIZE.x).tointeger(),
-        (z/TILE_SIZE.z).tointeger(),
+        mapCoord.x,
+        mapCoord.z
         position,
         type,
         value
@@ -190,7 +173,8 @@ RegisterTileDefinition({
 })
 
 return {
-    TILE_SIZE = TILE_SIZE,
+    IsTileDefinition = IsTileDefinition,
+    IsTile = IsTile,
     RegisterTileDefinition = RegisterTileDefinition,
     FindTileDefinitionByName = FindTileDefinitionByName,
     GenerateMap = GenerateMap,

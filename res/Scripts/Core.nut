@@ -41,7 +41,11 @@ function _tryLoadModule( moduleName )
 
     if(moduleName in modules)
     {
-        return modules[moduleName]._module.export
+        local module = modules[moduleName]._module
+        if(module.export != null)
+            return module.export
+        else
+            throw "Module '"+moduleName+"' is still loading. Reference cycle?"
     }
     else
     {
@@ -58,6 +62,7 @@ function _tryLoadModule( moduleName )
                     export = null
                 }
             }.setdelegate(::RealRoot)
+            modules[moduleName] <- moduleRoot
 
             ::setroottable(moduleRoot)
             try
@@ -70,14 +75,17 @@ function _tryLoadModule( moduleName )
                 ::setroottable(originalRoot)
                 ::error("Exception while trying to load module '"+moduleName+"' from '"+fileName+"':")
                 ::error(e)
+                delete modules[moduleName]
                 continue
             }
             ::setroottable(originalRoot)
 
             if(moduleRoot._module.export == null)
+            {
+                delete modules[moduleName]
                 throw "Module '"+moduleName+"' exports nothing!"
+            }
 
-            modules[moduleName] <- moduleRoot
             return moduleRoot._module.export
         }
 

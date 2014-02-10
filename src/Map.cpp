@@ -42,7 +42,7 @@ Texture g_MapTexture;
 MeshBuffer g_MapMeshBuffer;
 Model g_MapModel;
 
-SolidBuffer g_MapStaticSolid;
+SolidBuffer g_MapStaticSolidBuffer;
 
 bool InitMap()
 {
@@ -109,9 +109,9 @@ bool GenerateStaticMapModel( Model* target, int startX, int startZ, int endX, in
     return CreateModel(target, &mesh);
 }
 
-bool GenerateStaticMapSolid( SolidBuffer* solid, int startX, int startZ, int endX, int endZ )
+bool GenerateStaticMapSolid( SolidBuffer* solidBuffer, int startX, int startZ, int endX, int endZ )
 {
-    solid->clear();
+    solidBuffer->clear();
 
     for(int z = startZ; z < endZ; ++z)
     for(int x = startX; x < endX; ++x)
@@ -121,11 +121,11 @@ bool GenerateStaticMapSolid( SolidBuffer* solid, int startX, int startZ, int end
 
         if(tileDef->staticSolidFn)
         {
-            tileDef->staticSolidFn(tile->definition, x, z, solid);
+            tileDef->staticSolidFn(tile->definition, x, z, solidBuffer);
         }
     }
 
-    Log("Created map chunk solid from %d,%d to %d,%d with %d Aabbs.", startX, startZ, endX, endZ, solid->size());
+    Log("Created map chunk solid buffer from %d,%d to %d,%d with %d solids.", startX, startZ, endX, endZ, solidBuffer->size());
     return true;
 }
 
@@ -153,7 +153,7 @@ void UpdateMap( int startX, int startZ, int endX, int endZ )
     FreeModel(&g_MapModel);
     GenerateStaticMapModel(&g_MapModel, 0,0, g_MapWidth, g_MapDepth);
 
-    GenerateStaticMapSolid(&g_MapStaticSolid, 0,0, g_MapWidth, g_MapDepth);
+    GenerateStaticMapSolid(&g_MapStaticSolidBuffer, 0,0, g_MapWidth, g_MapDepth);
 }
 
 Tile* GetTileAt( int x, int z )
@@ -185,25 +185,44 @@ void SetTileAt( int x, int z, int definition )
     }
 }
 
-float RayTestMap( glm::vec3 rayOrigin, glm::vec3 rayDirection, float maxLength )
+struct MapRayTestResult
+{
+    float length;
+    int tileX;
+    int tileZ;
+    int solidUserData;
+};
+
+MapRayTestResult RayTestMap( glm::vec3 rayOrigin, glm::vec3 rayDirection, float maxLength )
 {
     const Ray ray(rayOrigin, rayDirection);
     float minLength = FLT_MAX;
+    int solidIndex = -1;
 
-    for(int i = 0; i < g_MapStaticSolid.size(); ++i)
+    for(int i = 0; i < g_MapStaticSolidBuffer.size(); ++i)
     {
-        const Aabb aabb = g_MapStaticSolid[i];
+        const Solid solid = g_MapStaticSolidBuffer[i];
 
         float currentLength;
-        if(RayTestAabb(ray, aabb, &currentLength) &&
+        if(RayTestAabb(ray, solid.aabb, &currentLength) &&
            currentLength >= 0 &&
            minLength > currentLength)
         {
             minLength = currentLength;
+            solidIndex = i;
         }
     }
 
-    return minLength;
+    MapRayTestResult result;
+    result.length = minLength;
+    if(solidIndex >= 0)
+    {
+        const Solid solid = g_MapStaticSolidBuffer[solidIndex];
+        result.tileX = solid.tileX;
+        result.tileZ = solid.tileZ;
+        result.solidUserData = solid.userData;
+    }
+    return result;
 }
 
 void DrawBoxCollisionInMap( const Box* box )
@@ -218,13 +237,13 @@ void DrawBoxCollisionInMap( const Box* box )
         box->position+box->halfWidth
     );
 
-    for(int i = 0; i < g_MapStaticSolid.size(); ++i)
+    for(int i = 0; i < g_MapStaticSolidBuffer.size(); ++i)
     {
-        const Aabb aabb = g_MapStaticSolid[i];
+        const Solid solid = g_MapStaticSolidBuffer[i];
 
         Box solidBox;
-        solidBox.position  = aabb.position;
-        solidBox.halfWidth = aabb.halfWidth;
+        solidBox.position  = solid.aabb.position;
+        solidBox.halfWidth = solid.aabb.halfWidth;
         solidBox.velocity  = vec3(0, 0, 0);
 
         if(TestAabbOverlap(*box, solidBox))
@@ -248,13 +267,13 @@ void SimulateBoxInMap( Box* box, float timeFrame )
     const float BOUNCE = 1.0f;
     const float SLIDE  = 1.0f;
 
-    for(int i = 0; i < g_MapStaticSolid.size(); ++i)
+    for(int i = 0; i < g_MapStaticSolidBuffer.size(); ++i)
     {
-        const Aabb aabb = g_MapStaticSolid[i];
+        const Solid solid = g_MapStaticSolidBuffer[i];
 
         Box solidBox;
-        solidBox.position  = aabb.position;
-        solidBox.halfWidth = aabb.halfWidth;
+        solidBox.position  = solid.aabb.position;
+        solidBox.halfWidth = solid.aabb.halfWidth;
         solidBox.velocity  = vec3(0, 0, 0);
 
         vec3 penetration;
@@ -316,23 +335,23 @@ void OnSquirrelGenerateStaticTileSolid( int tileDefinition, int x, int z, SolidB
         sqstd_getblob(vm, -1, (SQUserPointer*)&blob);
         const int blobSize = sqstd_getblobsize(vm, -1);
 
-        if(blobSize % sizeof(Aabb) != 0)
+        if(blobSize % sizeof(Solid) != 0)
         {
             Error("GenerateStaticMapSolid: Blob size is not a multiple of the aabb size!");
             return;
         }
 
-        const int aabbCount = blobSize / sizeof(Aabb);
-        const Aabb* aabbList = reinterpret_cast<const Aabb*>(blob);
+        const int solidCount = blobSize / sizeof(Solid);
+        const Solid* solidList = reinterpret_cast<const Solid*>(blob);
 
-        for(int i = 0; i < aabbCount; ++i)
+        for(int i = 0; i < solidCount; ++i)
         {
-            const Aabb aabb = aabbList[i];
+            const Solid solid = solidList[i];
             // A quick sanity check:
-            assert(aabb.halfWidth.x > 0);
-            assert(aabb.halfWidth.y > 0);
-            assert(aabb.halfWidth.z > 0);
-            buffer->push_back(aabbList[i]);
+            assert(solid.aabb.halfWidth.x > 0);
+            assert(solid.aabb.halfWidth.y > 0);
+            assert(solid.aabb.halfWidth.z > 0);
+            buffer->push_back(solid);
         }
 
         sq_pop(vm, 1); // Pop return value.
@@ -423,8 +442,9 @@ SQInteger Squirrel_RayTestMap( HSQUIRRELVM vm )
     sq_getfloat(vm, 6, &rayDirection.y);
     sq_getfloat(vm, 7, &rayDirection.z);
 
-    const float length = RayTestMap(rayOrigin, rayDirection, 42);
-    sq_pushfloat(vm, length);
+    const MapRayTestResult result = RayTestMap(rayOrigin, rayDirection, 42);
+    void* blob = sqstd_createblob(vm, sizeof(MapRayTestResult));
+    *(MapRayTestResult*)blob = result;
     return 1;
 }
 RegisterStaticFunctionInSquirrel(RayTestMap, 7, ".ffffff");
