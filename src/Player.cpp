@@ -1,5 +1,4 @@
 #include "Common.h"
-#include "Math.h"
 #include "OpenGL.h"
 #include "Controls.h"
 #include "Map.h"
@@ -28,6 +27,8 @@ float g_LookY;
 glm::vec3 g_PlayerPosition;
 glm::vec3 g_PlayerVelocity;
 glm::quat g_PlayerOrientation;
+glm::mat4 g_PlayerViewMatrix;
+glm::mat4 g_PlayerProjectionMatrix;
 
 bool InitPlayer()
 {
@@ -47,22 +48,42 @@ void DestroyPlayer()
 {
 }
 
-void RotateWorld()
+void UpdatePlayerViewMatrix()
 {
-    glMultMatrixf(glm::value_ptr(glm::lookAt(
-        glm::vec3(0,0,0),
-        g_PlayerOrientation*glm::vec3(0,0,1),
-        glm::vec3(0,1,0)
-    )));
+    using namespace glm;
+
+    g_PlayerViewMatrix = lookAt(
+        vec3(0,0,0),
+        g_PlayerOrientation*vec3(0,0,1),
+        vec3(0,1,0)
+    );
+
+    g_PlayerViewMatrix = translate(
+        g_PlayerViewMatrix,
+        vec3(
+            -g_PlayerPosition.x,
+            -(g_PlayerPosition.y + PLAYER_HEAD_OFFSET),
+            -g_PlayerPosition.z
+        )
+     );
 }
 
-void TranslateWorld()
+glm::mat4 GetPlayerViewMatrix()
 {
-    glTranslatef(
-        -g_PlayerPosition.x,
-        -(g_PlayerPosition.y + PLAYER_HEAD_OFFSET),
-        -g_PlayerPosition.z
-    );
+    return g_PlayerViewMatrix;
+}
+
+void UpdateProjectionMatrix( int width, int height )
+{
+    using namespace glm;
+
+    const float aspect = float(width) / float(height);
+    g_PlayerProjectionMatrix = perspective(glm::radians(90.0f), aspect, 0.1f, 100.0f);
+}
+
+glm::mat4 GetPlayerProjectionMatrix()
+{
+    return g_PlayerProjectionMatrix;
 }
 
 void DrawPlayer()
@@ -133,6 +154,9 @@ void UpdatePlayer( float timeFrame )
     //g_PlayerPosition += g_PlayerVelocity * timeFrame;
     g_PlayerVelocity *= 1.0f - timeFrame * MOVEMENT_FRICTION;
 
+
+    // --- Update view matrix ---
+    UpdatePlayerViewMatrix();
 
     // --- Update listener ---
     UpdateAudioListener(g_PlayerPosition, g_PlayerVelocity, g_PlayerOrientation*glm::vec3(0,0,1), glm::vec3(0,1,0));

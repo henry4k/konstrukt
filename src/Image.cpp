@@ -5,6 +5,45 @@
 #include "Image.h"
 
 
+bool CreateImage( Image* image, int width, int height, int bpp )
+{
+    memset(image, 0, sizeof(Image));
+
+    image->width = width;
+    image->height = height;
+    image->bpp = bpp;
+
+    switch(image->bpp)
+    {
+        case 1:
+            image->format = GL_LUMINANCE;
+            break;
+
+        case 2:
+            image->format = GL_LUMINANCE_ALPHA;
+            break;
+
+        case 3:
+            image->format = GL_RGB;
+            break;
+
+        case 4:
+            image->format = GL_RGBA;
+            break;
+
+        default:
+            Error("Can't create image (Unknown BPP -> %d)", image->bpp);
+            return false;
+    }
+
+    image->type = GL_UNSIGNED_BYTE;
+
+    image->data = new char[width*height*bpp];
+
+    return true;
+}
+
+
 bool LoadPngImage( Image* image, const char* file )
 {
     //header for testing if it is a png

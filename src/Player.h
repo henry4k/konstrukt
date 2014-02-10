@@ -1,11 +1,14 @@
 #ifndef __PLAYER__
 #define __PLAYER__
 
+#include "Math.h"
+
 bool InitPlayer();
 void DestroyPlayer();
-void RotateWorld();
-void TranslateWorld();
 void DrawPlayer();
+glm::mat4 GetPlayerViewMatrix();
+void UpdateProjectionMatrix( int width, int height );
+glm::mat4 GetPlayerProjectionMatrix();
 void UpdatePlayer( float timeFrame );
 
 #endif

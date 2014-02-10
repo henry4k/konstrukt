@@ -29,7 +29,7 @@ void SetUniform( Program program, const char* name, float value )
         glUniform1f(loc, value);
 }
 
-void SetUniform( Program program, const char* name, int length, float* value )
+void SetUniform( Program program, const char* name, int length, const float* value )
 {
     int loc;
     if(GetUniformLocation(program,name,&loc))
@@ -41,6 +41,24 @@ void SetUniform( Program program, const char* name, int length, float* value )
             case 3: glUniform3fv(loc, 1, value); break;
             case 4: glUniform4fv(loc, 1, value); break;
         }
+    }
+}
+
+void SetUniformMatrix3( Program program, const char* name, const float* value )
+{
+    int loc;
+    if(GetUniformLocation(program,name,&loc))
+    {
+        glUniformMatrix3fv(loc, 1, GL_FALSE, value);
+    }
+}
+
+void SetUniformMatrix4( Program program, const char* name, const float* value )
+{
+    int loc;
+    if(GetUniformLocation(program,name,&loc))
+    {
+        glUniformMatrix4fv(loc, 1, GL_FALSE, value);
     }
 }
 
@@ -138,11 +156,11 @@ Shader CreateShader( const char* file, int type )
 
     if(state)
     {
-        Log("Compiled program object successfully: %s", file);
+        Log("Compiled shader object successfully: %s", file);
     }
     else
     {
-        Error("Error compiling program object %s", file);
+        Error("Error compiling shader object %s", file);
         return 0;
     }
 
@@ -172,11 +190,11 @@ Program LoadProgram( const char* vert, const char* frag )
 
         if(state)
         {
-            Log("Linked program program successfully (%s, %s)", vert, frag);
+            Log("Linked shader program successfully (%s, %s)", vert, frag);
         }
         else
         {
-            Error("Error linking program programm (%s, %s)", vert, frag);
+            Error("Error linking shader programm (%s, %s)", vert, frag);
             return 0;
         }
     }
@@ -187,9 +205,9 @@ Program LoadProgram( const char* vert, const char* frag )
         glGetProgramiv(program, GL_VALIDATE_STATUS, &state);
         ShowProgramLog(program);
         if(state)
-            Log("Validated program program successfully (%s, %s)", vert, frag);
+            Log("Validated shader program successfully (%s, %s)", vert, frag);
         else
-            Log("Error validating program program (%s, %s)", vert, frag);
+            Log("Error validating shader program (%s, %s)", vert, frag);
     }
 
     return program;

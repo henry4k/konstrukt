@@ -121,20 +121,29 @@ void RunGame()
         UpdatePlayer(timeDelta);
         lastTime = curTime;
 
+        const glm::mat4 mvpMatrix =
+            GetPlayerProjectionMatrix() *
+            GetPlayerViewMatrix();
+
         // Render background
         glClear(GL_DEPTH_BUFFER_BIT);
-        glLoadIdentity();
-        RotateWorld();
         DrawBackground();
 
-        // Render map
+        // Render shadow map
+        BeginRenderShadowTexture();
         glClear(GL_DEPTH_BUFFER_BIT);
-        glLoadIdentity();
-        RotateWorld();
-        TranslateWorld();
-        BindDefaultProgram();
         DrawMap();
         DrawPlayer();
+        EndRenderShadowTexture();
+
+        // Render world
+        BeginRender();
+        glClear(GL_DEPTH_BUFFER_BIT);
+        BindProgram(GetDefaultProgram());
+        SetModelViewProjectionMatrix(GetDefaultProgram(), mvpMatrix);
+        DrawMap();
+        DrawPlayer();
+        EndRender();
 
         // Render HUD
         //glClear(GL_DEPTH_BUFFER_BIT);
@@ -146,16 +155,8 @@ void RunGame()
 
 void OnFramebufferResize( int width, int height )
 {
-    using namespace glm;
-
     glViewport(0, 0, width, height);
-
-    glMatrixMode(GL_PROJECTION);
-    const float aspect = float(width) / float(height);
-    const mat4 perspectivicMatrix = perspective(glm::radians(90.0f), aspect, 0.1f, 100.0f);
-    glLoadMatrixf(value_ptr(perspectivicMatrix));
-
-    glMatrixMode(GL_MODELVIEW);
+    UpdateProjectionMatrix(width, height);
 }
 
 void OnExitKey( const char* name, bool pressed, void* context )

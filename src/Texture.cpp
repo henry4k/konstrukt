@@ -11,8 +11,9 @@ Texture Create2dTexture( int options, const Image* image )
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    const int wrapMode = (options & TEX_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
 
     if(options & TEX_MIPMAP)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (options & TEX_FILTER) ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST);
@@ -51,6 +52,7 @@ Texture CreateCubeTexture( int options, const Image* images )
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
 
+    // Always uses clamp to edge since its the only option that makes sense here.
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
@@ -91,7 +93,7 @@ Texture LoadCubeTexture( int options, const char* path )
             return 0;
         }
     }
-    bool r = CreateCubeTexture(options, images);
+    const Texture r = CreateCubeTexture(options, images);
     for(int i = 0; i < 6; i++)
     {
         FreeImage(&images[i]);
@@ -101,6 +103,29 @@ Texture LoadCubeTexture( int options, const char* path )
     else
         Error("Failed to load %s", Format(path, "*"));
     return r;
+}
+
+Texture CreateDepthTexture( int width, int height )
+{
+    Texture texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    float* data = NULL; // new float[width*height];
+    // ^- We don't care about initialization.
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, data); // TODO: Sure that NULL works here?
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    //delete[] data;
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return texture;
 }
 
 void FreeTexture( Texture texture )

@@ -50,7 +50,7 @@ bool InitMap()
     g_MapTileData = NULL;
 
 
-    g_MapTexture = Load2dTexture(0, "Textures/Tiles.png");
+    g_MapTexture = Load2dTexture(TEX_CLAMP, "Textures/Tiles.png");
     if(!g_MapTexture)
         return false;
 

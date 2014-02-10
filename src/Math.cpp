@@ -12,6 +12,15 @@ using namespace glm;
 #define DEBUG_LOG_VEC3(V) DEBUG_LOG("%20s = { x=%.2f, y=%.2f, z=%.2f }", #V, V.x, V.y, V.z)
 #define DEBUG_LOG_IVEC3(V) DEBUG_LOG("%20s = { x=%d, y=%d, z=%d }", #V, V.x, V.y, V.z)
 
+mat4 MakeRotationMatrix( mat4 m )
+{
+    mat4 r = m;
+    r[0].w = 0;
+    r[1].w = 0;
+    r[2].w = 0;
+    r[3] = vec4(0,0,0,1);
+    return r;
+}
 
 bool TestAabbOverlap( Box a, Box b )
 {
@@ -388,18 +397,12 @@ SQInteger Squirrel_Matrix4TransformVector( HSQUIRRELVM vm )
 }
 RegisterStaticFunctionInSquirrel(Matrix4TransformVector, 6, ".uffff");
 
-SQInteger Squirrel_Matrix4ToRotationMatrix( HSQUIRRELVM vm )
+SQInteger Squirrel_MakeRotationMatrix( HSQUIRRELVM vm )
 {
     mat4* matrix;
     sq_getuserdata(vm, 2, (SQUserPointer*)&matrix, NULL);
-
-    mat4 m = *matrix;
-    m[0].w = 0;
-    m[1].w = 0;
-    m[2].w = 0;
-    m[3] = vec4(0,0,0,1);
-
-    PushUserDataToSquirrel(vm, &m, sizeof(mat4), NULL);
+    const mat4 r = MakeRotationMatrix(*matrix);
+    PushUserDataToSquirrel(vm, &r, sizeof(mat4), NULL);
     return 1;
 }
-RegisterStaticFunctionInSquirrel(Matrix4ToRotationMatrix, 2, ".u");
+RegisterStaticFunctionInSquirrel(MakeRotationMatrix, 2, ".u");

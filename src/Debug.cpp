@@ -5,6 +5,8 @@
 #include "OpenGL.h"
 #include "Vertex.h"
 #include "Shader.h"
+#include "Player.h"
+#include "Effects.h"
 #include "Debug.h"
 
 static const char* DEBUG_MODE_NAMES[DEBUG_MODE_COUNT] =
@@ -116,15 +118,25 @@ bool CreateDebugModel( Model* model )
     return success;
 }
 
+void BeginDebugDrawing()
+{
+    const glm::mat4 modelViewProjectionMatrix =
+        GetPlayerProjectionMatrix() *
+        GetPlayerViewMatrix();
+
+    BindProgram(g_DebugProgram);
+    SetModelViewProjectionMatrix(g_DebugProgram, modelViewProjectionMatrix);
+}
+
 void DrawDebugModel( Model* model )
 {
-    BindProgram(g_DebugProgram);
+    BeginDebugDrawing();
     DrawModel(model);
 }
 
 void DrawDebugMesh()
 {
-    BindProgram(g_DebugProgram);
+    BeginDebugDrawing();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     SetVertexAttributePointers(&g_DebugVertexBuffer.front());
     glDrawArrays(GL_LINES, 0, g_DebugVertexBuffer.size());

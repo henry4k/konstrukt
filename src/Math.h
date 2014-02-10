@@ -10,6 +10,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
+glm::mat4 MakeRotationMatrix( glm::mat4 m );
+
 struct Aabb
 {
     glm::vec3 position;
