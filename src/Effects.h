@@ -6,7 +6,7 @@
 
 bool InitEffects();
 void DestroyEffects();
-void SetModelViewProjectionMatrix( Program program, glm::mat4 mvpMatrix );
+void SetModelViewProjectionMatrix( Program program, const glm::mat4* mvpMatrix );
 Program GetDefaultProgram();
 void BeginRenderShadowTexture();
 void EndRenderShadowTexture();

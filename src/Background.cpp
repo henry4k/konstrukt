@@ -54,7 +54,7 @@ void DrawBackground()
         modelMatrix;
 
     BindProgram(g_SkyboxProgram);
-    SetModelViewProjectionMatrix(g_SkyboxProgram, modelViewProjectionMatrix);
+    SetModelViewProjectionMatrix(g_SkyboxProgram, &modelViewProjectionMatrix);
     BindTexture(GL_TEXTURE_CUBE_MAP, g_SkyboxTexture, 0);
     DrawModel(&g_SkyboxModel);
 

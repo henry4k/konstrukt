@@ -125,7 +125,7 @@ void BeginDebugDrawing()
         GetPlayerViewMatrix();
 
     BindProgram(g_DebugProgram);
-    SetModelViewProjectionMatrix(g_DebugProgram, modelViewProjectionMatrix);
+    SetModelViewProjectionMatrix(g_DebugProgram, &modelViewProjectionMatrix);
 }
 
 void DrawDebugModel( Model* model )

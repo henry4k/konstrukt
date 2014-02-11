@@ -1,6 +1,8 @@
 #ifndef __WINDOW__
 #define __WINDOW__
 
+#include "Math.h"
+
 // Callback functions
 typedef void (*FramebufferResizeFn)( int width, int height );
 typedef void (*CursorMoveFn)( double x, double y );
@@ -15,6 +17,7 @@ void FlagWindowForClose();
 bool WindowShouldClose();
 void SwapBuffers();
 void* GetGLFWwindow();
+glm::ivec2 GetFramebufferSize();
 
 // Input
 void SetCursorMode( int mode );

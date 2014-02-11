@@ -140,7 +140,7 @@ void RunGame()
         BeginRender();
         glClear(GL_DEPTH_BUFFER_BIT);
         BindProgram(GetDefaultProgram());
-        SetModelViewProjectionMatrix(GetDefaultProgram(), mvpMatrix);
+        SetModelViewProjectionMatrix(GetDefaultProgram(), &mvpMatrix);
         DrawMap();
         DrawPlayer();
         EndRender();

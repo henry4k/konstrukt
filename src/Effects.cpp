@@ -3,6 +3,7 @@
 #include "Squirrel.h"
 #include "OpenGL.h"
 #include "Texture.h"
+#include "Window.h"
 #include "Effects.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,7 +17,9 @@ const glm::mat4 BIAS_MATRIX(
 
 Program g_DefaultProgram = 0;
 
+int g_DepthTextureSize = 0; // See InitEffects
 Texture g_DepthTexture = 0;
+
 GLuint  g_Framebuffer = 0;
 Program g_DepthProgram = 0;
 glm::mat4 g_DepthMVP;
@@ -35,7 +38,8 @@ bool InitEffects()
     const float shadowBias = GetConfigFloat("opengl.shadow-bias", 0.005);
     SetUniform(g_DefaultProgram, "ShadowBias", shadowBias);
 
-    g_DepthTexture = CreateDepthTexture(512, 512);
+    g_DepthTextureSize = GetConfigInt("opengl.shadowmap-size", 512);
+    g_DepthTexture = CreateDepthTexture(g_DepthTextureSize, g_DepthTextureSize);
     if(!g_DepthTexture)
     {
         Error("Can't create depth texture!");
@@ -63,7 +67,7 @@ bool InitEffects()
     SetLight(
         glm::vec3(0.1f, 0.1f, 0.1f),
         glm::vec3(0.9f, 0.9f, 0.9f),
-        glm::normalize(glm::vec3(1.0f, 1.0f, 1.0f))
+        glm::vec3(0.5,2,2)
     );
 
     return true;
@@ -76,9 +80,9 @@ void DestroyEffects()
     glDeleteFramebuffers(1, &g_Framebuffer);
 }
 
-void SetModelViewProjectionMatrix( Program program, glm::mat4 mvpMatrix )
+void SetModelViewProjectionMatrix( Program program, const glm::mat4* mvpMatrix )
 {
-    SetUniformMatrix4(program, "MVP", &mvpMatrix[0][0]);
+    SetUniformMatrix4(program, "MVP", mvpMatrix);
 }
 
 Program GetDefaultProgram()
@@ -90,12 +94,14 @@ void UpdateDepthModelViewProjectionMatrix()
 {
     using namespace glm;
 
-    const vec3 inverseLightDirection = 1.0f / g_LightDirection; // TODO: Hmm
-
-    const mat4 projectionMatrix = ortho<float>(-10,10, -10,10, -10,20);
-    const mat4 viewMatrix = lookAt(inverseLightDirection, vec3(0,0,0), vec3(0,1,0));
-    const mat4 modelMatrix = mat4(1.0);
-    g_DepthMVP = projectionMatrix * viewMatrix * modelMatrix;
+    const mat4 projectionMatrix = ortho<float>(
+        -5,5, // left / right
+        -5,5, // bottom / top
+        -10,20  // near / far
+    );
+    const mat4 viewMatrix = lookAt(g_LightDirection, vec3(0,0,0), vec3(0,1,0));
+    //const mat4 modelMatrix = mat4();
+    g_DepthMVP = projectionMatrix * viewMatrix; // * modelMatrix;
 }
 
 void BeginRenderShadowTexture()
@@ -105,14 +111,17 @@ void BeginRenderShadowTexture()
     UpdateDepthModelViewProjectionMatrix();
 
     BindProgram(g_DepthProgram);
-    SetModelViewProjectionMatrix(g_DepthProgram, g_DepthMVP);
+    SetModelViewProjectionMatrix(g_DepthProgram, &g_DepthMVP);
     glBindFramebuffer(GL_FRAMEBUFFER, g_Framebuffer);
+    glViewport(0, 0, g_DepthTextureSize, g_DepthTextureSize);
     glDisable(GL_CULL_FACE);
 }
 
 void EndRenderShadowTexture()
 {
     glEnable(GL_CULL_FACE);
+    const glm::ivec2 fbSize = GetFramebufferSize();
+    glViewport(0, 0, fbSize.x, fbSize.y);
     glBindFramebuffer(GL_FRAMEBUFFER, 0); // Switch back to the default framebuffer
 }
 
@@ -124,7 +133,7 @@ void BeginRender()
     BindTexture(GL_TEXTURE_2D, g_DepthTexture, 1);
 
     const glm::mat4 depthBiasMVP = BIAS_MATRIX * g_DepthMVP;
-    SetUniformMatrix4(g_DefaultProgram, "DepthBiasMVP", &depthBiasMVP[0][0]);
+    SetUniformMatrix4(g_DefaultProgram, "DepthBiasMVP", &depthBiasMVP);
 }
 
 void EndRender()

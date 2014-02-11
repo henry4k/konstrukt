@@ -44,21 +44,21 @@ void SetUniform( Program program, const char* name, int length, const float* val
     }
 }
 
-void SetUniformMatrix3( Program program, const char* name, const float* value )
+void SetUniformMatrix3( Program program, const char* name, const glm::mat3* value )
 {
     int loc;
     if(GetUniformLocation(program,name,&loc))
     {
-        glUniformMatrix3fv(loc, 1, GL_FALSE, value);
+        glUniformMatrix3fv(loc, 1, GL_FALSE, &(*value)[0][0]);
     }
 }
 
-void SetUniformMatrix4( Program program, const char* name, const float* value )
+void SetUniformMatrix4( Program program, const char* name, const glm::mat4* value )
 {
     int loc;
     if(GetUniformLocation(program,name,&loc))
     {
-        glUniformMatrix4fv(loc, 1, GL_FALSE, value);
+        glUniformMatrix4fv(loc, 1, GL_FALSE, &(*value)[0][0]);
     }
 }
 

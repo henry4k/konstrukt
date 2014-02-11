@@ -172,6 +172,11 @@ void* GetGLFWwindow()
     return g_Window;
 }
 
+glm::ivec2 GetFramebufferSize()
+{
+    return glm::ivec2(g_FramebufferWidth, g_FramebufferHeight);
+}
+
 
 /****** Input ******/
 

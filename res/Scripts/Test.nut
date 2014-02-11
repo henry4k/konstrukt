@@ -11,9 +11,9 @@ local mapWidth = 4
 local mapDepth = 4
 
 local spaceDefs = [
-    map.FindTileDefinitionByName("Void"),
-    map.FindTileDefinitionByName("Floor"),
-    map.FindTileDefinitionByName("Floor"),
+    map.FindTileDefinitionByName("Void")
+    map.FindTileDefinitionByName("Floor")
+    map.FindTileDefinitionByName("Floor")
     map.FindTileDefinitionByName("Floor")
 ]
 
