@@ -1,0 +1,4 @@
+include_rules
+CFLAGS = -Wall -Os -fPIC
+: foreach *.c |> !cc |> %B.o {objects}
+: {objects} |> !ar |> json.a

@@ -21,10 +21,6 @@ endif
 
 CFLAGS += @(CFLAGS)
 CFLAGS += -g -O0
-CFLAGS += -I$(TUP_CWD)/third-party
-CFLAGS += -I$(TUP_CWD)/third-party/inih
-CFLAGS += -I$(TUP_CWD)/third-party/squirrel/include
-CFLAGS += -I$(TUP_CWD)/third-party/squirrel/sqstdlib
 CFLAGS += -Werror -Wall -Wextra -pedantic
 CFLAGS += -Wmissing-include-dirs -Wpointer-arith -Wcast-qual -Winit-self
 CFLAGS += -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter
@@ -36,6 +32,20 @@ CXXFLAGS += -x c++
 
 LDFLAGS += @(LDFLAGS)
 LDFLAGS += -g
+
+
+### Internal dependencies ###
+
+CFLAGS += -I$(TUP_CWD)/third-party
+CFLAGS += -I$(TUP_CWD)/third-party/inih
+CFLAGS += -I$(TUP_CWD)/third-party/libjson
+CFLAGS += -I$(TUP_CWD)/third-party/squirrel/include
+CFLAGS += -I$(TUP_CWD)/third-party/squirrel/sqstdlib
+
+INI_A = $(TUP_CWD)/third-party/inih/ini.a
+JSON_A = $(TUP_CWD)/third-party/libjson/json.a
+SQUIRREL_A = $(TUP_CWD)/third-party/squirrel/squirrel.a
+SQSTDLIB_A = $(TUP_CWD)/third-party/squirrel/sqstdlib.a
 
 
 ### Packages ###
@@ -50,13 +60,6 @@ endif
 
 CFLAGS += `pkg-config $(PACKAGES) --cflags`
 LDFLAGS += `pkg-config $(PACKAGES) --libs`
-
-
-### Internal dependencies ###
-
-INI_A = $(TUP_CWD)/third-party/inih/ini.a
-SQUIRREL_A = $(TUP_CWD)/third-party/squirrel/squirrel.a
-SQSTDLIB_A = $(TUP_CWD)/third-party/squirrel/sqstdlib.a
 
 
 ### Rules ###
