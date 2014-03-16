@@ -19,7 +19,7 @@ Texture Load2dTexture( int options, const char* file );
 Texture CreateCubeTexture( int options, const Image* images );
 Texture LoadCubeTexture( int options, const char* path );
 
-Texture CreateDepthTexture( int width, int height );
+Texture CreateDepthTexture( int width, int height, int options );
 
 void BindTexture( GLenum target, Texture texture, int layer );
 void FreeTexture( Texture texture );

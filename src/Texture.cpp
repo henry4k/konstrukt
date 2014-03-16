@@ -5,25 +5,42 @@
 #include "Image.h"
 #include "Texture.h"
 
+void SetTextureOptions( int textureType, int options )
+{
+    const int wrapMode = (options & TEX_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
+    switch(textureType)
+    {
+        case GL_TEXTURE_CUBE_MAP:
+        case GL_TEXTURE_3D:
+            glTexParameteri(textureType, GL_TEXTURE_WRAP_R, wrapMode);
+        case GL_TEXTURE_2D:
+            glTexParameteri(textureType, GL_TEXTURE_WRAP_T, wrapMode);
+        case GL_TEXTURE_1D:
+            glTexParameteri(textureType, GL_TEXTURE_WRAP_S, wrapMode);
+            break;
+
+        default:
+            FatalError("Unknown texture type 0x%X", textureType);
+    }
+
+    if(options & TEX_MIPMAP)
+        glTexParameteri(textureType, GL_TEXTURE_MIN_FILTER, (options & TEX_FILTER) ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST);
+    else
+        glTexParameteri(textureType, GL_TEXTURE_MIN_FILTER, (options & TEX_FILTER) ? GL_LINEAR : GL_NEAREST);
+
+    glTexParameteri(textureType, GL_TEXTURE_MAG_FILTER, (options & TEX_FILTER) ? GL_LINEAR : GL_NEAREST);
+
+    if(options & TEX_MIPMAP)
+        glTexParameteri(textureType, GL_GENERATE_MIPMAP, GL_TRUE);
+}
+
 Texture Create2dTexture( int options, const Image* image )
 {
     Texture texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
 
-    const int wrapMode = (options & TEX_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
-
-    if(options & TEX_MIPMAP)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (options & TEX_FILTER) ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST);
-    else
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (options & TEX_FILTER) ? GL_LINEAR : GL_NEAREST);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (options & TEX_FILTER) ? GL_LINEAR : GL_NEAREST);
-
-    if(options & TEX_MIPMAP)
-        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+    SetTextureOptions(GL_TEXTURE_2D, options);
 
     glTexImage2D(GL_TEXTURE_2D, 0, image->format,  image->width, image->height, 0, image->format, image->type, image->data);
 
@@ -53,19 +70,9 @@ Texture CreateCubeTexture( int options, const Image* images )
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
 
     // Always uses clamp to edge since its the only option that makes sense here.
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    options |= TEX_CLAMP;
 
-    if(options & TEX_MIPMAP)
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, (options & TEX_FILTER) ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST);
-    else
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, (options & TEX_FILTER) ? GL_LINEAR : GL_NEAREST);
-
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, (options & TEX_FILTER) ? GL_LINEAR : GL_NEAREST);
-
-    if(options & TEX_MIPMAP)
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_GENERATE_MIPMAP, GL_TRUE);
+    SetTextureOptions(GL_TEXTURE_CUBE_MAP, options);
 
     for(int i = 0; i < 6; i++)
     {
@@ -105,7 +112,7 @@ Texture LoadCubeTexture( int options, const char* path )
     return r;
 }
 
-Texture CreateDepthTexture( int width, int height )
+Texture CreateDepthTexture( int width, int height, int options )
 {
     Texture texture;
     glGenTextures(1, &texture);
@@ -114,12 +121,11 @@ Texture CreateDepthTexture( int width, int height )
     float* data = NULL; // new float[width*height];
     // ^- We don't care about initialization.
 
+    SetTextureOptions(GL_TEXTURE_2D, options);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, data); // TODO: Sure that NULL works here?
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     //delete[] data;
 

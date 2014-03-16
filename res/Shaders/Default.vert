@@ -1,3 +1,5 @@
+#version 120
+
 varying vec2 TexCoord;
 varying vec4 ShadowCoord;
 varying float FixedShadowBias;

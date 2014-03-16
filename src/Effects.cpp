@@ -39,7 +39,7 @@ bool InitEffects()
     SetUniform(g_DefaultProgram, "ShadowBias", shadowBias);
 
     g_DepthTextureSize = GetConfigInt("opengl.shadowmap-size", 512);
-    g_DepthTexture = CreateDepthTexture(g_DepthTextureSize, g_DepthTextureSize);
+    g_DepthTexture = CreateDepthTexture(g_DepthTextureSize, g_DepthTextureSize, TEX_CLAMP|TEX_FILTER|TEX_MIPMAP);
     if(!g_DepthTexture)
     {
         Error("Can't create depth texture!");
