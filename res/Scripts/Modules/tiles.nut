@@ -211,32 +211,54 @@ map.RegisterTileDefinition({
 
 class WallTile extends Tile
 {
-    static wallMesh = mesh.LoadMesh("Meshes/Wall-1x1.ply")
     static sideMesh = mesh.LoadMesh("Meshes/WallSide.ply")
 
+    static variations =
+    [
+        {
+            wallMesh = mesh.LoadMesh("Meshes/Wall-1x1.ply")
+            sideConfig = [1,0,1,0]
+        },
+        {
+            wallMesh = mesh.LoadMesh("Meshes/WallCurve.ply"),
+            sideConfig = [1,0,0,1]
+        },
+    ]
+
     direction = null
+    variation = null
 
     function constructor( definition, x, z )
     {
         base.constructor(definition, x, z)
+
         direction = math.RandomArrayElement([
             Direction.NORTH,
             Direction.WEST,
             Direction.SOUTH,
             Direction.EAST
         ])
+
+        variation = math.Random(0, getVariationCount()-1+0.5).tointeger()
     }
 
     function load()
     {
         base.load()
-        direction = map.GetTileDataAt(x, z, map.DataType.UINT8, 0)
+        direction = map.GetTileDataAt(x, z, 0, map.DataType.UINT8)
+        variation = map.GetTileDataAt(x, z, 1, map.DataType.UINT8)
     }
 
     function save()
     {
         base.save()
-        map.SetTileDataAt(x, z, map.DataType.UINT8, 0, direction)
+        map.SetTileDataAt(x, z, 0, map.DataType.UINT8, direction)
+        map.SetTileDataAt(x, z, 1, map.DataType.UINT8, variation)
+    }
+
+    function getVariationCount()
+    {
+        return variations.len()
     }
 
     function coversDirection( direction )
@@ -246,23 +268,35 @@ class WallTile extends Tile
 
     function generateStaticMesh( meshBuffer )
     {
+        local vinfo = variations[variation]
+
+        print("direction = "+direction)
         local rotation = DirectionToRotation(direction)
         local meshMatrix = math.Matrix4().translate(x,0,z).rotate(rotation, 0,1,0)
 
         meshBuffer.addMesh(
-            wallMesh,
+            vinfo.wallMesh,
             meshMatrix
         )
 
-        meshBuffer.addMesh(
-            sideMesh,
-            meshMatrix.translate(0,0,coord.TILE_SIZE.z/2.0)
-        )
-
-        meshBuffer.addMesh(
-            sideMesh,
-            meshMatrix.translate(0,0,-coord.TILE_SIZE.z/2.0).rotate(math.PI, 0,1,0)
-        )
+        foreach(i,v in vinfo.sideConfig)
+        {
+            if(v)
+            {
+                local sideRotation = DirectionToRotation(i)
+                local sideOffset   = DirectionToOffset(i)
+                meshBuffer.addMesh(
+                    sideMesh,
+                    meshMatrix.
+                        translate(
+                            sideOffset.x * coord.TILE_SIZE.x/2.0,
+                            0,
+                            sideOffset.z * coord.TILE_SIZE.z/2.0
+                        ).
+                        rotate(sideRotation, 0,1,0)
+                )
+            }
+        }
     }
 
     function generateStaticSolid( solidBuffer )
@@ -321,13 +355,13 @@ class DoorTile extends Tile
     function load()
     {
         base.load()
-        direction = map.GetTileDataAt(x, z, map.DataType.UINT8, 0)
+        direction = map.GetTileDataAt(x, z, 0, map.DataType.UINT8)
     }
 
     function save()
     {
         base.save()
-        map.SetTileDataAt(x, z, map.DataType.UINT8, 0, direction)
+        map.SetTileDataAt(x, z, 0, map.DataType.UINT8, direction)
     }
 
     /*
@@ -429,6 +463,187 @@ map.RegisterTileDefinition({
         return DoorTile(this, x, z)
     }
 })
+
+
+
+
+class WindowTile extends Tile
+{
+    static windowMesh = mesh.LoadMesh("Meshes/Window.ply")
+    static sideMesh = mesh.LoadMesh("Meshes/WallSide.ply")
+
+    direction = null
+
+    function constructor( definition, x, z )
+    {
+        base.constructor(definition, x, z)
+        direction = math.RandomArrayElement([
+            Direction.NORTH,
+            Direction.WEST,
+            Direction.SOUTH,
+            Direction.EAST
+        ])
+    }
+
+    function load()
+    {
+        base.load()
+        direction = map.GetTileDataAt(x, z, 0, map.DataType.UINT8)
+    }
+
+    function save()
+    {
+        base.save()
+        map.SetTileDataAt(x, z, 0, map.DataType.UINT8, direction)
+    }
+
+    function coversDirection( direction )
+    {
+        return true
+    }
+
+    function generateStaticMesh( meshBuffer )
+    {
+        local rotation = DirectionToRotation(direction)
+        local meshMatrix = math.Matrix4().translate(x,0,z).rotate(rotation, 0,1,0).translate(0,0,-0.25)
+
+        meshBuffer.addMesh(
+            windowMesh,
+            meshMatrix
+        )
+
+        meshBuffer.addMesh(
+            sideMesh,
+            meshMatrix.translate(0,0,coord.TILE_SIZE.z)
+        )
+
+        meshBuffer.addMesh(
+            sideMesh,
+            meshMatrix.translate(0,0,-coord.TILE_SIZE.z).rotate(math.PI, 0,1,0)
+        )
+    }
+
+    function generateStaticSolid( solidBuffer )
+    {
+        local rotation = DirectionToRotation(direction)
+        local solidMatrix = math.Matrix4().translate(x,0,z).rotate(rotation, 0,1,0).translate(0,0,-0.25)
+
+        solidBuffer.addSolid(
+            {
+                position =
+                {
+                    x = 0,
+                    y = coord.TILE_SIZE.y / 2.0,
+                    z = 0
+                },
+                halfWidth =
+                {
+                    x = coord.TILE_SIZE.x / 2.0,
+                    y = coord.TILE_SIZE.y / 2.0,
+                    z = coord.TILE_SIZE.z
+                }
+            },
+            {x=x,z=z},
+            0,
+            solidMatrix
+        )
+    }
+}
+
+map.RegisterTileDefinition({
+    id = null,
+    name = "Window",
+    createTile = function( x, z )
+    {
+        return WindowTile(this, x, z)
+    }
+})
+
+
+
+
+class ConsoleTile extends Tile
+{
+    static consoleMesh = mesh.LoadMesh("Meshes/Console.ply")
+
+    direction = null
+
+    function constructor( definition, x, z )
+    {
+        base.constructor(definition, x, z)
+        direction = math.RandomArrayElement([
+            Direction.NORTH,
+            Direction.WEST,
+            Direction.SOUTH,
+            Direction.EAST
+        ])
+    }
+
+    function load()
+    {
+        base.load()
+        direction = map.GetTileDataAt(x, z, 0, map.DataType.UINT8)
+    }
+
+    function save()
+    {
+        base.save()
+        map.SetTileDataAt(x, z, 0, map.DataType.UINT8, direction)
+    }
+
+    function coversDirection( direction )
+    {
+        return true
+    }
+
+    function generateStaticMesh( meshBuffer )
+    {
+        local rotation = DirectionToRotation(direction)
+        local meshMatrix = math.Matrix4().translate(x,0,z).rotate(rotation, 0,1,0).translate(0,0,-0.25)
+
+        meshBuffer.addMesh(
+            consoleMesh,
+            meshMatrix
+        )
+    }
+
+    function generateStaticSolid( solidBuffer )
+    {
+        local rotation = DirectionToRotation(direction)
+        local solidMatrix = math.Matrix4().translate(x,0,z).rotate(rotation, 0,1,0).translate(0,0,-0.25)
+
+        solidBuffer.addSolid(
+            {
+                position =
+                {
+                    x = 0,
+                    y = coord.TILE_SIZE.y / 2.0,
+                    z = 0
+                },
+                halfWidth =
+                {
+                    x = coord.TILE_SIZE.x / 2.0,
+                    y = coord.TILE_SIZE.y / 2.0,
+                    z = coord.TILE_SIZE.z
+                }
+            },
+            {x=x,z=z},
+            0,
+            solidMatrix
+        )
+    }
+}
+
+map.RegisterTileDefinition({
+    id = null,
+    name = "Console",
+    createTile = function( x, z )
+    {
+        return ConsoleTile(this, x, z)
+    }
+})
+
+
 
 
 return {

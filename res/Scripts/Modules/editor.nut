@@ -192,6 +192,29 @@ RotateTile <- controls.RegisterKeyControl("rotate-tile", function( pressed )
     }
 })
 
+CycleTileVariations <- controls.RegisterKeyControl("cycle-tile-variations", function( pressed )
+{
+    if(pressed)
+    {
+        local tilePosition = GetTilePositionUnderCursor()
+        if(tilePosition)
+        {
+            local tile = map.GetTileAt(tilePosition.x, tilePosition.z)
+            if("variation" in tile)
+            {
+                tile.variation++
+                if(tile.variation >= tile.getVariationCount())
+                    tile.variation = 0
+                // TODO: This is messy :(
+            }
+            tile.save()
+            map.UpdateMap()
+        }
+        else
+            print("No hit.")
+    }
+})
+
 
 return {
     AddTile = AddTile
