@@ -1,4 +1,6 @@
 return {
     ParseJsonString = ::native.ParseJsonString,
-    WriteJsonString = ::native.WriteJsonString
+    ParseJsonFile   = ::native.ParseJsonFile,
+    WriteJsonString = ::native.WriteJsonString,
+    WriteJsonFile   = ::native.WriteJsonFile
 }

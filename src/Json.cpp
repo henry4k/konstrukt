@@ -1,7 +1,10 @@
 #include <string.h>
 #include <vector>
 #include <json.h> // TODO: Seems a bit dangerous. Maybe use <thirdparty/libjson/json.h> for clarity instaed?
+
 #include "Common.h"
+#include "Squirrel.h"
+#include <sqstdio.h> // Needed by sqstd_getfile and SQFILE
 #include "Json.h"
 
 const char* JsonErrorToString( int error )
@@ -60,6 +63,9 @@ void InitJsonConfig( json_config* c )
 
 struct JsonParserContext
 {
+    json_parser parser;
+    json_config config;
+
     HSQUIRRELVM vm;
     char stack[JsonParserStackSize]; // 0 = Array; 1 = Table
     int stackPosition;
@@ -158,19 +164,14 @@ int JsonParserCallback( void* userdata, int type, const char* data, uint32_t len
     return 0;
 }
 
-bool ParseJsonString( HSQUIRRELVM vm, const char* str )
+bool InitJsonParserContext( JsonParserContext* context, HSQUIRRELVM vm )
 {
-    json_parser parser;
-    json_config config;
-    InitJsonConfig(&config);
-
-    int error = 0;
-
-    JsonParserContext context;
     memset(&context, 0, sizeof(JsonParserContext));
-    context.vm = vm;
+    context->vm = vm;
 
-    error = json_parser_init(&parser, &config, JsonParserCallback, &context);
+    InitJsonConfig(&context->config);
+
+    int error = json_parser_init(&context->parser, &context->config, JsonParserCallback, &context);
     if(error)
     {
         const char* errorString = Format("During parser initialization: %s",
@@ -180,9 +181,26 @@ bool ParseJsonString( HSQUIRRELVM vm, const char* str )
         return false;
     }
 
-    uint32_t chars = strlen(str);
+    return true;
+}
+
+bool FreeJsonParserContext( JsonParserContext* context )
+{
+    if(!json_parser_is_done(&context->parser))
+    {
+        sq_pushstring(context->vm, "Parser expects more characters.", -1);
+        json_parser_free(&context->parser);
+        return false;
+    }
+
+    json_parser_free(&context->parser);
+    return true;
+}
+
+bool FeedJsonParser( JsonParserContext* context, const char* buffer, int length )
+{
     uint32_t processedChars = 0;
-    error = json_parser_string(&parser, str, chars, &processedChars);
+    int error = json_parser_string(&context->parser, buffer, length, &processedChars);
     if(error)
     {
         // TODO: Recognize lines.
@@ -190,38 +208,53 @@ bool ParseJsonString( HSQUIRRELVM vm, const char* str )
             processedChars,
             JsonErrorToString(error)
         );
-        sq_pushstring(vm, errorString, -1);
-        json_parser_free(&parser);
+        sq_pushstring(context->vm, errorString, -1);
+        json_parser_free(&context->parser);
         return false;
     }
-
-    if(!json_parser_is_done(&parser))
-    {
-        sq_pushstring(vm, "Parser expects more characters.", -1);
-        json_parser_free(&parser);
-        return false;
-    }
-
-    json_parser_free(&parser);
     return true;
 }
 
+bool ParseJsonString( HSQUIRRELVM vm, const char* str )
+{
+    JsonParserContext context;
+    if(!InitJsonParserContext(&context, vm))
+        return false;
+
+    if(!FeedJsonParser(&context, str, strlen(str)))
+        return false;
+
+    return FreeJsonParserContext(&context);
+}
+
+bool ParseJsonFile( HSQUIRRELVM vm, FILE* file )
+{
+    JsonParserContext context;
+    if(!InitJsonParserContext(&context, vm))
+        return false;
+
+    static const int bufferSize = 1024;
+    char buffer[bufferSize];
+    while(!feof(file))
+    {
+        const int charsRead = fread(buffer, 1, bufferSize, file);
+        if(!FeedJsonParser(&context, buffer, charsRead))
+            return false;
+    }
+
+    return FreeJsonParserContext(&context);
+}
 
 // --- Writer ---
 
-struct JsonPrinterContext
+struct JsonStringPrinterContext
 {
-    HSQUIRRELVM vm;
     std::vector<char> buffer;
-
-    json_printer* printer;
-    bool pretty;
 };
 
-int JsonPrinterCallback( void* userdata, const char* data, uint32_t length )
+int JsonStringPrinterCallback( void* userdata, const char* data, uint32_t length )
 {
-    JsonPrinterContext* context = (JsonPrinterContext*)userdata;
-    HSQUIRRELVM vm = context->vm;
+    JsonStringPrinterContext* context = (JsonStringPrinterContext*)userdata;
 
     context->buffer.insert(
         context->buffer.end(),
@@ -231,6 +264,28 @@ int JsonPrinterCallback( void* userdata, const char* data, uint32_t length )
 
     return 0;
 }
+
+struct JsonFilePrinterContext
+{
+    FILE* file;
+};
+
+int JsonFilePrinterCallback( void* userdata, const char* data, uint32_t length )
+{
+    JsonFilePrinterContext* context = (JsonFilePrinterContext*)userdata;
+
+    const int writtenChars = fwrite(data, 1, length, context->file);
+    assert(writtenChars == length);
+
+    return 0;
+}
+
+struct JsonTokenizerContext
+{
+    HSQUIRRELVM vm;
+    json_printer* printer;
+    bool pretty;
+};
 
 /**
  * Takes token information and passes it to the printer.
@@ -242,7 +297,7 @@ int JsonPrinterCallback( void* userdata, const char* data, uint32_t length )
  * Length of the `data` string.
  * If less than 0 string length will be calculated automatically.
  */
-bool WriteJsonToken( JsonPrinterContext* context, int type, const char* data, int length )
+bool WriteJsonToken( JsonTokenizerContext* context, int type, const char* data, int length )
 {
     if(length < 0)
         length = strlen(data);
@@ -265,7 +320,7 @@ bool WriteJsonToken( JsonPrinterContext* context, int type, const char* data, in
     return true;
 }
 
-bool WriteSquirrelObject( JsonPrinterContext* context, int stackPosition )
+bool WriteSquirrelObject( JsonTokenizerContext* context, int stackPosition )
 {
     HSQUIRRELVM vm = context->vm;
 
@@ -352,18 +407,37 @@ bool WriteSquirrelObject( JsonPrinterContext* context, int stackPosition )
     }
 }
 
-bool WriteJsonString( HSQUIRRELVM vm, int stackPosition, bool pretty )
+/**
+ * Serializes a JSON document from the squirrel object at `stackPosition`.
+ *
+ * @param stackPosition
+ * Squirrel object that is serialized.
+ *
+ * @param pretty
+ * Pretty format json document.
+ *
+ * @param printerCallback
+ * Callback for printing the JSON document.
+ *
+ * @param printerContext
+ * Context value thats passed to the printerCallback.
+ *
+ * @return
+ * On success it returns `true`.
+ * On failure it returns `false` and pushes an error message in the stack.
+ */
+bool WriteJson( HSQUIRRELVM vm, int stackPosition, bool pretty, json_printer_callback printerCallback, void* printerContext )
 {
     json_printer printer;
 
     int error = 0;
 
-    JsonPrinterContext context;
-    context.vm = vm;
-    context.printer = &printer;
-    context.pretty = pretty;
+    JsonTokenizerContext tokenizerContext;
+    tokenizerContext.vm = vm;
+    tokenizerContext.printer = &printer;
+    tokenizerContext.pretty = pretty;
 
-    error = json_print_init(&printer, JsonPrinterCallback, &context);
+    error = json_print_init(&printer, printerCallback, printerContext);
     if(error)
     {
         const char* errorString = Format("During printer initialization: %s",
@@ -373,16 +447,32 @@ bool WriteJsonString( HSQUIRRELVM vm, int stackPosition, bool pretty )
         return false;
     }
 
-    if(!WriteSquirrelObject(&context, stackPosition))
+    if(!WriteSquirrelObject(&tokenizerContext, stackPosition))
     {
         json_print_free(&printer);
         return false;
     }
 
-    sq_pushstring(vm, &context.buffer[0], context.buffer.size());
     json_print_free(&printer);
     return true;
 }
+
+bool WriteJsonString( HSQUIRRELVM vm, int stackPosition, bool pretty )
+{
+    JsonStringPrinterContext context;
+    if(!WriteJson(vm, stackPosition, pretty, JsonStringPrinterCallback, &context))
+        return false;
+    sq_pushstring(vm, &context.buffer[0], context.buffer.size());
+    return true;
+}
+
+bool WriteJsonFile( HSQUIRRELVM vm, int stackPosition, bool pretty, FILE* file )
+{
+    JsonFilePrinterContext context;
+    context.file = file;
+    return WriteJson(vm, stackPosition, pretty, JsonFilePrinterCallback, &context);
+}
+
 
 
 // --- Squirrel Bindings ---
@@ -399,6 +489,18 @@ SQInteger Squirrel_ParseJsonString( HSQUIRRELVM vm )
 }
 RegisterStaticFunctionInSquirrel(ParseJsonString, 2, ".s");
 
+SQInteger Squirrel_ParseJsonFile( HSQUIRRELVM vm )
+{
+    SQFILE file;
+    sqstd_getfile(vm, 2, &file);
+
+    if(ParseJsonFile(vm, (FILE*)file))
+        return 1;
+    else
+        return sq_throwobject(vm);
+}
+RegisterStaticFunctionInSquirrel(ParseJsonFile, 2, ".x");
+
 SQInteger Squirrel_WriteJsonString( HSQUIRRELVM vm )
 {
     SQBool pretty = SQFalse;
@@ -410,3 +512,18 @@ SQInteger Squirrel_WriteJsonString( HSQUIRRELVM vm )
         return sq_throwobject(vm);
 }
 RegisterStaticFunctionInSquirrel(WriteJsonString, 3, "..b");
+
+SQInteger Squirrel_WriteJsonFile( HSQUIRRELVM vm )
+{
+    SQBool pretty = SQFalse;
+    sq_getbool(vm, 3, &pretty);
+
+    SQFILE file;
+    sqstd_getfile(vm, 4, &file);
+
+    if(WriteJsonFile(vm, 2, (bool)pretty, (FILE*)file))
+        return 1;
+    else
+        return sq_throwobject(vm);
+}
+RegisterStaticFunctionInSquirrel(WriteJsonFile, 4, "..bx");
