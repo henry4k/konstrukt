@@ -23,7 +23,7 @@ CFLAGS += @(CFLAGS)
 CFLAGS += -g -O0
 CFLAGS += -Werror -Wall -Wextra -pedantic
 CFLAGS += -Wmissing-include-dirs -Wpointer-arith -Wcast-qual -Winit-self
-CFLAGS += -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter
+CFLAGS += -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter -Wno-literal-suffix
 
 CXXFLAGS += @(CXXFLAGS)
 CXXFLAGS += --std=c++11
@@ -69,5 +69,5 @@ LDFLAGS += `pkg-config $(PACKAGES) --libs`
 !ar = |> ^o Archiving %o^ ar crs %o %f |>
 !cp = |> ^o Copying %f to %o^ cp %f %o |>
 
-!cxx = |> ^o Compiling %f^ $(CXX) $(CFLAGS) $(CXX_FLAGS) -c %f -o %o |> %B.o
+!cxx = |> ^o Compiling %f^ $(CXX) $(CFLAGS) $(CXXFLAGS) -c %f -o %o |> %B.o
 !ldcxx = |> ^o Linking %o^ $(CXX) %f -o %o $(LDFLAGS) |>
