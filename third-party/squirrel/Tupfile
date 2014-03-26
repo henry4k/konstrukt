@@ -1,15 +1,6 @@
 include_rules
 
-CFLAGS =
 CFLAGS += -I$(TUP_CWD)/include  -I$(TUP_CWD)/sqstdlib
-CFLAGS += -O2
-CFLAGS += -fno-strict-aliasing
-CFLAGS += -fno-unwind-tables
-CFLAGS += -fno-asynchronous-unwind-tables
-
-CXXFLAGS =
-CXXFLAGS += -fno-exceptions
-CXXFLAGS += -fno-rtti
 
 : foreach squirrel/*.cpp |> !cxx |> %B.o {squirrel_objects}
 : {squirrel_objects} |> !ar |> squirrel.a

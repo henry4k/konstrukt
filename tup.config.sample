@@ -1,7 +1,9 @@
-CONFIG_CC=clang
-CONFIG_CXX=clang++
-CONFIG_CFLAGS=-I/System/Library/Frameworks/OpenGL.framework -I/opt/local/include
+CONFIG_CC=cc
+CONFIG_CXX=c++
+CONFIG_CFLAGS=-g -O0 -Werror -Wall -Wextra -pedantic -Wmissing-include-dirs -Wpointer-arith -Wcast-qual -Winit-self -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter -Wno-literal-suffix
 CONFIG_CXXFLAGS=
-CONFIG_LDFLAGS=-framework OpenGL -L/opt/local/lib -lGLEW
-CONFIG_PACKAGES=glfw3 libpng openal
+CONFIG_LDFLAGS=
+CONFIG_PACKAGES=gl glew glfw3 libpng openal alure
 CONFIG_BLENDER=blender
+#CONFIG_GIMP=gimp
+CONFIG_XCF2PNG=xcf2png

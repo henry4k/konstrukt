@@ -1,29 +1,9 @@
-# vim: set filetype=tup:
-
 .gitignore
-
-### Tools ###
-
-ifdef CC
-  CC = @(CC)
-else
-  CC = cc
-endif
-
-ifdef CXX
-  CXX = @(CXX)
-else
-  CXX = c++
-endif
 
 
 ### Flags ###
 
 CFLAGS += @(CFLAGS)
-CFLAGS += -g -O0
-CFLAGS += -Werror -Wall -Wextra -pedantic
-CFLAGS += -Wmissing-include-dirs -Wpointer-arith -Wcast-qual -Winit-self
-CFLAGS += -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter -Wno-literal-suffix
 
 CXXFLAGS += @(CXXFLAGS)
 CXXFLAGS += --std=c++11
@@ -51,23 +31,16 @@ SQSTDLIB_A = $(TUP_CWD)/third-party/squirrel/sqstdlib.a
 ### Packages ###
 
 export PKG_CONFIG_PATH
-
-ifdef PACKAGES
-  PACKAGES = @(PACKAGES)
-else
-  PACKAGES = gl glew glfw3 libpng openal alure
-endif
-
-CFLAGS += `pkg-config $(PACKAGES) --cflags`
-LDFLAGS += `pkg-config $(PACKAGES) --libs`
+CFLAGS += `pkg-config @(PACKAGES) --cflags`
+LDFLAGS += `pkg-config @(PACKAGES) --libs`
 
 
 ### Rules ###
 
-!cc = |> ^o Compling %f^ $(CC) -c %f -o %o $(CFLAGS) |> %B.o
+!cc = |> ^o Compling %f^ @(CC) -c %f -o %o $(CFLAGS) |> %B.o
 !ld = |> ^o Linking %o^ ld %f -o %o $(LDFLAGS) |>
 !ar = |> ^o Archiving %o^ ar crs %o %f |>
 !cp = |> ^o Copying %f to %o^ cp %f %o |>
 
-!cxx = |> ^o Compiling %f^ $(CXX) $(CFLAGS) $(CXXFLAGS) -c %f -o %o |> %B.o
-!ldcxx = |> ^o Linking %o^ $(CXX) %f -o %o $(LDFLAGS) |>
+!cxx = |> ^o Compiling %f^ @(CXX) $(CFLAGS) $(CXXFLAGS) -c %f -o %o |> %B.o
+!ldcxx = |> ^o Linking %o^ @(CXX) %f -o %o $(LDFLAGS) |>

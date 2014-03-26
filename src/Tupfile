@@ -2,7 +2,5 @@ include_rules
 
 : foreach *.cpp |> !cxx |> %B.o {objects}
 
-: |> ^o Generating cflags file^ echo $(CFLAGS) $(CXXFLAGS) > cflags |> cflags
-
 LDFLAGS += $(INI_A) $(JSON_A) $(SQUIRREL_A) $(SQSTDLIB_A)
 : {objects} | $(INI_A) $(JSON_A) $(SQUIRREL_A) $(SQSTDLIB_A) |> !ldcxx |> apoapsis
