@@ -1,4 +1,5 @@
 math <- require("math")
+json <- require("json")
 
 class MeshBuffer
 {
@@ -8,7 +9,7 @@ class MeshBuffer
     {
         if(buffer)
         {
-            if(type(buffer) == "userdata")
+            if(typeof(buffer) == "userdata")
                 handle = buffer
             else
                 handle = buffer.handle
@@ -19,32 +20,74 @@ class MeshBuffer
         }
     }
 
-    function buildMesh()
-    {
-        return ::native.BuildMesh(handle)
-    }
-
     function transform( matrix )
     {
         assert(matrix instanceof math.Matrix4)
         ::native.TransformMeshBuffer(handle, matrix.handle)
     }
 
-    function addMesh( mesh, transformation=null )
+    function appendMeshBuffer( buffer, transformation=null )
     {
         if(transformation instanceof math.Matrix4)
-            ::native.AddMeshToMeshBuffer(handle, mesh, transformation.handle)
+            ::native.AppendMeshBuffer(handle, buffer, transformation.handle)
         else
-            ::native.AddMeshToMeshBuffer(handle, mesh)
+            ::native.AppendMeshBuffer(handle, buffer)
     }
 
-    function addMeshBuffer( meshBuffer, transformation=null )
+    function appendIndices( indices )
     {
-        if(transformation instanceof math.Matrix4)
-            ::native.AddMeshBufferToMeshBuffer(handle, meshBuffer.handle, transformation)
-        else
-            ::native.AddMeshBufferToMeshBuffer(handle, meshBuffer.handle)
+        local blob = ::native.blob.blob(0)
+        foreach(index in indices)
+            blob.writen(index, 'w') // unsigned short (16 bit)
+        ::native.AppendIndicesToMeshBuffer(handle, blob)
     }
+
+    function appendVertices( vertices )
+    {
+        local blob = ::native.blob.blob(0)
+
+        local writeFloat = function( vertex, name, defaultValue )
+        {
+            local value = (name in vertex) ? vertex[name] : defaultValue
+            blob.writen(value.tofloat(), 'f')
+        }
+
+        foreach(vertex in vertices)
+        {
+            writeFloat(vertex, "x", 0)
+            writeFloat(vertex, "y", 0)
+            writeFloat(vertex, "z", 0)
+            writeFloat(vertex, "r", 1)
+            writeFloat(vertex, "g", 1)
+            writeFloat(vertex, "b", 1)
+            writeFloat(vertex, "u", 0)
+            writeFloat(vertex, "v", 0)
+            writeFloat(vertex, "nx", 0)
+            writeFloat(vertex, "ny", 0)
+            writeFloat(vertex, "nz", 0)
+
+            // Generate empty tangent vector
+            blob.writen(0.0, 'f')
+            blob.writen(0.0, 'f')
+            blob.writen(0.0, 'f')
+            blob.writen(0.0, 'f')
+        }
+        ::native.AppendVerticesToMeshBuffer(handle, blob)
+    }
+
+    /*
+    static function ( table )
+    {
+        if(!math.TableContainsAllKeys(table, ["primitive", "vertex_format", "faces", "vertices"]))
+            throw "Table is not a buffer."
+
+        if(table.primitive != "triangles")
+            throw "MeshBuffer must consist of triangles."
+
+        local vertexCount = table.vertices.len()
+        local faceCount = table.faces.len()
+    }
+    */
 }
 
 return MeshBuffer

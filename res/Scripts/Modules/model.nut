@@ -1,3 +1,0 @@
-return {
-    LoadModel = ::native.LoadModel
-}

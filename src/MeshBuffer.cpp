@@ -17,21 +17,6 @@ void FreeMeshBuffer( MeshBuffer* buffer )
     buffer->indices.clear();
 }
 
-void BuildMesh( const MeshBuffer* buffer, Mesh* meshOut )
-{
-    const int vertexCount = buffer->vertices.size();
-    const int indexCount = buffer->indices.size();
-
-    meshOut->vertices = new Vertex[vertexCount];
-    meshOut->indices  = new unsigned short[indexCount];
-
-    meshOut->vertexCount = vertexCount;
-    meshOut->indexCount  = indexCount;
-
-    memcpy(meshOut->vertices, &buffer->vertices[0], vertexCount*sizeof(Vertex));
-    memcpy(meshOut->indices, &buffer->indices[0], indexCount*sizeof(unsigned short));
-}
-
 void TransformMeshBufferRange( MeshBuffer* buffer, const glm::mat4* transformation, int firstVertex, int vertexCount )
 {
     using namespace glm;
@@ -57,50 +42,21 @@ void TransformMeshBuffer( MeshBuffer* buffer, const glm::mat4* transformation )
     TransformMeshBufferRange(buffer, transformation, 0, buffer->vertices.size());
 }
 
-void AddMeshToMeshBuffer( MeshBuffer* buffer, const Mesh* mesh, const glm::mat4* transformation )
+void AppendMeshBuffer( MeshBuffer* buffer, const MeshBuffer* otherBuffer, const glm::mat4* transformation )
 {
-    const int oldVertexCount = buffer->vertices.size();
-    buffer->vertices.resize(oldVertexCount+mesh->vertexCount);
-    memcpy(&buffer->vertices[oldVertexCount], mesh->vertices, mesh->vertexCount*sizeof(Vertex));
+    buffer->indices.reserve(buffer->indices.size()+otherBuffer->indices.size());
+    const VertexIndex indexOffset = buffer->indices.size();
+    for(const VertexIndex& index : otherBuffer->indices)
+        buffer->indices.push_back(index+indexOffset);
 
-    const int oldIndexCount = buffer->indices.size();
-    buffer->indices.resize(oldIndexCount+mesh->indexCount);
-    memcpy(&buffer->indices[oldIndexCount], mesh->indices, mesh->indexCount*sizeof(unsigned short));
-
-    {
-        unsigned short* index = &buffer->indices[oldIndexCount];
-        const unsigned short* end = &buffer->indices[oldIndexCount+mesh->indexCount];
-        for(; index != end; ++index)
-        {
-            *index += oldVertexCount;
-            assert(*index < oldVertexCount+mesh->vertexCount);
-        }
-    }
-
+    const int start = buffer->vertices.size();
+    buffer->vertices.insert(
+        buffer->vertices.begin(),
+        otherBuffer->vertices.begin(),
+        otherBuffer->vertices.end()
+    );
     if(transformation)
-        TransformMeshBufferRange(buffer, transformation, oldVertexCount, mesh->vertexCount);
-}
-
-void AddMeshBufferToMeshBuffer( MeshBuffer* buffer, const MeshBuffer* otherBuffer, const glm::mat4* transformation )
-{
-    /* ISO C++ doesn't allow this. :(
-    const Mesh mesh = {
-        .vertices    = &otherBuffer->vertices[0],
-        .vertexCount =  otherBuffer->vertices.size(),
-        .indices     = &otherBuffer->indices[0],
-        .indexCount  =  otherBuffer->indices.size()
-    };
-    */
-
-    Mesh mesh;
-    mesh.vertices    = const_cast<Vertex*>(&otherBuffer->vertices[0]);
-    mesh.vertexCount =  otherBuffer->vertices.size();
-    mesh.indices     = const_cast<unsigned short*>(&otherBuffer->indices[0]);
-    mesh.indexCount  =  otherBuffer->indices.size();
-    // Shame on you henry!
-    // Everyone! Shame him!!
-
-    AddMeshToMeshBuffer(buffer, &mesh, transformation);
+        TransformMeshBufferRange(buffer, transformation, start, otherBuffer->vertices.size());
 }
 
 
@@ -120,17 +76,6 @@ SQInteger Squirrel_CreateMeshBuffer( HSQUIRRELVM vm )
 }
 RegisterStaticFunctionInSquirrel(CreateMeshBuffer, 1, ".");
 
-SQInteger Squirrel_BuildMesh( HSQUIRRELVM vm )
-{
-    MeshBuffer** buffer;
-    sq_getuserdata(vm, 2, (SQUserPointer*)&buffer, NULL);
-
-    Mesh* mesh = (Mesh*)CreateUserDataInSquirrel(vm, sizeof(Mesh), OnReleaseMesh);
-    BuildMesh(*buffer, mesh);
-    return 1;
-}
-RegisterStaticFunctionInSquirrel(BuildMesh, 2, ".u");
-
 SQInteger Squirrel_TransformMeshBuffer( HSQUIRRELVM vm )
 {
     MeshBuffer** buffer;
@@ -144,36 +89,67 @@ SQInteger Squirrel_TransformMeshBuffer( HSQUIRRELVM vm )
 }
 RegisterStaticFunctionInSquirrel(TransformMeshBuffer, 3, ".uu");
 
-SQInteger Squirrel_AddMeshToMeshBuffer( HSQUIRRELVM vm )
+SQInteger Squirrel_AppendMeshBuffer( HSQUIRRELVM vm )
 {
     MeshBuffer** buffer;
     sq_getuserdata(vm, 2, (SQUserPointer*)&buffer, NULL);
 
-    Mesh* mesh;
-    sq_getuserdata(vm, 3, (SQUserPointer*)&mesh, NULL);
+    MeshBuffer** otherMeshBuffer;
+    sq_getuserdata(vm, 3, (SQUserPointer*)&otherMeshBuffer, NULL);
 
     glm::mat4* transformation = NULL;
     if(sq_gettop(vm) > 3)
         sq_getuserdata(vm, 4, (SQUserPointer*)&transformation, NULL);
 
-    AddMeshToMeshBuffer(*buffer, mesh, transformation);
+    AppendMeshBuffer(*buffer, *otherMeshBuffer, transformation);
     return 0;
 }
-RegisterStaticFunctionInSquirrel(AddMeshToMeshBuffer, -3, ".uuu");
+RegisterStaticFunctionInSquirrel(AppendMeshBuffer, -3, ".uuu");
 
-SQInteger Squirrel_AddMeshBufferToMeshBuffer( HSQUIRRELVM vm )
+SQInteger Squirrel_AppendIndicesToMeshBuffer( HSQUIRRELVM vm )
 {
-    MeshBuffer** buffer;
+    MeshBuffer** buffer = NULL;
     sq_getuserdata(vm, 2, (SQUserPointer*)&buffer, NULL);
 
-    MeshBuffer** otherBuffer;
-    sq_getuserdata(vm, 3, (SQUserPointer*)&otherBuffer, NULL);
+    void* blob = NULL;
+    sqstd_getblob(vm, 3, (SQUserPointer*)&blob);
+    const int blobSize = sqstd_getblobsize(vm, 3);
 
-    glm::mat4* transformation = NULL;
-    if(sq_gettop(vm) > 3)
-        sq_getuserdata(vm, 4, (SQUserPointer*)&transformation, NULL);
+    if(blobSize % sizeof(VertexIndex) != 0)
+        return sq_throwerror(vm, "Blob size is not a multiple of the index size!");
 
-    AddMeshBufferToMeshBuffer(*buffer, *otherBuffer, transformation);
+    const int indexCount = blobSize / sizeof(VertexIndex);
+    const VertexIndex* indexList = reinterpret_cast<const VertexIndex*>(blob);
+
+    (*buffer)->indices.insert(
+        (*buffer)->indices.begin(),
+        &indexList[0],
+        &indexList[indexCount]
+    );
     return 0;
 }
-RegisterStaticFunctionInSquirrel(AddMeshBufferToMeshBuffer, -3, ".uuu");
+RegisterStaticFunctionInSquirrel(AppendIndicesToMeshBuffer, 3, ".ux");
+
+SQInteger Squirrel_AppendVerticesToMeshBuffer( HSQUIRRELVM vm )
+{
+    MeshBuffer** buffer = NULL;
+    sq_getuserdata(vm, 2, (SQUserPointer*)&buffer, NULL);
+
+    void* blob = NULL;
+    sqstd_getblob(vm, 3, (SQUserPointer*)&blob);
+    const int blobSize = sqstd_getblobsize(vm, 3);
+
+    if(blobSize % sizeof(Vertex) != 0)
+        return sq_throwerror(vm, "Blob size is not a multiple of the vertex size!");
+
+    const int vertexCount = blobSize / sizeof(Vertex);
+    const Vertex* vertexList = reinterpret_cast<const Vertex*>(blob);
+
+    (*buffer)->vertices.insert(
+        (*buffer)->vertices.begin(),
+        &vertexList[0],
+        &vertexList[vertexCount]
+    );
+    return 0;
+}
+RegisterStaticFunctionInSquirrel(AppendVerticesToMeshBuffer, 3, ".ux");

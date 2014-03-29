@@ -2,7 +2,6 @@
 #define __DEBUG__
 
 #include "Math.h"
-#include "Model.h"
 
 enum DebugMode
 {
@@ -28,8 +27,6 @@ void AddDebugLine( glm::vec3 startPosition, glm::vec3 endPosition );
 void AddDebugCube( glm::vec3 min, glm::vec3 max );
 // ...
 
-bool CreateDebugModel( Model* model );
-void DrawDebugModel( Model* model );
 void DrawDebugMesh();
 void FlushDebugMesh();
 

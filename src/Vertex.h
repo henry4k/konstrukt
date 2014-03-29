@@ -4,6 +4,8 @@
 #include "Math.h"
 #include "OpenGL.h"
 
+typedef unsigned short VertexIndex;
+
 struct Vertex
 {
     glm::vec3 position;

@@ -4,21 +4,17 @@
 #include <vector>
 #include "Vertex.h"
 #include "Math.h"
-#include "Mesh.h"
 
 struct MeshBuffer
 {
     std::vector<Vertex> vertices;
-    std::vector<unsigned short> indices;
+    std::vector<VertexIndex> indices;
 };
 
 void CreateMeshBuffer( MeshBuffer* buffer );
 void FreeMeshBuffer( MeshBuffer* buffer );
-void BuildMesh( const MeshBuffer* buffer, Mesh* meshOut );
 
 void TransformMeshBuffer( MeshBuffer* buffer, const glm::mat4* transformation );
-void AddMeshToMeshBuffer( MeshBuffer* buffer, const Mesh* mesh, const glm::mat4* transformation );
-void AddMeshBufferToMeshBuffer( MeshBuffer* buffer, const MeshBuffer* mesh, const glm::mat4* transformation );
-
+void AppendMeshBuffer( MeshBuffer* buffer, const MeshBuffer* otherBuffer, const glm::mat4* transformation );
 
 #endif

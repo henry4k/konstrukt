@@ -5,8 +5,8 @@
 #include "Common.h"
 #include "Texture.h"
 #include "Shader.h"
+#include "MeshBuffer.h"
 #include "Mesh.h"
-#include "Model.h"
 #include "Game.h"
 #include "Debug.h"
 #include "Squirrel.h"
@@ -40,9 +40,9 @@ Tile* g_MapTileData = NULL;
 
 Texture g_MapTexture;
 MeshBuffer g_MapMeshBuffer;
-Model g_MapModel;
+Mesh g_MapMesh;
 
-SolidBuffer g_MapStaticSolidBuffer;
+SolidBuffer g_MapSolidBuffer;
 
 bool InitMap()
 {
@@ -55,7 +55,7 @@ bool InitMap()
         return false;
 
     CreateMeshBuffer(&g_MapMeshBuffer);
-    memset(&g_MapModel, 0, sizeof(Model));
+    memset(&g_MapMesh, 0, sizeof(Mesh));
 
     return true;
 }
@@ -63,7 +63,7 @@ bool InitMap()
 void DestroyMap()
 {
     FreeTexture(g_MapTexture);
-    FreeModel(&g_MapModel);
+    FreeMesh(&g_MapMesh);
     FreeMeshBuffer(&g_MapMeshBuffer);
 }
 
@@ -85,7 +85,7 @@ int CreateTileDefinition( const char* name, StaticTileMeshFn staticMeshFn, Stati
     return g_TileDefinitions.size()-1;
 }
 
-bool GenerateStaticMapModel( Model* target, int startX, int startZ, int endX, int endZ )
+bool GenerateStaticMapMesh( Mesh* target, int startX, int startZ, int endX, int endZ )
 {
     FreeMeshBuffer(&g_MapMeshBuffer);
     CreateMeshBuffer(&g_MapMeshBuffer);
@@ -102,11 +102,9 @@ bool GenerateStaticMapModel( Model* target, int startX, int startZ, int endX, in
         }
     }
 
-    Mesh mesh;
-    BuildMesh(&g_MapMeshBuffer, &mesh);
-    Log("Created map chunk mesh from %d,%d to %d,%d with %d vertices and %d indices.", startX, startZ, endX, endZ, mesh.vertexCount, mesh.indexCount);
+    Log("Created map chunk mesh from %d,%d to %d,%d with %d vertices and %d indices.", startX, startZ, endX, endZ, g_MapMeshBuffer.vertices.size(), g_MapMeshBuffer.indices.size());
 
-    return CreateModel(target, &mesh);
+    return CreateMesh(target, &g_MapMeshBuffer);
 }
 
 bool GenerateStaticMapSolid( SolidBuffer* solidBuffer, int startX, int startZ, int endX, int endZ )
@@ -145,15 +143,15 @@ void GenerateMap( int width, int depth )
 void DrawMap()
 {
     BindTexture(GL_TEXTURE_2D, g_MapTexture, 0);
-    DrawModel(&g_MapModel);
+    DrawMesh(&g_MapMesh);
 }
 
 void UpdateMap( int startX, int startZ, int endX, int endZ )
 {
-    FreeModel(&g_MapModel);
-    GenerateStaticMapModel(&g_MapModel, 0,0, g_MapWidth, g_MapDepth);
+    FreeMesh(&g_MapMesh);
+    GenerateStaticMapMesh(&g_MapMesh, 0,0, g_MapWidth, g_MapDepth);
 
-    GenerateStaticMapSolid(&g_MapStaticSolidBuffer, 0,0, g_MapWidth, g_MapDepth);
+    GenerateStaticMapSolid(&g_MapSolidBuffer, 0,0, g_MapWidth, g_MapDepth);
 }
 
 Tile* GetTileAt( int x, int z )
@@ -199,9 +197,9 @@ MapRayTestResult RayTestMap( glm::vec3 rayOrigin, glm::vec3 rayDirection, float 
     float minLength = FLT_MAX;
     int solidIndex = -1;
 
-    for(int i = 0; i < g_MapStaticSolidBuffer.size(); ++i)
+    for(int i = 0; i < g_MapSolidBuffer.size(); ++i)
     {
-        const Solid solid = g_MapStaticSolidBuffer[i];
+        const Solid solid = g_MapSolidBuffer[i];
 
         float currentLength;
         if(RayTestAabb(ray, solid.aabb, &currentLength) &&
@@ -217,7 +215,7 @@ MapRayTestResult RayTestMap( glm::vec3 rayOrigin, glm::vec3 rayDirection, float 
     result.length = minLength;
     if(solidIndex >= 0)
     {
-        const Solid solid = g_MapStaticSolidBuffer[solidIndex];
+        const Solid solid = g_MapSolidBuffer[solidIndex];
         result.tileX = solid.tileX;
         result.tileZ = solid.tileZ;
         result.solidUserData = solid.userData;
@@ -237,9 +235,9 @@ void DrawBoxCollisionInMap( const Box* box )
         box->position+box->halfWidth
     );
 
-    for(int i = 0; i < g_MapStaticSolidBuffer.size(); ++i)
+    for(int i = 0; i < g_MapSolidBuffer.size(); ++i)
     {
-        const Solid solid = g_MapStaticSolidBuffer[i];
+        const Solid solid = g_MapSolidBuffer[i];
 
         Box solidBox;
         solidBox.position  = solid.aabb.position;
@@ -267,9 +265,9 @@ void SimulateBoxInMap( Box* box, float timeFrame )
     const float BOUNCE = 1.0f;
     const float SLIDE  = 1.0f;
 
-    for(int i = 0; i < g_MapStaticSolidBuffer.size(); ++i)
+    for(int i = 0; i < g_MapSolidBuffer.size(); ++i)
     {
-        const Solid solid = g_MapStaticSolidBuffer[i];
+        const Solid solid = g_MapSolidBuffer[i];
 
         Box solidBox;
         solidBox.position  = solid.aabb.position;

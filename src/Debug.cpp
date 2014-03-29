@@ -106,18 +106,6 @@ void AddDebugCube( glm::vec3 min, glm::vec3 max )
     AddDebugLine(vec3(min.x, min.y, max.z), vec3(min.x, max.y, max.z));
 }
 
-bool CreateDebugModel( Model* model )
-{
-    Mesh mesh;
-    memset(&mesh, 0, sizeof(Mesh));
-    mesh.vertices = &g_DebugVertexBuffer.front();
-    mesh.vertexCount = g_DebugVertexBuffer.size();
-
-    const bool success = CreateModel(model, &mesh);
-    model->primitiveType = GL_LINES;
-    return success;
-}
-
 void BeginDebugDrawing()
 {
     const glm::mat4 modelViewProjectionMatrix =
@@ -126,12 +114,6 @@ void BeginDebugDrawing()
 
     BindProgram(g_DebugProgram);
     SetModelViewProjectionMatrix(g_DebugProgram, &modelViewProjectionMatrix);
-}
-
-void DrawDebugModel( Model* model )
-{
-    BeginDebugDrawing();
-    DrawModel(model);
 }
 
 void DrawDebugMesh()

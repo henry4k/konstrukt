@@ -1,21 +1,19 @@
 #ifndef __MESH__
 #define __MESH__
 
-#include "Vertex.h"
-#include "Squirrel.h"
+#include "OpenGL.h"
+#include "MeshBuffer.h"
 
 struct Mesh
 {
-    Vertex* vertices;
-    int vertexCount;
-
-    unsigned short* indices;
-    int indexCount;
+    GLuint vertexBuffer;
+    GLuint indexBuffer;
+    int primitiveType;
+    int size;
 };
 
-bool LoadMesh( Mesh* mesh, const char* file );
+bool CreateMesh( Mesh* mesh, const MeshBuffer* buffer );
 void FreeMesh( const Mesh* mesh );
-
-SQInteger OnReleaseMesh( void* userData, SQInteger size );
+void DrawMesh( const Mesh* mesh );
 
 #endif
