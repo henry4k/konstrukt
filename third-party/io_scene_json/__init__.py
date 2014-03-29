@@ -9,12 +9,6 @@ bl_info = {
     "wiki_url": "http://github.com/henry4k/io_scene_json",
     "tracker_url": "http://github.com/henry4k/io_scene_json"}
 
-# To support reload properly, try to access a package var, if it's there, reload everything
-if "bpy" in locals():
-    import imp
-    if "export_map" in locals():
-        imp.reload(export_map)
-
 
 import bpy
 from bpy.props import StringProperty, FloatProperty, BoolProperty
@@ -41,22 +35,17 @@ class ExportJSON(bpy.types.Operator, ExportHelper):
 
         keywords = self.as_keywords(ignore=("check_existing", "filter_glob"))
 
-        return save(self, context, **keywords)
-
+        return save(context.scene, **keywords)
 
 def menu_func(self, context):
     self.layout.operator(ExportJSON.bl_idname, text="JSON (.json)")
 
-
 def register():
     bpy.utils.register_module(__name__)
-
     bpy.types.INFO_MT_file_export.append(menu_func)
-
 
 def unregister():
     bpy.utils.unregister_module(__name__)
-
     bpy.types.INFO_MT_file_export.remove(menu_func)
 
 if __name__ == "__main__":

@@ -220,15 +220,13 @@ def build_children(children):
 
 ##### Save operation {{{1
 
-def save(operator,
-         context,
+def save(scene,
          filepath=None,
          triangulate=False):
 
     global TRIANGULATE
     TRIANGULATE = triangulate
 
-    scene = context.scene
     objects = scene.objects
 
     global SCENE
