@@ -30,12 +30,14 @@ class ExportJSON(bpy.types.Operator, ExportHelper):
     filter_glob = StringProperty(default="*.json", options={'HIDDEN'})
 
     def execute(self, context):
+        from . import export_json
+
         if not self.filepath:
             raise Exception("filepath not set")
 
         keywords = self.as_keywords(ignore=("check_existing", "filter_glob"))
 
-        return save(context.scene, **keywords)
+        return export_json.save(context.scene, **keywords)
 
 def menu_func(self, context):
     self.layout.operator(ExportJSON.bl_idname, text="JSON (.json)")

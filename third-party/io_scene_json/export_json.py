@@ -133,7 +133,7 @@ def build_mesh(obj):
         import bmesh
         bm = bmesh.new()
         bm.from_mesh(mesh)
-        bmesh.ops.triangulate(bmesh, faces=bm.faces)
+        bmesh.ops.triangulate(bm, faces=bm.faces)
         bm.to_mesh(mesh)
         bm.free()
 
