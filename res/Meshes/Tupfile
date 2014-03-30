@@ -1,5 +1,5 @@
 include_rules
 
 ifdef BLENDER
-    : foreach *.blend |> ^o Exporting %f^ @(BLENDER) %f --background --python ExportPly.py -- %o >/dev/null |> %B.ply
+    : foreach *.blend |> ^o Exporting %f^ @(BLENDER) %f --background --python ExportJSON.py -- %o >/dev/null |> %B.json
 endif
