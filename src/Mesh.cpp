@@ -70,11 +70,11 @@ SQInteger OnReleaseMesh( void* userData, SQInteger size )
 
 SQInteger Squirrel_CreateMesh( HSQUIRRELVM vm )
 {
-    Mesh* mesh = NULL;
-    sq_getuserdata(vm, 2, (void**)&mesh, NULL);
+    MeshBuffer* buffer = NULL;
+    sq_getuserdata(vm, 2, (void**)&buffer, NULL);
 
     Mesh* mesh = (Mesh*)CreateUserDataInSquirrel(vm, sizeof(Mesh), OnReleaseMesh);
-    if(!CreateMesh(mesh, mesh))
+    if(!CreateMesh(mesh, buffer))
     {
         sq_pop(vm, 1);
         return 0;

@@ -100,6 +100,21 @@ function abs( v )
     return (v < 0) ? -v : v;
 }
 
+function TableContainsAllKeys( table, keys )
+{
+    foreach(key in keys)
+        if(!key in table)
+            return false
+    return true
+}
+
+function TableContainsAnyKeys( table, keys )
+{
+    foreach(key in keys)
+        if(key in table)
+            return true
+    return false
+}
 
 return {
     Random = Random,

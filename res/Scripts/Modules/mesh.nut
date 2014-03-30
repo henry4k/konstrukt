@@ -1,3 +1,3 @@
 return {
-    LoadMesh = ::native.LoadMesh
+    CreateMesh = ::native.CreateMesh
 }
