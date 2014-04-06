@@ -24,12 +24,15 @@ std::vector<LuaEvent> g_LuaEvents;
 
 int Lua_SetEventCallback( lua_State* l );
 int Lua_DefaultErrorFunction( lua_State* l );
+int Lua_Log( lua_State* l );
 
 
 bool InitLua()
 {
     assert(g_LuaState == NULL);
     assert(g_LuaEvents.empty());
+
+    Log("Using " LUA_COPYRIGHT);
 
     g_LuaState = luaL_newstate();
     g_LuaEvents.clear();
@@ -39,11 +42,12 @@ bool InitLua()
 
     RegisterFunctionInLua("SetEventCallback", Lua_SetEventCallback);
     RegisterFunctionInLua("DefaultErrorFunction", Lua_DefaultErrorFunction);
+    RegisterFunctionInLua("Log", Lua_Log);
 
     return true;
 }
 
-void FreeLua()
+void DestroyLua()
 {
     assert(g_LuaState);
 
@@ -82,7 +86,7 @@ void RegisterFunctionInLua( const char* name, lua_CFunction fn )
 {
     lua_pushcfunction(g_LuaState, fn);
     lua_setglobal(g_LuaState, name);
-    Log("Registered lua function %s", name);
+    Log("Registered lua function: %s", name);
 }
 
 void RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback )
@@ -254,5 +258,12 @@ int Lua_SetEventCallback( lua_State* l )
 
     lua_pushvalue(l, 2);
     g_LuaEvents[id].callbackReference = luaL_ref(l, LUA_REGISTRYINDEX);
+    return 0;
+}
+
+int Lua_Log( lua_State* l )
+{
+    const char* message = luaL_checkstring(l, 1);
+    Log("%s", message);
     return 0;
 }

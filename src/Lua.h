@@ -40,7 +40,7 @@ luaL_error - raises an error (return luaL_error(...))
 ------- */
 
 bool InitLua();
-void FreeLua();
+void DestroyLua();
 
 lua_State* GetLuaState();
 

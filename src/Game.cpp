@@ -12,6 +12,7 @@
 #include "Map.h"
 #include "Debug.h"
 #include "Squirrel.h"
+#include "Lua.h"
 #include "Effects.h"
 #include "Game.h"
 
@@ -26,6 +27,10 @@ bool InitGame( const int argc, char** argv )
 
     Log("------------ Debug -------------");
     if(!InitDebug())
+        return false;
+
+    Log("------------- Lua -------------");
+    if(!InitLua())
         return false;
 
     Log("---------- Squirrel -----------");
@@ -88,6 +93,7 @@ bool InitGame( const int argc, char** argv )
 
 void DestroyGame()
 {
+    DestroyLua();
     DestroySquirrel();
     DestroyMap();
     DestroyPlayer();
