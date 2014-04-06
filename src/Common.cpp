@@ -16,7 +16,9 @@ const char* Format( const char* format, ... )
     return buffer;
 }
 
-void LogV( LogLevel level, const char* format, va_list vl )
+LogHandler g_LogHandler = DefaultLogHandler;
+
+void DefaultLogHandler( LogLevel level, const char* line )
 {
     const char* prefix = "";
     const char* postfix = "";
@@ -42,6 +44,17 @@ void LogV( LogLevel level, const char* format, va_list vl )
             break;
     }
 
+    fprintf(file, "%s%s%s\n", prefix, line, postfix);
+}
+
+void SetLogHandler( LogHandler handler )
+{
+    assert(handler != NULL);
+    g_LogHandler = handler;
+}
+
+void LogV( LogLevel level, const char* format, va_list vl )
+{
     static char buffer[512];
     vsprintf(buffer, format, vl);
 
@@ -51,13 +64,12 @@ void LogV( LogLevel level, const char* format, va_list vl )
         if(*current == '\n')
         {
             *current = '\0';
-            fprintf(file, "%s%s%s\n", prefix, start, postfix);
+            g_LogHandler(level, start);
             start = current+1;
         }
         else if(*current == '\0')
         {
-            if(current-start > 1) // Skip empty lines.
-                fprintf(file, "%s%s%s\n", prefix, start, postfix);
+            g_LogHandler(level, start);
             break;
         }
     }

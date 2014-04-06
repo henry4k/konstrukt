@@ -8,7 +8,6 @@
 
 const char* Format( const char* format, ... );
 
-
 enum LogLevel
 {
     LOG_INFO,
@@ -16,10 +15,18 @@ enum LogLevel
     LOG_FATAL_ERROR
 };
 
+typedef void (*LogHandler)( LogLevel level, const char* line );
+void DefaultLogHandler( LogLevel level, const char* line );
+void SetLogHandler( LogHandler handler );
+
 void LogV( LogLevel level, const char* format, va_list vl );
 
 void Log( const char* format, ... );
 void Error( const char* format, ... );
+
+/**
+ * Will abort the program after emitting the log message.
+ */
 void FatalError( const char* format, ... );
 
 #endif
