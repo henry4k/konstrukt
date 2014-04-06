@@ -159,19 +159,19 @@ void SetLight( glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 direction )
 SQInteger Squirrel_SetLight( HSQUIRRELVM vm )
 {
     glm::vec3 ambient;
-    sq_getfloat(vm, 2, &ambient.r);
-    sq_getfloat(vm, 3, &ambient.g);
-    sq_getfloat(vm, 4, &ambient.b);
+    sq_getfloat(vm, 2, &ambient[0]);
+    sq_getfloat(vm, 3, &ambient[1]);
+    sq_getfloat(vm, 4, &ambient[2]);
 
     glm::vec3 diffuse;
-    sq_getfloat(vm, 5, &diffuse.r);
-    sq_getfloat(vm, 6, &diffuse.g);
-    sq_getfloat(vm, 7, &diffuse.b);
+    sq_getfloat(vm, 5, &diffuse[0]);
+    sq_getfloat(vm, 6, &diffuse[1]);
+    sq_getfloat(vm, 7, &diffuse[2]);
 
     glm::vec3 direction;
-    sq_getfloat(vm,  8, &direction.x);
-    sq_getfloat(vm,  9, &direction.y);
-    sq_getfloat(vm, 10, &direction.z);
+    sq_getfloat(vm,  8, &direction[0]);
+    sq_getfloat(vm,  9, &direction[1]);
+    sq_getfloat(vm, 10, &direction[2]);
 
     SetLight(ambient, diffuse, direction);
 

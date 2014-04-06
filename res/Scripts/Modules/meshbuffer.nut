@@ -74,20 +74,6 @@ class MeshBuffer
         }
         ::native.AppendVerticesToMeshBuffer(handle, blob)
     }
-
-    /*
-    static function ( table )
-    {
-        if(!math.TableContainsAllKeys(table, ["primitive", "vertex_format", "faces", "vertices"]))
-            throw "Table is not a buffer."
-
-        if(table.primitive != "triangles")
-            throw "MeshBuffer must consist of triangles."
-
-        local vertexCount = table.vertices.len()
-        local faceCount = table.faces.len()
-    }
-    */
 }
 
 return MeshBuffer

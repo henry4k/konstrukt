@@ -41,5 +41,5 @@ LDFLAGS += `pkg-config @(PACKAGES) --libs`
 !ar = |> ^o Archiving %o^ ar crs %o %f |>
 !cp = |> ^o Copying %f to %o^ cp %f %o |>
 
-!cxx = |> ^o Compiling %f^ @(CXX) $(CFLAGS) $(CXXFLAGS) -c %f -o %o |> %B.o
+!cxx = |> ^o Compiling %f^ @(CXX) -c %f -o %o $(CFLAGS) $(CXXFLAGS) |> %B.o
 !ldcxx = |> ^o Linking %o^ @(CXX) %f -o %o $(LDFLAGS) |>

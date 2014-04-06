@@ -1,5 +1,41 @@
 print("Squirrels in space!")
 
+MeshBuffer <- require("meshbuffer")
+local myMesh = MeshBuffer()
+myMesh.appendIndices([0,1,2,3])
+
+myMesh.appendVertices(
+    [
+    {
+        x=42, y=43, z=44,
+        r=0.1, g=0.2, b=0.4,
+        u=0, v=1,
+        nx=0.5, ny=0, nz=1
+    },
+    {
+        x=42, y=43, z=44,
+        r=0.1, g=0.2, b=0.4,
+        u=0, v=1,
+        nx=0.5, ny=0, nz=1
+    },
+    {
+        x=42, y=43, z=44,
+        r=0.1, g=0.2, b=0.4,
+        u=0, v=1,
+        nx=0.5, ny=0, nz=1
+    },
+    {
+        x=42, y=43, z=44,
+        r=0.1, g=0.2, b=0.4,
+        u=0, v=1,
+        nx=0.5, ny=0, nz=1
+    }
+    ]
+)
+
+
+return
+
 math <- require("math")
 coord <- require("coord")
 map <- require("map")
@@ -7,8 +43,8 @@ tiles <- require("tiles")
 
 require("editor")
 
-local mapWidth = 4
-local mapDepth = 4
+local mapWidth = 8
+local mapDepth = 8
 
 local spaceDefs = [
     map.FindTileDefinitionByName("Void")
@@ -20,6 +56,8 @@ local spaceDefs = [
 local structureDefs = [
     map.FindTileDefinitionByName("Wall")
     map.FindTileDefinitionByName("Door")
+    map.FindTileDefinitionByName("Window")
+    map.FindTileDefinitionByName("Console")
 ]
 
 map.GenerateMap(mapWidth, mapDepth)

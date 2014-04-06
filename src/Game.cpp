@@ -6,7 +6,6 @@
 #include "Window.h"
 #include "Controls.h"
 #include "OpenGL.h"
-#include "Background.h"
 #include "Vertex.h"
 #include "Audio.h"
 #include "Player.h"
@@ -63,10 +62,6 @@ bool InitGame( const int argc, char** argv )
     if(!InitEffects())
         return false;
 
-    Log("--------- Background ----------");
-    if(!InitBackground())
-        return false;
-
     Log("----------- Player ------------");
     if(!InitPlayer())
         return false;
@@ -96,7 +91,6 @@ void DestroyGame()
     DestroySquirrel();
     DestroyMap();
     DestroyPlayer();
-    DestroyBackground();
     DestroyEffects();
     DestroyControls();
     DestroyAudio();
@@ -126,8 +120,8 @@ void RunGame()
             GetPlayerViewMatrix();
 
         // Render background
-        glClear(GL_DEPTH_BUFFER_BIT);
-        DrawBackground();
+        //glClear(GL_DEPTH_BUFFER_BIT);
+        //DrawBackground();
 
         // Render shadow map
         BeginRenderShadowTexture();
