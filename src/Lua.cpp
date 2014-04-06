@@ -1,7 +1,7 @@
-#include <assert.h>
 #include <string.h>
 #include <vector>
 
+#include "Common.h"
 #include "Lua.h"
 
 extern "C"
@@ -28,6 +28,9 @@ int Lua_DefaultErrorFunction( lua_State* l );
 
 bool InitLua()
 {
+    assert(g_LuaState == NULL);
+    assert(g_LuaEvents.empty());
+
     g_LuaState = luaL_newstate();
     g_LuaEvents.clear();
 
@@ -42,19 +45,23 @@ bool InitLua()
 
 void FreeLua()
 {
-   lua_close(g_LuaState);
-   g_LuaState = NULL;
+    assert(g_LuaState);
 
-   g_LuaEvents.clear();
+    lua_close(g_LuaState);
+    g_LuaState = NULL;
+
+    g_LuaEvents.clear();
 }
 
 lua_State* GetLuaState()
 {
+    assert(g_LuaState);
     return g_LuaState;
 }
 
 int GetLuaMemoryInBytes()
 {
+    assert(g_LuaState);
     return lua_gc(g_LuaState, LUA_GCCOUNT, 0)*1024 +
            lua_gc(g_LuaState, LUA_GCCOUNTB, 0);
 }
@@ -65,7 +72,7 @@ void UpdateLua()
     lua_gc(g_LuaState, LUA_GCCOLLECT, 0);
     const int memAfterGC = GetLuaMemoryInBytes();
 
-    printf("LUA GC UPDATE: %d bytes in use. %d bytes collected.\n",
+    Log("LUA GC UPDATE: %d bytes in use. %d bytes collected.",
         memAfterGC,
         memBeforeGC-memAfterGC
     );
@@ -75,7 +82,7 @@ void RegisterFunctionInLua( const char* name, lua_CFunction fn )
 {
     lua_pushcfunction(g_LuaState, fn);
     lua_setglobal(g_LuaState, name);
-    printf("Registered lua function %s\n", name);
+    Log("Registered lua function %s", name);
 }
 
 void RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback )
@@ -216,28 +223,22 @@ int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues
         case LUA_ERRRUN:
             {
                 const char* message = lua_tostring(l, -1);
-                printf("Error: %s\n", message);
+                Error("%s", message);
                 lua_pop(l, 1);
             }
             break;
 
         case LUA_ERRMEM:
-            {
-                printf("Lua encountered a memory allocation error.\n");
-                assert(false);
-            }
-            break;
+            FatalError("Lua encountered a memory allocation error.");
 
         case LUA_ERRERR:
-            printf("Lua encountered an error while executing the error function.\n");
-            assert(false);
-            break;
+            FatalError("Lua encountered an error while executing the error function.");
 
         case 0:
             break;
 
         default:
-            assert(!"Unknown call result.");
+            FatalError("Unknown call result.");
     }
 
     const int returnValueCount = stackSizeAfterCall-stackSizeBeforeCall;
