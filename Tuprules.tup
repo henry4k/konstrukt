@@ -1,43 +1,31 @@
 .gitignore
 
+ROOT = $(TUP_CWD)
 
-### Flags ###
+
+# -- Flags --
 
 CFLAGS += @(CFLAGS)
-
-CXXFLAGS += @(CXXFLAGS)
-CXXFLAGS += --std=c++11
-CXXFLAGS += -fno-rtti -fno-exceptions
-
+CXXFLAGS += --std=c++11 -fno-rtti -fno-exceptions
 LDFLAGS += @(LDFLAGS)
 
+INTERNAL_CFLAGS += @(INTERNAL_CFLAGS)
+INTERNAL_CFLAGS += -I$(ROOT)
+INTERNAL_CFLAGS += -I$(ROOT)/third-party
+INTERNAL_CFLAGS += -I$(ROOT)/third-party/libtap
+INTERNAL_CFLAGS += -I$(ROOT)/third-party/inih
+INTERNAL_CFLAGS += -I$(ROOT)/third-party/libjson
+INTERNAL_CFLAGS += -I$(ROOT)/third-party/squirrel/include
+INTERNAL_CFLAGS += -I$(ROOT)/third-party/squirrel/sqstdlib
 
-### Internal dependencies ###
-
-CFLAGS += -I$(TUP_CWD)/third-party
-CFLAGS += -I$(TUP_CWD)/third-party/inih
-CFLAGS += -I$(TUP_CWD)/third-party/libjson
-CFLAGS += -I$(TUP_CWD)/third-party/squirrel/include
-CFLAGS += -I$(TUP_CWD)/third-party/squirrel/sqstdlib
-
-INI_A = $(TUP_CWD)/third-party/inih/ini.a
-JSON_A = $(TUP_CWD)/third-party/libjson/json.a
-SQUIRREL_A = $(TUP_CWD)/third-party/squirrel/squirrel.a
-SQSTDLIB_A = $(TUP_CWD)/third-party/squirrel/sqstdlib.a
+INTERNAL_LDFLAGS += @(INTERNAL_LDFLAGS)
 
 
-### Packages ###
-
-export PKG_CONFIG_PATH
-CFLAGS += `pkg-config @(PACKAGES) --cflags`
-LDFLAGS += `pkg-config @(PACKAGES) --libs`
-
-
-### Rules ###
+# -- Macros --
 
 !cc = |> ^o Compling %f^ @(CC) -c %f -o %o $(CFLAGS) |> %B.o
 !ld = |> ^o Linking %o^ ld %f -o %o $(LDFLAGS) |>
-!ar = |> ^o Archiving %o^ ar crs %o %f |>
+!ar = |> ^o Archiving %o^ ar crsT %o %f |>
 !cp = |> ^o Copying %f to %o^ cp %f %o |>
 
 !cxx = |> ^o Compiling %f^ @(CXX) -x c++ -c %f -o %o $(CFLAGS) $(CXXFLAGS) |> %B.o

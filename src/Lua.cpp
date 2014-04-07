@@ -59,7 +59,6 @@ void DestroyLua()
 
 lua_State* GetLuaState()
 {
-    assert(g_LuaState);
     return g_LuaState;
 }
 

@@ -1,0 +1,4 @@
+include_rules
+
+: tap.c |> !cc |> tap.o
+: tap.o |> !ar |> tap.a
