@@ -1,14 +1,9 @@
 include_rules
 
-REQUIRED_ARCHIVES += $(ROOT)/third-party/inih/ini.a
-REQUIRED_ARCHIVES += $(ROOT)/third-party/libjson/json.a
-REQUIRED_ARCHIVES += $(ROOT)/third-party/squirrel/squirrel.a
-REQUIRED_ARCHIVES += $(ROOT)/third-party/squirrel/sqstdlib.a
-
 CFLAGS += $(INTERNAL_CFLAGS)
 LDFLAGS += $(INTERNAL_LDFLAGS)
 
 : foreach *.cpp |> !cxx |> %B.o {objects}
-: $(REQUIRED_ARCHIVES) {objects} |> !ar |> apoapsis.a
+: {objects} |> !ar |> apoapsis.a
 
-: apoapsis.a |> !ldcxx |> apoapsis
+: $(REQUIRED_ARCHIVES) apoapsis.a |> !ldcxx |> apoapsis

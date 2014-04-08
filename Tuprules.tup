@@ -1,7 +1,7 @@
 .gitignore
 
 ROOT = $(TUP_CWD)
-
+export PKG_CONFIG_PATH
 
 # -- Flags --
 
@@ -21,11 +21,19 @@ INTERNAL_CFLAGS += -I$(ROOT)/third-party/squirrel/sqstdlib
 INTERNAL_LDFLAGS += @(INTERNAL_LDFLAGS)
 
 
+# -- Internal dependencies --
+
+REQUIRED_ARCHIVES += $(ROOT)/third-party/inih/ini.a
+REQUIRED_ARCHIVES += $(ROOT)/third-party/libjson/json.a
+REQUIRED_ARCHIVES += $(ROOT)/third-party/squirrel/squirrel.a
+REQUIRED_ARCHIVES += $(ROOT)/third-party/squirrel/sqstdlib.a
+
+
 # -- Macros --
 
 !cc = |> ^o Compling %f^ @(CC) -c %f -o %o $(CFLAGS) |> %B.o
 !ld = |> ^o Linking %o^ ld %f -o %o $(LDFLAGS) |>
-!ar = |> ^o Archiving %o^ ar crsT %o %f |>
+!ar = |> ^o Archiving %o^ ar crs %o %f |>
 !cp = |> ^o Copying %f to %o^ cp %f %o |>
 
 !cxx = |> ^o Compiling %f^ @(CXX) -x c++ -c %f -o %o $(CFLAGS) $(CXXFLAGS) |> %B.o
