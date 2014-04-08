@@ -1,9 +1,12 @@
 CONFIG_CC=cc
 CONFIG_CXX=c++
-CONFIG_CFLAGS=-g -O0 -Werror -Wall -Wextra -pedantic -Wmissing-include-dirs -Wpointer-arith -Wcast-qual -Winit-self -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter -Wno-literal-suffix
-CONFIG_CXXFLAGS=
-CONFIG_LDFLAGS=
-CONFIG_PACKAGES=gl glew glfw3 libpng openal alure lua5.2
-CONFIG_BLENDER=blender
+
+CONFIG_CFLAGS=-g -O0
+CONFIG_LDFLAGS=-g
+
+CONFIG_INTERNAL_CFLAGS= `pkg-config gl glew glfw3 libpng openal alure lua5.2 --cflags` -Werror -Wall -Wextra -pedantic -Wmissing-include-dirs -Wpointer-arith -Wcast-qual -Winit-self -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter -Wno-literal-suffix
+CONFIG_INTERNAL_LDFLAGS=`pkg-config gl glew glfw3 libpng openal alure lua5.2 --libs`
+
+#CONFIG_BLENDER=blender
 #CONFIG_GIMP=gimp
-CONFIG_XCF2PNG=xcf2png
+#CONFIG_XCF2PNG=xcf2png
