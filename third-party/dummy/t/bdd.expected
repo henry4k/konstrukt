@@ -1,0 +1,37 @@
+test count = 5
+test number = 0
+test name = 'fizzbuzzer module does things'
+test result = 'passed'
+test abort reason = '(null)'
+test todo = 0
+test todo reason = '(null)'
+test done
+test number = 1
+test name = 'fizzbuzzer module is a slacker'
+test result = 'passed'
+test abort reason = '(null)'
+test todo = 1
+test todo reason = 'Implement lazyness'
+test done
+test number = 2
+test name = 'fizzbuzzer module can't handle bloops'
+test result = 'skipped'
+test abort reason = 'Exception not implemented yet'
+test todo = 1
+test todo reason = 'Implement exception'
+test done
+test number = 3
+test name = 'bloop can make a sound'
+test result = 'failed'
+test abort reason = 'Bloop is silent!'
+test todo = 0
+test todo reason = '(null)'
+test done
+test number = 4
+test name = 'bloop looks weird'
+test result = 'failed'
+test abort reason = 'Bloop doesn't looks weird enough!'
+test todo = 1
+test todo reason = 'Bloop needs to look weirder.'
+test done
+testing done
