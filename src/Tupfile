@@ -6,4 +6,4 @@ LDFLAGS += $(INTERNAL_LDFLAGS)
 : foreach *.cpp |> !cxx |> %B.o {objects}
 : {objects} |> !ar |> apoapsis.a
 
-: $(REQUIRED_ARCHIVES) apoapsis.a |> !ldcxx |> apoapsis
+: apoapsis.a $(REQUIRED_ARCHIVES) |> !ldcxx |> apoapsis
