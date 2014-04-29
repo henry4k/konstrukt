@@ -1,6 +1,6 @@
 #include <src/Lua.h>
 
-#include "TestTools.h"
+#include <test/TestTools.h>
 
 
 class LuaScope
@@ -81,6 +81,31 @@ int main()
             luaScope.destroy();
 
             Require(retrievedData->value == 43);
+        })
+
+        .it("can fire events.", [](){
+
+            LuaScope luaScope;
+            lua_State* l = GetLuaState();
+
+            const int event = RegisterLuaEvent("MyEvent");
+
+            int r = luaL_dostring(l,
+                "function MyEventHandler( a, b )\n"
+                "    return a+b, a+c, b+c\n"
+                "end\n"
+                "SetEventCallback('MyEvent', MyEventHandler)\n"
+                "c = 1\n");
+            if(r != LUA_OK)
+                dummyAbortTest(DUMMY_FAIL_TEST, "%s", lua_tostring(GetLuaState(), -1));
+
+            lua_pushinteger(l, 10);
+            lua_pushinteger(l, 20);
+            const int resultCount = FireLuaEvent(l, event, 2, true);
+            Require(resultCount == 3);
+            Require(lua_tointeger(l, -3) == 30);
+            Require(lua_tointeger(l, -2) == 11);
+            Require(lua_tointeger(l, -1) == 21);
         });
 
     return RunTests();
