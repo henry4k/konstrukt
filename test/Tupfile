@@ -2,4 +2,3 @@ include_rules
 
 : foreach *.cpp |> !cxx |> %B.o
 : Lua.o | $(REQUIRED_ARCHIVES) |> !ldcxx |>  %B.t
-: Test.o | $(REQUIRED_ARCHIVES) |> !ldcxx |>  %B.t
