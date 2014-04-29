@@ -1,6 +1,3 @@
 CFLAGS += -fno-strict-aliasing
 CFLAGS += -fno-unwind-tables
 CFLAGS += -fno-asynchronous-unwind-tables
-
-CXXFLAGS += -fno-exceptions
-CXXFLAGS += -fno-rtti

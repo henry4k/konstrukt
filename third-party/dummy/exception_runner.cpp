@@ -55,7 +55,7 @@ static void exceptionWrapper()
         currentContext->signalRunner->abort(
             currentContext->signalRunner->context,
             DUMMY_RUNNER_GENERIC_ERROR,
-            NULL); // unknown reason
+            "An unknown exception has been thrown.");
     }
 }
 

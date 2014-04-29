@@ -1,3 +1,5 @@
 include_rules
 
-: TestCore.cpp |> !cxx |> TestCore.o
+: foreach *.cpp |> !cxx |> %B.o
+: Lua.o | $(REQUIRED_ARCHIVES) |> !ldcxx |>  %B.t
+: Test.o | $(REQUIRED_ARCHIVES) |> !ldcxx |>  %B.t

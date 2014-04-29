@@ -60,7 +60,7 @@ const char* signalToAbortReason( int signal )
             return "SIGFPE: Floating point exception";
 
         default:
-            return NULL;
+            return "An unknown signal has been raised.";
     }
 }
 

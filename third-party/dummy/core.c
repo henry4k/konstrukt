@@ -321,6 +321,10 @@ void dummyAbortTest( dummyTestAbortType type, const char* reason, ... )
         formattedReason = dummyFormatV(reason, args);
         va_end(args);
     }
+    else
+    {
+        assert(!"dummyAbortTest needs a reason!");
+    }
 
     dummyContext* ctx = dummyCurrentContext;
     ctx->runner->abort(ctx->runner->context, errorCode, formattedReason);

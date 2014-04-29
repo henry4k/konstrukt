@@ -148,14 +148,18 @@ void dummyAddCleanup( dummyCleanupFunction fn, void* data );
 
 int dummyTestIsMarkedAsTodo();
 
+/**
+ * If set, it returns the reason why the current test has been marked as TODO.
+ * May be `NULL` if no reason has been given.
+ */
 const char* dummyGetTestTodoReason();
 
 /**
  * Aborts current test with the given reason.
  *
  * @param reason
- * Explains why the test was aborted - this information is available
- * to the reporter. May be `NULL` to signal an unknown reason.
+ * Explains why the test was aborted -
+ * this information is available to the reporter.
  *
  * @return
  * Doesn't return.
