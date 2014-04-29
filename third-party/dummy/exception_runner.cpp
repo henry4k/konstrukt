@@ -1,15 +1,9 @@
-#include <stddef.h>
+#include <stddef.h> // NULL
 #include <exception>
 
-#include "signal_runner.h"
+#include "signal.h"
 #include "exception_runner.h"
 
-
-typedef struct
-{
-    const dummyRunner* signalRunner;
-    dummyTestFunction testFunction;
-} Context;
 
 class AbortError
 {
@@ -24,67 +18,53 @@ public:
     }
 };
 
-
-static Context* currentContext = NULL;
-
-
-static void abortTest( void* context_, int errorCode, const char* reason );
-
-static void exceptionWrapper()
+static void abortTest( void* context_, int errorCode, const char* reason )
 {
-    try
-    {
-        currentContext->testFunction();
-    }
-    catch( AbortError& e )
-    {
-        currentContext->signalRunner->abort(
-            currentContext->signalRunner->context,
-            e.m_ErrorCode,
-            e.m_Reason);
-    }
-    catch( std::exception& e )
-    {
-        currentContext->signalRunner->abort(
-            currentContext->signalRunner->context,
-            DUMMY_RUNNER_GENERIC_ERROR,
-            e.what());
-    }
-    catch( ... )
-    {
-        currentContext->signalRunner->abort(
-            currentContext->signalRunner->context,
-            DUMMY_RUNNER_GENERIC_ERROR,
-            "An unknown exception has been thrown.");
-    }
+    throw AbortError(errorCode, reason);
+}
+
+static void signalHandler( int signal )
+{
+    throw AbortError(DUMMY_RUNNER_GENERIC_ERROR, dummySignalToAbortReason(signal));
 }
 
 static int runTest( void* context_, dummyTestFunction fn, const char** abortReason )
 {
-    Context* context = (Context*)context_;
-    context->testFunction = fn;
-    currentContext = context;
-    const int errorCode = context->signalRunner->run(context->signalRunner->context, exceptionWrapper, abortReason);
-    currentContext = NULL;
-    context->testFunction = NULL;
-    return errorCode;
-}
+    const char* reason = NULL;
+    int exitCode = DUMMY_RUNNER_SUCEEDED;
+    dummySetSignals(signalHandler);
 
-static void abortTest( void* context_, int errorCode, const char* reason )
-{
-    Context* context = (Context*)context_;
-    throw AbortError(errorCode, reason);
+    try
+    {
+        fn();
+    }
+    catch( AbortError& e )
+    {
+        reason = e.m_Reason;
+        exitCode = e.m_ErrorCode;
+    }
+    catch( std::exception& e )
+    {
+        reason = e.what();
+        exitCode = DUMMY_RUNNER_GENERIC_ERROR;
+    }
+    catch( ... )
+    {
+        reason = "An unknown exception has been thrown.";
+        exitCode = DUMMY_RUNNER_GENERIC_ERROR;
+    }
+
+    dummySetSignals(SIG_DFL);
+    if(abortReason)
+        *abortReason = reason;
+    return exitCode;
 }
 
 const dummyRunner* dummyGetExceptionRunner()
 {
-    static Context context;
     static dummyRunner runner;
 
-    context.signalRunner = dummyGetSignalRunner();
-    context.testFunction = NULL;
-
-    runner.context = &context;
+    runner.context = NULL;
     runner.run = runTest;
     runner.abort = abortTest;
 

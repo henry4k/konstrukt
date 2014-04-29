@@ -79,7 +79,7 @@ dummyTest* dummyGetCurrentTest();
 void dummyInit( const dummyRunner* runner, const dummyReporter* reporter )
 {
     assert(dummyCurrentContext == NULL);
-    dummyCurrentContext = malloc(sizeof(dummyContext));
+    dummyCurrentContext = (dummyContext*)malloc(sizeof(dummyContext));
     memset(dummyCurrentContext, 0, sizeof(dummyContext));
 
     dummyCurrentContext->status = DUMMY_INITIALIZING;
