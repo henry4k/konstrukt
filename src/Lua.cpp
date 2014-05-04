@@ -81,14 +81,15 @@ void UpdateLua()
     );
 }
 
-void RegisterFunctionInLua( const char* name, lua_CFunction fn )
+bool RegisterFunctionInLua( const char* name, lua_CFunction fn )
 {
     lua_pushcfunction(g_LuaState, fn);
     lua_setglobal(g_LuaState, name);
     Log("Registered lua function: %s", name);
+    return true;
 }
 
-void RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback )
+bool RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback )
 {
     lua_State* l = g_LuaState;
 
@@ -104,6 +105,8 @@ void RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback )
 
     // pop metatable
     lua_pop(l, 1);
+
+    return true;
 }
 
 void* PushUserDataToLua( lua_State* l, const char* typeName, int size )
@@ -119,6 +122,15 @@ void* PushUserDataToLua( lua_State* l, const char* typeName, int size )
     lua_setmetatable(l, -2);
 
     return data;
+}
+
+bool CopyUserDataToLua( lua_State* l, const char* typeName, int size, const void* data )
+{
+    void* luaData = PushUserDataToLua(l, typeName, size);
+    if(!luaData)
+        return false;
+    memcpy(luaData, data, size);
+    return true;
 }
 
 void* GetUserDataFromLua( lua_State* l, int stackPosition, const char* typeName )
@@ -188,8 +200,10 @@ int RegisterLuaEvent( const char* name )
     g_LuaEvents.push_back(event);
 
     const int id = g_LuaEvents.size()-1;
-    assert(id >= 0 && id < g_LuaEvents.size());
-    return id;
+    if(id >= 0 || id < g_LuaEvents.size())
+        return id;
+    else
+        return LUA_INVALID_EVENT;
 }
 
 int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues )

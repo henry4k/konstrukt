@@ -38,20 +38,19 @@ int main()
 
             LuaScope luaScope;
 
-            RegisterFunctionInLua("testfn", lua_testfn);
+            const bool functionRegistered =
+                RegisterFunctionInLua("testfn", lua_testfn);
+            Require(functionRegistered);
+
             int r = luaL_dostring(GetLuaState(), "assert(testfn(41) == 42)");
             if(r != LUA_OK)
                 dummyAbortTest(DUMMY_FAIL_TEST, "%s", lua_tostring(GetLuaState(), -1));
         })
 
-        .it("can register data types.", [](){
+        .it("can register and use custom data types.", [](){
 
             static const char* MyDataType = "MyData";
-
-            struct MyData
-            {
-                int value;
-            };
+            struct MyData { int value; };
 
             lua_CFunction lua_MyData_destructor = []( lua_State* l ){
 
@@ -63,7 +62,9 @@ int main()
             LuaScope luaScope;
             lua_State* l = GetLuaState();
 
-            RegisterUserDataTypeInLua(MyDataType, lua_MyData_destructor);
+            const bool dataTypeRegistered =
+                RegisterUserDataTypeInLua(MyDataType, lua_MyData_destructor);
+            Require(dataTypeRegistered);
 
             // Push a new value
             MyData* originalData = reinterpret_cast<MyData*>(
@@ -89,6 +90,7 @@ int main()
             lua_State* l = GetLuaState();
 
             const int event = RegisterLuaEvent("MyEvent");
+            Require(event != LUA_INVALID_EVENT);
 
             int r = luaL_dostring(l,
                 "function MyEventHandler( a, b )\n"

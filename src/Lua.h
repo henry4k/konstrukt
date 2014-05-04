@@ -39,6 +39,11 @@ luaL_checkoption - check and convert string to enum
 luaL_error - raises an error (return luaL_error(...))
 ------- */
 
+enum
+{
+    LUA_INVALID_EVENT = -1
+};
+
 bool InitLua();
 void DestroyLua();
 
@@ -46,19 +51,28 @@ lua_State* GetLuaState();
 
 void UpdateLua();
 
-void RegisterFunctionInLua( const char* name, lua_CFunction fn );
+/**
+ * Registers a native function in Lua.
+ *
+ * @return
+ * `true` if the function has been successfully registered in Lua.
+ */
+bool RegisterFunctionInLua( const char* name, lua_CFunction fn );
 
 /**
  * Registers a user data type by name.
  *
  * User data created by ::PushUserDataToLua is annotated with type information,
- * so #GetUserDataFromLua can assure that the element has the correct type.
+ * so ::GetUserDataFromLua can assure that the element has the correct type.
  *
  * @param gcCallback
  * Function that is called before Lua frees garbage collected user data.
  * May be `NULL` - in this case Lua doesn't notify you at all.
+ *
+ * @return
+ * `true` if the user data type has been successfully registered in Lua.
  */
-void RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback );
+bool RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback );
 
 /**
  * Allocates memory for a user defined data structure in Lua
@@ -68,13 +82,30 @@ void RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback );
  * Data size in bytes.
  *
  * Since user data of the same type can still have different sizes,
- * it's your responsibillity to ensure correct data access.
+ * it's your responsibility to ensure correct data access.
  *
  * @return
- * The allocated, but unintialized, user data
+ * The allocated, but uninitialized, user data
  * or `NULL` if the type does not exist.
  */
 void* PushUserDataToLua( lua_State* l, const char* typeName, int size );
+
+/**
+ * Copies a user data to Lua and pushes it on top of the stack.
+ *
+ * @param size
+ * Data size in bytes.
+ *
+ * Since user data of the same type can still have different sizes,
+ * it's your responsibility to ensure correct data access.
+ *
+ * @param data
+ * Pointer to the data, that is being copied.
+ *
+ * @return
+ * `false` if the type does not exist.
+ */
+bool CopyUserDataToLua( lua_State* l, const char* typeName, int size, const void* data );
 
 /**
  * Checks if the element at stackPosition has the requested user data type
@@ -96,7 +127,7 @@ void* GetUserDataFromLua( lua_State* l, int stackPosition, const char* typeName 
  * An event may only be registered once.
  *
  * @return
- * The events id.
+ * The events id or `LUA_INVALID_EVENT` if something went wrong.
  */
 int RegisterLuaEvent( const char* name );
 
