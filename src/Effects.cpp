@@ -1,5 +1,6 @@
 #include "Common.h"
 #include "Config.h"
+#include "Lua.h"
 #include "Squirrel.h"
 #include "OpenGL.h"
 #include "Texture.h"
@@ -14,6 +15,8 @@ const glm::mat4 BIAS_MATRIX(
     0.0f, 0.0f, 0.5f, 0.0f,
     0.5f, 0.5f, 0.5f, 1.0f
 );
+
+bool RegisterEffectsInLua();
 
 Program g_DefaultProgram = 0;
 
@@ -70,7 +73,7 @@ bool InitEffects()
         glm::vec3(0.5,2,2)
     );
 
-    return true;
+    return RegisterEffectsInLua();
 }
 
 void DestroyEffects()
@@ -151,6 +154,39 @@ void SetLight( glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 direction )
     SetUniform(g_DefaultProgram, "LightAmbient", 3, &ambient.x);
     SetUniform(g_DefaultProgram, "LightDiffuse", 3, &diffuse.x);
     SetUniform(g_DefaultProgram, "LightDirection", 3, &direction.x);
+}
+
+
+// --- lua bindings ---
+
+int Lua_SetLight( lua_State* l )
+{
+    const glm::vec3 ambient(
+        luaL_checknumber(l, 1),
+        luaL_checknumber(l, 2),
+        luaL_checknumber(l, 3)
+    );
+
+    const glm::vec3 diffuse(
+        luaL_checknumber(l, 4),
+        luaL_checknumber(l, 5),
+        luaL_checknumber(l, 6)
+    );
+
+    const glm::vec3 direction(
+        luaL_checknumber(l, 7),
+        luaL_checknumber(l, 8),
+        luaL_checknumber(l, 9)
+    );
+
+    SetLight(ambient, diffuse, direction);
+    return 0;
+}
+
+bool RegisterEffectsInLua()
+{
+    return
+        RegisterFunctionInLua("SetLight", Lua_SetLight);
 }
 
 
