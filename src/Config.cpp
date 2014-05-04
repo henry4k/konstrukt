@@ -1,11 +1,17 @@
 #include <map>
 #include <string>
 #include <ini.h>
+
 #include "Common.h"
+#include "Lua.h"
 #include "Squirrel.h"
 #include "Config.h"
 
+
 using namespace std;
+
+
+bool RegisterConfigInLua();
 
 map<string,string> g_ConfigValues;
 
@@ -56,7 +62,7 @@ bool InitConfig( const int argc, char** argv )
         }
     }
 
-    return true;
+    return RegisterConfigInLua();
 }
 
 void DestroyConfig()
@@ -127,6 +133,45 @@ int IniEntryCallback( void* user, const char* section, const char* name, const c
     Log("%s = %s", key.c_str(), value);
     g_ConfigValues[key] = value;
     return 1;
+}
+
+// --- lua bindings ---
+
+int Lua_GetConfigValue( lua_State* l )
+{
+    const char* key = luaL_checkstring(l, 1);
+
+    const char* stringValue = GetConfigString(key, NULL);
+    if(stringValue == NULL)
+    {
+        lua_pushvalue(l, 2); // push default value
+        return 1;
+    }
+
+    switch(lua_type(l, 2)) // use type of default value to determine return type
+    {
+        case LUA_TSTRING:
+            lua_pushstring(l, stringValue);
+            return 1;
+
+        case LUA_TNUMBER:
+            lua_pushnumber(l, GetConfigFloat(key, 0));
+            return 1;
+
+        case LUA_TBOOLEAN:
+            lua_pushboolean(l, GetConfigBool(key, false));
+            return 1;
+
+        default:
+            luaL_error(l, "Unsupported type. (Only string, number and bool!)");
+            return 0;
+    }
+}
+
+bool RegisterConfigInLua()
+{
+    return
+        RegisterFunctionInLua("GetConfigValue", Lua_GetConfigValue);
 }
 
 
