@@ -8,9 +8,11 @@
 #include <signal.h>
 
 
-typedef void (*dummySignalFunction)(int);
+typedef void (*dummySignalHandler)(int);
 
-void dummySetSignals( dummySignalFunction fn );
+void dummyPushSignalHandler( dummySignalHandler fn );
+void dummyPopSignalHandler();
+
 const char* dummySignalToAbortReason( int signal );
 
 #endif

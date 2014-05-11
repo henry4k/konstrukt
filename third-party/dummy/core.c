@@ -14,7 +14,7 @@ enum
     DUMMY_MAX_TESTS = 32,
     DUMMY_MAX_CLEANUPS = 32,
     DUMMY_INVALID_TEST_INDEX = -1,
-    DUMMY_RUNNER_SKIPPED = -1
+    DUMMY_SANDBOX_SKIPPED = -1
 };
 
 typedef enum
@@ -45,7 +45,9 @@ typedef struct
 typedef struct
 {
     char name[DUMMY_MAX_MESSAGE_LENGTH];
-    dummyTestFunction fn;
+    dummySandbox sandbox;
+    dummySandboxableFunction fn;
+
     dummyTestStatus status;
 
     dummyTestResult result;
@@ -61,7 +63,6 @@ typedef struct
 typedef struct
 {
     dummyStatus status;
-    const dummyRunner* runner;
     const dummyReporter* reporter;
 
     dummyTest tests[DUMMY_MAX_TESTS];
@@ -69,25 +70,28 @@ typedef struct
     int currentTestIndex;
 } dummyContext;
 
+typedef struct
+{
+    dummyAbortHandler handler;
+    void* context;
+} dummyAbortHandlerInfo;
 
-dummyContext* dummyCurrentContext = NULL;
+
+static dummyContext* dummyCurrentContext = NULL;
+static dummyAbortHandlerInfo AbortStack[DUMMY_MAX_SANDBOX_DEPTH];
+static int AbortStackSize = 0;
 
 
 bool dummyRunTest( int index );
 dummyTest* dummyGetCurrentTest();
 
-void dummyInit( const dummyRunner* runner, const dummyReporter* reporter )
+void dummyInit( const dummyReporter* reporter )
 {
     assert(dummyCurrentContext == NULL);
     dummyCurrentContext = (dummyContext*)malloc(sizeof(dummyContext));
     memset(dummyCurrentContext, 0, sizeof(dummyContext));
 
     dummyCurrentContext->status = DUMMY_INITIALIZING;
-
-    assert(runner);
-    assert(runner->run);
-    assert(runner->abort);
-    dummyCurrentContext->runner = runner;
 
     assert(reporter);
     assert(reporter->began);
@@ -125,7 +129,7 @@ int dummyRunTests()
     return failedTests;
 }
 
-void dummyAddTest( const char* name, dummyTestFunction fn )
+void dummyAddTest( const char* name, dummySandbox sandbox, dummySandboxableFunction fn )
 {
     dummyContext* ctx = dummyCurrentContext;
     assert(ctx);
@@ -136,6 +140,7 @@ void dummyAddTest( const char* name, dummyTestFunction fn )
     memset(test, 0, sizeof(dummyTest));
 
     strncpy(test->name, name, DUMMY_MAX_MESSAGE_LENGTH);
+    test->sandbox = sandbox;
     test->fn = fn;
 
     ctx->testCount++;
@@ -160,18 +165,18 @@ bool dummyRunTest( int index )
     // run
     test->status = DUMMY_TEST_RUNNING;
     const char* abortReason = NULL;
-    const int errorCode = ctx->runner->run(ctx->runner->context, test->fn, &abortReason);
+    const int errorCode = test->sandbox(test->fn, &abortReason);
     switch(errorCode)
     {
-        case DUMMY_RUNNER_SUCEEDED:
+        case DUMMY_SANDBOX_SUCCEEDED:
             test->result = DUMMY_TEST_PASSED;
             break;
 
-        case DUMMY_RUNNER_SKIPPED:
+        case DUMMY_SANDBOX_SKIPPED:
             test->result = DUMMY_TEST_SKIPPED;
             break;
 
-        case DUMMY_RUNNER_GENERIC_ERROR:
+        case DUMMY_SANDBOX_GENERIC_ERROR:
         default:
             test->result = DUMMY_TEST_FAILED;
     }
@@ -298,15 +303,15 @@ const char* dummyFormatV( const char* format, va_list args )
 
 void dummyAbortTest( dummyTestAbortType type, const char* reason, ... )
 {
-    int errorCode = DUMMY_RUNNER_GENERIC_ERROR;
+    int errorCode = DUMMY_SANDBOX_GENERIC_ERROR;
     switch(type)
     {
         case DUMMY_FAIL_TEST:
-            errorCode = DUMMY_RUNNER_GENERIC_ERROR;
+            errorCode = DUMMY_SANDBOX_GENERIC_ERROR;
             break;
 
         case DUMMY_SKIP_TEST:
-            errorCode = DUMMY_RUNNER_SKIPPED;
+            errorCode = DUMMY_SANDBOX_SKIPPED;
             break;
 
         default:
@@ -326,8 +331,7 @@ void dummyAbortTest( dummyTestAbortType type, const char* reason, ... )
         assert(!"dummyAbortTest needs a reason!");
     }
 
-    dummyContext* ctx = dummyCurrentContext;
-    ctx->runner->abort(ctx->runner->context, errorCode, formattedReason);
+    dummyAbortSandbox(errorCode, formattedReason);
 }
 
 void dummyMarkTestAsTodo( const char* reason, ... )
@@ -354,4 +358,28 @@ void dummyLog( const char* message, ... )
     va_end(args);
 
     ctx->reporter->log(ctx->reporter->context, formattedMessage);
+}
+
+void dummyPushAbortHandler( dummyAbortHandler handler, void* context )
+{
+    assert(AbortStackSize <= DUMMY_MAX_SANDBOX_DEPTH);
+    AbortStackSize++;
+    dummyAbortHandlerInfo* info = &AbortStack[AbortStackSize-1];
+
+    info->handler = handler;
+    info->context = context;
+}
+
+void dummyPopAbortHandler()
+{
+    assert(AbortStackSize >= 1);
+    AbortStackSize--;
+}
+
+void dummyAbortSandbox( int errorCode, const char* reason )
+{
+    assert(AbortStackSize >= 1);
+    dummyAbortHandlerInfo* info = &AbortStack[AbortStackSize-1];
+
+    info->handler(info->context, errorCode, reason);
 }

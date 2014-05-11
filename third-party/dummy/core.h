@@ -1,14 +1,26 @@
 #ifndef __DUMMY_CORE_H__
 #define __DUMMY_CORE_H__
 
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+
 enum
 {
-    DUMMY_UNKNOWN_TEST_COUNT = -1
+    DUMMY_UNKNOWN_TEST_COUNT = -1,
+    DUMMY_MAX_SANDBOX_DEPTH = 32
+};
+
+/**
+ * Standard error codes, that can be returned by #dummySandbox functions.
+ */
+enum
+{
+    DUMMY_SANDBOX_SUCCEEDED = 0,
+    DUMMY_SANDBOX_GENERIC_ERROR = 1
 };
 
 typedef enum
@@ -24,48 +36,38 @@ typedef enum
     DUMMY_SKIP_TEST
 } dummyTestAbortType;
 
-enum
-{
-    DUMMY_RUNNER_SUCEEDED = 0,
-    DUMMY_RUNNER_GENERIC_ERROR = 1
-};
 
 /**
- * Function that is called for a test.
+ * Can be called in a sandbox.
  */
-typedef void (*dummyTestFunction)();
+typedef void (*dummySandboxableFunction)();
+
+/**
+ * Runs the given function and catches errors.
+ *
+ * @param abortReason
+ * If the protected call is aborted with a reason,
+ * the string pointer is passed here.
+ *
+ * @return
+ * Code that classifies the error.
+ * If the function ran successfully it returns #DUMMY_SANDBOX_SUCCEEDED.
+ * Custom error codes may be passed using #dummyAbortSandbox.
+ */
+typedef int (*dummySandbox)( dummySandboxableFunction fn, const char** abortReason );
+
+/**
+ * Aborts the current sandbox call.
+ *
+ * @param reason
+ * May be `NULL`.
+ *
+ * @return
+ * Doesn't return.
+ */
+typedef void (*dummyAbortHandler)( void* context, int errorCode, const char* reason );
 
 typedef void (*dummyCleanupFunction)( void* data );
-
-typedef struct
-{
-    void* context;
-
-    /**
-    * Runs the given function and catches errors.
-    *
-    * @param abortReason
-    * If the protected call is aborted with a reason,
-    * the string pointer is passed here.
-    *
-    * @return
-    * Code that classifies the error.
-    * If the function ras successfully it returns DUMMY_PROTECTED_CALL_SUCEEDED.
-    * Custom error codes may be passed using dummyRunner::abort().
-    */
-    int (*run)( void* context, dummyTestFunction fn, const char** abortReason );
-
-    /**
-    * Aborts the current test.
-    *
-    * @param reason
-    * May be `NULL`.
-    *
-    * @return
-    * Doesn't return.
-    */
-    void (*abort)( void* context, int errorCode, const char* reason );
-} dummyRunner;
 
 typedef struct
 {
@@ -85,12 +87,12 @@ typedef struct
  * Initializes the test context.
  *
  * This needs to be called before any calls to other test functions.
- * The initial context status is `DUMMY_INITIALIZING`.
+ * The initial context status is #DUMMY_INITIALIZING.
  *
  * @param reporter
  * Reporter which will be used by the created context.
  */
-void dummyInit( const dummyRunner* runner, const dummyReporter* reporter );
+void dummyInit( const dummyReporter* reporter );
 
 /**
  * Runs all added tests and destroys the current context.
@@ -106,11 +108,15 @@ int dummyRunTests();
  * @param name
  * May be used by the reporter to describe the test.
  *
+ * @param sandbox
+ * Sandbox that is being used to run the test.
+ *
  * @param fn
  * Is called when the test is being run.
- * See #dummyRunTests
+ *
+ * @see dummyRunTests
  */
-void dummyAddTest( const char* name, dummyTestFunction fn );
+void dummyAddTest( const char* name, dummySandbox sandbox, dummySandboxableFunction fn );
 
 /**
  * Count of tests added to the current context.
@@ -164,7 +170,7 @@ const char* dummyGetTestTodoReason();
  * @return
  * Doesn't return.
  */
-void dummyAbortTest( dummyTestAbortType type, const char* reason, ... );
+void dummyAbortTest( dummyTestAbortType type, const char* reason, ... ); // TODO: Can be replaced with dummyAbortSandbox
 
 /**
  * Marks current test as TODO.
@@ -180,11 +186,28 @@ void dummyAbortTest( dummyTestAbortType type, const char* reason, ... );
  */
 void dummyMarkTestAsTodo( const char* reason, ... );
 
-
 /**
  * Reports a diagnostic message.
  */
 void dummyLog( const char* message, ... );
+
+/**
+ * Replaces the current abort implementation.
+ */
+void dummyPushAbortHandler( dummyAbortHandler implementation, void* context );
+
+/**
+ * Resets the current abort implementation to the last one or disables it.
+ */
+void dummyPopAbortHandler();
+
+/**
+ * Aborts the current sandbox using the current abort implementation.
+ *
+ * @note
+ * Trying to abort without an abort implementation will cause an fatal error.
+ */
+void dummyAbortSandbox( int errorCode, const char* reason );
 
 
 #ifdef __cplusplus

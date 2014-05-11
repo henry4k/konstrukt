@@ -78,12 +78,12 @@ static void log( void* ctx_, const char* message )
     fprintf(ctx->file, "# %s\n", message);
 }
 
-const dummyReporter* dummyGetTAPReporter()
+const dummyReporter* dummyGetTAPReporter( FILE* file )
 {
     static Context ctx;
     static dummyReporter reporter;
 
-    ctx.file = stdout;
+    ctx.file = file;
 
     reporter.context = &ctx;
     reporter.began = began;

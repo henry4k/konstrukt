@@ -1,11 +1,38 @@
+#include <assert.h>
+
+#include "core.h" // DUMMY_MAX_SANDBOX_DEPTH
 #include "signal.h"
 
-void dummySetSignals( dummySignalFunction fn )
+
+static dummySignalHandler signalHandlerStack[DUMMY_MAX_SANDBOX_DEPTH];
+static int signalHandlerStackSize = 0;
+
+
+static void setSignalHandler( dummySignalHandler fn )
 {
     signal(SIGABRT, fn);
     signal(SIGFPE, fn);
     signal(SIGILL, fn);
     signal(SIGSEGV, fn);
+}
+
+void dummyPushSignalHandler( dummySignalHandler fn )
+{
+    assert(signalHandlerStackSize < DUMMY_MAX_SANDBOX_DEPTH);
+    signalHandlerStackSize++;
+    signalHandlerStack[signalHandlerStackSize-1] = fn;
+
+    setSignalHandler(fn);
+}
+
+void dummyPopSignalHandler()
+{
+    assert(signalHandlerStackSize > 0);
+    signalHandlerStackSize--;
+    if(signalHandlerStackSize > 0)
+        setSignalHandler(signalHandlerStack[signalHandlerStackSize-1]);
+    else
+        setSignalHandler(SIG_DFL);
 }
 
 const char* dummySignalToAbortReason( int signal )

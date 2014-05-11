@@ -12,7 +12,7 @@ typedef struct
 static void began( void* ctx_ )
 {
     const Context* ctx = (Context*)ctx_;
-    fprintf(ctx->file, "<dummysuite dummys=\"%d\">%s",
+    fprintf(ctx->file, "<testsuite tests=\"%d\">%s",
         dummyGetTestCount(),
         ctx->newline
     );
@@ -21,7 +21,7 @@ static void began( void* ctx_ )
 static void completed( void* ctx_ )
 {
     const Context* ctx = (Context*)ctx_;
-    fprintf(ctx->file, "</dummysuite>%s",
+    fprintf(ctx->file, "</testsuite>%s",
         ctx->newline
     );
 }
@@ -29,7 +29,7 @@ static void completed( void* ctx_ )
 static void beganTest( void* ctx_ )
 {
     const Context* ctx = (Context*)ctx_;
-    fprintf(ctx->file, "%s<dummytest name=\"%s\">%s",
+    fprintf(ctx->file, "%s<testcase name=\"%s\">%s",
         ctx->tab,
         dummyGetTestName(),
         ctx->newline
@@ -92,7 +92,7 @@ static void completedTest( void* ctx_ )
             assert(!"Unknown result");
     }
 
-    fprintf(ctx->file, "%s</dummytest>%s",
+    fprintf(ctx->file, "%s</testcase>%s",
         ctx->tab,
         ctx->newline
     );
@@ -109,14 +109,14 @@ static void log( void* ctx_, const char* message )
     );
 }
 
-const dummyReporter* dummyGetXMLReporter()
+const dummyReporter* dummyGetXMLReporter( FILE* file, const char* tab, const char* newline )
 {
     static Context ctx;
     static dummyReporter reporter;
 
-    ctx.file = stdout;
-    ctx.tab = "    ";
-    ctx.newline = "\n";
+    ctx.file = file;
+    ctx.tab = tab;
+    ctx.newline = newline;
 
     reporter.context = &ctx;
     reporter.began = began;
