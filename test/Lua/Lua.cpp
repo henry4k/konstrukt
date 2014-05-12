@@ -1,7 +1,18 @@
+#include <string.h> // memset
 #include <src/Lua.h>
 
 #include <test/TestTools.h>
 
+
+/**
+ * Should be used inside Lua callbacks.
+ */
+#define LuaRequire( L, E ) LuaRequire_((L), #E, (E))
+static inline void LuaRequire_( lua_State* l, const char* expression, bool result )
+{
+    if(!result)
+        luaL_error(l, "%s failed", expression);
+}
 
 class LuaScope
 {
@@ -14,16 +25,25 @@ public:
     void destroy() { DestroyLua(); destroyed = true; };
 };
 
+
 int main()
 {
     InitTests();
 
     Describe("Lua module")
+        .use(dummyExceptionSandbox)
 
         .it("can be initialized and destructed.", [](){
 
             Require(InitLua() == true);
             Require(GetLuaState() != NULL);
+
+            // Test if lua works
+            lua_State* l = GetLuaState();
+            lua_pushinteger(l, 42);
+            Require(lua_tointeger(l, -1) == 42);
+            lua_pop(l, 1);
+
             DestroyLua();
             Require(GetLuaState() == NULL);
         })
@@ -38,9 +58,7 @@ int main()
 
             LuaScope luaScope;
 
-            const bool functionRegistered =
-                RegisterFunctionInLua("testfn", lua_testfn);
-            Require(functionRegistered);
+            Require(RegisterFunctionInLua("testfn", lua_testfn));
 
             int r = luaL_dostring(GetLuaState(), "assert(testfn(41) == 42)");
             if(r != LUA_OK)
@@ -62,9 +80,7 @@ int main()
             LuaScope luaScope;
             lua_State* l = GetLuaState();
 
-            const bool dataTypeRegistered =
-                RegisterUserDataTypeInLua(MyDataType, lua_MyData_destructor);
-            Require(dataTypeRegistered);
+            Require(RegisterUserDataTypeInLua(MyDataType, lua_MyData_destructor));
 
             // Push a new value
             MyData* originalData = reinterpret_cast<MyData*>(
@@ -108,6 +124,93 @@ int main()
             Require(lua_tointeger(l, -3) == 30);
             Require(lua_tointeger(l, -2) == 11);
             Require(lua_tointeger(l, -1) == 21);
+        })
+
+        .it("can push arrays to Lua.", [](){
+
+            lua_CFunction lua_testfn = []( lua_State* l ) {
+
+                const long numbers[4] = {4000, 3000, 2000, 1000};
+                PushArrayToLua(l, LUA_LONG_ARRAY, 4, numbers);
+                return 1;
+            };
+
+            LuaScope luaScope;
+            lua_State* l = GetLuaState();
+
+            Require(RegisterFunctionInLua("testfn", lua_testfn));
+
+            int r = luaL_dostring(l,
+                "a = testfn()\n"
+                "assert(#a == 4)\n"
+                "assert(a[1] == 4000)\n"
+                "assert(a[2] == 3000)\n"
+                "assert(a[3] == 2000)\n"
+                "assert(a[4] == 1000)\n");
+            if(r != LUA_OK)
+                dummyAbortTest(DUMMY_FAIL_TEST, "%s", lua_tostring(GetLuaState(), -1));
+        })
+
+        .it("can retrive arrays from Lua.", [](){
+
+            lua_CFunction lua_testfn = []( lua_State* l ) {
+
+                LuaRequire(l, GetLuaArraySize(l, 1) == 4);
+
+                long numberBuffer[5];
+
+                memset(numberBuffer, 0, sizeof(long)*5);
+                GetArrayFromLua(l, 1, LUA_LONG_ARRAY, 0, numberBuffer);
+                LuaRequire(l, numberBuffer[0] == 0);
+                LuaRequire(l, numberBuffer[1] == 0);
+                LuaRequire(l, numberBuffer[2] == 0);
+                LuaRequire(l, numberBuffer[3] == 0);
+                LuaRequire(l, numberBuffer[4] == 0);
+
+                memset(numberBuffer, 0, sizeof(long)*5);
+                GetArrayFromLua(l, 1, LUA_LONG_ARRAY, 1, numberBuffer);
+                LuaRequire(l, numberBuffer[0] == 4000);
+                LuaRequire(l, numberBuffer[1] == 0);
+                LuaRequire(l, numberBuffer[2] == 0);
+                LuaRequire(l, numberBuffer[3] == 0);
+                LuaRequire(l, numberBuffer[4] == 0);
+
+                memset(numberBuffer, 0, sizeof(long)*5);
+                GetArrayFromLua(l, 1, LUA_LONG_ARRAY, 3, numberBuffer);
+                LuaRequire(l, numberBuffer[0] == 4000);
+                LuaRequire(l, numberBuffer[1] == 3000);
+                LuaRequire(l, numberBuffer[2] == 2000);
+                LuaRequire(l, numberBuffer[3] == 0);
+                LuaRequire(l, numberBuffer[4] == 0);
+
+                memset(numberBuffer, 0, sizeof(long)*5);
+                GetArrayFromLua(l, 1, LUA_LONG_ARRAY, 4, numberBuffer);
+                LuaRequire(l, numberBuffer[0] == 4000);
+                LuaRequire(l, numberBuffer[1] == 3000);
+                LuaRequire(l, numberBuffer[2] == 2000);
+                LuaRequire(l, numberBuffer[3] == 1000);
+                LuaRequire(l, numberBuffer[4] == 0);
+
+                memset(numberBuffer, 0, sizeof(long)*5);
+                GetArrayFromLua(l, 1, LUA_LONG_ARRAY, 5, numberBuffer);
+                LuaRequire(l, numberBuffer[0] == 4000);
+                LuaRequire(l, numberBuffer[1] == 3000);
+                LuaRequire(l, numberBuffer[2] == 2000);
+                LuaRequire(l, numberBuffer[3] == 1000);
+                LuaRequire(l, numberBuffer[4] == 0);
+
+                return 0;
+            };
+
+            LuaScope luaScope;
+            lua_State* l = GetLuaState();
+
+            Require(RegisterFunctionInLua("testfn", lua_testfn));
+
+            int r = luaL_dostring(l,
+                "testfn({4000, 3000, 2000, 1000})\n");
+            if(r != LUA_OK)
+                dummyAbortTest(DUMMY_FAIL_TEST, "%s", lua_tostring(GetLuaState(), -1));
         });
 
     return RunTests();

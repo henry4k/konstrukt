@@ -1,4 +1,4 @@
-#include <dummy/exception_runner.h>
+#include <stdio.h>
 #include <dummy/tap_reporter.h>
 
 #include <src/Common.h>
@@ -28,7 +28,7 @@ void TestLogHandler( LogLevel level, const char* line )
 void InitTests()
 {
     SetLogHandler(TestLogHandler);
-    dummyInit(dummyGetExceptionRunner(), dummyGetTAPReporter());
+    dummyInit(dummyGetTAPReporter(stdout));
 }
 
 int RunTests()

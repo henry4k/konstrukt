@@ -44,6 +44,14 @@ enum
     LUA_INVALID_EVENT = -1
 };
 
+enum LuaArrayType
+{
+    LUA_BOOL_ARRAY,
+    LUA_DOUBLE_ARRAY,
+    LUA_LONG_ARRAY
+};
+
+
 bool InitLua();
 void DestroyLua();
 
@@ -152,5 +160,29 @@ int RegisterLuaEvent( const char* name );
  * Number of values that were pushed in the stack or 0.
  */
 int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues );
+
+/**
+ * Converts a C array to its Lua equivalent and pushes it in the stack.
+ */
+bool PushArrayToLua( lua_State* l, LuaArrayType elementType, int elementCount, const void* elements );
+
+/**
+ * Writes an Lua array to a C array.
+ *
+ * @param maxElementCount
+ * Writes at most `elementCount` elements to `destination`.
+ *
+ * @param destination
+ * C array that can hold at least `maxElementCount` elements of type `elementType`.
+ *
+ * TODO: Return void and use lua_error instead!
+ */
+bool GetArrayFromLua( lua_State* l, int stackPosition, LuaArrayType elementType, int maxElementCount, void* destination );
+
+/**
+ * @return
+ * Size of Lua array at `stackPosition` or 0 if there is no array.
+ */
+int GetLuaArraySize( lua_State* l, int stackPosition );
 
 #endif

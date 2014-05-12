@@ -148,7 +148,7 @@ void* GetUserDataFromLua( lua_State* l, int stackPosition, const char* typeName 
     }
 
     luaL_getmetatable(l, typeName);
-    if(!lua_istable(l, -1) || lua_compare(l, -2, -1, LUA_OPEQ))
+    if(!lua_istable(l, -1) || !lua_rawequal(l, -2, -1))
     {
         // pop userdata, its metatable and nil
         lua_pop(l, 3);
@@ -213,19 +213,25 @@ int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues
 
     LuaEvent* event = &g_LuaEvents[id];
 
-    if(event->callbackReference == LUA_NOREF)
+    if((event->callbackReference == LUA_NOREF) ||
+       (event->callbackReference == LUA_REFNIL))
     {
         lua_pop(l, argumentCount);
         return 0;
     }
 
     PushLuaErrorFunction(l);
+    lua_insert(l, -(argumentCount+1)); // Move before arguments
 
     lua_rawgeti(l, LUA_REGISTRYINDEX, event->callbackReference);
+    lua_insert(l, -(argumentCount+1)); // Move before arguments
 
-    // Move arguments to the top, i.e. behind error func and callback:
-    for(int i = 0; i < argumentCount; i++)
-        lua_insert(l, -(argumentCount+2));
+    // The stack should now look like this:
+    // error function
+    // callback
+    // arg 1
+    // ...
+    // arg n
 
     const int stackSizeBeforeCall = lua_gettop(l);
     const int callResult = lua_pcall(
@@ -234,6 +240,11 @@ int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues
         -(argumentCount+2) // error func
     );
     const int stackSizeAfterCall = lua_gettop(l);
+
+    const int poppedValueCount = argumentCount + 1;
+    const int returnValueCount =
+        stackSizeAfterCall - (stackSizeBeforeCall-poppedValueCount);
+    lua_remove(l, -(returnValueCount+1)); // Remove error function
 
     switch(callResult)
     {
@@ -258,8 +269,74 @@ int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues
             FatalError("Unknown call result.");
     }
 
-    const int returnValueCount = stackSizeAfterCall-stackSizeBeforeCall;
     return returnValueCount;
+}
+
+bool PushArrayToLua( lua_State* l, LuaArrayType elementType, int elementCount, const void* elements )
+{
+    lua_createtable(l, elementCount, 0);
+
+    switch(elementType)
+    {
+#define HANDLE_TYPE(TypeEnum, Typedef, PushFn) \
+        case TypeEnum: \
+            for(int i = 0; i < elementCount; i++) \
+            { \
+                PushFn(l, ((const Typedef*)elements)[i]); \
+                lua_rawseti(l, -2, i+1); \
+            } \
+            break;
+
+        HANDLE_TYPE(LUA_BOOL_ARRAY, bool, lua_pushboolean)
+        HANDLE_TYPE(LUA_DOUBLE_ARRAY, double, lua_pushnumber)
+        HANDLE_TYPE(LUA_LONG_ARRAY, long, lua_pushinteger)
+#undef HANDLE_TYPE
+
+        default:
+            FatalError("Unsupported element type.");
+    }
+
+    return true;
+}
+
+bool GetArrayFromLua( lua_State* l, int stackPosition, LuaArrayType elementType, int maxElementCount, void* destination )
+{
+    if(lua_type(l, stackPosition) != LUA_TTABLE)
+        return false;
+
+    const int totalArraySize = GetLuaArraySize(l, stackPosition);
+    const int elementCount =
+        (totalArraySize < maxElementCount) ? totalArraySize : maxElementCount;
+
+    switch(elementType)
+    {
+#define HANDLE_TYPE(TypeEnum, Typedef, GetFn) \
+        case TypeEnum: \
+            for(int i = 0; i < elementCount; i++) \
+            { \
+                lua_rawgeti(l, stackPosition, i+1); \
+                ((Typedef*)destination)[i] = GetFn(l, -1); \
+            } \
+            break;
+
+        HANDLE_TYPE(LUA_BOOL_ARRAY, bool, lua_toboolean)
+        HANDLE_TYPE(LUA_DOUBLE_ARRAY, double, lua_tonumber)
+        HANDLE_TYPE(LUA_LONG_ARRAY, long, lua_tointeger)
+#undef HANDLE_TYPE
+
+        default:
+            FatalError("Unsupported element type.");
+    }
+
+    return true;
+}
+
+int GetLuaArraySize( lua_State* l, int stackPosition )
+{
+    if(lua_type(l, stackPosition) == LUA_TTABLE)
+        return lua_rawlen(l, stackPosition);
+    else
+        return 0;
 }
 
 int Lua_SetEventCallback( lua_State* l )
@@ -269,7 +346,8 @@ int Lua_SetEventCallback( lua_State* l )
     if(id < 0)
         return luaL_error(l, "No event called '%s' exists.", name);
 
-    lua_pushvalue(l, 2);
+    luaL_checktype(l, 2, LUA_TFUNCTION);
+    lua_pushvalue(l, 2); // duplicate callback, because luaL_ref pops it
     g_LuaEvents[id].callbackReference = luaL_ref(l, LUA_REGISTRYINDEX);
     return 0;
 }
