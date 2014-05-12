@@ -10,6 +10,7 @@
 #include "Audio.h"
 #include "Player.h"
 #include "Map.h"
+#include "Math.h"
 #include "Debug.h"
 #include "Squirrel.h"
 #include "Lua.h"
@@ -23,7 +24,7 @@ bool InitGame( const int argc, char** argv )
 {
     Log("----------- Config ------------");
     if(!InitConfig(argc, argv))
-    return false;
+        return false;
 
     Log("------------ Debug -------------");
     if(!InitDebug())

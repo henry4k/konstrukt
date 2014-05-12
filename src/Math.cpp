@@ -403,7 +403,7 @@ int Lua_MakeRotationMatrix( lua_State* l )
     return 1;
 }
 
-bool RegisterMathInLua()
+AutoRegisterInLua()
 {
     return
         RegisterFunctionInLua("CreateMatrix4", Lua_CreateMatrix4) &&

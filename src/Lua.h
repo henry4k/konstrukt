@@ -185,4 +185,14 @@ bool GetArrayFromLua( lua_State* l, int stackPosition, LuaArrayType elementType,
  */
 int GetLuaArraySize( lua_State* l, int stackPosition );
 
+
+typedef bool (*AutoRegisterInLuaCallback)();
+
+#define AutoRegisterInLua() \
+static bool AutoRegisterXInLua(); \
+static bool AutoRegisterXInLua_done = AutoRegisterInLua_(AutoRegisterXInLua); \
+static bool AutoRegisterXInLua()
+
+bool AutoRegisterInLua_( AutoRegisterInLuaCallback cb );
+
 #endif

@@ -97,10 +97,6 @@ void FatalError( const char* format, ... )
     va_start(vl, format);
     LogV(LOG_ERROR, format, vl);
     va_end(vl);
-
-#if defined(__WIN32__)
-    abort();
-#else
+    // abort();
     raise(SIGTRAP);
-#endif
 }

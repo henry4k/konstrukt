@@ -11,8 +11,6 @@
 using namespace std;
 
 
-bool RegisterConfigInLua();
-
 map<string,string> g_ConfigValues;
 
 int IniEntryCallback( void* user, const char* section, const char* name, const char* value );
@@ -62,7 +60,7 @@ bool InitConfig( const int argc, char** argv )
         }
     }
 
-    return RegisterConfigInLua();
+    return true;
 }
 
 void DestroyConfig()
@@ -168,7 +166,7 @@ int Lua_GetConfigValue( lua_State* l )
     }
 }
 
-bool RegisterConfigInLua()
+AutoRegisterInLua()
 {
     return
         RegisterFunctionInLua("GetConfigValue", Lua_GetConfigValue);

@@ -21,6 +21,8 @@ struct LuaEvent
 };
 std::vector<LuaEvent> g_LuaEvents;
 
+std::vector<AutoRegisterInLuaCallback> g_AutoRegisterCallbacks;
+
 
 int Lua_SetEventCallback( lua_State* l );
 int Lua_DefaultErrorFunction( lua_State* l );
@@ -43,6 +45,10 @@ bool InitLua()
     RegisterFunctionInLua("SetEventCallback", Lua_SetEventCallback);
     RegisterFunctionInLua("DefaultErrorFunction", Lua_DefaultErrorFunction);
     RegisterFunctionInLua("Log", Lua_Log);
+
+    for(int i = 0; i < g_AutoRegisterCallbacks.size(); i++)
+        if(!g_AutoRegisterCallbacks[i]())
+            return false;
 
     return true;
 }
@@ -337,6 +343,12 @@ int GetLuaArraySize( lua_State* l, int stackPosition )
         return lua_rawlen(l, stackPosition);
     else
         return 0;
+}
+
+bool AutoRegisterInLua_( AutoRegisterInLuaCallback cb )
+{
+    g_AutoRegisterCallbacks.push_back(cb);
+    return true;
 }
 
 int Lua_SetEventCallback( lua_State* l )

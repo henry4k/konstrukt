@@ -31,8 +31,6 @@ void FreeAudioSourceOnStop( AudioSource source, void* context )
 
 void FreeAudioSourceAtIndex( int index );
 
-bool RegisterAudioInLua();
-
 AudioSourceInfo* g_AudioSources;
 int g_AudioSourceCount;
 
@@ -138,9 +136,6 @@ bool InitAudio()
     alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED); // ?
     //alDopplerFactor();
     //alDopplerVelocity();
-
-    if(!RegisterAudioInLua())
-        return false;
 
     return true;
 }
@@ -447,7 +442,7 @@ int Lua_FreeAudioSource( lua_State* l )
     return 0;
 }
 
-bool RegisterAudioInLua()
+AutoRegisterInLua()
 {
     if(!RegisterUserDataTypeInLua(AUDIO_BUFFER_TYPE, Lua_AudioBuffer_destructor))
         return false;

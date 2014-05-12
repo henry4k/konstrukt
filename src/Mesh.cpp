@@ -88,7 +88,7 @@ int Lua_CreateMesh( lua_State* l )
     }
 }
 
-bool RegisterMeshInLua()
+AutoRegisterInLua()
 {
     if(!RegisterUserDataTypeInLua(MESH_TYPE, Lua_Mesh_destructor))
         return false;

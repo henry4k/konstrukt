@@ -16,7 +16,6 @@
 
 static const int MAX_CONTROL_NAME_LENGTH = 31;
 
-bool RegisterControlsInLua();
 bool CreateKeyBindingFromString( const char* str, int keyControl );
 bool CreateAxisBindingFromString( const char* str, int axisControl );
 
@@ -57,8 +56,7 @@ bool InitControls()
     return
         InitKeyboardBindings() &&
         InitMouseBindings() &&
-        InitJoystickBindings() &&
-        RegisterControlsInLua();
+        InitJoystickBindings();
 }
 
 void DestroyControls()
@@ -323,7 +321,7 @@ int Lua_RegisterAxisControl( lua_State* l )
     return 1;
 }
 
-bool RegisterControlsInLua()
+AutoRegisterInLua()
 {
     g_KeyControlActionEvent = RegisterLuaEvent(KEY_CONTROL_ACTION_EVENT_NAME);
     if(g_KeyControlActionEvent == LUA_INVALID_EVENT)

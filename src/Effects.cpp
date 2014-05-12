@@ -16,8 +16,6 @@ const glm::mat4 BIAS_MATRIX(
     0.5f, 0.5f, 0.5f, 1.0f
 );
 
-bool RegisterEffectsInLua();
-
 Program g_DefaultProgram = 0;
 
 int g_DepthTextureSize = 0; // See InitEffects
@@ -73,7 +71,7 @@ bool InitEffects()
         glm::vec3(0.5,2,2)
     );
 
-    return RegisterEffectsInLua();
+    return true;
 }
 
 void DestroyEffects()
@@ -183,7 +181,7 @@ int Lua_SetLight( lua_State* l )
     return 0;
 }
 
-bool RegisterEffectsInLua()
+AutoRegisterInLua()
 {
     return
         RegisterFunctionInLua("SetLight", Lua_SetLight);
