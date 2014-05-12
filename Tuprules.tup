@@ -14,16 +14,12 @@ INTERNAL_CFLAGS += -I$(ROOT)
 INTERNAL_CFLAGS += -I$(ROOT)/third-party
 INTERNAL_CFLAGS += -I$(ROOT)/third-party/inih
 INTERNAL_CFLAGS += -I$(ROOT)/third-party/libjson
-INTERNAL_CFLAGS += -I$(ROOT)/third-party/squirrel/include
-INTERNAL_CFLAGS += -I$(ROOT)/third-party/squirrel/sqstdlib
 
 INTERNAL_LDFLAGS += @(INTERNAL_LDFLAGS)
 
 
 # -- Internal dependencies --
 
-REQUIRED_ARCHIVES += $(ROOT)/third-party/squirrel/sqstdlib.a
-REQUIRED_ARCHIVES += $(ROOT)/third-party/squirrel/squirrel.a
 REQUIRED_ARCHIVES += $(ROOT)/third-party/libjson/json.a
 REQUIRED_ARCHIVES += $(ROOT)/third-party/inih/ini.a
 

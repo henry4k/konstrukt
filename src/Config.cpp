@@ -4,7 +4,6 @@
 
 #include "Common.h"
 #include "Lua.h"
-#include "Squirrel.h"
 #include "Config.h"
 
 
@@ -171,42 +170,3 @@ AutoRegisterInLua()
     return
         RegisterFunctionInLua("GetConfigValue", Lua_GetConfigValue);
 }
-
-
-// --- Squirrel Bindings ---
-
-SQInteger Squirrel_GetConfigValue( HSQUIRRELVM vm )
-{
-    const char* key = NULL;
-    sq_getstring(vm, 2, &key);
-
-    const char* stringValue = GetConfigString(key, NULL);
-    if(stringValue == NULL)
-    {
-        sq_push(vm, 3); // push default value
-        return 1;
-    }
-
-    switch(sq_gettype(vm, 3))
-    {
-        case OT_STRING:
-            sq_pushstring(vm, stringValue, -1);
-            return 1;
-
-        case OT_INTEGER:
-            sq_pushinteger(vm, GetConfigInt(key, 0));
-            return 1;
-
-        case OT_FLOAT:
-            sq_pushfloat(vm, GetConfigFloat(key, 0));
-            return 1;
-
-        case OT_BOOL:
-            sq_pushfloat(vm, GetConfigBool(key, false));
-            return 1;
-
-        default:
-            return sq_throwerror(vm, "Unsupported type. (Only string, int, float and bool!)");
-    }
-}
-RegisterStaticFunctionInSquirrel(GetConfigValue, 3, ".s.");

@@ -1,3 +1,0 @@
-return {
-    CreateMesh = ::native.CreateMesh
-}

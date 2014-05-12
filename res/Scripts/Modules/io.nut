@@ -1,1 +1,0 @@
-return {}.setdelegate(::native.io)

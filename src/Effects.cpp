@@ -1,7 +1,6 @@
 #include "Common.h"
 #include "Config.h"
 #include "Lua.h"
-#include "Squirrel.h"
 #include "OpenGL.h"
 #include "Texture.h"
 #include "Window.h"
@@ -186,29 +185,3 @@ AutoRegisterInLua()
     return
         RegisterFunctionInLua("SetLight", Lua_SetLight);
 }
-
-
-// --- Squirrel Bindings ---
-
-SQInteger Squirrel_SetLight( HSQUIRRELVM vm )
-{
-    glm::vec3 ambient;
-    sq_getfloat(vm, 2, &ambient[0]);
-    sq_getfloat(vm, 3, &ambient[1]);
-    sq_getfloat(vm, 4, &ambient[2]);
-
-    glm::vec3 diffuse;
-    sq_getfloat(vm, 5, &diffuse[0]);
-    sq_getfloat(vm, 6, &diffuse[1]);
-    sq_getfloat(vm, 7, &diffuse[2]);
-
-    glm::vec3 direction;
-    sq_getfloat(vm,  8, &direction[0]);
-    sq_getfloat(vm,  9, &direction[1]);
-    sq_getfloat(vm, 10, &direction[2]);
-
-    SetLight(ambient, diffuse, direction);
-
-    return 0;
-}
-RegisterStaticFunctionInSquirrel(SetLight, 10, ".fffffffff");

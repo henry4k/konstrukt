@@ -7,7 +7,6 @@
 #include "OpenGL.h"
 #include "Window.h"
 #include "Lua.h"
-#include "Squirrel.h"
 #include "Controls.h"
 #include "KeyboardBindings.h"
 #include "MouseBindings.h"
@@ -335,61 +334,3 @@ AutoRegisterInLua()
         RegisterFunctionInLua("RegisterKeyControl", Lua_RegisterKeyControl) &&
         RegisterFunctionInLua("RegisterAxisControl", Lua_RegisterAxisControl);
 }
-
-
-// --- Squirrel Bindings ---
-
-SQInteger Squirrel_RegisterKeyControlCallback( HSQUIRRELVM vm )
-{
-    SetSquirrelCallback(SQCALLBACK_KEY_CONTROL, vm, 2);
-    return 0;
-}
-RegisterStaticFunctionInSquirrel(RegisterKeyControlCallback, 2, ".c");
-
-void OnSquirrelKeyControlAction( const char* name, bool pressed, void* context )
-{
-    HSQUIRRELVM vm = GetSquirrelVM();
-    sq_pushstring(vm, name, -1);
-    sq_pushbool(vm, pressed);
-    FireSquirrelCallback(SQCALLBACK_KEY_CONTROL, 2, false);
-}
-
-SQInteger Squirrel_RegisterKeyControl( HSQUIRRELVM vm )
-{
-    const char* name = NULL;
-    sq_getstring(vm, 2, &name);
-
-    const bool success = RegisterKeyControl(name, OnSquirrelKeyControlAction, NULL, NULL);
-    sq_pushbool(vm, success);
-    return 1;
-}
-RegisterStaticFunctionInSquirrel(RegisterKeyControl, 2, ".s");
-
-
-
-SQInteger Squirrel_RegisterAxisControlCallback( HSQUIRRELVM vm )
-{
-    SetSquirrelCallback(SQCALLBACK_AXIS_CONTROL, vm, 2);
-    return 0;
-}
-RegisterStaticFunctionInSquirrel(RegisterAxisControlCallback, 2, ".c");
-
-void OnSquirrelAxisControlAction( const char* name, float absolute, float delta, void* context )
-{
-    HSQUIRRELVM vm = GetSquirrelVM();
-    sq_pushstring(vm, name, -1);
-    sq_pushfloat(vm, absolute);
-    sq_pushfloat(vm, delta);
-    FireSquirrelCallback(SQCALLBACK_AXIS_CONTROL, 3, false);
-}
-
-SQInteger Squirrel_RegisterAxisControl( HSQUIRRELVM vm )
-{
-    const char* name = NULL;
-    sq_getstring(vm, 2, &name);
-
-    const bool success = RegisterAxisControl(name, OnSquirrelAxisControlAction, NULL, NULL);
-    sq_pushbool(vm, success);
-    return 1;
-}
-RegisterStaticFunctionInSquirrel(RegisterAxisControl, 2, ".s");

@@ -12,7 +12,6 @@
 #include "Map.h"
 #include "Math.h"
 #include "Debug.h"
-#include "Squirrel.h"
 #include "Lua.h"
 #include "Effects.h"
 #include "Game.h"
@@ -32,10 +31,6 @@ bool InitGame( const int argc, char** argv )
 
     Log("------------- Lua -------------");
     if(!InitLua())
-        return false;
-
-    Log("---------- Squirrel -----------");
-    if(!InitSquirrel())
         return false;
 
     Log("----------- Window ------------");
@@ -76,18 +71,9 @@ bool InitGame( const int argc, char** argv )
     if(!InitMap())
         return false;
 
-
     SetFrambufferFn(OnFramebufferResize);
 
-
-    Log("--------- Core Script ----------");
-    if(!RunSquirrelFile("Scripts/Core.nut"))
-        return false;
-
     Log("-------------------------------");
-
-
-    RunSquirrelFile("Scripts/Test.nut");
 
     return true;
 }
@@ -95,7 +81,6 @@ bool InitGame( const int argc, char** argv )
 void DestroyGame()
 {
     DestroyLua();
-    DestroySquirrel();
     DestroyMap();
     DestroyPlayer();
     DestroyEffects();
@@ -116,7 +101,7 @@ void RunGame()
         // Simulation
         const double curTime = glfwGetTime();
         const double timeDelta = curTime-lastTime;
-        UpdateSquirrel(timeDelta);
+        UpdateLua();
         UpdateAudio(timeDelta);
         UpdateControls(timeDelta);
         UpdatePlayer(timeDelta);

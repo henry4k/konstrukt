@@ -1,6 +1,5 @@
 #include "Common.h"
 #include "OpenGL.h"
-#include "Squirrel.h"
 #include "Lua.h"
 #include "Mesh.h"
 
@@ -96,31 +95,3 @@ AutoRegisterInLua()
     return
         RegisterFunctionInLua("CreateMesh", Lua_CreateMesh);
 }
-
-
-
-// --- Squirrel Bindings ---
-
-SQInteger OnReleaseMesh( void* userData, SQInteger size )
-{
-    FreeMesh((Mesh*)userData); // Some compilers can't cast pointers directly to smaller data types.
-    return 1;
-}
-
-SQInteger Squirrel_CreateMesh( HSQUIRRELVM vm )
-{
-    MeshBuffer* buffer = NULL;
-    sq_getuserdata(vm, 2, (void**)&buffer, NULL);
-
-    Mesh* mesh = (Mesh*)CreateUserDataInSquirrel(vm, sizeof(Mesh), OnReleaseMesh);
-    if(!CreateMesh(mesh, buffer))
-    {
-        sq_pop(vm, 1);
-        return 0;
-    }
-    else
-    {
-        return 1;
-    }
-}
-RegisterStaticFunctionInSquirrel(CreateMesh, 2, ".u");

@@ -234,4 +234,3 @@ void FreeImage( const Image* image )
     if(image->data)
         delete[] image->data;
 }
-

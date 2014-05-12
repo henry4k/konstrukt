@@ -1,9 +1,0 @@
-include_rules
-
-CFLAGS += -I$(TUP_CWD)/include  -I$(TUP_CWD)/sqstdlib
-
-: foreach squirrel/*.cpp |> !cxx |> %B.o {squirrel_objects}
-: {squirrel_objects} |> !ar |> squirrel.a
-
-: foreach sqstdlib/*.cpp |> !cxx |> %B.o {sqstdlib_objects}
-: {sqstdlib_objects} |> !ar |> sqstdlib.a
