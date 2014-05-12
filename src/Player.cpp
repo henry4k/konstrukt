@@ -4,6 +4,7 @@
 #include "Map.h"
 #include "Audio.h"
 #include "Debug.h"
+#include "Lua.h"
 #include "Squirrel.h"
 #include "Player.h"
 
@@ -161,6 +162,37 @@ void UpdatePlayer( float timeFrame )
     // --- Update listener ---
     UpdateAudioListener(g_PlayerPosition, g_PlayerVelocity, g_PlayerOrientation*glm::vec3(0,0,1), glm::vec3(0,1,0));
 }
+
+// --- lua bindings ---
+
+int Lua_GetPlayerPosition( lua_State* l )
+{
+    using namespace glm;
+    lua_pushnumber(l, g_PlayerPosition.x);
+    lua_pushnumber(l, g_PlayerPosition.y);
+    lua_pushnumber(l, g_PlayerPosition.z);
+    return 3;
+}
+
+int Lua_GetPlayerOrientation( lua_State* l )
+{
+    using namespace glm;
+    const vec3 orientation = normalize(g_PlayerOrientation * vec3(0,0,1));
+    lua_pushnumber(l, orientation.x);
+    lua_pushnumber(l, orientation.y);
+    lua_pushnumber(l, orientation.z);
+    return 3;
+}
+
+AutoRegisterInLua()
+{
+    return
+        RegisterFunctionInLua("GetPlayerPosition", Lua_GetPlayerPosition) &&
+        RegisterFunctionInLua("GetPlayerOrientation", Lua_GetPlayerOrientation);
+}
+
+
+// ----- squirrel bindings -----
 
 SQInteger Squirrel_GetPlayerPosition( HSQUIRRELVM vm )
 {
