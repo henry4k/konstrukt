@@ -139,24 +139,23 @@ void FreeTexture( Texture texture )
     glDeleteTextures(1, &texture);
 }
 
-static const int MaxTextureLayers = 8;
-GLenum CurTextureTargets[MaxTextureLayers];
+GLenum CurTextureTargets[MaxTextureUnits];
 
-int InitTextureLayers()
+int InitTextureUnits()
 {
     for(int i = 0; i < 8; i++)
         CurTextureTargets[i] = 0;
     return 0;
 }
 
-void BindTexture( GLenum target, const Texture texture, int layer )
+void BindTexture( GLenum target, const Texture texture, int unit )
 {
-    static int unused = InitTextureLayers();
-    glActiveTexture(GL_TEXTURE0+layer);
-    if(CurTextureTargets[layer] && (CurTextureTargets[layer] != target))
+    static int unused = InitTextureUnits();
+    glActiveTexture(GL_TEXTURE0+unit);
+    if(CurTextureTargets[unit] && (CurTextureTargets[unit] != target))
     {
-        glBindTexture(CurTextureTargets[layer], 0);
-        CurTextureTargets[layer] = target;
+        glBindTexture(CurTextureTargets[unit], 0);
+        CurTextureTargets[unit] = target;
     }
     glBindTexture(target, texture);
 }
