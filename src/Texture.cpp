@@ -44,7 +44,7 @@ Texture Create2dTexture( int options, const Image* image )
 
     glTexImage2D(GL_TEXTURE_2D, 0, image->format,  image->width, image->height, 0, image->format, image->type, image->data);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, INVALID_TEXTURE);
 
     return texture;
 }
@@ -80,7 +80,7 @@ Texture CreateCubeTexture( int options, const Image* images )
         glTexImage2D(target, 0, images[i].format,  images[i].width, images[i].height, 0, images[i].format, images[i].type, images[i].data);
     }
 
-    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, INVALID_TEXTURE);
 
     return texture;
 }
@@ -129,7 +129,7 @@ Texture CreateDepthTexture( int width, int height, int options )
 
     //delete[] data;
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, INVALID_TEXTURE);
 
     return texture;
 }
@@ -139,12 +139,12 @@ void FreeTexture( Texture texture )
     glDeleteTextures(1, &texture);
 }
 
-GLenum CurTextureTargets[MaxTextureUnits];
+GLenum CurTextureTargets[MAX_TEXTURE_UNITS];
 
 int InitTextureUnits()
 {
     for(int i = 0; i < 8; i++)
-        CurTextureTargets[i] = 0;
+        CurTextureTargets[i] = INVALID_TEXTURE;
     return 0;
 }
 
@@ -154,7 +154,7 @@ void BindTexture( GLenum target, const Texture texture, int unit )
     glActiveTexture(GL_TEXTURE0+unit);
     if(CurTextureTargets[unit] && (CurTextureTargets[unit] != target))
     {
-        glBindTexture(CurTextureTargets[unit], 0);
+        glBindTexture(CurTextureTargets[unit], INVALID_TEXTURE);
         CurTextureTargets[unit] = target;
     }
     glBindTexture(target, texture);

@@ -4,9 +4,12 @@
 #include "OpenGL.h"
 #include "Image.h"
 
-static const int MaxTextureUnits = 8;
 
 typedef GLuint Texture;
+
+static const int MAX_TEXTURE_UNITS = 8;
+
+static const Texture INVALID_TEXTURE = 0;
 
 enum TextureOptions
 {
