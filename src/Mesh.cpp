@@ -7,7 +7,7 @@ bool CreateMesh( Mesh* mesh, const MeshBuffer* buffer )
 {
     assert(mesh);
     assert(buffer);
-    if(buffer->vertices.empty() == 0)
+    if(buffer->vertices.empty())
         Error("Creating an empty mesh.");
 
     mesh->primitiveType = GL_TRIANGLES; // Default to triangles (can be changed later)
