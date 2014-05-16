@@ -42,6 +42,9 @@ bool InitLua()
     lua_gc(g_LuaState, LUA_GCSTOP, 0); // only collect manually
     luaL_openlibs(g_LuaState);
 
+    lua_createtable(g_LuaState, 0, 0);
+    lua_setglobal(g_LuaState, "Native");
+
     RegisterFunctionInLua("SetEventCallback", Lua_SetEventCallback);
     RegisterFunctionInLua("DefaultErrorFunction", Lua_DefaultErrorFunction);
     RegisterFunctionInLua("Log", Lua_Log);
@@ -89,8 +92,10 @@ void UpdateLua()
 
 bool RegisterFunctionInLua( const char* name, lua_CFunction fn )
 {
+    lua_getglobal(g_LuaState, "Native");
     lua_pushcfunction(g_LuaState, fn);
-    lua_setglobal(g_LuaState, name);
+    lua_setfield(g_LuaState, -2, name);
+    lua_pop(g_LuaState, 1);
     Log("Registered lua function: %s", name);
     return true;
 }
@@ -112,6 +117,7 @@ bool RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback )
     // pop metatable
     lua_pop(l, 1);
 
+    Log("Registered lua type: %s", name);
     return true;
 }
 
@@ -204,6 +210,8 @@ int RegisterLuaEvent( const char* name )
     event.callbackReference = LUA_NOREF;
 
     g_LuaEvents.push_back(event);
+
+    Log("Registered lua event: %s", name);
 
     const int id = g_LuaEvents.size()-1;
     if(id >= 0 || id < g_LuaEvents.size())
