@@ -9,12 +9,17 @@
 #include "Vertex.h"
 #include "Audio.h"
 #include "Player.h"
-#include "Map.h"
 #include "Math.h"
 #include "Debug.h"
 #include "Lua.h"
 #include "Effects.h"
+#include "PhysicsManager.h"
+#include "RenderManager.h"
 #include "Game.h"
+
+
+#include "Mesh.h"
+#include "MeshBuffer.h"
 
 void OnFramebufferResize( int width, int height );
 void OnExitKey( const char* name, bool pressed, void* context );
@@ -40,7 +45,8 @@ bool InitGame( const int argc, char** argv )
     EnableVertexArrays();
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
+    glDisable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glClearColor(0.5, 0.5, 0.5, 1);
@@ -59,21 +65,31 @@ bool InitGame( const int argc, char** argv )
     if(!RegisterKeyControl("exit", OnExitKey, NULL, NULL))
         return false;
 
+    Log("--------- Physics Manager ----------");
+    if(!InitPhysicsManager())
+        return false;
+
+    Log("--------- Render Manager ----------");
+    if(!InitRenderManager())
+        return false;
+
+    /*
     Log("--------- Effects ----------");
     if(!InitEffects())
         return false;
+    */
 
     Log("----------- Player ------------");
     if(!InitPlayer())
         return false;
 
-    Log("----------- Map ------------");
-    if(!InitMap())
-        return false;
-
     SetFrambufferFn(OnFramebufferResize);
 
     Log("-------------------------------");
+
+    int r = luaL_dofile(GetLuaState(), "Scripts/Main.lua");
+    if(r != LUA_OK)
+        Error("%s", lua_tostring(GetLuaState(), -1));
 
     return true;
 }
@@ -81,9 +97,10 @@ bool InitGame( const int argc, char** argv )
 void DestroyGame()
 {
     DestroyLua();
-    DestroyMap();
     DestroyPlayer();
-    DestroyEffects();
+    //DestroyEffects();
+    DestroyRenderManager();
+    DestroyPhysicsManager();
     DestroyControls();
     DestroyAudio();
     DestroyDebug();
@@ -95,13 +112,35 @@ void RunGame()
 {
     using namespace glm;
 
+    const Vertex v[] =
+    {
+        { vec3(0,0,5), vec3(0,0,0), vec2(0,0), vec3(0,0,0), vec4(0,0,0,0) },
+        { vec3(0,1,5), vec3(0,0,0), vec2(0,0), vec3(0,0,0), vec4(0,0,0,0) },
+        { vec3(1,1,5), vec3(0,0,0), vec2(0,0), vec3(0,0,0), vec4(0,0,0,0) }
+    };
+
+    MeshBuffer meshBuffer;
+    CreateMeshBuffer(&meshBuffer);
+    meshBuffer.vertices.push_back(v[0]);
+    meshBuffer.vertices.push_back(v[1]);
+    meshBuffer.vertices.push_back(v[2]);
+    meshBuffer.indices.push_back(0);
+    meshBuffer.indices.push_back(1);
+    meshBuffer.indices.push_back(2);
+
+    Mesh mesh;
+    CreateMesh(&mesh, &meshBuffer);
+
+    GraphicsObject* o = CreateGraphicsObject();
+    o->mesh = &mesh;
+
     double lastTime = glfwGetTime();
     while(!WindowShouldClose())
     {
         // Simulation
         const double curTime = glfwGetTime();
         const double timeDelta = curTime-lastTime;
-        UpdateLua();
+        //UpdateLua();
         UpdateAudio(timeDelta);
         UpdateControls(timeDelta);
         UpdatePlayer(timeDelta);
@@ -111,14 +150,14 @@ void RunGame()
             GetPlayerProjectionMatrix() *
             GetPlayerViewMatrix();
 
-        // Render background
-        //glClear(GL_DEPTH_BUFFER_BIT);
-        //DrawBackground();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        DrawGraphicsObjects(&mvpMatrix);
 
+        /*
         // Render shadow map
         BeginRenderShadowTexture();
         glClear(GL_DEPTH_BUFFER_BIT);
-        DrawMap();
+        DrawGraphicsObjects();
         DrawPlayer();
         EndRenderShadowTexture();
 
@@ -127,13 +166,14 @@ void RunGame()
         glClear(GL_DEPTH_BUFFER_BIT);
         BindProgram(GetDefaultProgram());
         SetModelViewProjectionMatrix(GetDefaultProgram(), &mvpMatrix);
-        DrawMap();
+        DrawGraphicsObjects();
         DrawPlayer();
         EndRender();
 
         // Render HUD
-        //glClear(GL_DEPTH_BUFFER_BIT);
-        //glLoadIdentity();
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glLoadIdentity();
+        */
 
         SwapBuffers();
     }
