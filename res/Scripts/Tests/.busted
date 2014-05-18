@@ -1,0 +1,13 @@
+return {
+    default = {
+        output = 'TAP',
+        verbose = true,
+        lpath = '../Modules/?.lua'
+    },
+
+    debug = {
+        output = 'utf_terminal',
+        verbose = true,
+        lpath = '../Modules/?.lua'
+    }
+}

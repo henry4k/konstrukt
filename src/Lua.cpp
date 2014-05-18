@@ -43,7 +43,7 @@ bool InitLua()
     luaL_openlibs(g_LuaState);
 
     lua_createtable(g_LuaState, 0, 0);
-    lua_setglobal(g_LuaState, "Native");
+    lua_setglobal(g_LuaState, "NATIVE");
 
     RegisterFunctionInLua("SetEventCallback", Lua_SetEventCallback);
     RegisterFunctionInLua("DefaultErrorFunction", Lua_DefaultErrorFunction);
@@ -92,7 +92,7 @@ void UpdateLua()
 
 bool RegisterFunctionInLua( const char* name, lua_CFunction fn )
 {
-    lua_getglobal(g_LuaState, "Native");
+    lua_getglobal(g_LuaState, "NATIVE");
     lua_pushcfunction(g_LuaState, fn);
     lua_setfield(g_LuaState, -2, name);
     lua_pop(g_LuaState, 1);

@@ -384,12 +384,12 @@ int Lua_Matrix4TransformVector( lua_State* l )
         luaL_checknumber(l, 5)
     );
 
-    //mat4* destination = (mat4*)lua_newuserdata(l, sizeof(mat4));
-    //*destination = *a * v;
-    //return 1;
-    // TODO: Implement PushVec4ToLua();
-    luaL_error(l, "Unimplemented!");
-    return 0;
+    const vec4 r = *a * v;
+    lua_pushnumber(l, r[0]);
+    lua_pushnumber(l, r[1]);
+    lua_pushnumber(l, r[2]);
+    lua_pushnumber(l, r[3]);
+    return 4;
 }
 
 int Lua_MakeRotationMatrix( lua_State* l )

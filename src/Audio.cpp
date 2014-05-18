@@ -455,7 +455,7 @@ AutoRegisterInLua()
         RegisterFunctionInLua("CreateAudioSource", Lua_CreateAudioSource) &&
         RegisterFunctionInLua("SetAudioSourceRelative", Lua_SetAudioSourceRelative) &&
         RegisterFunctionInLua("SetAudioSourceLooping", Lua_SetAudioSourceLooping) &&
-        RegisterFunctionInLua("SetAudioSourcePitch", Lua_SetAudioSourceLooping) &&
+        RegisterFunctionInLua("SetAudioSourcePitch", Lua_SetAudioSourcePitch) &&
         RegisterFunctionInLua("SetAudioSourceGain", Lua_SetAudioSourceGain) &&
         RegisterFunctionInLua("EnqueueAudioBuffer", Lua_EnqueueAudioBuffer) &&
         RegisterFunctionInLua("PlayAudioSource", Lua_PlayAudioSource) &&
