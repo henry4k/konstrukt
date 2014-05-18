@@ -149,21 +149,24 @@ void* GetUserDataFromLua( lua_State* l, int stackPosition, const char* typeName 
 {
     void* data = lua_touserdata(l, stackPosition);
     if(!data)
+    {
+        Error("not userdata");
         return NULL;
+    }
 
-    const bool dataHasMetatable = lua_getmetatable(l, -1);
+    const bool dataHasMetatable = lua_getmetatable(l, stackPosition);
     if(!dataHasMetatable)
     {
-        // pop userdata
-        lua_pop(l, 1);
+        Error("no metatable attached");
         return NULL;
     }
 
     luaL_getmetatable(l, typeName);
     if(!lua_istable(l, -1) || !lua_rawequal(l, -2, -1))
     {
-        // pop userdata, its metatable and nil
-        lua_pop(l, 3);
+        // pop userdatas metatable and the types metatable
+        lua_pop(l, 2);
+        Error("type unknown");
         return NULL;
     }
 
@@ -174,7 +177,16 @@ void* GetUserDataFromLua( lua_State* l, int stackPosition, const char* typeName 
 
 void* CheckUserDataFromLua( lua_State* l, int stackPosition, const char* typeName )
 {
-    return luaL_checkudata(l, stackPosition, typeName);
+    void* data = GetUserDataFromLua(l, stackPosition, typeName);
+    if(data)
+    {
+        return data;
+    }
+    else
+    {
+        luaL_argerror(l, stackPosition, Format("not of type %s", typeName));
+        return NULL;
+    }
 }
 
 void PushLuaErrorFunction( lua_State* l )

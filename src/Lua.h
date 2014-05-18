@@ -123,10 +123,18 @@ bool CopyUserDataToLua( lua_State* l, const char* typeName, int size, const void
  * Pointer to the user data or `NULL` if the type does not match.
  *
  * @note
- * Alternatively ::luaL_checkudata can be used to retrieve and check userdata.
+ * Alternatively CheckUserDataFromLua() can be used to retrieve and check userdata.
  * It raises an Lua exception if the userdata doesn't match the given type.
  */
 void* GetUserDataFromLua( lua_State* l, int stackPosition, const char* typeName );
+
+/**
+ * Like GetUserDataFromLua(), but may raise an Lua error.
+ *
+ * @return
+ * Pointer to the user data.
+ */
+void* CheckUserDataFromLua( lua_State* l, int stackPosition, const char* typeName );
 
 /**
  * Registers a new event and returns its id.
