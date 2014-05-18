@@ -69,7 +69,7 @@ const char* MESH_BUFFER_TYPE = "MeshBuffer";
 
 int Lua_MeshBuffer_destructor( lua_State* l )
 {
-    MeshBuffer* buffer = (MeshBuffer*)lua_touserdata(l, 1);
+    MeshBuffer* buffer = CheckMeshBufferFromLua(l, 1);
     FreeMeshBuffer(buffer);
     return 0;
 }
@@ -77,13 +77,13 @@ int Lua_MeshBuffer_destructor( lua_State* l )
 int Lua_CreateMeshBuffer( lua_State* l )
 {
     MeshBuffer* buffer = new MeshBuffer();
-    CopyUserDataToLua(l, MESH_BUFFER_TYPE, sizeof(MeshBuffer*), buffer);
+    CopyUserDataToLua(l, MESH_BUFFER_TYPE, sizeof(buffer), &buffer);
     return 1;
 }
 
 int Lua_TransformMeshBuffer( lua_State* l )
 {
-    MeshBuffer* buffer = GetMeshBufferFromLua(l, 1);
+    MeshBuffer* buffer = CheckMeshBufferFromLua(l, 1);
 
     luaL_checktype(l, 2, LUA_TUSERDATA);
     const mat4* transformation = (mat4*)lua_touserdata(l, 2);
@@ -94,8 +94,8 @@ int Lua_TransformMeshBuffer( lua_State* l )
 
 int Lua_AppendMeshBuffer( lua_State* l )
 {
-    MeshBuffer* targetBuffer = GetMeshBufferFromLua(l, 1);
-    const MeshBuffer* sourceBuffer = GetMeshBufferFromLua(l, 2);
+    MeshBuffer* targetBuffer = CheckMeshBufferFromLua(l, 1);
+    const MeshBuffer* sourceBuffer = CheckMeshBufferFromLua(l, 2);
 
     const mat4* transformation = NULL;
     if(lua_gettop(l) >= 3)
@@ -110,7 +110,7 @@ int Lua_AppendMeshBuffer( lua_State* l )
 
 int Lua_AppendIndexToMeshBuffer( lua_State* l )
 {
-    MeshBuffer* targetBuffer = GetMeshBufferFromLua(l, 1);
+    MeshBuffer* targetBuffer = CheckMeshBufferFromLua(l, 1);
     const VertexIndex index = luaL_checkinteger(l, 2);
     targetBuffer->indices.push_back(index);
     return 0;
@@ -118,7 +118,7 @@ int Lua_AppendIndexToMeshBuffer( lua_State* l )
 
 int Lua_AppendVertexToMeshBuffer( lua_State* l )
 {
-    MeshBuffer* targetBuffer = GetMeshBufferFromLua(l, 1);
+    MeshBuffer* targetBuffer = CheckMeshBufferFromLua(l, 1);
 
     int i = 2;
     Vertex vertex;
@@ -163,4 +163,9 @@ AutoRegisterInLua()
 MeshBuffer* GetMeshBufferFromLua( lua_State* l, int stackPosition )
 {
     return *(MeshBuffer**)GetUserDataFromLua(l, stackPosition, MESH_BUFFER_TYPE);
+}
+
+MeshBuffer* CheckMeshBufferFromLua( lua_State* l, int stackPosition )
+{
+    return *(MeshBuffer**)CheckUserDataFromLua(l, stackPosition, MESH_BUFFER_TYPE);
 }

@@ -11,11 +11,11 @@ function m.new()
     return m.newFromHandle(NATIVE.CreateMeshBuffer())
 end
 
-function m:transform( self, transformation )
+function m:transform( transformation )
     NATIVE.TransformMeshBuffer(self.handle, transformation.handle)
 end
 
-function m:appendMeshBuffer( self, other, transformation )
+function m:appendMeshBuffer( other, transformation )
     if transformation then
         NATIVE.AppendMeshBuffer(self.handle, other.handle, transformation.handle)
     else
@@ -23,11 +23,11 @@ function m:appendMeshBuffer( self, other, transformation )
     end
 end
 
-function m:appendIndex( self, index )
+function m:appendIndex( index )
     NATIVE.AppendIndexToMeshBuffer(self.handle, index)
 end
 
-function m:appendVertex( self, vertex )
+function m:appendVertex( vertex )
 
     local v = vertex
     NATIVE.AppendVertexToMeshBuffer(

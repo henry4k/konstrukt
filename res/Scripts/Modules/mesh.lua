@@ -8,7 +8,7 @@ function m.newFromHandle( handle )
 end
 
 function m.new( meshBuffer )
-    return m.newFromHandle(NATIVE.CreateMesh(meshBuffer))
+    return m.newFromHandle(NATIVE.CreateMesh(meshBuffer.handle))
 end
 
 return m

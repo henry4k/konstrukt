@@ -19,5 +19,6 @@ void TransformMeshBuffer( MeshBuffer* buffer, const glm::mat4* transformation );
 void AppendMeshBuffer( MeshBuffer* buffer, const MeshBuffer* otherBuffer, const glm::mat4* transformation );
 
 MeshBuffer* GetMeshBufferFromLua( lua_State* l, int stackPosition );
+MeshBuffer* CheckMeshBufferFromLua( lua_State* l, int stackPosition );
 
 #endif

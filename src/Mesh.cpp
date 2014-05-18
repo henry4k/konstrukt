@@ -65,14 +65,14 @@ const char* MESH_TYPE = "Mesh";
 
 int Lua_Mesh_destructor( lua_State* l )
 {
-    const Mesh* mesh = (Mesh*)lua_touserdata(l, 1);
+    const Mesh* mesh = CheckMeshFromLua(l, 1);
     FreeMesh(mesh);
     return 0;
 }
 
 int Lua_CreateMesh( lua_State* l )
 {
-    const MeshBuffer* buffer = GetMeshBufferFromLua(l, 1);
+    const MeshBuffer* buffer = CheckMeshBufferFromLua(l, 1);
 
     Mesh* mesh = (Mesh*)PushUserDataToLua(l, MESH_TYPE, sizeof(Mesh));
     if(CreateMesh(mesh, buffer))
@@ -94,4 +94,14 @@ AutoRegisterInLua()
 
     return
         RegisterFunctionInLua("CreateMesh", Lua_CreateMesh);
+}
+
+Mesh* GetMeshFromLua( lua_State* l, int stackPosition )
+{
+    return (Mesh*)GetUserDataFromLua(l, stackPosition, MESH_TYPE);
+}
+
+Mesh* CheckMeshFromLua( lua_State* l, int stackPosition )
+{
+    return (Mesh*)CheckUserDataFromLua(l, stackPosition, MESH_TYPE);
 }
