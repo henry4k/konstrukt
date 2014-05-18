@@ -60,7 +60,7 @@ int main()
 
             Require(RegisterFunctionInLua("testfn", lua_testfn));
 
-            int r = luaL_dostring(GetLuaState(), "assert(Native.testfn(41) == 42)");
+            int r = luaL_dostring(GetLuaState(), "assert(NATIVE.testfn(41) == 42)");
             if(r != LUA_OK)
                 dummyAbortTest(DUMMY_FAIL_TEST, "%s", lua_tostring(GetLuaState(), -1));
         })
@@ -112,7 +112,7 @@ int main()
                 "function MyEventHandler( a, b )\n"
                 "    return a+b, a+c, b+c\n"
                 "end\n"
-                "Native.SetEventCallback('MyEvent', MyEventHandler)\n"
+                "NATIVE.SetEventCallback('MyEvent', MyEventHandler)\n"
                 "c = 1\n");
             if(r != LUA_OK)
                 dummyAbortTest(DUMMY_FAIL_TEST, "%s", lua_tostring(GetLuaState(), -1));
@@ -141,7 +141,7 @@ int main()
             Require(RegisterFunctionInLua("testfn", lua_testfn));
 
             int r = luaL_dostring(l,
-                "a = Native.testfn()\n"
+                "a = NATIVE.testfn()\n"
                 "assert(#a == 4)\n"
                 "assert(a[1] == 4000)\n"
                 "assert(a[2] == 3000)\n"
@@ -208,7 +208,7 @@ int main()
             Require(RegisterFunctionInLua("testfn", lua_testfn));
 
             int r = luaL_dostring(l,
-                "Native.testfn({4000, 3000, 2000, 1000})\n");
+                "NATIVE.testfn({4000, 3000, 2000, 1000})\n");
             if(r != LUA_OK)
                 dummyAbortTest(DUMMY_FAIL_TEST, "%s", lua_tostring(GetLuaState(), -1));
         });
