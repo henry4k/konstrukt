@@ -20,6 +20,7 @@ struct PhysicsObject
 
 bool InitPhysicsManager();
 void DestroyPhysicsManager();
+void UpdatePhysicsManager( double timeDelta );
 
 PhysicsObject* CreatePhysicsObject();
 void FreePhysicsObject( PhysicsObject* object );

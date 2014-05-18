@@ -18,7 +18,22 @@ void DestroyPhysicsManager()
 {
     for(int i = 0; i < MAX_PHYSICS_OBJECTS; i++)
         if(PhysicsObjects[i].active)
-            Error("Physics object #%d (%p) was still active when the manager was destroyed.");
+            Error("Physics object #%d (%p) was still active when the manager was destroyed.",
+                i, &PhysicsObjects[i]);
+}
+
+static void UpdatePhysicsObject( PhysicsObject* object )
+{
+    if(!object->active)
+        return;
+
+    // TODO: Run simulation here!
+}
+
+void UpdatePhysicsManager( double timeDelta )
+{
+    for(int i = 0; i < MAX_PHYSICS_OBJECTS; i++)
+        UpdatePhysicsObject(&PhysicsObjects[i]);
 }
 
 static PhysicsObject* FindInactivePhysicsObject()

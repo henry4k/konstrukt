@@ -177,6 +177,8 @@ void RunGame()
 
         SwapBuffers();
     }
+
+    FreeGraphicsObject(o);
 }
 
 void OnFramebufferResize( int width, int height )
