@@ -3,25 +3,28 @@
 ROOT = $(TUP_CWD)
 export PKG_CONFIG_PATH
 
+
 # -- Flags --
 
 CFLAGS += @(CFLAGS)
 CXXFLAGS +=
 LDFLAGS += @(LDFLAGS)
 
+INTERNAL_CFLAGS += @(LUA_CFLAGS)
 INTERNAL_CFLAGS += @(INTERNAL_CFLAGS)
 INTERNAL_CFLAGS += -I$(ROOT)
 INTERNAL_CFLAGS += -I$(ROOT)/third-party
 INTERNAL_CFLAGS += -I$(ROOT)/third-party/inih
-INTERNAL_CFLAGS += -I$(ROOT)/third-party/libjson
+INTERNAL_CFLAGS += -I$(ROOT)/third-party/lua-cjson
 
+INTERNAL_LDFLAGS += @(LUA_LDFLAGS)
 INTERNAL_LDFLAGS += @(INTERNAL_LDFLAGS)
 
 
 # -- Internal dependencies --
 
-REQUIRED_ARCHIVES += $(ROOT)/third-party/libjson/json.a
 REQUIRED_ARCHIVES += $(ROOT)/third-party/inih/ini.a
+REQUIRED_ARCHIVES += $(ROOT)/third-party/lua-cjson/lua-cjson.a
 
 
 # -- Macros --

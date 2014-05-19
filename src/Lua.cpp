@@ -8,6 +8,7 @@ extern "C"
 {
 #define LUA_LIB
 #include <lualib.h>
+#include <lua_cjson.h>
 }
 
 
@@ -41,6 +42,9 @@ bool InitLua()
 
     lua_gc(g_LuaState, LUA_GCSTOP, 0); // only collect manually
     luaL_openlibs(g_LuaState);
+
+    luaopen_cjson(g_LuaState);
+    lua_setglobal(g_LuaState, "cjson");
 
     lua_createtable(g_LuaState, 0, 0);
     lua_setglobal(g_LuaState, "NATIVE");
