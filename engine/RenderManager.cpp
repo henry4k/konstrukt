@@ -15,7 +15,7 @@ bool InitRenderManager()
 {
     memset(GraphicsObjects, 0, sizeof(GraphicsObjects));
 
-    DefaultProgram = LoadProgram("Shaders/Test.vert", "Shaders/Test.frag");
+    DefaultProgram = LoadProgram("core/Shaders/Test.vert", "core/Shaders/Test.frag");
     BindVertexAttributes(DefaultProgram);
 
     return true;

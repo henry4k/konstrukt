@@ -1,5 +1,6 @@
 /.tup
 /tup.config
+/config.ini
 *.pyc
 .DS_Store
 .DS_Store?

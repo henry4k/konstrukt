@@ -38,7 +38,7 @@ bool InitDebugGraphics()
 {
     g_DebugLineColor = glm::vec3(0,0,0);
 
-    g_DebugProgram = LoadProgram("Shaders/Debug.vert", "Shaders/Debug.frag");
+    g_DebugProgram = LoadProgram("core/Shaders/Debug.vert", "core/Shaders/Debug.frag");
     if(!g_DebugProgram)
         return false;
 

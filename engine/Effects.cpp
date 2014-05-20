@@ -29,7 +29,7 @@ glm::vec3 g_LightDirection;
 
 bool InitEffects()
 {
-    g_DefaultProgram = LoadProgram("Shaders/Default.vert", "Shaders/Default.frag");
+    g_DefaultProgram = LoadProgram("core/Shaders/Default.vert", "core/Shaders/Default.frag");
     if(!g_DefaultProgram)
         return false;
     SetUniform(g_DefaultProgram, "DiffuseSampler", 0);
