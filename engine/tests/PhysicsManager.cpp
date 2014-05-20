@@ -1,5 +1,5 @@
-#include <src/PhysicsManager.h>
-#include <test/TestTools.h>
+#include <engine/PhysicsManager.h>
+#include "TestTools.h"
 
 class ModuleScope
 {

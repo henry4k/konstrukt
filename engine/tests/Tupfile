@@ -1,4 +1,5 @@
 include_rules
 
 : foreach *.cpp |> !cxx |> %B.o
+: PhysicsManager.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  PhysicsManager.t
 : Lua.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  Lua.t

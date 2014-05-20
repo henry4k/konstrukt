@@ -21,12 +21,6 @@ INTERNAL_LDFLAGS += @(LUA_LDFLAGS)
 INTERNAL_LDFLAGS += @(INTERNAL_LDFLAGS)
 
 
-# -- Internal dependencies --
-
-REQUIRED_ARCHIVES += $(ROOT)/third-party/inih/ini.a
-REQUIRED_ARCHIVES += $(ROOT)/third-party/lua-cjson/lua-cjson.a
-
-
 # -- Macros --
 
 !cc = |> ^o Compling %f^ @(CC) -c %f -o %o --std=c11 $(CFLAGS) |> %B.o

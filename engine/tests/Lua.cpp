@@ -1,7 +1,7 @@
 #include <string.h> // memset
-#include <src/Lua.h>
+#include <engine/Lua.h>
 
-#include <test/TestTools.h>
+#include "TestTools.h"
 
 
 /**
