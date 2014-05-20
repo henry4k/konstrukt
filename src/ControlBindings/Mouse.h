@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_MOUSE_BINDINGS__
-#define __APOAPSIS_MOUSE_BINDINGS__
+#ifndef __APOAPSIS_CONTROL_BINDINGS_MOUSE__
+#define __APOAPSIS_CONTROL_BINDINGS_MOUSE__
 
 bool InitMouseBindings();
 void DestroyMouseBindings();

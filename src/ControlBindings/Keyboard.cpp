@@ -5,7 +5,7 @@
 #include "../OpenGL.h"
 #include "../Window.h"
 #include "../Controls.h"
-#include "KeyboardBindings.h"
+#include "Keyboard.h"
 
 void OnKeyAction( int key, int keycode, bool pressed );
 bool Keyboard_CreateKeyBindingFromString( const char* str, int keyControl );

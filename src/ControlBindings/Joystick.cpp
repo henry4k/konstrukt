@@ -6,6 +6,7 @@
 #include "../OpenGL.h"
 #include "../Window.h"
 #include "../Controls.h"
+#include "Joystick.h"
 
 struct JoystickButtonBinding
 {

@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_JOYSTICK_BINDINGS__
-#define __APOAPSIS_JOYSTICK_BINDINGS__
+#ifndef __APOAPSIS_CONTROL_BINDINGS_JOYSTICK__
+#define __APOAPSIS_CONTROL_BINDINGS_JOYSTICK__
 
 bool InitJoystickBindings();
 void DestroyJoystickBindings();
