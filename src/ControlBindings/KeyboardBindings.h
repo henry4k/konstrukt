@@ -1,5 +1,5 @@
-#ifndef __KEYBOARD_BINDINGS__
-#define __KEYBOARD_BINDINGS__
+#ifndef __APOAPSIS_KEYBOARD_BINDINGS__
+#define __APOAPSIS_KEYBOARD_BINDINGS__
 
 bool InitKeyboardBindings();
 void DestroyKeyboardBindings();

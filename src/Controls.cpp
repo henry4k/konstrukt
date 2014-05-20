@@ -8,9 +8,9 @@
 #include "Window.h"
 #include "Lua.h"
 #include "Controls.h"
-#include "KeyboardBindings.h"
-#include "MouseBindings.h"
-#include "JoystickBindings.h"
+#include "ControlBindings/KeyboardBindings.h"
+#include "ControlBindings/MouseBindings.h"
+#include "ControlBindings/JoystickBindings.h"
 
 
 static const int MAX_CONTROL_NAME_LENGTH = 31;

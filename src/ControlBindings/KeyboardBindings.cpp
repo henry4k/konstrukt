@@ -1,10 +1,10 @@
 #include <string.h>
 #include <vector>
 #include <map>
-#include "Common.h"
-#include "OpenGL.h"
-#include "Window.h"
-#include "Controls.h"
+#include "../Common.h"
+#include "../OpenGL.h"
+#include "../Window.h"
+#include "../Controls.h"
 #include "KeyboardBindings.h"
 
 void OnKeyAction( int key, int keycode, bool pressed );

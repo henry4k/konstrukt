@@ -1,11 +1,11 @@
 #include <string.h>
 #include <vector>
 #include <map>
-#include "Common.h"
-#include "Config.h"
-#include "OpenGL.h"
-#include "Window.h"
-#include "Controls.h"
+#include "../Common.h"
+#include "../Config.h"
+#include "../OpenGL.h"
+#include "../Window.h"
+#include "../Controls.h"
 
 void OnCursorMove( double x, double y );
 void OnMouseButtonAction( int button, bool pressed );
