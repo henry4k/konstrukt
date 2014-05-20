@@ -4,7 +4,6 @@
 #include "Map.h"
 #include "Audio.h"
 #include "Debug.h"
-#include "Lua.h"
 #include "Player.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -162,30 +161,12 @@ void UpdatePlayer( float timeFrame )
     UpdateAudioListener(g_PlayerPosition, g_PlayerVelocity, g_PlayerOrientation*glm::vec3(0,0,1), glm::vec3(0,1,0));
 }
 
-// --- lua bindings ---
-
-int Lua_GetPlayerPosition( lua_State* l )
+glm::vec3 GetPlayerPosition()
 {
-    using namespace glm;
-    lua_pushnumber(l, g_PlayerPosition.x);
-    lua_pushnumber(l, g_PlayerPosition.y);
-    lua_pushnumber(l, g_PlayerPosition.z);
-    return 3;
+    return g_PlayerPosition;
 }
 
-int Lua_GetPlayerOrientation( lua_State* l )
+glm::quat GetPlayerOrientation()
 {
-    using namespace glm;
-    const vec3 orientation = normalize(g_PlayerOrientation * vec3(0,0,1));
-    lua_pushnumber(l, orientation.x);
-    lua_pushnumber(l, orientation.y);
-    lua_pushnumber(l, orientation.z);
-    return 3;
-}
-
-AutoRegisterInLua()
-{
-    return
-        RegisterFunctionInLua("GetPlayerPosition", Lua_GetPlayerPosition) &&
-        RegisterFunctionInLua("GetPlayerOrientation", Lua_GetPlayerOrientation);
+    return g_PlayerOrientation;
 }

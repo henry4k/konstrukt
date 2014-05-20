@@ -4,6 +4,6 @@ CFLAGS += $(INTERNAL_CFLAGS)
 LDFLAGS += $(INTERNAL_LDFLAGS)
 
 : foreach *.cpp |> !cxx |> %B.o {objects}
-: {objects} ControlBindings/*.o |> !ar |> apoapsis.a
+: {objects} ControlBindings/*.o LuaBindings/*.o |> !ar |> apoapsis.a
 
 : apoapsis.a $(REQUIRED_ARCHIVES) |> !ldcxx |> apoapsis

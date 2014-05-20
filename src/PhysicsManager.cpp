@@ -1,7 +1,6 @@
 #include <string.h> // memset
 
 #include "Common.h"
-#include "Lua.h"
 #include "PhysicsManager.h"
 
 
