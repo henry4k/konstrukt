@@ -26,7 +26,7 @@ int Lua_SetLight( lua_State* l )
     return 0;
 }
 
-AutoRegisterInLua()
+bool RegisterEffectsInLua()
 {
     return
         RegisterFunctionInLua("SetLight", Lua_SetLight);

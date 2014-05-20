@@ -144,7 +144,7 @@ int Lua_AppendVertexToMeshBuffer( lua_State* l )
     return 0;
 }
 
-AutoRegisterInLua()
+bool RegisterMeshBufferInLua()
 {
     if(!RegisterUserDataTypeInLua(MESH_BUFFER_TYPE, Lua_MeshBuffer_destructor))
         return false;

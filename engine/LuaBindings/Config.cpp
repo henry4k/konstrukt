@@ -33,7 +33,7 @@ int Lua_GetConfigValue( lua_State* l )
     }
 }
 
-AutoRegisterInLua()
+bool RegisterConfigInLua()
 {
     return
         RegisterFunctionInLua("GetConfigValue", Lua_GetConfigValue);

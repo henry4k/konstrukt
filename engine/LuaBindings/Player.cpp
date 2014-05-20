@@ -22,7 +22,7 @@ int Lua_GetPlayerOrientation( lua_State* l )
     return 3;
 }
 
-AutoRegisterInLua()
+bool RegisterPlayerInLua()
 {
     return
         RegisterFunctionInLua("GetPlayerPosition", Lua_GetPlayerPosition) &&

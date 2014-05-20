@@ -121,7 +121,7 @@ int Lua_FreeAudioSource( lua_State* l )
     return 0;
 }
 
-AutoRegisterInLua()
+bool RegisterAudioInLua()
 {
     if(!RegisterUserDataTypeInLua(AUDIO_BUFFER_TYPE, Lua_AudioBuffer_destructor))
         return false;

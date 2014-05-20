@@ -4,6 +4,8 @@
 #include "../MeshBuffer.h"
 #include "../Lua.h"
 
+bool RegisterMeshBufferInLua();
+
 MeshBuffer* GetMeshBufferFromLua( lua_State* l, int stackPosition );
 MeshBuffer* CheckMeshBufferFromLua( lua_State* l, int stackPosition );
 

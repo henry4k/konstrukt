@@ -57,7 +57,7 @@ int Lua_RemoveGraphicsObject( lua_State* l )
     return 0;
 }
 
-AutoRegisterInLua()
+bool RegisterRenderManagerInLua()
 {
     if(!RegisterUserDataTypeInLua(GRAPHICS_OBJECT_TYPE, Lua_GraphicsObject_destructor))
         return false;

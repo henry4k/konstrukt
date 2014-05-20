@@ -43,7 +43,7 @@ int Lua_RegisterAxisControl( lua_State* l )
     return 1;
 }
 
-AutoRegisterInLua()
+bool RegisterControlsInLua()
 {
     g_KeyControlActionEvent = RegisterLuaEvent(KEY_CONTROL_ACTION_EVENT_NAME);
     if(g_KeyControlActionEvent == LUA_INVALID_EVENT)

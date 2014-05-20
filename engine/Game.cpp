@@ -17,12 +17,20 @@
 #include "RenderManager.h"
 #include "Game.h"
 
+#include "LuaBindings/Audio.h"
+#include "LuaBindings/Config.h"
+#include "LuaBindings/Controls.h"
+#include "LuaBindings/Effects.h"
+#include "LuaBindings/Math.h"
+#include "LuaBindings/Mesh.h"
+#include "LuaBindings/MeshBuffer.h"
+#include "LuaBindings/Player.h"
+#include "LuaBindings/RenderManager.h"
 
-#include "Mesh.h"
-#include "MeshBuffer.h"
 
 void OnFramebufferResize( int width, int height );
 void OnExitKey( const char* name, bool pressed, void* context );
+bool RegisterAllModulesInLua();
 
 bool InitGame( const int argc, char** argv )
 {
@@ -36,6 +44,8 @@ bool InitGame( const int argc, char** argv )
 
     Log("------------- Lua -------------");
     if(!InitLua())
+        return false;
+    if(!RegisterAllModulesInLua())
         return false;
 
     Log("----------- Window ------------");
@@ -94,6 +104,20 @@ bool InitGame( const int argc, char** argv )
     return true;
 }
 
+bool RegisterAllModulesInLua()
+{
+    return
+        RegisterAudioInLua() &&
+        RegisterConfigInLua() &&
+        RegisterControlsInLua() &&
+        RegisterEffectsInLua() &&
+        RegisterMathInLua() &&
+        RegisterMeshInLua() &&
+        RegisterMeshBufferInLua() &&
+        RegisterPlayerInLua() &&
+        RegisterRenderManagerInLua();
+}
+
 void DestroyGame()
 {
     DestroyLua();
@@ -111,28 +135,6 @@ void DestroyGame()
 void RunGame()
 {
     using namespace glm;
-
-    const Vertex v[] =
-    {
-        { vec3(0,0,5), vec3(0,0,0), vec2(0,0), vec3(0,0,0), vec4(0,0,0,0) },
-        { vec3(0,1,5), vec3(0,0,0), vec2(0,0), vec3(0,0,0), vec4(0,0,0,0) },
-        { vec3(1,1,5), vec3(0,0,0), vec2(0,0), vec3(0,0,0), vec4(0,0,0,0) }
-    };
-
-    MeshBuffer meshBuffer;
-    CreateMeshBuffer(&meshBuffer);
-    meshBuffer.vertices.push_back(v[0]);
-    meshBuffer.vertices.push_back(v[1]);
-    meshBuffer.vertices.push_back(v[2]);
-    meshBuffer.indices.push_back(0);
-    meshBuffer.indices.push_back(1);
-    meshBuffer.indices.push_back(2);
-
-    Mesh mesh;
-    CreateMesh(&mesh, &meshBuffer);
-
-    GraphicsObject* o = CreateGraphicsObject();
-    o->mesh = &mesh;
 
     double lastTime = glfwGetTime();
     while(!WindowShouldClose())
@@ -177,8 +179,6 @@ void RunGame()
 
         SwapBuffers();
     }
-
-    FreeGraphicsObject(o);
 }
 
 void OnFramebufferResize( int width, int height )
