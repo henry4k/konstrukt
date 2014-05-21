@@ -1,3 +1,5 @@
+#include <string.h> // strlen, memcmp
+
 #include "Common.h"
 #include "OpenGL.h"
 #include "Vertex.h"
@@ -38,6 +40,17 @@ static void FreeFile( const char* fileData )
     delete[] fileData;
 }
 
+bool StringEndsWith( const char* target, const char* end )
+{
+    const int targetLength = strlen(target);
+    const int endLength = strlen(end);
+
+    if(targetLength > endLength)
+        return memcmp(&target[targetLength - endLength], end, endLength) == 0;
+    else
+        return false;
+}
+
 
 // ----- Shader Object ------
 
@@ -68,7 +81,7 @@ static ShaderObject CreateShaderObject( const char* fileName, int type )
     const char* source = LoadFile(fileName, &size);
     if(!source)
     {
-        Error("Failed to read shader source %s", file);
+        Error("Failed to read shader source %s", fileName);
         return 0;
     }
 
@@ -77,18 +90,17 @@ static ShaderObject CreateShaderObject( const char* fileName, int type )
 
     glCompileShader(shader);
 
-
     GLint state;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &state);
     ShowShaderObjectLog(shader);
 
     if(state)
     {
-        Log("Compiled shader object successfully: %s", file);
+        Log("Compiled shader object successfully: %s", fileName);
     }
     else
     {
-        Error("Error compiling shader object %s", file);
+        Error("Error compiling shader object %s", fileName);
         return 0;
     }
 
@@ -97,12 +109,24 @@ static ShaderObject CreateShaderObject( const char* fileName, int type )
 
 ShaderObject LoadShaderObject( const char* fileName )
 {
-    // TODO
+    if(StringEndsWith(fileName, ".vert"))
+    {
+        return CreateShaderObject(fileName, GL_VERTEX_SHADER);
+    }
+    else if(StringEndsWith(fileName, ".frag"))
+    {
+        return CreateShaderObject(fileName, GL_FRAGMENT_SHADER);
+    }
+    else
+    {
+        Error("Can't determine shader object type of file %s", fileName);
+        return INVALID_SHADER_OBJECT;
+    }
 }
 
 void FreeShaderObject( ShaderObject object )
 {
-    // TODO
+    glDeleteShader(object);
 }
 
 
@@ -138,39 +162,39 @@ ShaderProgram LinkShaderProgram( const ShaderObject* objects, int objectCount )
         }
     }
 
-    const ShaderProgram program = glCreateShaderProgram();
+    const ShaderProgram program = glCreateProgram();
 
     for(int i = 0; i < objectCount; i++)
-        glAttachShaderObject(program, objects[i]);
+        glAttachShader(program, objects[i]);
 
     BindVertexAttributes(program);
 
-    glLinkShaderProgram(program);
+    glLinkProgram(program);
     {
         GLint state;
-        glGetShaderProgramiv(program, GL_LINK_STATUS, &state);
+        glGetProgramiv(program, GL_LINK_STATUS, &state);
         ShowShaderProgramLog(program);
 
         if(state)
         {
-            Log("Linked shader program successfully (%s, %s)", vert, frag);
+            Log("Linked shader program successfully");
         }
         else
         {
-            Error("Error linking shader programm (%s, %s)", vert, frag);
+            Error("Error linking shader programm");
             return INVALID_SHADER_PROGRAM;
         }
     }
 
-    glValidateShaderProgram(program);
+    glValidateProgram(program);
     {
         GLint state;
-        glGetShaderProgramiv(program, GL_VALIDATE_STATUS, &state);
+        glGetProgramiv(program, GL_VALIDATE_STATUS, &state);
         ShowShaderProgramLog(program);
         if(state)
-            Log("Validated shader program successfully (%s, %s)", vert, frag);
+            Log("Validated shader program successfully");
         else
-            Log("Error validating shader program (%s, %s)", vert, frag);
+            Log("Error validating shader program");
     }
 
     return program;
@@ -178,12 +202,12 @@ ShaderProgram LinkShaderProgram( const ShaderObject* objects, int objectCount )
 
 void FreeShaderProgram( ShaderProgram program )
 {
-    glDeleteShaderProgram(program);
+    glDeleteProgram(program);
 }
 
 void BindShaderProgram( ShaderProgram program )
 {
-    glUseShaderProgram(program);
+    glUseProgram(program);
 }
 
 

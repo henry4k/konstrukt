@@ -30,7 +30,7 @@ void FreeShaderObject( ShaderObject object );
  * @return
  * May return `INVALID_SHADER_PROGRAM` if linkage failed.
  */
-void LinkShaderProgram( const ShaderObject* objects, int objectCount );
+ShaderProgram LinkShaderProgram( const ShaderObject* objects, int objectCount );
 
 /**
  * @note
