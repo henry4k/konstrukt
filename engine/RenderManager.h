@@ -6,29 +6,15 @@
 #include "Texture.h"
 
 struct Mesh;
-struct PhysicsObject;
-
-
-enum GraphicsFlags
-{
-     // nothing here yet
-};
-
-struct GraphicsObject
-{
-    bool active;
-    PhysicsObject* attachTarget;
-    glm::mat4 transformation;
-    int renderFlags;
-    Texture diffuseTexture;
-    Mesh* mesh;
-};
+struct Model;
 
 bool InitRenderManager();
 void DestroyRenderManager();
-void DrawGraphicsObjects( const glm::mat4* mvpMatrix );
+void DrawModels( glm::mat4 mvpMatrix );
 
-GraphicsObject* CreateGraphicsObject();
-void FreeGraphicsObject( GraphicsObject* object );
+Model* CreateModel();
+void FreeModel( Model* model );
+void SetModelTransformation( Model* model, glm::mat4 transformation );
+void SetModelMesh( Model* model, Mesh* mesh );
 
 #endif

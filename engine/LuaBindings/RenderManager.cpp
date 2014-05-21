@@ -7,74 +7,74 @@
 #include "RenderManager.h"
 
 
-const char* GRAPHICS_OBJECT_TYPE = "GraphicsObject";
+const char* MODEL_TYPE = "Model";
 
-int Lua_GraphicsObject_destructor( lua_State* l )
+int Lua_Model_destructor( lua_State* l )
 {
-    GraphicsObject* object =
-        reinterpret_cast<GraphicsObject*>(lua_touserdata(l, 1));
-    FreeGraphicsObject(object);
+    Model* model =
+        reinterpret_cast<Model*>(lua_touserdata(l, 1));
+    FreeModel(model);
     return 0;
 }
 
-int Lua_CreateGraphicsObject( lua_State* l )
+int Lua_CreateModel( lua_State* l )
 {
-    GraphicsObject* object = CreateGraphicsObject();
-    if(object)
+    Model* model = CreateModel();
+    if(model)
     {
-        if(CopyUserDataToLua(l, GRAPHICS_OBJECT_TYPE, sizeof(object), &object))
+        if(CopyUserDataToLua(l, MODEL_TYPE, sizeof(model), &model))
             return 1;
         else
-            FreeGraphicsObject(object);
+            FreeModel(model);
     }
     else
     {
-        luaL_error(l, "Can't create more graphics objects.");
+        luaL_error(l, "Can't create more models.");
     }
     return 0;
 }
 
-int Lua_SetGraphicsObjectMesh( lua_State* l )
+int Lua_SetModelTransformation( lua_State* l )
 {
-    GraphicsObject* object = CheckGraphicsObjectFromLua(l, 1);
-    Mesh* mesh = CheckMeshFromLua(l, 2);
-    object->mesh = mesh;
-    return 0;
-}
-
-int Lua_SetGraphicsObjectTransformation( lua_State* l )
-{
-    GraphicsObject* object = CheckGraphicsObjectFromLua(l, 1);
+    Model* model = CheckModelFromLua(l, 1);
     glm::mat4* transformation = (glm::mat4*)lua_touserdata(l, 2);
-    object->transformation = *transformation;
+    SetModelTransformation(model, *transformation);
     return 0;
 }
 
-int Lua_RemoveGraphicsObject( lua_State* l )
+int Lua_SetModelMesh( lua_State* l )
 {
-    GraphicsObject* object = CheckGraphicsObjectFromLua(l, 1);
-    object->active = false;
+    Model* model = CheckModelFromLua(l, 1);
+    Mesh* mesh = CheckMeshFromLua(l, 2);
+    SetModelMesh(model, mesh);
+    return 0;
+}
+
+int Lua_FreeModel( lua_State* l )
+{
+    Model* model = CheckModelFromLua(l, 1);
+    FreeModel(model);
     return 0;
 }
 
 bool RegisterRenderManagerInLua()
 {
-    if(!RegisterUserDataTypeInLua(GRAPHICS_OBJECT_TYPE, Lua_GraphicsObject_destructor))
+    if(!RegisterUserDataTypeInLua(MODEL_TYPE, Lua_Model_destructor))
         return false;
 
     return
-        RegisterFunctionInLua("CreateGraphicsObject", Lua_CreateGraphicsObject) &&
-        RegisterFunctionInLua("SetGraphicsObjectMesh", Lua_SetGraphicsObjectMesh) &&
-        RegisterFunctionInLua("SetGraphicsObjectTransformation", Lua_SetGraphicsObjectTransformation) &&
-        RegisterFunctionInLua("RemoveGraphicsObject", Lua_RemoveGraphicsObject);
+        RegisterFunctionInLua("CreateModel", Lua_CreateModel) &&
+        RegisterFunctionInLua("FreeModel", Lua_FreeModel) &&
+        RegisterFunctionInLua("SetModelTransformation", Lua_SetModelTransformation) &&
+        RegisterFunctionInLua("SetModelMesh", Lua_SetModelMesh);
 }
 
-GraphicsObject* GetGraphicsObjectFromLua( lua_State* l, int stackPosition )
+Model* GetModelFromLua( lua_State* l, int stackPosition )
 {
-    return *(GraphicsObject**)GetUserDataFromLua(l, stackPosition, GRAPHICS_OBJECT_TYPE);
+    return *(Model**)GetUserDataFromLua(l, stackPosition, MODEL_TYPE);
 }
 
-GraphicsObject* CheckGraphicsObjectFromLua( lua_State* l, int stackPosition )
+Model* CheckModelFromLua( lua_State* l, int stackPosition )
 {
-    return *(GraphicsObject**)CheckUserDataFromLua(l, stackPosition, GRAPHICS_OBJECT_TYPE);
+    return *(Model**)CheckUserDataFromLua(l, stackPosition, MODEL_TYPE);
 }

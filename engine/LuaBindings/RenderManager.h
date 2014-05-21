@@ -6,7 +6,7 @@
 
 bool RegisterRenderManagerInLua();
 
-GraphicsObject* GetGraphicsObjectFromLua( lua_State* l, int stackPosition );
-GraphicsObject* CheckGraphicsObjectFromLua( lua_State* l, int stackPosition );
+Model* GetModelFromLua( lua_State* l, int stackPosition );
+Model* CheckModelFromLua( lua_State* l, int stackPosition );
 
 #endif

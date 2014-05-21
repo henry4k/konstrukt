@@ -1,19 +1,26 @@
 #include <string.h> // memset
 
 #include "Common.h"
-#include "PhysicsManager.h" // PhysicsObject
 #include "Mesh.h"
 #include "RenderManager.h"
 
 
-static const int MAX_GRAPHICS_OBJECTS = 8;
-static GraphicsObject GraphicsObjects[MAX_GRAPHICS_OBJECTS];
+struct Model
+{
+    bool active;
+    glm::mat4 transformation;
+    Mesh* mesh;
+};
+
+
+static const int MAX_MODELS = 8;
+static Model Models[MAX_MODELS];
 
 static Program DefaultProgram;
 
 bool InitRenderManager()
 {
-    memset(GraphicsObjects, 0, sizeof(GraphicsObjects));
+    memset(Models, 0, sizeof(Models));
 
     DefaultProgram = LoadProgram("core/Shaders/Test.vert", "core/Shaders/Test.frag");
     BindVertexAttributes(DefaultProgram);
@@ -25,55 +32,64 @@ void DestroyRenderManager()
 {
     FreeProgram(DefaultProgram);
 
-    for(int i = 0; i < MAX_GRAPHICS_OBJECTS; i++)
-        if(GraphicsObjects[i].active)
-            Error("Graphics object #%d (%p) was still active when the manager was destroyed.",
-                i, &GraphicsObjects[i]);
+    for(int i = 0; i < MAX_MODELS; i++)
+        if(Models[i].active)
+            Error("Model #%d (%p) was still active when the manager was destroyed.",
+                i, &Models[i]);
 }
 
-void DrawGraphicsObjects( const glm::mat4* mvpMatrix )
+void DrawModels( glm::mat4 mvpMatrix )
 {
     // Naive draw method:
 
     BindProgram(DefaultProgram);
-    SetUniformMatrix4(DefaultProgram, "MVP", mvpMatrix);
+    SetUniformMatrix4(DefaultProgram, "MVP", &mvpMatrix);
 
-    for(int i = 0; i < MAX_GRAPHICS_OBJECTS; i++)
+    for(int i = 0; i < MAX_MODELS; i++)
     {
-        const GraphicsObject* object = &GraphicsObjects[i];
-        if(object->active)
+        const Model* model = &Models[i];
+        if(model->active)
         {
-            BindTexture(GL_TEXTURE_2D, object->diffuseTexture, 0);
-            DrawMesh(object->mesh);
+            DrawMesh(model->mesh);
         }
     }
 }
 
-static GraphicsObject* FindInactiveGraphicsObject()
+static Model* FindInactiveModel()
 {
-    for(int i = 0; i < MAX_GRAPHICS_OBJECTS; i++)
-        if(!GraphicsObjects[i].active)
-            return &GraphicsObjects[i];
+    for(int i = 0; i < MAX_MODELS; i++)
+        if(!Models[i].active)
+            return &Models[i];
     return NULL;
 }
 
-GraphicsObject* CreateGraphicsObject()
+Model* CreateModel()
 {
-    GraphicsObject* object = FindInactiveGraphicsObject();
-    if(object)
+    Model* model = FindInactiveModel();
+    if(model)
     {
-        memset(object, 0, sizeof(GraphicsObject));
-        object->active = true;
-        return object;
+        memset(model, 0, sizeof(Model));
+        model->active = true;
+        return model;
     }
     else
     {
-        Error("Can't create more graphics objects.");
+        Error("Can't create more models.");
         return NULL;
     }
 }
 
-void FreeGraphicsObject( GraphicsObject* object )
+void FreeModel( Model* model )
 {
-    object->active = false;
+    model->active = false;
+}
+
+void SetModelTransformation( Model* model, glm::mat4 transformation )
+{
+    model->transformation = transformation;
+}
+
+void SetModelMesh( Model* model, Mesh* mesh )
+{
+    model->mesh = mesh;
 }

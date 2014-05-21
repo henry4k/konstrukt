@@ -8,19 +8,19 @@ function m.newFromHandle( handle )
 end
 
 function m.new()
-    return m.newFromHandle(NATIVE.CreateGraphicsObject())
+    return m.newFromHandle(NATIVE.CreateModel())
 end
 
 function m:setMesh( mesh )
-    NATIVE.SetGraphicsObjectMesh(self.handle, mesh.handle)
+    NATIVE.SetModelMesh(self.handle, mesh.handle)
 end
 
 function m:setTransformation( transformation )
-    NATIVE.SetGraphicsObjectTransformation(self.handle, transformation.handle)
+    NATIVE.SetModelTransformation(self.handle, transformation.handle)
 end
 
 function m:remove()
-    NATIVE.RemoveGraphicsObject(self.handle)
+    NATIVE.RemoveModel(self.handle)
     self.handle = nil
 end
 

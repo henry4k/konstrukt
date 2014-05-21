@@ -153,7 +153,7 @@ void RunGame()
             GetPlayerViewMatrix();
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        DrawGraphicsObjects(&mvpMatrix);
+        DrawModels(mvpMatrix);
 
         /*
         // Render shadow map
