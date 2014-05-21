@@ -3,66 +3,10 @@
 #include "Vertex.h"
 #include "Shader.h"
 
-typedef GLuint Shader;
 
-bool GetUniformLocation( Program program, const char* name, int* location )
-{
-    BindProgram(program);
-    *location = glGetUniformLocation(program, name);
-    if(*location >= 0)
-        return true;
-    glGetError(); // reset error (cause glGetUniformLocation sets an error value in this case <.<)
-    return false;
-}
+// ----- Tools ------
 
-void SetUniform( Program program, const char* name, int value )
-{
-    int loc;
-    if(GetUniformLocation(program,name,&loc))
-        glUniform1i(loc, value);
-}
-
-void SetUniform( Program program, const char* name, float value )
-{
-    int loc;
-    if(GetUniformLocation(program,name,&loc))
-        glUniform1f(loc, value);
-}
-
-void SetUniform( Program program, const char* name, int length, const float* value )
-{
-    int loc;
-    if(GetUniformLocation(program,name,&loc))
-    {
-        switch(length)
-        {
-            case 1: glUniform1fv(loc, 1, value); break;
-            case 2: glUniform2fv(loc, 1, value); break;
-            case 3: glUniform3fv(loc, 1, value); break;
-            case 4: glUniform4fv(loc, 1, value); break;
-        }
-    }
-}
-
-void SetUniformMatrix3( Program program, const char* name, const glm::mat3* value )
-{
-    int loc;
-    if(GetUniformLocation(program,name,&loc))
-    {
-        glUniformMatrix3fv(loc, 1, GL_FALSE, &(*value)[0][0]);
-    }
-}
-
-void SetUniformMatrix4( Program program, const char* name, const glm::mat4* value )
-{
-    int loc;
-    if(GetUniformLocation(program,name,&loc))
-    {
-        glUniformMatrix4fv(loc, 1, GL_FALSE, &(*value)[0][0]);
-    }
-}
-
-char* LoadFile( const char* path, int* sizeOut )
+static char* LoadFile( const char* path, int* sizeOut )
 {
     FILE* f = fopen(path, "r");
     if(!f)
@@ -89,12 +33,15 @@ char* LoadFile( const char* path, int* sizeOut )
     return b;
 }
 
-void FreeFile( const char* fileData )
+static void FreeFile( const char* fileData )
 {
     delete[] fileData;
 }
 
-void ShowShaderLog( Shader shader )
+
+// ----- Shader Object ------
+
+static void ShowShaderObjectLog( ShaderObject shader )
 {
     GLint length = 0;
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
@@ -113,31 +60,12 @@ void ShowShaderLog( Shader shader )
     }
 }
 
-void ShowProgramLog( Program program )
+static ShaderObject CreateShaderObject( const char* fileName, int type )
 {
-    GLint length = 0;
-    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
-
-    char* log = NULL;
-    if(length > 1) // See ShowProgramLog
-    {
-        log = new char[length];
-        glGetProgramInfoLog(program, length, NULL, log);
-    }
-
-    if(log)
-    {
-        Log("%s", log);
-        delete[] log;
-    }
-}
-
-Shader CreateShader( const char* file, int type )
-{
-    Shader shader = glCreateShader(type);
+    ShaderObject shader = glCreateShader(type);
 
     int size;
-    const char* source = LoadFile(file, &size);
+    const char* source = LoadFile(fileName, &size);
     if(!source)
     {
         Error("Failed to read shader source %s", file);
@@ -152,7 +80,7 @@ Shader CreateShader( const char* file, int type )
 
     GLint state;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &state);
-    ShowShaderLog(shader);
+    ShowShaderObjectLog(shader);
 
     if(state)
     {
@@ -167,26 +95,61 @@ Shader CreateShader( const char* file, int type )
     return shader;
 }
 
-Program LoadProgram( const char* vert, const char* frag )
+ShaderObject LoadShaderObject( const char* fileName )
 {
-    const Shader vertShader = CreateShader(vert, GL_VERTEX_SHADER);
-    if(!vertShader)
-        return 0;
+    // TODO
+}
 
-    const Shader fragShader = CreateShader(frag, GL_FRAGMENT_SHADER);
-    if(!fragShader)
-        return 0;
+void FreeShaderObject( ShaderObject object )
+{
+    // TODO
+}
 
-    const Program program = glCreateProgram();
-    glAttachShader(program, vertShader);
-    glAttachShader(program, fragShader);
+
+// ----- Shader Program -----
+
+void ShowShaderProgramLog( ShaderProgram program )
+{
+    GLint length = 0;
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+
+    char* log = NULL;
+    if(length > 1) // See ShowShaderProgramLog
+    {
+        log = new char[length];
+        glGetProgramInfoLog(program, length, NULL, log);
+    }
+
+    if(log)
+    {
+        Log("%s", log);
+        delete[] log;
+    }
+}
+
+ShaderProgram LinkShaderProgram( const ShaderObject* objects, int objectCount )
+{
+    for(int i = 0; i < objectCount; i++)
+    {
+        if(objects[i] == INVALID_SHADER_OBJECT)
+        {
+            Error("Cannot link a shader program with invalid objects.");
+            return INVALID_SHADER_PROGRAM;
+        }
+    }
+
+    const ShaderProgram program = glCreateShaderProgram();
+
+    for(int i = 0; i < objectCount; i++)
+        glAttachShaderObject(program, objects[i]);
+
     BindVertexAttributes(program);
 
-    glLinkProgram(program);
+    glLinkShaderProgram(program);
     {
         GLint state;
-        glGetProgramiv(program, GL_LINK_STATUS, &state);
-        ShowProgramLog(program);
+        glGetShaderProgramiv(program, GL_LINK_STATUS, &state);
+        ShowShaderProgramLog(program);
 
         if(state)
         {
@@ -195,15 +158,15 @@ Program LoadProgram( const char* vert, const char* frag )
         else
         {
             Error("Error linking shader programm (%s, %s)", vert, frag);
-            return 0;
+            return INVALID_SHADER_PROGRAM;
         }
     }
 
-    glValidateProgram(program);
+    glValidateShaderProgram(program);
     {
         GLint state;
-        glGetProgramiv(program, GL_VALIDATE_STATUS, &state);
-        ShowProgramLog(program);
+        glGetShaderProgramiv(program, GL_VALIDATE_STATUS, &state);
+        ShowShaderProgramLog(program);
         if(state)
             Log("Validated shader program successfully (%s, %s)", vert, frag);
         else
@@ -213,12 +176,75 @@ Program LoadProgram( const char* vert, const char* frag )
     return program;
 }
 
-void BindProgram( Program program )
+void FreeShaderProgram( ShaderProgram program )
 {
-    glUseProgram(program);
+    glDeleteShaderProgram(program);
 }
 
-void FreeProgram( Program program )
+void BindShaderProgram( ShaderProgram program )
 {
-    glDeleteProgram(program);
+    glUseShaderProgram(program);
+}
+
+
+// ----- Uniform -----
+
+typedef GLint UniformLocation;
+static UniformLocation INVALID_UNIFORM_LOCATION = -1;
+
+static UniformLocation GetUniformLocation( ShaderProgram program, const char* name )
+{
+    BindShaderProgram(program);
+    const UniformLocation location = glGetUniformLocation(program, name);
+    if(location >= 0)
+        return location;
+    glGetError(); // reset error (cause glGetUniformLocation sets an error value in this case)
+    return INVALID_UNIFORM_LOCATION;
+}
+
+void SetUniform( ShaderProgram program, const char* name, int value )
+{
+    const UniformLocation location = GetUniformLocation(program, name);
+    if(location != INVALID_UNIFORM_LOCATION)
+        glUniform1i(location, value);
+}
+
+void SetUniform( ShaderProgram program, const char* name, float value )
+{
+    const UniformLocation location = GetUniformLocation(program, name);
+    if(location != INVALID_UNIFORM_LOCATION)
+        glUniform1f(location, value);
+}
+
+void SetUniform( ShaderProgram program, const char* name, int length, const float* value )
+{
+    const UniformLocation location = GetUniformLocation(program, name);
+    if(location != INVALID_UNIFORM_LOCATION)
+    {
+        switch(length)
+        {
+            case 1: glUniform1fv(location, 1, value); break;
+            case 2: glUniform2fv(location, 1, value); break;
+            case 3: glUniform3fv(location, 1, value); break;
+            case 4: glUniform4fv(location, 1, value); break;
+        }
+    }
+}
+
+void SetUniformMatrix3( ShaderProgram program, const char* name, const glm::mat3* value )
+{
+    const UniformLocation location = GetUniformLocation(program, name);
+    if(location != INVALID_UNIFORM_LOCATION)
+    {
+        glUniformMatrix3fv(location, 1, GL_FALSE, &(*value)[0][0]);
+    }
+}
+
+void SetUniformMatrix4( ShaderProgram program, const char* name, const glm::mat4* value )
+{
+    const UniformLocation location = GetUniformLocation(program, name);
+    if(location != INVALID_UNIFORM_LOCATION)
+    {
+        glUniformMatrix4fv(location, 1, GL_FALSE, &(*value)[0][0]);
+    }
 }
