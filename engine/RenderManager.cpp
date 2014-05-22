@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "Mesh.h"
+#include "Shader.h"
 #include "RenderManager.h"
 
 
@@ -16,13 +17,17 @@ struct Model
 static const int MAX_MODELS = 8;
 static Model Models[MAX_MODELS];
 
-static Program DefaultProgram;
+static ShaderProgram DefaultProgram;
 
 bool InitRenderManager()
 {
     memset(Models, 0, sizeof(Models));
 
-    DefaultProgram = LoadProgram("core/Shaders/Test.vert", "core/Shaders/Test.frag");
+    const ShaderObject shaderObjects[] = {
+        LoadShaderObject("core/Shaders/Test.vert"),
+        LoadShaderObject("core/Shaders/Test.frag")
+    };
+    DefaultProgram = LinkShaderProgram(shaderObjects, sizeof(shaderObjects)/sizeof(ShaderObject));
     BindVertexAttributes(DefaultProgram);
 
     return true;
@@ -30,7 +35,7 @@ bool InitRenderManager()
 
 void DestroyRenderManager()
 {
-    FreeProgram(DefaultProgram);
+    FreeShaderProgram(DefaultProgram);
 
     for(int i = 0; i < MAX_MODELS; i++)
         if(Models[i].active)
@@ -42,7 +47,7 @@ void DrawModels( glm::mat4 mvpMatrix )
 {
     // Naive draw method:
 
-    BindProgram(DefaultProgram);
+    BindShaderProgram(DefaultProgram);
     SetUniformMatrix4(DefaultProgram, "MVP", &mvpMatrix);
 
     for(int i = 0; i < MAX_MODELS; i++)

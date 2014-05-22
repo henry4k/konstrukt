@@ -1,3 +1,4 @@
+#include "Math.h"
 #include "Shader.h"
 
 
@@ -26,8 +27,9 @@ int Lua_LoadShaderObject( lua_State* l )
     const char* fileName = luaL_checkstring(l, 1);
     const ShaderObject object = LoadShaderObject(fileName);
 
-    if(object && CopyUserDataToLua(l, SHADER_OBJECT_TYPE, sizeof(object), &object))
+    if(object)
     {
+        CopyUserDataToLua(l, SHADER_OBJECT_TYPE, sizeof(object), &object);
         return 1;
     }
     else
@@ -58,9 +60,9 @@ int Lua_LinkShaderProgram( lua_State* l )
 
     const ShaderProgram program = LinkShaderProgram(objects, objectCount);
     delete[] objects;
-    if(program != INVALID_SHADER_PROGRAM &&
-       CopyUserDataToLua(l, SHADER_PROGRAM_TYPE, sizeof(program), &program))
+    if(program != INVALID_SHADER_PROGRAM)
     {
+        CopyUserDataToLua(l, SHADER_PROGRAM_TYPE, sizeof(program), &program);
         return 1;
     }
     else
@@ -68,6 +70,54 @@ int Lua_LinkShaderProgram( lua_State* l )
         luaL_error(l, "Can't create shader program.");
         return 0;
     }
+}
+
+int Lua_SetFloatUniform( lua_State* l )
+{
+    const ShaderProgram program = CheckShaderProgramFromLua(l, 1);
+    const char* name = luaL_checkstring(l, 2);
+    const float value = luaL_checknumber(l, 3);
+    SetUniform(program, name, value);
+    return 0;
+}
+
+int Lua_SetVectorUniform( lua_State* l )
+{
+    const ShaderProgram program = CheckShaderProgramFromLua(l, 1);
+    const char* name = luaL_checkstring(l, 2);
+
+    const int valueCount = lua_gettop(l)-2;
+    if(valueCount <= 0)
+        luaL_error(l, "Too few arguments!");
+    float* values = new float[valueCount];
+
+    for(int i = 0; i < valueCount; i++)
+    {
+        const int stackPosition = i+2+1;
+        if(lua_type(l, stackPosition) == LUA_TNUMBER)
+        {
+            values[i] = lua_tonumber(l, stackPosition);
+        }
+        else
+        {
+            delete[] values;
+            luaL_argerror(l, stackPosition, "Not a number");
+            return 0;
+        }
+    }
+
+    SetUniform(program, name, valueCount, values);
+    delete[] values;
+    return 0;
+}
+
+int Lua_SetMatrix4Uniform( lua_State* l )
+{
+    const ShaderProgram program = CheckShaderProgramFromLua(l, 1);
+    const char* name = luaL_checkstring(l, 2);
+    const glm::mat4* value = CheckMatrix4FromLua(l, 3);
+    SetUniformMatrix4(program, name, value);
+    return 0;
 }
 
 bool RegisterShaderInLua()
@@ -80,12 +130,20 @@ bool RegisterShaderInLua()
 
     return
         RegisterFunctionInLua("LoadShaderObject", Lua_LoadShaderObject) &&
-        RegisterFunctionInLua("LinkShaderProgram", Lua_LinkShaderProgram); // TODO
+        RegisterFunctionInLua("LinkShaderProgram", Lua_LinkShaderProgram) &&
+        RegisterFunctionInLua("SetFloatUniform", Lua_SetFloatUniform) &&
+        RegisterFunctionInLua("SetVectorUniform", Lua_SetVectorUniform) &&
+        RegisterFunctionInLua("SetMatrix4Uniform", Lua_SetMatrix4Uniform);
 }
 
 ShaderObject GetShaderObjectFromLua( lua_State* l, int stackPosition )
 {
-    return *(ShaderObject*)GetUserDataFromLua(l, stackPosition, SHADER_OBJECT_TYPE);
+    const ShaderObject* objectPointer =
+        (ShaderObject*)GetUserDataFromLua(l, stackPosition, SHADER_OBJECT_TYPE);
+    if(objectPointer)
+        return *objectPointer;
+    else
+        return INVALID_SHADER_OBJECT;
 }
 
 ShaderObject CheckShaderObjectFromLua( lua_State* l, int stackPosition )
@@ -95,7 +153,12 @@ ShaderObject CheckShaderObjectFromLua( lua_State* l, int stackPosition )
 
 ShaderProgram GetShaderProgramFromLua( lua_State* l, int stackPosition )
 {
-    return *(ShaderProgram*)GetUserDataFromLua(l, stackPosition, SHADER_PROGRAM_TYPE);
+    const ShaderProgram* programPointer =
+        (ShaderProgram*)GetUserDataFromLua(l, stackPosition, SHADER_PROGRAM_TYPE);
+    if(programPointer)
+        return *programPointer;
+    else
+        return INVALID_SHADER_PROGRAM;
 }
 
 ShaderProgram CheckShaderProgramFromLua( lua_State* l, int stackPosition )

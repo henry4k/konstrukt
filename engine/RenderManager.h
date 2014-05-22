@@ -2,7 +2,6 @@
 #define __APOAPSIS_RENDER_MANAGER__
 
 #include "Math.h"
-#include "Shader.h"
 #include "Texture.h"
 
 struct Mesh;

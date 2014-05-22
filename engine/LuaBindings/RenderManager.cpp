@@ -3,6 +3,7 @@
 #include "../Lua.h"
 #include "../Mesh.h"
 #include "../RenderManager.h"
+#include "Math.h"
 #include "Mesh.h"
 #include "RenderManager.h"
 
@@ -37,7 +38,7 @@ int Lua_CreateModel( lua_State* l )
 int Lua_SetModelTransformation( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
-    glm::mat4* transformation = (glm::mat4*)lua_touserdata(l, 2);
+    const glm::mat4* transformation = CheckMatrix4FromLua(l, 2);
     SetModelTransformation(model, *transformation);
     return 0;
 }
