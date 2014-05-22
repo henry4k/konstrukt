@@ -1,9 +1,7 @@
 #include "Common.h"
 #include "OpenGL.h"
 #include "Controls.h"
-#include "Map.h"
 #include "Audio.h"
-#include "Debug.h"
 #include "Player.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -87,15 +85,6 @@ glm::mat4 GetPlayerProjectionMatrix()
 
 void DrawPlayer()
 {
-    if(IsDebugging(DEBUG_COLLISION))
-    {
-        Box playerBox;
-        playerBox.position  = g_PlayerPosition;
-        playerBox.halfWidth = PLAYER_HALF_WIDTH;
-        playerBox.velocity  = g_PlayerVelocity;
-
-        DrawBoxCollisionInMap(&playerBox);
-    }
 }
 
 void UpdatePlayer( float timeFrame )
@@ -141,7 +130,8 @@ void UpdatePlayer( float timeFrame )
     playerBox.halfWidth = PLAYER_HALF_WIDTH;
     playerBox.velocity  = g_PlayerVelocity;
 
-    SimulateBoxInMap(&playerBox, timeFrame);
+    // TODO: Use physics manager here!
+    //SimulateBoxInMap(&playerBox, timeFrame);
     g_PlayerPosition = playerBox.position;
     g_PlayerVelocity = playerBox.velocity;
 

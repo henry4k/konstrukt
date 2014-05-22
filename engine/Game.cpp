@@ -10,9 +10,7 @@
 #include "Audio.h"
 #include "Player.h"
 #include "Math.h"
-#include "Debug.h"
 #include "Lua.h"
-#include "Effects.h"
 #include "PhysicsManager.h"
 #include "RenderManager.h"
 #include "Game.h"
@@ -20,12 +18,12 @@
 #include "LuaBindings/Audio.h"
 #include "LuaBindings/Config.h"
 #include "LuaBindings/Controls.h"
-#include "LuaBindings/Effects.h"
 #include "LuaBindings/Math.h"
 #include "LuaBindings/Mesh.h"
 #include "LuaBindings/MeshBuffer.h"
 #include "LuaBindings/Player.h"
 #include "LuaBindings/RenderManager.h"
+#include "LuaBindings/Shader.h"
 
 
 void OnFramebufferResize( int width, int height );
@@ -36,10 +34,6 @@ bool InitGame( const int argc, char** argv )
 {
     Log("----------- Config ------------");
     if(!InitConfig(argc, argv))
-        return false;
-
-    Log("------------ Debug -------------");
-    if(!InitDebug())
         return false;
 
     Log("------------- Lua -------------");
@@ -61,9 +55,6 @@ bool InitGame( const int argc, char** argv )
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glClearColor(0.5, 0.5, 0.5, 1);
 
-    if(!InitDebugGraphics())
-        return false;
-
     Log("------------ Audio ------------");
     if(!InitAudio())
         return false;
@@ -82,12 +73,6 @@ bool InitGame( const int argc, char** argv )
     Log("--------- Render Manager ----------");
     if(!InitRenderManager())
         return false;
-
-    /*
-    Log("--------- Effects ----------");
-    if(!InitEffects())
-        return false;
-    */
 
     Log("----------- Player ------------");
     if(!InitPlayer())
@@ -110,24 +95,22 @@ bool RegisterAllModulesInLua()
         RegisterAudioInLua() &&
         RegisterConfigInLua() &&
         RegisterControlsInLua() &&
-        RegisterEffectsInLua() &&
         RegisterMathInLua() &&
         RegisterMeshInLua() &&
         RegisterMeshBufferInLua() &&
         RegisterPlayerInLua() &&
-        RegisterRenderManagerInLua();
+        RegisterRenderManagerInLua() &&
+        RegisterShaderInLua();
 }
 
 void DestroyGame()
 {
     DestroyLua();
     DestroyPlayer();
-    //DestroyEffects();
     DestroyRenderManager();
     DestroyPhysicsManager();
     DestroyControls();
     DestroyAudio();
-    DestroyDebug();
     DestroyWindow();
     DestroyConfig();
 }

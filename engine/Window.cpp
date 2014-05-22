@@ -1,7 +1,6 @@
 #include "Common.h"
 #include "Config.h"
 #include "OpenGL.h"
-#include "Debug.h"
 #include "Window.h"
 
 
@@ -39,7 +38,7 @@ bool InitWindow()
 
     const int versionMajor = GetConfigInt("opengl.major", 2);
     const int versionMinor = GetConfigInt("opengl.minor", 1);
-    const bool debug = IsDebugging(DEBUG_OPENGL);
+    const bool debug = GetConfigBool("opengl.debug", false);
     const bool vsync = GetConfigBool("opengl.vsync", true);
     const bool experimentalDrivers = GetConfigBool("opengl.experimental-drivers", false);
 
