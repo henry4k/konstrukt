@@ -15,15 +15,13 @@ File names should be `CamelCase`.
 Use `snake_case` for directories.
 
 
-C/C++
------
+### C/C++
 
 Use the `static` attribute for file-local definitions.  
 Use the `const` attribute whenever possible.
 
 
-Lua
----
+### Lua
 
 Begin names with an underscore to mark them as private.  
 Like `_myPrivateAttribute`.
