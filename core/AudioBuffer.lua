@@ -1,14 +1,11 @@
-local m = {}
-m.__index = m
+local class = require 'middleclass'
 
-function m.newFromHandle( handle )
-    local self = setmetatable({}, m)
-    self.handle = handle
-    return self
+
+local AudioBuffer = class('core/AudioBuffer')
+
+function AudioBuffer:initialize( fileName )
+    self.handle = NATIVE.LoadAudioBuffer(fileName)
 end
 
-function m.new( fileName )
-    return m.newFromHandle(NATIVE.LoadAudioBuffer(fileName))
-end
 
-return m
+return AudioBuffer

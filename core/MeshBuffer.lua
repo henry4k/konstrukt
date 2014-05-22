@@ -1,21 +1,17 @@
-local m = {}
-m.__index = m
+local class = require 'middleclass'
 
-function m.newFromHandle( handle )
-    local self = setmetatable({}, m)
-    self.handle = handle
-    return self
+
+local MeshBuffer = class('core/MeshBuffer')
+
+function MeshBuffer:initialize()
+    self.handle = NATIVE.CreateMeshBuffer()
 end
 
-function m.new()
-    return m.newFromHandle(NATIVE.CreateMeshBuffer())
-end
-
-function m:transform( transformation )
+function MeshBuffer:transform( transformation )
     NATIVE.TransformMeshBuffer(self.handle, transformation.handle)
 end
 
-function m:appendMeshBuffer( other, transformation )
+function MeshBuffer:appendMeshBuffer( other, transformation )
     if transformation then
         NATIVE.AppendMeshBuffer(self.handle, other.handle, transformation.handle)
     else
@@ -23,12 +19,11 @@ function m:appendMeshBuffer( other, transformation )
     end
 end
 
-function m:appendIndex( index )
+function MeshBuffer:appendIndex( index )
     NATIVE.AppendIndexToMeshBuffer(self.handle, index)
 end
 
-function m:appendVertex( vertex )
-
+function MeshBuffer:appendVertex( vertex )
     local v = vertex
     NATIVE.AppendVertexToMeshBuffer(
         self.handle,
@@ -60,4 +55,5 @@ function m:appendVertex( vertex )
     )
 end
 
-return m
+
+return MeshBuffer

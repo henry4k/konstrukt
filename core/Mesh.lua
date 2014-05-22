@@ -1,14 +1,11 @@
-local m = {}
-m.__index = m
+local class = require 'middleclass'
 
-function m.newFromHandle( handle )
-    local self = setmetatable({}, m)
-    self.handle = handle
-    return self
+
+local Mesh = class('core/Mesh')
+
+function Mesh:initialize( meshBuffer )
+    self.handle = NATIVE.CreateMesh(meshBuffer.handle)
 end
 
-function m.new( meshBuffer )
-    return m.newFromHandle(NATIVE.CreateMesh(meshBuffer.handle))
-end
 
-return m
+return Mesh

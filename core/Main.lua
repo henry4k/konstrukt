@@ -1,5 +1,5 @@
 package.cpath = ''
-package.path = './?.lua'
+package.path = './core/third-party/?.lua;./?.lua'
 
 Mesh = require 'core/Mesh'
 MeshBuffer = require 'core/MeshBuffer'

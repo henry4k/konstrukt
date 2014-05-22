@@ -1,55 +1,56 @@
-local m = {}
-m.__index = m
+local class = require 'middleclass'
 
-function m.newFromHandle( handle )
-    local self = setmetatable({}, m)
-    self.handle = handle
-    return self
+
+local Matrix4 = class('core/Matrix4')
+
+function Matrix4:initialize( handle )
+    if handle then
+        self.handle = handle
+    else
+        self.handle = NATIVE.CreateMatrix4()
+    end
 end
 
-function m.new()
-    return m.newFromHandle(NATIVE.CreateMatrix4())
+function Matrix4:copy()
+    return Matrix4.new(NATIVE.CopyMatrix4(self.handle))
 end
 
-function m:copy()
-    return m.newFromHandle(NATIVE.CopyMatrix4(self.handle))
+function Matrix4:__add( other )
+    return Matrix4.new(NATIVE.AddMatrix4(self, other))
 end
 
-function m:__add( other )
-    return m.newFromHandle(NATIVE.AddMatrix4(self, other))
+function Matrix4:__sub( other )
+    return Matrix4.new(NATIVE.SubMatrix4(self, other))
 end
 
-function m:__sub( other )
-    return m.newFromHandle(NATIVE.SubMatrix4(self, other))
+function Matrix4:__mul( other )
+    return Matrix4.new(NATIVE.MulMatrix4(self, other))
 end
 
-function m:__mul( other )
-    return m.newFromHandle(NATIVE.MulMatrix4(self, other))
+function Matrix4:__div( other )
+    return Matrix4.new(NATIVE.DivMatrix4(self, other))
 end
 
-function m:__div( other )
-    return m.newFromHandle(NATIVE.DivMatrix4(self, other))
+function Matrix4:translate( x, y, z )
+    return Matrix4.new(NATIVE.TranslateMatrix4(self.handle, x, y, z))
 end
 
-function m:translate( x, y, z )
-    return m.newFromHandle(NATIVE.TranslateMatrix4(self.handle, x, y, z))
+function Matrix4:scale( x, y, z )
+    return Matrix4.new(NATIVE.ScaleMatrix4(self.handle, x, y, z))
 end
 
-function m:scale( x, y, z )
-    return m.newFromHandle(NATIVE.ScaleMatrix4(self.handle, x, y, z))
+function Matrix4:rotate( angle, x, y, z )
+    return Matrix4.new(NATIVE.RotateMatrix4(self.handle, angle, x, y, z))
 end
 
-function m:rotate( angle, x, y, z )
-    return m.newFromHandle(NATIVE.RotateMatrix4(self.handle, angle, x, y, z))
-end
-
-function m:transform( x, y, z, w )
+function Matrix4:transform( x, y, z, w )
     w = w or 0
     return NATIVE.Matrix4TransformVector(self.handle, x, y, z, w)
 end
 
-function m:toRotationMatrix()
-    return m.newFromHandle(NATIVE.MakeRotationMatrix(self.handle))
+function Matrix4:toRotationMatrix()
+    return Matrix4.new(NATIVE.MakeRotationMatrix(self.handle))
 end
 
-return m
+
+return Matrix4

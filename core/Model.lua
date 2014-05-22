@@ -1,27 +1,24 @@
-local m = {}
-m.__index = m
+local class = require 'middleclass'
 
-function m.newFromHandle( handle )
-    local self = setmetatable({}, m)
-    self.handle = handle
-    return self
+
+local Model = class('core/Model')
+
+function Model:initialize( fileName )
+    self.handle = NATIVE.CreateModel()
 end
 
-function m.new()
-    return m.newFromHandle(NATIVE.CreateModel())
-end
-
-function m:setMesh( mesh )
+function Model:setMesh( mesh )
     NATIVE.SetModelMesh(self.handle, mesh.handle)
 end
 
-function m:setTransformation( transformation )
+function Model:setTransformation( transformation )
     NATIVE.SetModelTransformation(self.handle, transformation.handle)
 end
 
-function m:remove()
+function Model:remove()
     NATIVE.RemoveModel(self.handle)
     self.handle = nil
 end
 
-return m
+
+return Model

@@ -1,26 +1,26 @@
-local m = {}
+local Control = {}
 
-m.keyCallbacks = {}
-m.axisCallbacks = {}
+Control.keyCallbacks = {}
+Control.axisCallbacks = {}
 
-function m.registerKey( name, callback )
+function Control.registerKey( name, callback )
     NATIVE.RegisterKeyControl(name)
-    m.keyCallbacks[name] = callback
+    Control.keyCallbacks[name] = callback
 end
 
-function m.registerAxis( name, callback )
+function Control.registerAxis( name, callback )
     NATIVE.RegisterAxisControl(name)
-    m.axisCallbacks[name] = callback
+    Control.axisCallbacks[name] = callback
 end
 
 local function onKeyAction( name, pressed )
-    m.keyCallbacks[name](pressed)
+    Control.keyCallbacks[name](pressed)
 end
 NATIVE.SetEventCallback('KeyControlAction', onKeyAction)
 
 local function onAxisAction( name, absolute, delta )
-    m.axisCallbacks[name](absolute, delta)
+    Control.axisCallbacks[name](absolute, delta)
 end
 NATIVE.SetEventCallback('AxisControlAction', onAxisAction)
 
-return m
+return Control

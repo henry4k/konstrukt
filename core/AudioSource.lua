@@ -1,46 +1,43 @@
-local m = {}
-m.__index = m
+local class = require 'middleclass'
 
-function m.newFromHandle( handle )
-    local self = setmetatable({}, m)
-    self.handle = handle
-    return self
+
+local AudioSource = class('core/AudioSource')
+
+function AudioSource:initialize( triggerCallback )
+    self.handle = NATIVE.CreateAudioSource(triggerCallback or false)
 end
 
-function m.new( triggerCallback )
-    return m.newFromHandle(NATIVE.CreateAudioSource(triggerCallback or false))
-end
-
-function m:setRelative( relative )
+function AudioSource:setRelative( relative )
     NATIVE.SetAudioSourceRelative(self.handle, relative)
 end
 
-function m:setLooping( looping )
+function AudioSource:setLooping( looping )
     NATIVE.SetAudioSourceLooping(self.handle, looping)
 end
 
-function m:setPitch( pitch )
+function AudioSource:setPitch( pitch )
     NATIVE.SetAudioSourcePitch(self.handle, pitch)
 end
 
-function m:setGain( gain )
+function AudioSource:setGain( gain )
     NATIVE.SetAudioSourceGain(self.handle, gain)
 end
 
-function m:enqueue( buffer )
+function AudioSource:enqueue( buffer )
     NATIVE.EnqueueAudioBuffer(self.handle, buffer.handle)
 end
 
-function m:play()
+function AudioSource:play()
     NATIVE.PlayAudioSource(self.handle)
 end
 
-function m:pause()
+function AudioSource:pause()
     NATIVE.PauseAudioSource(self.handle)
 end
 
-function m:free()
+function AudioSource:free()
     NATIVE.FreeAudioSource(self.handle)
 end
 
-return m
+
+return AudioSource

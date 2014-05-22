@@ -1,7 +1,7 @@
-local m = {}
+local Config = {}
 
-function m.get( key, default )
+function Config.get( key, default )
     return NATIVE.GetConfigValue(key, default)
 end
 
-return m
+return Config
