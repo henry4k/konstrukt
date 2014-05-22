@@ -2,15 +2,15 @@
 #include "Shader.h"
 
 
-const char* SHADER_OBJECT_TYPE = "ShaderObject";
+const char* SHADER_TYPE = "Shader";
 const char* SHADER_PROGRAM_TYPE = "ShaderProgram";
 
 
-int Lua_ShaderObject_destructor( lua_State* l )
+int Lua_Shader_destructor( lua_State* l )
 {
-    const ShaderObject object =
-        *reinterpret_cast<ShaderObject*>(lua_touserdata(l, 1));
-    FreeShaderObject(object);
+    const Shader object =
+        *reinterpret_cast<Shader*>(lua_touserdata(l, 1));
+    FreeShader(object);
     return 0;
 }
 
@@ -22,14 +22,14 @@ int Lua_ShaderProgram_destructor( lua_State* l )
     return 0;
 }
 
-int Lua_LoadShaderObject( lua_State* l )
+int Lua_LoadShader( lua_State* l )
 {
     const char* fileName = luaL_checkstring(l, 1);
-    const ShaderObject object = LoadShaderObject(fileName);
+    const Shader object = LoadShader(fileName);
 
     if(object)
     {
-        CopyUserDataToLua(l, SHADER_OBJECT_TYPE, sizeof(object), &object);
+        CopyUserDataToLua(l, SHADER_TYPE, sizeof(object), &object);
         return 1;
     }
     else
@@ -42,11 +42,11 @@ int Lua_LoadShaderObject( lua_State* l )
 int Lua_LinkShaderProgram( lua_State* l )
 {
     const int objectCount = lua_gettop(l);
-    ShaderObject* objects = new ShaderObject[objectCount];
+    Shader* objects = new Shader[objectCount];
     for(int i = 0; i < objectCount; i++)
     {
-        const ShaderObject object = GetShaderObjectFromLua(l, i+1);
-        if(object != INVALID_SHADER_OBJECT)
+        const Shader object = GetShaderFromLua(l, i+1);
+        if(object != INVALID_SHADER)
         {
             objects[i] = object;
         }
@@ -122,33 +122,33 @@ int Lua_SetMatrix4Uniform( lua_State* l )
 
 bool RegisterShaderInLua()
 {
-    if(!RegisterUserDataTypeInLua(SHADER_OBJECT_TYPE, Lua_ShaderObject_destructor))
+    if(!RegisterUserDataTypeInLua(SHADER_TYPE, Lua_Shader_destructor))
         return false;
 
     if(!RegisterUserDataTypeInLua(SHADER_PROGRAM_TYPE, Lua_ShaderProgram_destructor))
         return false;
 
     return
-        RegisterFunctionInLua("LoadShaderObject", Lua_LoadShaderObject) &&
+        RegisterFunctionInLua("LoadShader", Lua_LoadShader) &&
         RegisterFunctionInLua("LinkShaderProgram", Lua_LinkShaderProgram) &&
         RegisterFunctionInLua("SetFloatUniform", Lua_SetFloatUniform) &&
         RegisterFunctionInLua("SetVectorUniform", Lua_SetVectorUniform) &&
         RegisterFunctionInLua("SetMatrix4Uniform", Lua_SetMatrix4Uniform);
 }
 
-ShaderObject GetShaderObjectFromLua( lua_State* l, int stackPosition )
+Shader GetShaderFromLua( lua_State* l, int stackPosition )
 {
-    const ShaderObject* objectPointer =
-        (ShaderObject*)GetUserDataFromLua(l, stackPosition, SHADER_OBJECT_TYPE);
+    const Shader* objectPointer =
+        (Shader*)GetUserDataFromLua(l, stackPosition, SHADER_TYPE);
     if(objectPointer)
         return *objectPointer;
     else
-        return INVALID_SHADER_OBJECT;
+        return INVALID_SHADER;
 }
 
-ShaderObject CheckShaderObjectFromLua( lua_State* l, int stackPosition )
+Shader CheckShaderFromLua( lua_State* l, int stackPosition )
 {
-    return *(ShaderObject*)CheckUserDataFromLua(l, stackPosition, SHADER_OBJECT_TYPE);
+    return *(Shader*)CheckUserDataFromLua(l, stackPosition, SHADER_TYPE);
 }
 
 ShaderProgram GetShaderProgramFromLua( lua_State* l, int stackPosition )

@@ -5,36 +5,36 @@
 #include "Math.h"
 
 
-typedef GLuint ShaderObject;
+typedef GLuint Shader;
 typedef GLuint ShaderProgram;
 
-static const ShaderObject INVALID_SHADER_OBJECT = 0;
+static const Shader INVALID_SHADER = 0;
 static const ShaderProgram INVALID_SHADER_PROGRAM = 0;
 
 
 /**
- * Creates a shader object by reading the given `fileName`.
- * The object type is determined by the file extension automatically.
+ * Creates a shader by reading the given `fileName`.
+ * The shader type is determined by the file extension automatically.
  *
  * @return
- * May return `INVALID_SHADER_OBJECT` if the type could not be determined or
+ * May return `INVALID_SHADER` if the type could not be determined or
  * if the shader source was erroneous.
  */
-ShaderObject LoadShaderObject( const char* fileName );
+Shader LoadShader( const char* fileName );
 
-void FreeShaderObject( ShaderObject object );
+void FreeShader( Shader shader );
 
 /**
- * Links the given `objects` into a shader program.
+ * Links the given `shaders` into a shader program.
  *
  * @return
  * May return `INVALID_SHADER_PROGRAM` if linkage failed.
  */
-ShaderProgram LinkShaderProgram( const ShaderObject* objects, int objectCount );
+ShaderProgram LinkShaderProgram( const Shader* shaders, int shaderCount );
 
 /**
  * @note
- * Shader objects used by the program should be freed before!
+ * Shader shaders used by the program should be freed before!
  */
 void FreeShaderProgram( ShaderProgram program );
 

@@ -52,9 +52,9 @@ bool StringEndsWith( const char* target, const char* end )
 }
 
 
-// ----- Shader Object ------
+// ----- Shader ------
 
-static void ShowShaderObjectLog( ShaderObject shader )
+static void ShowShaderLog( Shader shader )
 {
     GLint length = 0;
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
@@ -73,9 +73,9 @@ static void ShowShaderObjectLog( ShaderObject shader )
     }
 }
 
-static ShaderObject CreateShaderObject( const char* fileName, int type )
+static Shader CreateShader( const char* fileName, int type )
 {
-    ShaderObject shader = glCreateShader(type);
+    Shader shader = glCreateShader(type);
 
     int size;
     const char* source = LoadFile(fileName, &size);
@@ -92,41 +92,41 @@ static ShaderObject CreateShaderObject( const char* fileName, int type )
 
     GLint state;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &state);
-    ShowShaderObjectLog(shader);
+    ShowShaderLog(shader);
 
     if(state)
     {
-        Log("Compiled shader object successfully: %s", fileName);
+        Log("Compiled shader successfully: %s", fileName);
     }
     else
     {
-        Error("Error compiling shader object %s", fileName);
+        Error("Error compiling shader %s", fileName);
         return 0;
     }
 
     return shader;
 }
 
-ShaderObject LoadShaderObject( const char* fileName )
+Shader LoadShader( const char* fileName )
 {
     if(StringEndsWith(fileName, ".vert"))
     {
-        return CreateShaderObject(fileName, GL_VERTEX_SHADER);
+        return CreateShader(fileName, GL_VERTEX_SHADER);
     }
     else if(StringEndsWith(fileName, ".frag"))
     {
-        return CreateShaderObject(fileName, GL_FRAGMENT_SHADER);
+        return CreateShader(fileName, GL_FRAGMENT_SHADER);
     }
     else
     {
-        Error("Can't determine shader object type of file %s", fileName);
-        return INVALID_SHADER_OBJECT;
+        Error("Can't determine shader type of file %s", fileName);
+        return INVALID_SHADER;
     }
 }
 
-void FreeShaderObject( ShaderObject object )
+void FreeShader( Shader shader )
 {
-    glDeleteShader(object);
+    glDeleteShader(shader);
 }
 
 
@@ -151,21 +151,21 @@ void ShowShaderProgramLog( ShaderProgram program )
     }
 }
 
-ShaderProgram LinkShaderProgram( const ShaderObject* objects, int objectCount )
+ShaderProgram LinkShaderProgram( const Shader* shaders, int shaderCount )
 {
-    for(int i = 0; i < objectCount; i++)
+    for(int i = 0; i < shaderCount; i++)
     {
-        if(objects[i] == INVALID_SHADER_OBJECT)
+        if(shaders[i] == INVALID_SHADER)
         {
-            Error("Cannot link a shader program with invalid objects.");
+            Error("Cannot link a shader program with invalid shaders.");
             return INVALID_SHADER_PROGRAM;
         }
     }
 
     const ShaderProgram program = glCreateProgram();
 
-    for(int i = 0; i < objectCount; i++)
-        glAttachShader(program, objects[i]);
+    for(int i = 0; i < shaderCount; i++)
+        glAttachShader(program, shaders[i]);
 
     BindVertexAttributes(program);
 

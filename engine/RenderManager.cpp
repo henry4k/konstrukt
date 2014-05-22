@@ -11,6 +11,7 @@ struct Model
     bool active;
     glm::mat4 transformation;
     Mesh* mesh;
+    ShaderProgram program;
 };
 
 
@@ -23,11 +24,11 @@ bool InitRenderManager()
 {
     memset(Models, 0, sizeof(Models));
 
-    const ShaderObject shaderObjects[] = {
-        LoadShaderObject("core/Shaders/Test.vert"),
-        LoadShaderObject("core/Shaders/Test.frag")
+    const Shader shaders[] = {
+        LoadShader("core/Shaders/Test.vert"),
+        LoadShader("core/Shaders/Test.frag")
     };
-    DefaultProgram = LinkShaderProgram(shaderObjects, sizeof(shaderObjects)/sizeof(ShaderObject));
+    DefaultProgram = LinkShaderProgram(shaders, sizeof(shaders)/sizeof(Shader));
     BindVertexAttributes(DefaultProgram);
 
     return true;
