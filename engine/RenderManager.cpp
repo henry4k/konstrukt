@@ -5,30 +5,11 @@
 #include "RenderManager.h"
 
 
-const int MAX_UNIFORM_NAME_LENGTH = 32;
-const int MAX_UNIFORM_COUNT = 4;
-
-enum UniformType
+enum UniformValueSource
 {
-    FLOAT_UNIFORM,
-    VEC3_UNIFORM,
-    VEC4_UNIFORM,
-    MAT3_UNIFORM,
-    MAT4_UNIFORM
-};
-
-struct Uniform
-{
-    char name[MAX_UNIFORM_NAME_LENGTH];
-    UniformType type;
-    union value
-    {
-        float f;
-        glm::vec3 v3;
-        glm::vec4 v4;
-        glm::mat3 m3;
-        glm::mat4 m4;
-    };
+    DEFAULT_UNIFORM_VALUE = 0,
+    LOCAL_UNIFORM_VALUE,
+    UNIFORM_VALUE_SOURCE_COUNT
 };
 
 struct Model
@@ -36,8 +17,9 @@ struct Model
     bool active;
     glm::mat4 transformation;
     Mesh* mesh;
-    ShaderProgram program;
-    Uniform uniforms[MAX_UNIFORM_COUNT];
+    ShaderProgram* program;
+    UniformValue* localUniformValues;
+    UniformValueSource* uniformValueSources;
 };
 
 
@@ -73,17 +55,11 @@ void DestroyRenderManager()
 void DrawModels( glm::mat4 mvpMatrix )
 {
     // Naive draw method:
-
-    BindShaderProgram(DefaultProgram);
-    SetUniformMatrix4(DefaultProgram, "MVP", &mvpMatrix);
-
     for(int i = 0; i < MAX_MODELS; i++)
     {
         const Model* model = &Models[i];
         if(model->active)
-        {
-            DrawMesh(model->mesh);
-        }
+            DrawModel(model);
     }
 }
 
@@ -114,6 +90,18 @@ Model* CreateModel()
 void FreeModel( Model* model )
 {
     model->active = false;
+
+    if(model->localUniformValues)
+    {
+        delete[] model->localUniformValues;
+        model->localUniformValues = NULL;
+    }
+
+    if(model->uniformValueSources)
+    {
+        delete[] model->uniformValueSources;
+        model->uniformValueSources = NULL;
+    }
 }
 
 void SetModelTransformation( Model* model, glm::mat4 transformation )
@@ -126,66 +114,71 @@ void SetModelMesh( Model* model, Mesh* mesh )
     model->mesh = mesh;
 }
 
-void SetModelShaderProgram( Model* model, ShaderProgram program )
+void SetModelShaderProgram( Model* model, ShaderProgram* program )
 {
     model->program = program;
-}
 
-static Uniform* GetModelUniform( Model* model, const char* name )
-{
-    for(int i = 0; i < MAX_UNIFORM_COUNT; i++)
-        if(strncmp(name, model->uniforms[i].name, MAX_UNIFORM_NAME_LENGTH) == 0)
-            return &model->uniforms[i];
-    return NULL;
-}
-
-static Uniform* CreateOrGetModelUniform( Model* model, const char* name )
-{
-    Uniform* uniform = GetModelUniform(model, name);
-    if(uniform)
+    if(model->localUniformValues)
     {
-        return uniform;
+        delete[] model->localUniformValues;
+        model->localUniformValues = NULL;
     }
-    else
-    {
-        for(int i = 0; i < MAX_UNIFORM_COUNT; i++)
-        {
-            if(model->uniforms[i].name[0] == '\0')
-            {
-                uniform = &model->uniforms[i];
-                strncpy(uniform->name, name, MAX_UNIFORM_NAME_LENGTH);
-                return uniform;
-            }
-        }
 
-        Error("Can't create more uniform variables.");
-        return NULL;
+    if(model->uniformValueSources)
+    {
+        delete[] model->uniformValueSources;
+        model->uniformValueSources = NULL;
     }
+
+    const int uniformCount = program->uniformCount;
+
+    model->localUniformValues = new UniformValue[uniformCount];
+    memset(model->localUniformValues, 0, sizeof(UniformValue)*uniformCount);
+
+    model->uniformValueSources = new UniformValueSource[uniformCount];
+    memset(model->uniformValueSources, 0, sizeof(UniformValueSource)*uniformCount);
 }
 
-void SetModelFloatUniform( Model* model, const char* name, float value )
+void SetModelUniform( Model* model, const char* name, UniformValue* value )
 {
-    Uniform* uniform = CreateOrGetModelUniform(model, name);
-    if(uniform)
+    const int index = GetUniformIndex(model->program, name);
+    if(index != INVALID_UNIFORM_INDEX)
     {
-        uniform->type = FLOAT_UNIFORM;
-        uniform->value.f = value;
-    }
-}
-
-void SetModelVec3Uniform( Model* model, const char* name, glm::vec3 value )
-{
-    Uniform* uniform = CreateOrGetModelUniform(model, name);
-    if(uniform)
-    {
-        uniform->type = VEC3_UNIFORM;
-        uniform->value.v3 = value;
+        model->uniformValueSources[index] = LOCAL_UNIFORM_VALUE;
+        model->localUniformValues[index] = *value;
     }
 }
 
 void UnsetModelUniform( Model* model, const char* name )
 {
-    Uniform* uniform = GetModelUniform(model, name);
-    if(uniform)
-        memset(uniform, 0, sizeof(Uniform));
+    const int index = GetUniformIndex(model->program, name);
+    if(index != INVALID_UNIFORM_INDEX)
+        model->uniformValueSources[index] = DEFAULT_UNIFORM_VALUE;
+}
+
+void DrawModel( const Model* model )
+{
+    const ShaderProgram* program = model->program;
+    const int uniformCount = program->uniformCount;
+
+    BindShaderProgram(program);
+
+    const UniformValue* uniformValueSources[UNIFORM_VALUE_SOURCE_COUNT] =
+    {
+        program->defaultUniformValues, // DEFAULT_UNIFORM_VALUE
+        model->localUniformValues      // LOCAL_UNIFORM_VALUE
+    };
+
+    for(int i = 0; i < uniformCount; i++)
+    {
+        const int source = model->uniformValueSources[i];
+
+        SetUniformValueInShaderProgram(
+            program,
+            i,
+            uniformValueSources[source][i]
+        );
+    }
+
+    DrawMesh(model->mesh);
 }

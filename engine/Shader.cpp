@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <string.h> // strlen, memcmp
 
 #include "Common.h"
@@ -132,16 +133,16 @@ void FreeShader( Shader shader )
 
 // ----- Shader Program -----
 
-void ShowShaderProgramLog( ShaderProgram program )
+void ShowShaderProgramLog( ShaderProgram* program )
 {
     GLint length = 0;
-    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+    glGetProgramiv(program->handle, GL_INFO_LOG_LENGTH, &length);
 
     char* log = NULL;
     if(length > 1) // See ShowShaderProgramLog
     {
         log = new char[length];
-        glGetProgramInfoLog(program, length, NULL, log);
+        glGetProgramInfoLog(program->handle, length, NULL, log);
     }
 
     if(log)
@@ -151,28 +152,95 @@ void ShowShaderProgramLog( ShaderProgram program )
     }
 }
 
-ShaderProgram LinkShaderProgram( const Shader* shaders, int shaderCount )
+static UniformType GLToUniformType( GLenum glType )
 {
+    switch(glType)
+    {
+        case GL_FLOAT: return FLOAT_UNIFORM;
+        case GL_FLOAT_VEC3: return VEC3_UNIFORM;
+        case GL_FLOAT_VEC4: return VEC4_UNIFORM;
+        case GL_FLOAT_MAT3: return MAT3_UNIFORM;
+        case GL_FLOAT_MAT4: return MAT4_UNIFORM;
+
+        default:
+            FatalError("Unsupported gl constant!");
+            return FLOAT_UNIFORM;
+    }
+}
+
+static void ReadUniformDescriptions( ShaderProgram* program )
+{
+    if(program->uniformDescriptions)
+    {
+        delete[] program->uniformDescriptions;
+        program->uniformDescriptions = NULL;
+    }
+
+    if(program->defaultUniformValues)
+    {
+        delete[] program->defaultUniformValues;
+        program->defaultUniformValues = NULL;
+    }
+
+    int count = 0;
+    glGetProgramiv(program->handle, GL_ACTIVE_UNIFORMS, &count);
+
+    program->uniformCount = count;
+
+    program->uniformDescriptions = new UniformDescription[count];
+    for(int i = 0; i < count; ++i)
+    {
+        UniformDescription* desc = program->uniformDescriptions[i];
+
+        int nameLength = 0;
+        int size = 0;
+        GLenum glType = GL_ZERO;
+
+        glGetActiveUniform(
+            program->handle,
+            i,
+            MAX_UNIFORM_NAME_LENGTH,
+            &nameLength,
+            &size,
+            &glType,
+            desc->name
+        );
+        assert(nameLength > 0);
+
+        desc->location = glGetUniformLocation(program->handle, desc->name);
+        desc->type = GLToUniformType(glType);
+    }
+
+    program->defaultUniformValues = new UniformValue[count];
+    memset(program->defaultUniformValues, 0, sizeof(UniformValue)*count);
+}
+
+
+bool LinkShaderProgram( ShaderProgram* program, const Shader* shaders, int shaderCount )
+{
+    memset(program, 0, sizeof(ShaderProgram));
+
     for(int i = 0; i < shaderCount; i++)
     {
         if(shaders[i] == INVALID_SHADER)
         {
             Error("Cannot link a shader program with invalid shaders.");
-            return INVALID_SHADER_PROGRAM;
+            return false;
         }
     }
 
-    const ShaderProgram program = glCreateProgram();
+    program->handle = glCreateProgram();
+    GLuint programHandle = program->handle;
 
     for(int i = 0; i < shaderCount; i++)
-        glAttachShader(program, shaders[i]);
+        glAttachShader(programHandle, shaders[i]);
 
-    BindVertexAttributes(program);
+    BindVertexAttributes(programHandle);
 
-    glLinkProgram(program);
+    glLinkProgram(programHandle);
     {
         GLint state;
-        glGetProgramiv(program, GL_LINK_STATUS, &state);
+        glGetProgramiv(programHandle, GL_LINK_STATUS, &state);
         ShowShaderProgramLog(program);
 
         if(state)
@@ -182,14 +250,14 @@ ShaderProgram LinkShaderProgram( const Shader* shaders, int shaderCount )
         else
         {
             Error("Error linking shader programm");
-            return INVALID_SHADER_PROGRAM;
+            return false;
         }
     }
 
-    glValidateProgram(program);
+    glValidateProgram(programHandle);
     {
         GLint state;
-        glGetProgramiv(program, GL_VALIDATE_STATUS, &state);
+        glGetProgramiv(programHandle, GL_VALIDATE_STATUS, &state);
         ShowShaderProgramLog(program);
         if(state)
             Log("Validated shader program successfully");
@@ -197,78 +265,58 @@ ShaderProgram LinkShaderProgram( const Shader* shaders, int shaderCount )
             Log("Error validating shader program");
     }
 
-    return program;
+    ReadUniformDescriptions(program);
+
+    return true;
 }
 
-void FreeShaderProgram( ShaderProgram program )
+void FreeShaderProgram( ShaderProgram* program )
 {
-    glDeleteProgram(program);
+    glDeleteProgram(program->handle);
 }
 
-void BindShaderProgram( ShaderProgram program )
+void BindShaderProgram( ShaderProgram* program )
 {
-    glUseProgram(program);
+    glUseProgram(program->handle);
 }
 
-
-// ----- Uniform -----
-
-typedef GLint UniformLocation;
-static UniformLocation INVALID_UNIFORM_LOCATION = -1;
-
-static UniformLocation GetUniformLocation( ShaderProgram program, const char* name )
+int GetUniformIndex( ShaderProgram* program, const char* name )
 {
-    BindShaderProgram(program);
-    const UniformLocation location = glGetUniformLocation(program, name);
-    if(location >= 0)
-        return location;
-    glGetError(); // reset error (cause glGetUniformLocation sets an error value in this case)
-    return INVALID_UNIFORM_LOCATION;
+    for(int i = 0; i < program->uniformCount; i++)
+        if(strncmp(name, program->uniformDescriptions[i].name, MAX_UNIFORM_NAME_LENGTH) == 0)
+            return i;
+    return INVALID_UNIFORM_INDEX;
 }
 
-void SetUniform( ShaderProgram program, const char* name, int value )
+void SetUniformValueInShaderProgram( ShaderProgram* program, int index, UniformValue* value )
 {
-    const UniformLocation location = GetUniformLocation(program, name);
-    if(location != INVALID_UNIFORM_LOCATION)
-        glUniform1i(location, value);
-}
+    assert(program);
+    assert(index >= 0);
+    assert(index < program->uniformCount);
+    assert(value);
 
-void SetUniform( ShaderProgram program, const char* name, float value )
-{
-    const UniformLocation location = GetUniformLocation(program, name);
-    if(location != INVALID_UNIFORM_LOCATION)
-        glUniform1f(location, value);
-}
-
-void SetUniform( ShaderProgram program, const char* name, int length, const float* value )
-{
-    const UniformLocation location = GetUniformLocation(program, name);
-    if(location != INVALID_UNIFORM_LOCATION)
+    BindShaderProgram(program->handle);
+    const UniformDescription* desc = &program->uniformDescriptions[index];
+    switch(desc->type)
     {
-        switch(length)
-        {
-            case 1: glUniform1fv(location, 1, value); break;
-            case 2: glUniform2fv(location, 1, value); break;
-            case 3: glUniform3fv(location, 1, value); break;
-            case 4: glUniform4fv(location, 1, value); break;
-        }
-    }
-}
+        case FLOAT_UNIFORM:
+            glUniform1i(desc->location, value->f);
+            break;
 
-void SetUniformMatrix3( ShaderProgram program, const char* name, const glm::mat3* value )
-{
-    const UniformLocation location = GetUniformLocation(program, name);
-    if(location != INVALID_UNIFORM_LOCATION)
-    {
-        glUniformMatrix3fv(location, 1, GL_FALSE, &(*value)[0][0]);
-    }
-}
+        case VEC3_UNIFORM:
+            glUniform3fv(desc->location, 1, value->v3);
+            break;
 
-void SetUniformMatrix4( ShaderProgram program, const char* name, const glm::mat4* value )
-{
-    const UniformLocation location = GetUniformLocation(program, name);
-    if(location != INVALID_UNIFORM_LOCATION)
-    {
-        glUniformMatrix4fv(location, 1, GL_FALSE, &(*value)[0][0]);
+        case VEC4_UNIFORM:
+            glUniform4fv(desc->location, 1, value->v4);
+            break;
+
+        case MAT3_UNIFORM:
+            glUniformMatrix3fv(desc->location, 1, GL_FALSE, &(*value->m3)[0][0]);
+            break;
+
+        case MAT4_UNIFORM:
+            glUniformMatrix4fv(desc->location, 1, GL_FALSE, &(*value->m4)[0][0]);
+            break;
     }
 }
