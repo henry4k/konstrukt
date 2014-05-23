@@ -45,3 +45,26 @@ Statements should be ordered by their importance in a file:
 3. Definitions
 
 Separate them by using 2 empty lines.
+
+
+Documentation
+-------------
+
+Use JavaDoc and markdown to document source code.
+
+Use `#GlobalDefinition`, neither `::GlobalDefinition` nor `GlobalDefinition()`!
+If you can't refer to something using JavaDoc syntax,
+use code formatting (backticks) to highlight it.
+
+Example:
+
+    /**
+     * Summary goes here.
+     *
+     * More detailed description goes here
+     * and may span multiple lines.
+     *
+     * @return
+     * `aaa` or `0` if `aaa` is negative.
+     */
+
