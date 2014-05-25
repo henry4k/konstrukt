@@ -20,29 +20,26 @@ enum UniformType
     MAT4_UNIFORM
 };
 
-union UniformValue
+struct UniformValue
 {
-    float f;
-    glm::vec3 v3;
-    glm::vec4 v4;
-    glm::mat3 m3;
-    glm::mat4 m4;
+    const float& f() const;
+    const glm::vec3& v3() const;
+    const glm::vec4& v4() const;
+    const glm::mat3& m3() const;
+    const glm::mat4& m4() const;
+
+    float& f();
+    glm::vec3& v3();
+    glm::vec4& v4();
+    glm::mat3& m3();
+    glm::mat4& m4();
+
+    float data[4*4];
 };
 
-struct UniformDescription
-{
-    char name[MAX_UNIFORM_NAME_LENGTH];
-    int location;
-    UniformType type;
-};
+struct UniformDefinition;
 
-struct ShaderProgram
-{
-    GLuint handle;
-    int uniformCount;
-    UniformDescription* uniformDescriptions;
-    UniformValue* defaultUniformValues;
-};
+struct ShaderProgram;
 
 
 /**
@@ -59,8 +56,11 @@ void FreeShader( Shader shader );
 
 /**
  * Links the given `shaders` into a shader program.
+ *
+ * @return
+ * `NULL` if and error occured during linkage.
  */
-bool LinkShaderProgram( ShaderProgram* program, const Shader* shaders, int shaderCount );
+ShaderProgram* LinkShaderProgram( const Shader* shaders, int shaderCount );
 
 /**
  * @note
@@ -74,9 +74,14 @@ void BindShaderProgram( ShaderProgram* program );
  * @return
  * The uniforms index or #INVALID_UNIFORM_INDEX.
  */
-int GetUniformIndex( ShaderProgram* program, const char* name )
+int GetUniformIndex( ShaderProgram* program, const char* name );
 
+void SetUniformValue( ShaderProgram* program, int index, const UniformValue* value );
+void SetUniformDefaultValue( ShaderProgram* program, int index, const UniformValue* value );
+void ResetUniformValue( ShaderProgram* program, int index );
 
-void SetUniformValueInShaderProgram( ShaderProgram* program, int index, UniformValue* value );
+void SetUniformValue( ShaderProgram* program, const char* name, const UniformValue* value );
+void SetUniformDefaultValue( ShaderProgram* program, const char* name, const UniformValue* value );
+void ResetUniformValue( ShaderProgram* program, const char* name );
 
 #endif

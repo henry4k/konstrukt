@@ -7,6 +7,23 @@
 #include "Shader.h"
 
 
+struct UniformDefinition
+{
+    char name[MAX_UNIFORM_NAME_LENGTH];
+    int location;
+    UniformType type;
+};
+
+struct ShaderProgram
+{
+    GLuint handle;
+    int uniformCount;
+    UniformDefinition* uniformDefinitions;
+    UniformValue* currentUniformValues;
+    UniformValue* defaultUniformValues;
+};
+
+
 // ----- Tools ------
 
 static char* LoadFile( const char* path, int* sizeOut )
@@ -50,6 +67,59 @@ bool StringEndsWith( const char* target, const char* end )
         return memcmp(&target[targetLength - endLength], end, endLength) == 0;
     else
         return false;
+}
+
+
+// ----- UniformValue ------
+
+const float& UniformValue::f() const
+{
+    return *(const float*)data;
+}
+
+const glm::vec3& UniformValue::v3() const
+{
+    return *(const glm::vec3*)data;
+}
+
+const glm::vec4& UniformValue::v4() const
+{
+    return *(const glm::vec4*)data;
+}
+
+const glm::mat3& UniformValue::m3() const
+{
+    return *(const glm::mat3*)data;
+}
+
+const glm::mat4& UniformValue::m4() const
+{
+    return *(const glm::mat4*)data;
+}
+
+float& UniformValue::f()
+{
+    return *(float*)data;
+}
+
+glm::vec3& UniformValue::v3()
+{
+    return *(glm::vec3*)data;
+}
+
+glm::vec4& UniformValue::v4()
+{
+    return *(glm::vec4*)data;
+}
+
+glm::mat3& UniformValue::m3()
+{
+    return *(glm::mat3*)data;
+}
+
+glm::mat4& UniformValue::m4()
+{
+    return *(glm::mat4*)data;
 }
 
 
@@ -168,12 +238,18 @@ static UniformType GLToUniformType( GLenum glType )
     }
 }
 
-static void ReadUniformDescriptions( ShaderProgram* program )
+static void ReadUniformDefinitions( ShaderProgram* program )
 {
-    if(program->uniformDescriptions)
+    if(program->uniformDefinitions)
     {
-        delete[] program->uniformDescriptions;
-        program->uniformDescriptions = NULL;
+        delete[] program->uniformDefinitions;
+        program->uniformDefinitions = NULL;
+    }
+
+    if(program->currentUniformValues)
+    {
+        delete[] program->currentUniformValues;
+        program->currentUniformValues = NULL;
     }
 
     if(program->defaultUniformValues)
@@ -187,10 +263,10 @@ static void ReadUniformDescriptions( ShaderProgram* program )
 
     program->uniformCount = count;
 
-    program->uniformDescriptions = new UniformDescription[count];
+    program->uniformDefinitions = new UniformDefinition[count];
     for(int i = 0; i < count; ++i)
     {
-        UniformDescription* desc = program->uniformDescriptions[i];
+        UniformDefinition* def = &program->uniformDefinitions[i];
 
         int nameLength = 0;
         int size = 0;
@@ -203,31 +279,34 @@ static void ReadUniformDescriptions( ShaderProgram* program )
             &nameLength,
             &size,
             &glType,
-            desc->name
+            def->name
         );
         assert(nameLength > 0);
 
-        desc->location = glGetUniformLocation(program->handle, desc->name);
-        desc->type = GLToUniformType(glType);
+        def->location = glGetUniformLocation(program->handle, def->name);
+        def->type = GLToUniformType(glType);
     }
+
+    program->currentUniformValues = new UniformValue[count];
+    memset(program->currentUniformValues, 0, sizeof(UniformValue)*count);
 
     program->defaultUniformValues = new UniformValue[count];
     memset(program->defaultUniformValues, 0, sizeof(UniformValue)*count);
 }
 
-
-bool LinkShaderProgram( ShaderProgram* program, const Shader* shaders, int shaderCount )
+ShaderProgram* LinkShaderProgram( const Shader* shaders, int shaderCount )
 {
-    memset(program, 0, sizeof(ShaderProgram));
-
     for(int i = 0; i < shaderCount; i++)
     {
         if(shaders[i] == INVALID_SHADER)
         {
             Error("Cannot link a shader program with invalid shaders.");
-            return false;
+            return NULL;
         }
     }
+
+    ShaderProgram* program = new ShaderProgram;
+    memset(program, 0, sizeof(ShaderProgram));
 
     program->handle = glCreateProgram();
     GLuint programHandle = program->handle;
@@ -250,7 +329,8 @@ bool LinkShaderProgram( ShaderProgram* program, const Shader* shaders, int shade
         else
         {
             Error("Error linking shader programm");
-            return false;
+            delete program;
+            return NULL;
         }
     }
 
@@ -265,14 +345,25 @@ bool LinkShaderProgram( ShaderProgram* program, const Shader* shaders, int shade
             Log("Error validating shader program");
     }
 
-    ReadUniformDescriptions(program);
+    ReadUniformDefinitions(program);
 
-    return true;
+    return program;
 }
 
 void FreeShaderProgram( ShaderProgram* program )
 {
     glDeleteProgram(program->handle);
+
+    if(program->uniformDefinitions)
+        delete[] program->uniformDefinitions;
+
+    if(program->currentUniformValues)
+        delete[] program->currentUniformValues;
+
+    if(program->defaultUniformValues)
+        delete[] program->defaultUniformValues;
+
+    delete program;
 }
 
 void BindShaderProgram( ShaderProgram* program )
@@ -283,40 +374,80 @@ void BindShaderProgram( ShaderProgram* program )
 int GetUniformIndex( ShaderProgram* program, const char* name )
 {
     for(int i = 0; i < program->uniformCount; i++)
-        if(strncmp(name, program->uniformDescriptions[i].name, MAX_UNIFORM_NAME_LENGTH) == 0)
+        if(strncmp(name, program->uniformDefinitions[i].name, MAX_UNIFORM_NAME_LENGTH) == 0)
             return i;
     return INVALID_UNIFORM_INDEX;
 }
 
-void SetUniformValueInShaderProgram( ShaderProgram* program, int index, UniformValue* value )
+void SetUniformValue( ShaderProgram* program, int index, const UniformValue* value )
 {
     assert(program);
     assert(index >= 0);
     assert(index < program->uniformCount);
     assert(value);
 
-    BindShaderProgram(program->handle);
-    const UniformDescription* desc = &program->uniformDescriptions[index];
-    switch(desc->type)
+    // TODO: Check currentUniformValues here!
+
+    BindShaderProgram(program);
+    const UniformDefinition* def = &program->uniformDefinitions[index];
+    switch(def->type)
     {
         case FLOAT_UNIFORM:
-            glUniform1i(desc->location, value->f);
+            glUniform1i(def->location, value->f());
             break;
 
         case VEC3_UNIFORM:
-            glUniform3fv(desc->location, 1, value->v3);
+            glUniform3fv(def->location, 1, value->data);
             break;
 
         case VEC4_UNIFORM:
-            glUniform4fv(desc->location, 1, value->v4);
+            glUniform4fv(def->location, 1, value->data);
             break;
 
         case MAT3_UNIFORM:
-            glUniformMatrix3fv(desc->location, 1, GL_FALSE, &(*value->m3)[0][0]);
+            glUniformMatrix3fv(def->location, 1, GL_FALSE, value->data);
             break;
 
         case MAT4_UNIFORM:
-            glUniformMatrix4fv(desc->location, 1, GL_FALSE, &(*value->m4)[0][0]);
+            glUniformMatrix4fv(def->location, 1, GL_FALSE, value->data);
             break;
     }
+}
+
+void SetUniformDefaultValue( ShaderProgram* program, int index, const UniformValue* value )
+{
+    assert(index >= 0);
+    assert(index < program->uniformCount);
+
+    program->defaultUniformValues[index] = *value;
+}
+
+void ResetUniformValue( ShaderProgram* program, int index )
+{
+    assert(index >= 0);
+    assert(index < program->uniformCount);
+
+    const UniformValue* defaultValue = &program->defaultUniformValues[index];
+    SetUniformValue(program, index, defaultValue);
+}
+
+void SetUniformValue( ShaderProgram* program, const char* name, const UniformValue* value )
+{
+    const int index = GetUniformIndex(program, name);
+    if(index != INVALID_UNIFORM_INDEX)
+        SetUniformValue(program, index, value);
+}
+
+void SetUniformDefaultValue( ShaderProgram* program, const char* name, const UniformValue* value )
+{
+    const int index = GetUniformIndex(program, name);
+    if(index != INVALID_UNIFORM_INDEX)
+        SetUniformDefaultValue(program, index, value);
+}
+
+void ResetUniformValue( ShaderProgram* program, const char* name )
+{
+    const int index = GetUniformIndex(program, name);
+    if(index != INVALID_UNIFORM_INDEX)
+        ResetUniformValue(program, index);
 }
