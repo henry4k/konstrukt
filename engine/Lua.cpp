@@ -22,7 +22,9 @@ struct LuaEvent
 };
 std::vector<LuaEvent> g_LuaEvents;
 
+int g_LuaErrorFunction = LUA_NOREF;
 
+int Lua_SetErrorFunction( lua_State* l );
 int Lua_SetEventCallback( lua_State* l );
 int Lua_DefaultErrorFunction( lua_State* l );
 int Lua_Log( lua_State* l );
@@ -47,6 +49,7 @@ bool InitLua()
     lua_createtable(g_LuaState, 0, 0);
     lua_setglobal(g_LuaState, "NATIVE");
 
+    RegisterFunctionInLua("SetErrorFunction", Lua_SetErrorFunction);
     RegisterFunctionInLua("SetEventCallback", Lua_SetEventCallback);
     RegisterFunctionInLua("DefaultErrorFunction", Lua_DefaultErrorFunction);
     RegisterFunctionInLua("Log", Lua_Log);
@@ -189,15 +192,75 @@ void* CheckUserDataFromLua( lua_State* l, int stackPosition, const char* typeNam
 
 void PushLuaErrorFunction( lua_State* l )
 {
-    // TODO: Let the script change the error function.
-    lua_pushcfunction(l, Lua_DefaultErrorFunction);
+    if((g_LuaErrorFunction != LUA_NOREF) ||
+       (g_LuaErrorFunction != LUA_REFNIL))
+    {
+        lua_pushcfunction(l, Lua_DefaultErrorFunction);
+    }
+    else
+    {
+        lua_rawgeti(l, LUA_REGISTRYINDEX, g_LuaErrorFunction);
+    }
+}
+
+int Lua_SetErrorFunction( lua_State* l )
+{
+    luaL_checktype(l, 1, LUA_TFUNCTION);
+    lua_pushvalue(l, 1); // duplicate callback, because luaL_ref pops it
+    g_LuaErrorFunction = luaL_ref(l, LUA_REGISTRYINDEX);
+    return 0;
 }
 
 int Lua_DefaultErrorFunction( lua_State* l )
 {
-    //lua_pushstring(l, "DEFAULT ERROR FUNCTION CALLED! TODO TODO TODO!");
+    //lua_pushstring(l, "DEFAULT ERROR FUNCTION CALLED");
     lua_pushvalue(l, 1);
     return 1;
+}
+
+bool HandleLuaCallResult( lua_State* l, int result )
+{
+    switch(result)
+    {
+        case LUA_ERRRUN:
+            {
+                const char* message = lua_tostring(l, -1);
+                Error("%s", message);
+                lua_pop(l, 1);
+            }
+            return false;
+
+        case LUA_ERRMEM:
+            FatalError("Lua encountered a memory allocation error.");
+            return false;
+
+        case LUA_ERRERR:
+            FatalError("Lua encountered an error while executing the error function.");
+            return false;
+
+        case 0:
+            return true;
+
+        default:
+            FatalError("Unknown call result.");
+            return false;
+    }
+}
+
+bool RunLuaScript( lua_State* l, const char* filePath )
+{
+    PushLuaErrorFunction(l);
+
+    const int loadResult = luaL_loadfile(l, filePath);
+    if(loadResult != 0)
+    {
+        Error("%s", lua_tostring(l, -1));
+        lua_pop(l, 2); // pop error function and error message
+        return false;
+    }
+
+    const int callResult = lua_pcall(l, 0, 0, -2);
+    return HandleLuaCallResult(l, callResult);
 }
 
 int FindLuaEventByName( const char* name )
@@ -227,7 +290,7 @@ int RegisterLuaEvent( const char* name )
     if(id >= 0 || id < g_LuaEvents.size())
         return id;
     else
-        return LUA_INVALID_EVENT;
+        return INVALID_LUA_EVENT;
 }
 
 int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues )
@@ -270,30 +333,10 @@ int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues
         stackSizeAfterCall - (stackSizeBeforeCall-poppedValueCount);
     lua_remove(l, -(returnValueCount+1)); // Remove error function
 
-    switch(callResult)
-    {
-        case LUA_ERRRUN:
-            {
-                const char* message = lua_tostring(l, -1);
-                Error("%s", message);
-                lua_pop(l, 1);
-            }
-            break;
-
-        case LUA_ERRMEM:
-            FatalError("Lua encountered a memory allocation error.");
-
-        case LUA_ERRERR:
-            FatalError("Lua encountered an error while executing the error function.");
-
-        case 0:
-            break;
-
-        default:
-            FatalError("Unknown call result.");
-    }
-
-    return returnValueCount;
+    if(HandleLuaCallResult(l, callResult))
+        return returnValueCount;
+    else
+        return 0;
 }
 
 bool PushArrayToLua( lua_State* l, LuaArrayType elementType, int elementCount, const void* elements )

@@ -82,11 +82,7 @@ bool InitGame( const int argc, char** argv )
 
     Log("-------------------------------");
 
-    int r = luaL_dofile(GetLuaState(), "core/Main.lua");
-    if(r != LUA_OK)
-        Error("%s", lua_tostring(GetLuaState(), -1));
-
-    return true;
+    return RunLuaScript(GetLuaState(), "core/Main.lua");
 }
 
 bool RegisterAllModulesInLua()

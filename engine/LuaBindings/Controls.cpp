@@ -5,8 +5,8 @@
 const char* KEY_CONTROL_ACTION_EVENT_NAME = "KeyControlAction";
 const char* AXIS_CONTROL_ACTION_EVENT_NAME = "AxisControlAction";
 
-int g_KeyControlActionEvent = LUA_INVALID_EVENT;
-int g_AxisControlActionEvent = LUA_INVALID_EVENT;
+int g_KeyControlActionEvent = INVALID_LUA_EVENT;
+int g_AxisControlActionEvent = INVALID_LUA_EVENT;
 
 void OnLuaKeyControlAction( const char* name, bool pressed, void* context )
 {
@@ -46,11 +46,11 @@ int Lua_RegisterAxisControl( lua_State* l )
 bool RegisterControlsInLua()
 {
     g_KeyControlActionEvent = RegisterLuaEvent(KEY_CONTROL_ACTION_EVENT_NAME);
-    if(g_KeyControlActionEvent == LUA_INVALID_EVENT)
+    if(g_KeyControlActionEvent == INVALID_LUA_EVENT)
         return false;
 
     g_AxisControlActionEvent = RegisterLuaEvent(AXIS_CONTROL_ACTION_EVENT_NAME);
-    if(g_AxisControlActionEvent == LUA_INVALID_EVENT)
+    if(g_AxisControlActionEvent == INVALID_LUA_EVENT)
         return false;
 
     return

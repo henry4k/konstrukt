@@ -19,37 +19,32 @@ struct Model
     Mesh* mesh;
     ShaderProgram* program;
     UniformValue* localUniformValues;
-    UniformValueSource* uniformValueSources;
+    bool* useLocalUniformValue;
 };
 
 
 static const int MAX_MODELS = 8;
 static Model Models[MAX_MODELS];
 
-static ShaderProgram DefaultProgram;
+void DrawModel( const Model* model );
 
 bool InitRenderManager()
 {
     memset(Models, 0, sizeof(Models));
-
-    const Shader shaders[] = {
-        LoadShader("core/Shaders/Test.vert"),
-        LoadShader("core/Shaders/Test.frag")
-    };
-    DefaultProgram = LinkShaderProgram(shaders, sizeof(shaders)/sizeof(Shader));
-    BindVertexAttributes(DefaultProgram);
-
     return true;
 }
 
 void DestroyRenderManager()
 {
-    FreeShaderProgram(DefaultProgram);
-
     for(int i = 0; i < MAX_MODELS; i++)
+    {
         if(Models[i].active)
+        {
             Error("Model #%d (%p) was still active when the manager was destroyed.",
                 i, &Models[i]);
+            FreeModel(&Models[i]);
+        }
+    }
 }
 
 void DrawModels( glm::mat4 mvpMatrix )
@@ -71,13 +66,23 @@ static Model* FindInactiveModel()
     return NULL;
 }
 
-Model* CreateModel()
+Model* CreateModel( ShaderProgram* program )
 {
     Model* model = FindInactiveModel();
     if(model)
     {
         memset(model, 0, sizeof(Model));
         model->active = true;
+        model->program = program;
+
+        const int uniformCount = GetUniformCount(program);
+
+        model->localUniformValues = new UniformValue[uniformCount];
+        memset(model->localUniformValues, 0, sizeof(UniformValue)*uniformCount);
+
+        model->useLocalUniformValue = new bool[uniformCount];
+        memset(model->useLocalUniformValue, 0, sizeof(bool)*uniformCount);
+
         return model;
     }
     else
@@ -90,18 +95,8 @@ Model* CreateModel()
 void FreeModel( Model* model )
 {
     model->active = false;
-
-    if(model->localUniformValues)
-    {
-        delete[] model->localUniformValues;
-        model->localUniformValues = NULL;
-    }
-
-    if(model->uniformValueSources)
-    {
-        delete[] model->uniformValueSources;
-        model->uniformValueSources = NULL;
-    }
+    delete[] model->localUniformValues;
+    delete[] model->useLocalUniformValue;
 }
 
 void SetModelTransformation( Model* model, glm::mat4 transformation )
@@ -114,37 +109,12 @@ void SetModelMesh( Model* model, Mesh* mesh )
     model->mesh = mesh;
 }
 
-void SetModelShaderProgram( Model* model, ShaderProgram* program )
-{
-    model->program = program;
-
-    if(model->localUniformValues)
-    {
-        delete[] model->localUniformValues;
-        model->localUniformValues = NULL;
-    }
-
-    if(model->uniformValueSources)
-    {
-        delete[] model->uniformValueSources;
-        model->uniformValueSources = NULL;
-    }
-
-    const int uniformCount = program->uniformCount;
-
-    model->localUniformValues = new UniformValue[uniformCount];
-    memset(model->localUniformValues, 0, sizeof(UniformValue)*uniformCount);
-
-    model->uniformValueSources = new UniformValueSource[uniformCount];
-    memset(model->uniformValueSources, 0, sizeof(UniformValueSource)*uniformCount);
-}
-
 void SetModelUniform( Model* model, const char* name, UniformValue* value )
 {
     const int index = GetUniformIndex(model->program, name);
     if(index != INVALID_UNIFORM_INDEX)
     {
-        model->uniformValueSources[index] = LOCAL_UNIFORM_VALUE;
+        model->useLocalUniformValue[index] = true;
         model->localUniformValues[index] = *value;
     }
 }
@@ -153,31 +123,24 @@ void UnsetModelUniform( Model* model, const char* name )
 {
     const int index = GetUniformIndex(model->program, name);
     if(index != INVALID_UNIFORM_INDEX)
-        model->uniformValueSources[index] = DEFAULT_UNIFORM_VALUE;
+        model->useLocalUniformValue[index] = false;
 }
 
 void DrawModel( const Model* model )
 {
-    const ShaderProgram* program = model->program;
-    const int uniformCount = program->uniformCount;
+    if(!model->mesh)
+        return;
 
+    ShaderProgram* program = model->program;
     BindShaderProgram(program);
 
-    const UniformValue* uniformValueSources[UNIFORM_VALUE_SOURCE_COUNT] =
-    {
-        program->defaultUniformValues, // DEFAULT_UNIFORM_VALUE
-        model->localUniformValues      // LOCAL_UNIFORM_VALUE
-    };
-
+    const int uniformCount = GetUniformCount(program);
     for(int i = 0; i < uniformCount; i++)
     {
-        const int source = model->uniformValueSources[i];
-
-        SetUniformValueInShaderProgram(
-            program,
-            i,
-            uniformValueSources[source][i]
-        );
+        if(model->useLocalUniformValue[i])
+            SetUniform(program, i, &model->localUniformValues[i]);
+        else
+            ResetUniform(program, i);
     }
 
     DrawMesh(model->mesh);

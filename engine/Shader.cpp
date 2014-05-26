@@ -347,6 +347,8 @@ ShaderProgram* LinkShaderProgram( const Shader* shaders, int shaderCount )
 
     ReadUniformDefinitions(program);
 
+    BindVertexAttributes(program->handle);
+
     return program;
 }
 
@@ -366,12 +368,17 @@ void FreeShaderProgram( ShaderProgram* program )
     delete program;
 }
 
-void BindShaderProgram( ShaderProgram* program )
+void BindShaderProgram( const ShaderProgram* program )
 {
     glUseProgram(program->handle);
 }
 
-int GetUniformIndex( ShaderProgram* program, const char* name )
+int GetUniformCount( const ShaderProgram* program )
+{
+    return program->uniformCount;
+}
+
+int GetUniformIndex( const ShaderProgram* program, const char* name )
 {
     for(int i = 0; i < program->uniformCount; i++)
         if(strncmp(name, program->uniformDefinitions[i].name, MAX_UNIFORM_NAME_LENGTH) == 0)
@@ -379,7 +386,7 @@ int GetUniformIndex( ShaderProgram* program, const char* name )
     return INVALID_UNIFORM_INDEX;
 }
 
-void SetUniformValue( ShaderProgram* program, int index, const UniformValue* value )
+void SetUniform( ShaderProgram* program, int index, const UniformValue* value )
 {
     assert(program);
     assert(index >= 0);
@@ -414,7 +421,7 @@ void SetUniformValue( ShaderProgram* program, int index, const UniformValue* val
     }
 }
 
-void SetUniformDefaultValue( ShaderProgram* program, int index, const UniformValue* value )
+void SetUniformDefault( ShaderProgram* program, int index, const UniformValue* value )
 {
     assert(index >= 0);
     assert(index < program->uniformCount);
@@ -422,32 +429,32 @@ void SetUniformDefaultValue( ShaderProgram* program, int index, const UniformVal
     program->defaultUniformValues[index] = *value;
 }
 
-void ResetUniformValue( ShaderProgram* program, int index )
+void ResetUniform( ShaderProgram* program, int index )
 {
     assert(index >= 0);
     assert(index < program->uniformCount);
 
     const UniformValue* defaultValue = &program->defaultUniformValues[index];
-    SetUniformValue(program, index, defaultValue);
+    SetUniform(program, index, defaultValue);
 }
 
-void SetUniformValue( ShaderProgram* program, const char* name, const UniformValue* value )
+void SetUniform( ShaderProgram* program, const char* name, const UniformValue* value )
 {
     const int index = GetUniformIndex(program, name);
     if(index != INVALID_UNIFORM_INDEX)
-        SetUniformValue(program, index, value);
+        SetUniform(program, index, value);
 }
 
-void SetUniformDefaultValue( ShaderProgram* program, const char* name, const UniformValue* value )
+void SetUniformDefault( ShaderProgram* program, const char* name, const UniformValue* value )
 {
     const int index = GetUniformIndex(program, name);
     if(index != INVALID_UNIFORM_INDEX)
-        SetUniformDefaultValue(program, index, value);
+        SetUniformDefault(program, index, value);
 }
 
-void ResetUniformValue( ShaderProgram* program, const char* name )
+void ResetUniform( ShaderProgram* program, const char* name )
 {
     const int index = GetUniformIndex(program, name);
     if(index != INVALID_UNIFORM_INDEX)
-        ResetUniformValue(program, index);
+        ResetUniform(program, index);
 }

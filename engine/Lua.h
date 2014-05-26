@@ -41,7 +41,7 @@ luaL_error - raises an error (return luaL_error(...))
 
 enum
 {
-    LUA_INVALID_EVENT = -1
+    INVALID_LUA_EVENT = -1
 };
 
 enum LuaArrayType
@@ -137,13 +137,18 @@ void* GetUserDataFromLua( lua_State* l, int stackPosition, const char* typeName 
 void* CheckUserDataFromLua( lua_State* l, int stackPosition, const char* typeName );
 
 /**
+ * Loads a script from `filePath` and executes it.
+ */
+bool RunLuaScript( lua_State* l, const char* filePath );
+
+/**
  * Registers a new event and returns its id.
  *
  * @note
  * An event may only be registered once.
  *
  * @return
- * The events id or `LUA_INVALID_EVENT` if something went wrong.
+ * The events id or `INVALID_LUA_EVENT` if something went wrong.
  */
 int RegisterLuaEvent( const char* name );
 

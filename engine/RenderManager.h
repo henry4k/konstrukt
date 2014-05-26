@@ -12,11 +12,10 @@ bool InitRenderManager();
 void DestroyRenderManager();
 void DrawModels( glm::mat4 mvpMatrix );
 
-Model* CreateModel();
+Model* CreateModel( ShaderProgram* program );
 void FreeModel( Model* model );
 void SetModelTransformation( Model* model, glm::mat4 transformation );
 void SetModelMesh( Model* model, Mesh* mesh );
-void SetModelShaderProgram( Model* model, ShaderProgram* program );
 
 void SetModelUniform( Model* model, const char* name, UniformValue* value );
 void UnsetModelUniform( Model* model, const char* name );

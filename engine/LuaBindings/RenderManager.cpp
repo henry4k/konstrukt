@@ -5,6 +5,7 @@
 #include "../RenderManager.h"
 #include "Math.h"
 #include "Mesh.h"
+#include "Shader.h"
 #include "RenderManager.h"
 
 
@@ -20,7 +21,9 @@ int Lua_Model_destructor( lua_State* l )
 
 int Lua_CreateModel( lua_State* l )
 {
-    Model* model = CreateModel();
+    ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
+
+    Model* model = CreateModel(program);
     if(model)
     {
         if(CopyUserDataToLua(l, MODEL_TYPE, sizeof(model), &model))
@@ -28,10 +31,7 @@ int Lua_CreateModel( lua_State* l )
         else
             FreeModel(model);
     }
-    else
-    {
-        luaL_error(l, "Can't create more models.");
-    }
+    luaL_error(l, "Can't create more models.");
     return 0;
 }
 
@@ -44,6 +44,14 @@ int Lua_SetModelTransformation( lua_State* l )
 }
 
 int Lua_SetModelMesh( lua_State* l )
+{
+    Model* model = CheckModelFromLua(l, 1);
+    Mesh* mesh = CheckMeshFromLua(l, 2);
+    SetModelMesh(model, mesh);
+    return 0;
+}
+
+int Lua_SetModelUniform( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
     Mesh* mesh = CheckMeshFromLua(l, 2);

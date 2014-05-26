@@ -68,20 +68,22 @@ ShaderProgram* LinkShaderProgram( const Shader* shaders, int shaderCount );
  */
 void FreeShaderProgram( ShaderProgram* program );
 
-void BindShaderProgram( ShaderProgram* program );
+void BindShaderProgram( const ShaderProgram* program );
+
+int GetUniformCount( const ShaderProgram* program );
 
 /**
  * @return
  * The uniforms index or #INVALID_UNIFORM_INDEX.
  */
-int GetUniformIndex( ShaderProgram* program, const char* name );
+int GetUniformIndex( const ShaderProgram* program, const char* name );
 
-void SetUniformValue( ShaderProgram* program, int index, const UniformValue* value );
-void SetUniformDefaultValue( ShaderProgram* program, int index, const UniformValue* value );
-void ResetUniformValue( ShaderProgram* program, int index );
+void SetUniform( ShaderProgram* program, int index, const UniformValue* value );
+void SetUniformDefault( ShaderProgram* program, int index, const UniformValue* value );
+void ResetUniform( ShaderProgram* program, int index );
 
-void SetUniformValue( ShaderProgram* program, const char* name, const UniformValue* value );
-void SetUniformDefaultValue( ShaderProgram* program, const char* name, const UniformValue* value );
-void ResetUniformValue( ShaderProgram* program, const char* name );
+void SetUniform( ShaderProgram* program, const char* name, const UniformValue* value );
+void SetUniformDefault( ShaderProgram* program, const char* name, const UniformValue* value );
+void ResetUniform( ShaderProgram* program, const char* name );
 
 #endif

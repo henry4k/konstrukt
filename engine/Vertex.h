@@ -16,7 +16,7 @@ struct Vertex
 };
 
 void EnableVertexArrays();
-void BindVertexAttributes( GLuint shader );
+void BindVertexAttributes( GLuint programHandle );
 void SetVertexAttributePointers( const void* data );
 
 

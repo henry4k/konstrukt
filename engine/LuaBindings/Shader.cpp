@@ -72,17 +72,17 @@ int Lua_LinkShaderProgram( lua_State* l )
     }
 }
 
-int Lua_SetFloatUniformValue( lua_State* l )
+int Lua_SetFloatUniform( lua_State* l )
 {
     ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
     const char* name = luaL_checkstring(l, 2);
     UniformValue value;
     value.f() = luaL_checknumber(l, 3);
-    SetUniformValue(program, name, &value);
+    SetUniform(program, name, &value);
     return 0;
 }
 
-int Lua_SetVectorUniformValue( lua_State* l )
+int Lua_SetVectorUniform( lua_State* l )
 {
     ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
     const char* name = luaL_checkstring(l, 2);
@@ -108,16 +108,16 @@ int Lua_SetVectorUniformValue( lua_State* l )
         }
     }
 
-    SetUniformValue(program, name, &uniformValue);
+    SetUniform(program, name, &uniformValue);
     return 0;
 }
 
-int Lua_SetMatrix4UniformValue( lua_State* l )
+int Lua_SetMatrix4Uniform( lua_State* l )
 {
     ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
     const char* name = luaL_checkstring(l, 2);
     const glm::mat4* value = CheckMatrix4FromLua(l, 3);
-    SetUniformValue(program, name, (const UniformValue*)value);
+    SetUniform(program, name, (const UniformValue*)value);
     return 0;
 }
 
@@ -132,9 +132,9 @@ bool RegisterShaderInLua()
     return
         RegisterFunctionInLua("LoadShader", Lua_LoadShader) &&
         RegisterFunctionInLua("LinkShaderProgram", Lua_LinkShaderProgram) &&
-        RegisterFunctionInLua("SetFloatUniformValue", Lua_SetFloatUniformValue) &&
-        RegisterFunctionInLua("SetVectorUniformValue", Lua_SetVectorUniformValue) &&
-        RegisterFunctionInLua("SetMatrix4UniformValue", Lua_SetMatrix4UniformValue);
+        RegisterFunctionInLua("SetFloatUniform", Lua_SetFloatUniform) &&
+        RegisterFunctionInLua("SetVectorUniform", Lua_SetVectorUniform) &&
+        RegisterFunctionInLua("SetMatrix4Uniform", Lua_SetMatrix4Uniform);
 }
 
 Shader GetShaderFromLua( lua_State* l, int stackPosition )

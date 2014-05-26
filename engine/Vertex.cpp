@@ -19,13 +19,13 @@ void EnableVertexArrays()
     glEnableVertexAttribArray(VERTEX_TANGENT);
 }
 
-void BindVertexAttributes( GLuint shader )
+void BindVertexAttributes( GLuint programHandle )
 {
-    glBindAttribLocation(shader, VERTEX_POSITION, "VertexPosition");
-    glBindAttribLocation(shader, VERTEX_COLOR,    "VertexColor");
-    glBindAttribLocation(shader, VERTEX_TEXCOORD, "VertexTexCoord");
-    glBindAttribLocation(shader, VERTEX_NORMAL,   "VertexNormal");
-    glBindAttribLocation(shader, VERTEX_TANGENT,  "VertexTangent");
+    glBindAttribLocation(programHandle, VERTEX_POSITION, "VertexPosition");
+    glBindAttribLocation(programHandle, VERTEX_COLOR,    "VertexColor");
+    glBindAttribLocation(programHandle, VERTEX_TEXCOORD, "VertexTexCoord");
+    glBindAttribLocation(programHandle, VERTEX_NORMAL,   "VertexNormal");
+    glBindAttribLocation(programHandle, VERTEX_TANGENT,  "VertexTangent");
 }
 
 void SetVertexAttributePointers( const void* data )

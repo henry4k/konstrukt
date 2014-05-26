@@ -4,7 +4,7 @@
 const char* AUDIO_BUFFER_TYPE = "AudioBuffer";
 const char* STOP_AUDIO_SOURCE_EVENT_NAME = "StopAudioSource";
 
-int g_StopAudioSourceEvent = LUA_INVALID_EVENT;
+int g_StopAudioSourceEvent = INVALID_LUA_EVENT;
 
 int Lua_AudioBuffer_destructor( lua_State* l )
 {
@@ -127,7 +127,7 @@ bool RegisterAudioInLua()
         return false;
 
     g_StopAudioSourceEvent = RegisterLuaEvent(STOP_AUDIO_SOURCE_EVENT_NAME);
-    if(g_StopAudioSourceEvent == LUA_INVALID_EVENT)
+    if(g_StopAudioSourceEvent == INVALID_LUA_EVENT)
         return false;
 
     return

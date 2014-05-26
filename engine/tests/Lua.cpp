@@ -100,13 +100,31 @@ int main()
             Require(retrievedData->value == 43);
         })
 
+        .it("can run script files.", [](){
+
+            LuaScope luaScope;
+            lua_State* l = GetLuaState();
+
+            const bool success = RunLuaScript(l, "engine/tests/lua/Test.lua");
+            Require(success);
+        })
+
+        .it("can't run non existent script files.", [](){
+
+            LuaScope luaScope;
+            lua_State* l = GetLuaState();
+
+            const bool success = RunLuaScript(l, "NonExistentScriptFile");
+            Require(!success);
+        })
+
         .it("can fire events.", [](){
 
             LuaScope luaScope;
             lua_State* l = GetLuaState();
 
             const int event = RegisterLuaEvent("MyEvent");
-            Require(event != LUA_INVALID_EVENT);
+            Require(event != INVALID_LUA_EVENT);
 
             int r = luaL_dostring(l,
                 "function MyEventHandler( a, b )\n"
