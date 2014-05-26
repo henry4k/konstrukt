@@ -5,7 +5,12 @@ local Matrix4 = require 'core/Matrix4'
 local ShaderProgram = class('core/ShaderProgram')
 
 function ShaderProgram:initialize( ... )
-    self.handle = NATIVE.LinkShaderProgram(...)
+    local shaders = {...}
+    local shaderHandles = {}
+    for i,v in ipairs(shaders) do
+        shaderHandles[i] = v.handle
+    end
+    self.handle = NATIVE.LinkShaderProgram(table.unpack(shaderHandles))
 end
 
 function ShaderProgram:setNumberUniform( name, number )

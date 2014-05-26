@@ -3,8 +3,8 @@ local class = require 'middleclass'
 
 local Model = class('core/Model')
 
-function Model:initialize( fileName )
-    self.handle = NATIVE.CreateModel()
+function Model:initialize( shaderProgram )
+    self.handle = NATIVE.CreateModel(shaderProgram.handle)
 end
 
 function Model:setMesh( mesh )

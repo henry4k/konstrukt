@@ -16,9 +16,7 @@ void TestLogHandler( LogLevel level, const char* line )
 
         case LOG_ERROR:
         case LOG_FATAL_ERROR:
-            //dummyLog("%s", line);
-            fprintf(stderr, "%s", line);
-
+            dummyLog("%s", line);
             break;
 
         default:

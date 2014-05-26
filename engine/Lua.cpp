@@ -26,7 +26,7 @@ int g_LuaErrorFunction = LUA_NOREF;
 
 int Lua_SetErrorFunction( lua_State* l );
 int Lua_SetEventCallback( lua_State* l );
-int Lua_DefaultErrorFunction( lua_State* l );
+int Lua_ErrorProxy( lua_State* l );
 int Lua_Log( lua_State* l );
 
 
@@ -51,7 +51,6 @@ bool InitLua()
 
     RegisterFunctionInLua("SetErrorFunction", Lua_SetErrorFunction);
     RegisterFunctionInLua("SetEventCallback", Lua_SetEventCallback);
-    RegisterFunctionInLua("DefaultErrorFunction", Lua_DefaultErrorFunction);
     RegisterFunctionInLua("Log", Lua_Log);
 
     return true;
@@ -190,31 +189,40 @@ void* CheckUserDataFromLua( lua_State* l, int stackPosition, const char* typeNam
     }
 }
 
-void PushLuaErrorFunction( lua_State* l )
-{
-    if((g_LuaErrorFunction != LUA_NOREF) ||
-       (g_LuaErrorFunction != LUA_REFNIL))
-    {
-        lua_pushcfunction(l, Lua_DefaultErrorFunction);
-    }
-    else
-    {
-        lua_rawgeti(l, LUA_REGISTRYINDEX, g_LuaErrorFunction);
-    }
-}
-
 int Lua_SetErrorFunction( lua_State* l )
 {
     luaL_checktype(l, 1, LUA_TFUNCTION);
     lua_pushvalue(l, 1); // duplicate callback, because luaL_ref pops it
+    const int old = g_LuaErrorFunction;
     g_LuaErrorFunction = luaL_ref(l, LUA_REGISTRYINDEX);
-    return 0;
+
+    if((old != LUA_NOREF) &&
+       (old != LUA_REFNIL))
+    {
+        lua_rawgeti(l, LUA_REGISTRYINDEX, old);
+        luaL_unref(l, LUA_REGISTRYINDEX, old);
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
-int Lua_DefaultErrorFunction( lua_State* l )
+int Lua_ErrorProxy( lua_State* l )
 {
-    //lua_pushstring(l, "DEFAULT ERROR FUNCTION CALLED");
-    lua_pushvalue(l, 1);
+    if((g_LuaErrorFunction != LUA_NOREF) &&
+       (g_LuaErrorFunction != LUA_REFNIL))
+    {
+        lua_rawgeti(l, LUA_REGISTRYINDEX, g_LuaErrorFunction);
+        lua_pushvalue(l, 1);
+        lua_call(l, 1, 1);
+    }
+    else
+    {
+        const char* message = lua_tostring(l, 1);
+        lua_pushfstring(l, "(Via fallback error handler:) %s", message);
+    }
     return 1;
 }
 
@@ -249,7 +257,7 @@ bool HandleLuaCallResult( lua_State* l, int result )
 
 bool RunLuaScript( lua_State* l, const char* filePath )
 {
-    PushLuaErrorFunction(l);
+    lua_pushcfunction(l, Lua_ErrorProxy);
 
     const int loadResult = luaL_loadfile(l, filePath);
     if(loadResult != 0)
@@ -307,7 +315,7 @@ int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues
         return 0;
     }
 
-    PushLuaErrorFunction(l);
+    lua_pushcfunction(l, Lua_ErrorProxy);
     lua_insert(l, -(argumentCount+1)); // Move before arguments
 
     lua_rawgeti(l, LUA_REGISTRYINDEX, event->callbackReference);

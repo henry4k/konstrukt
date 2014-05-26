@@ -26,7 +26,8 @@ struct Model
 static const int MAX_MODELS = 8;
 static Model Models[MAX_MODELS];
 
-void DrawModel( const Model* model );
+
+static void DrawModel( const Model* model, glm::mat4* mvpMatrix );
 
 bool InitRenderManager()
 {
@@ -54,8 +55,32 @@ void DrawModels( glm::mat4 mvpMatrix )
     {
         const Model* model = &Models[i];
         if(model->active)
-            DrawModel(model);
+            DrawModel(model, &mvpMatrix);
     }
+}
+
+static void DrawModel( const Model* model, glm::mat4* mvpMatrix )
+{
+    if(!model->mesh)
+        return;
+
+    ShaderProgram* program = model->program;
+    BindShaderProgram(program);
+
+    UniformValue mvpUniformValue;
+    mvpUniformValue.m4() = *mvpMatrix;
+    SetUniformDefault(program, "MVP", &mvpUniformValue);
+
+    const int uniformCount = GetUniformCount(program);
+    for(int i = 0; i < uniformCount; i++)
+    {
+        if(model->useLocalUniformValue[i])
+            SetUniform(program, i, &model->localUniformValues[i]);
+        else
+            ResetUniform(program, i);
+    }
+
+    DrawMesh(model->mesh);
 }
 
 static Model* FindInactiveModel()
@@ -124,24 +149,4 @@ void UnsetModelUniform( Model* model, const char* name )
     const int index = GetUniformIndex(model->program, name);
     if(index != INVALID_UNIFORM_INDEX)
         model->useLocalUniformValue[index] = false;
-}
-
-void DrawModel( const Model* model )
-{
-    if(!model->mesh)
-        return;
-
-    ShaderProgram* program = model->program;
-    BindShaderProgram(program);
-
-    const int uniformCount = GetUniformCount(program);
-    for(int i = 0; i < uniformCount; i++)
-    {
-        if(model->useLocalUniformValue[i])
-            SetUniform(program, i, &model->localUniformValues[i]);
-        else
-            ResetUniform(program, i);
-    }
-
-    DrawMesh(model->mesh);
 }
