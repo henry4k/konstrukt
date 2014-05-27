@@ -1,9 +1,0 @@
-[Dolphin]
-AdditionalInfoV2=Details_Size,Details_Date,CustomizedDetails
-PreviewsShown=true
-ShowPreview=true
-SortOrder=1
-Timestamp=2013,10,18,23,37,26
-Version=3
-ViewMode=1
-VisibleRoles=Details_text,Details_date,Details_size,CustomizedDetails
