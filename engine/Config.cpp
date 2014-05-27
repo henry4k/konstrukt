@@ -13,7 +13,7 @@ map<string,string> g_ConfigValues;
 
 int IniEntryCallback( void* user, const char* section, const char* name, const char* value );
 
-bool InitConfig( const int argc, char** argv )
+bool InitConfig( const int argc, char const * const * argv )
 {
     // Try to load config.ini in working directory ...
     ini_parse("config.ini", IniEntryCallback, NULL);
@@ -104,15 +104,17 @@ bool GetConfigBool( const char* key, bool defaultValue )
         case 'F':
             return false;
 
+        /*
         case '1':
         case 'y':
         case 'Y':
         case 't':
         case 'T':
             return true;
+        */
 
         default:
-            return defaultValue;
+            return true;
     }
 }
 
@@ -121,7 +123,7 @@ int IniEntryCallback( void* user, const char* section, const char* name, const c
     using namespace std;
 
     string key;
-    if(section == NULL)
+    if(section == NULL || section[0] == '\0')
         key = string(name);
     else
         key = string(section) + string(".") + string(name);

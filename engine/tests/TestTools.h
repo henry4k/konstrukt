@@ -13,7 +13,7 @@
 
 using namespace dummy;
 
-void InitTests();
+void InitTests( int argc, char const * const * argv );
 int RunTests();
 
 #endif

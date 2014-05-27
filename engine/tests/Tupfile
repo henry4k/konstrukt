@@ -4,3 +4,4 @@ include_rules
 : PhysicsManager.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  PhysicsManager.t
 : Lua.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  Lua.t
 : Common.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  Common.t
+: Config.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  Config.t

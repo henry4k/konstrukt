@@ -77,9 +77,9 @@ DUMMY_INLINE_TEST("Log handler can handle log lines.", dummySignalSandbox)
 }
 
 
-int main()
+int main( int argc, char** argv )
 {
-    InitTests();
+    InitTests(argc, argv);
     dummyAddInlineTests();
     return RunTests();
 }

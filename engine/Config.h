@@ -1,7 +1,7 @@
 #ifndef __CONFIG__
 #define __CONFIG__
 
-bool InitConfig( const int argc, char** argv );
+bool InitConfig( const int argc, char const * const * argv );
 void DestroyConfig();
 const char* GetConfigString( const char* key, const char* defaultValue );
 int   GetConfigInt( const char* key, int defaultValue );

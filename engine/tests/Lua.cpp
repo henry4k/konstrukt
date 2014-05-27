@@ -26,9 +26,9 @@ public:
 };
 
 
-int main()
+int main( int argc, char** argv )
 {
-    InitTests();
+    InitTests(argc, argv);
 
     Describe("Lua module")
         .use(dummyExceptionSandbox)
@@ -105,7 +105,7 @@ int main()
             LuaScope luaScope;
             lua_State* l = GetLuaState();
 
-            const bool success = RunLuaScript(l, "engine/tests/lua/Test.lua");
+            const bool success = RunLuaScript(l, "lua/Test.lua");
             Require(success);
         })
 

@@ -12,9 +12,9 @@ public:
     void destroy() { DestroyPhysicsManager(); destroyed = true; };
 };
 
-int main()
+int main( int argc, char** argv )
 {
-    InitTests();
+    InitTests(argc, argv);
 
     Describe("Physics manager")
         .use(dummyExceptionSandbox)
