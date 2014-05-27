@@ -53,7 +53,7 @@ void AppendMeshBuffer( MeshBuffer* buffer, const MeshBuffer* otherBuffer, const 
 
     const int start = buffer->vertices.size();
     buffer->vertices.insert(
-        buffer->vertices.begin(),
+        buffer->vertices.end(),
         otherBuffer->vertices.begin(),
         otherBuffer->vertices.end()
     );

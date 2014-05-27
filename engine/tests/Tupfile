@@ -6,3 +6,4 @@ include_rules
 : Common.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  Common.t
 : Config.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  Config.t
 : Math.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  Math.t
+: MeshBuffer.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  MeshBuffer.t

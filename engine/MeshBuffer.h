@@ -5,6 +5,8 @@
 #include "Vertex.h"
 #include "Math.h"
 
+// TODO: Hide MeshBuffer structure and provide a better API instead.
+
 struct MeshBuffer
 {
     std::vector<Vertex> vertices;
