@@ -18,6 +18,7 @@ enum LogLevel
 typedef void (*LogHandler)( LogLevel level, const char* line );
 void DefaultLogHandler( LogLevel level, const char* line );
 void SetLogHandler( LogHandler handler );
+LogHandler GetLogHandler();
 
 void LogV( LogLevel level, const char* format, va_list vl );
 

@@ -53,6 +53,11 @@ void SetLogHandler( LogHandler handler )
     g_LogHandler = handler;
 }
 
+LogHandler GetLogHandler()
+{
+    return g_LogHandler;
+}
+
 void LogV( LogLevel level, const char* format, va_list vl )
 {
     static char buffer[512];
