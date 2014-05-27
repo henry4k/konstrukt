@@ -74,6 +74,7 @@ void ChangeDirectoryToExecutableOrigin( const char* executablePath )
         char buffer[256];
         const int length = lastSeperator - executablePath;
         strncpy(buffer, executablePath, length);
+        buffer[length] = '\0';
         ChangeDirectory(buffer);
     }
     else
