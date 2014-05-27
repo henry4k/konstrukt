@@ -11,6 +11,7 @@ Vertex CreateVertex( float x, float y, float z )
     Vertex v;
     memset(&v, 0, sizeof(v));
     v.position = vec3(x,y,z);
+    v.normal = vec3(0,1,0);
     return v;
 }
 
