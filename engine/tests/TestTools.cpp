@@ -32,6 +32,7 @@ void InitTests( int argc, char const * const * argv )
     ChangeDirectoryToExecutableOrigin(argv[0]);
     SetLogHandler(TestLogHandler);
     dummyInit(dummyGetTAPReporter(stdout));
+    dummyAddInlineTests();
 }
 
 int RunTests()

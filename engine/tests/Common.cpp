@@ -3,7 +3,7 @@
 #include "TestTools.h"
 
 
-DUMMY_INLINE_TEST("Format() works correct.", dummySignalSandbox)
+InlineTest("Format() works correct.", dummySignalSandbox)
 {
     Require(strcmp(Format("foo"), "foo") == 0);
     Require(strcmp(Format("bar%d",1), "bar1") == 0);
@@ -18,7 +18,7 @@ DUMMY_INLINE_TEST("Format() works correct.", dummySignalSandbox)
 LogHandler OriginalLogHandler;
 int CallCount;
 
-DUMMY_INLINE_TEST("Log handler can handle log lines.", dummySignalSandbox)
+InlineTest("Log handler can handle log lines.", dummySignalSandbox)
 {
     OriginalLogHandler = GetLogHandler();
     dummyAddCleanup(
@@ -80,6 +80,5 @@ DUMMY_INLINE_TEST("Log handler can handle log lines.", dummySignalSandbox)
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
-    dummyAddInlineTests();
     return RunTests();
 }
