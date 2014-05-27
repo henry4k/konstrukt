@@ -6,8 +6,6 @@ using namespace glm;
 
 InlineTest("Identical boxes overlap.", dummySignalSandbox)
 {
-    dummyMarkTestAsTodo(NULL);
-
     Box box;
     box.position = vec3(0,0,0);
     box.halfWidth = vec3(1,1,1);
@@ -105,8 +103,6 @@ InlineTest("Resting separated boxes don't collide.", dummySignalSandbox)
 
 InlineTest("Moving separated boxes can collide.", dummySignalSandbox)
 {
-    dummyMarkTestAsTodo(NULL);
-
     Box a;
     a.position = vec3(0,0,0);
     a.halfWidth = vec3(1,1,1);
@@ -134,8 +130,6 @@ InlineTest("Moving separated boxes can collide.", dummySignalSandbox)
 
 InlineTest("Resting overlapping boxes collide.", dummySignalSandbox)
 {
-    dummyMarkTestAsTodo(NULL);
-
     Box a;
     a.position = vec3(0,0,0);
     a.halfWidth = vec3(1,1,1);
@@ -161,8 +155,6 @@ InlineTest("Resting overlapping boxes collide.", dummySignalSandbox)
 
 InlineTest("Moving overlapping boxes collide.", dummySignalSandbox)
 {
-    dummyMarkTestAsTodo(NULL);
-
     Box a;
     a.position = vec3(0,0,0);
     a.halfWidth = vec3(1,1,1);
