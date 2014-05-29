@@ -26,7 +26,7 @@ Use the `const` attribute whenever possible.
 Begin names with an underscore to mark them as private.  
 Like `_myPrivateAttribute`.
 
-Package names resemble the file path that refers to the module:
+Package names resemble the file path that refers to the modue:
 `core/welder/WelderEffects` refers to `core/welder/WelderEffects.lua`.
 
 Classes created using middleclass,
@@ -45,6 +45,21 @@ Statements should be ordered by their importance in a file:
 3. Definitions
 
 Separate them by using 2 empty lines.
+
+
+### C/C++
+
+Hide as much implementation details as possible!  
+E.g. don't declare structures in the header, but forward-declare them:
+    struct MeshBuffer;
+    MeshBuffer* CreateMeshBuffer();
+    FreeMeshBuffer( MeshBuffer* buffer );
+You can then be sure, that the only way to modify the MeshBuffer is to
+*use the modules functions*.  
+That makes testing alot easier.
+
+An exception to this rule are performance critical parts:
+Structures that are *created in huge amounts* and are probably *accessed very often*.
 
 
 Documentation
