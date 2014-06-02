@@ -13,9 +13,9 @@ static const Texture INVALID_TEXTURE = 0;
 
 enum TextureOptions
 {
-    TEX_MIPMAP,
-    TEX_FILTER,
-    TEX_CLAMP
+    TEX_MIPMAP = (1 << 0),
+    TEX_FILTER = (1 << 1),
+    TEX_CLAMP  = (1 << 2)
 };
 
 Texture Create2dTexture( int options, const Image* image );

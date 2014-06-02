@@ -24,6 +24,7 @@
 #include "LuaBindings/Player.h"
 #include "LuaBindings/RenderManager.h"
 #include "LuaBindings/Shader.h"
+#include "LuaBindings/Texture.h"
 
 
 void OnFramebufferResize( int width, int height );
@@ -96,7 +97,8 @@ bool RegisterAllModulesInLua()
         RegisterMeshBufferInLua() &&
         RegisterPlayerInLua() &&
         RegisterRenderManagerInLua() &&
-        RegisterShaderInLua();
+        RegisterShaderInLua() &&
+        RegisterTextureInLua();
 }
 
 void DestroyGame()
