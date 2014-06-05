@@ -4,26 +4,35 @@
 #include "PhysicsManager.h"
 
 
-static const int MAX_PHYSICS_OBJECTS = 8;
-static PhysicsObject PhysicsObjects[MAX_PHYSICS_OBJECTS];
+struct Solid
+{
+    bool active;
+    glm::vec3 position;
+    Aabb* collisionShapes;
+    int collisionShapeCount;
+};
+
+
+static const int MAX_SOLIDS = 8;
+static Solid Solids[MAX_SOLIDS];
 
 bool InitPhysicsManager()
 {
-    memset(PhysicsObjects, 0, sizeof(PhysicsObjects));
+    memset(Solids, 0, sizeof(Solids));
     return true;
 }
 
 void DestroyPhysicsManager()
 {
-    for(int i = 0; i < MAX_PHYSICS_OBJECTS; i++)
-        if(PhysicsObjects[i].active)
-            Error("Physics object #%d (%p) was still active when the manager was destroyed.",
-                i, &PhysicsObjects[i]);
+    for(int i = 0; i < MAX_SOLIDS; i++)
+        if(Solids[i].active)
+            Error("Solid #%d (%p) was still active when the manager was destroyed.",
+                i, &Solids[i]);
 }
 
-static void UpdatePhysicsObject( PhysicsObject* object )
+static void UpdateSolid( Solid* solid )
 {
-    if(!object->active)
+    if(!solid->active)
         return;
 
     // TODO: Run simulation here!
@@ -31,35 +40,35 @@ static void UpdatePhysicsObject( PhysicsObject* object )
 
 void UpdatePhysicsManager( double timeDelta )
 {
-    for(int i = 0; i < MAX_PHYSICS_OBJECTS; i++)
-        UpdatePhysicsObject(&PhysicsObjects[i]);
+    for(int i = 0; i < MAX_SOLIDS; i++)
+        UpdateSolid(&Solids[i]);
 }
 
-static PhysicsObject* FindInactivePhysicsObject()
+static Solid* FindInactiveSolid()
 {
-    for(int i = 0; i < MAX_PHYSICS_OBJECTS; i++)
-        if(!PhysicsObjects[i].active)
-            return &PhysicsObjects[i];
+    for(int i = 0; i < MAX_SOLIDS; i++)
+        if(!Solids[i].active)
+            return &Solids[i];
     return NULL;
 }
 
-PhysicsObject* CreatePhysicsObject()
+Solid* CreateSolid()
 {
-    PhysicsObject* object = FindInactivePhysicsObject();
-    if(object)
+    Solid* solid = FindInactiveSolid();
+    if(solid)
     {
-        memset(object, 0, sizeof(PhysicsObject));
-        object->active = true;
-        return object;
+        memset(solid, 0, sizeof(Solid));
+        solid->active = true;
+        return solid;
     }
     else
     {
-        Error("Can't create more physics objects.");
+        Error("Can't create more solids.");
         return NULL;
     }
 }
 
-void FreePhysicsObject( PhysicsObject* object )
+void FreeSolid( Solid* solid )
 {
-    object->active = false;
+    solid->active = false;
 }
