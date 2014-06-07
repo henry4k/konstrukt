@@ -3,7 +3,7 @@ import sys
 import bpy
 
 current_dir = os.path.dirname(__file__)
-module_path = os.path.join(current_dir,'..','..','third-party','io_scene_json')
+module_path = os.path.join(current_dir,'..','third-party','io_scene_json')
 module_path = os.path.abspath(module_path)
 sys.path.append(module_path)
 
