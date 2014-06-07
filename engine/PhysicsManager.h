@@ -4,25 +4,14 @@
 #include "Math.h"
 
 
-enum PhysicsFlags
-{
-    // nothing here yet
-};
+struct Solid;
 
-struct PhysicsObject
-{
-    bool active;
-    glm::vec3 position;
-    int physicsFlags;
-    Aabb* collisionShapes;
-    int collisionShapeCount;
-};
 
 bool InitPhysicsManager();
 void DestroyPhysicsManager();
 void UpdatePhysicsManager( double timeDelta );
 
-PhysicsObject* CreatePhysicsObject();
-void FreePhysicsObject( PhysicsObject* object );
+Solid* CreateSolid();
+void FreeSolid( Solid* solid );
 
 #endif

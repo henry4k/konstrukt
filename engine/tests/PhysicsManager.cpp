@@ -25,27 +25,21 @@ int main( int argc, char** argv )
             DestroyPhysicsManager();
         });
 
-    Describe("Physics objects")
+    Describe("Solids")
         .use(dummyExceptionSandbox)
 
         .it("can be created and freed.", [](){
 
             ModuleScope scope;
 
-            PhysicsObject* o1 = CreatePhysicsObject();
-            Require(o1 != NULL);
-            Require(o1->active);
+            Solid* s1 = CreateSolid();
+            Require(s1 != NULL);
 
-            PhysicsObject* o2 = CreatePhysicsObject();
-            Require(o2 != NULL);
-            Require(o2->active);
+            Solid* s2 = CreateSolid();
+            Require(s2 != NULL);
 
-            Require(o1 != o2);
-
-            FreePhysicsObject(o1);
-            Require(!o1->active);
-            FreePhysicsObject(o2);
-            Require(!o2->active);
+            FreeSolid(s1);
+            FreeSolid(s2);
         });
 
     return RunTests();
