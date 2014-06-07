@@ -49,7 +49,7 @@ class PositionAttribute(VertexAttribute):
 
     def get_data( self, vertex_index ):
         v = self.data[vertex_index].co
-        return (v[0], v[1], v[2])
+        return dict(x=v[0], y=v[1], z=v[2])
 
 class NormalAttribute(VertexAttribute):
     def __init__( self, data ):
@@ -62,7 +62,7 @@ class NormalAttribute(VertexAttribute):
 
     def get_data( self, vertex_index ):
         v = self.data[vertex_index].normal
-        return (v[0], v[1], v[2])
+        return dict(nx=v[0], ny=v[1], nz=v[2])
 
 class ColorAttribute(VertexAttribute):
     def __init__( self, data ):
@@ -75,7 +75,7 @@ class ColorAttribute(VertexAttribute):
 
     def get_data( self, vertex_index ):
         v = self.data[vertex_index].color
-        return (v.r, v.g, v.b)
+        return dict(r=v.r, g=v.g, b=v.b)
 
 class TexCoordAttribute(VertexAttribute):
     def __init__( self, data ):
@@ -88,7 +88,7 @@ class TexCoordAttribute(VertexAttribute):
 
     def get_data( self, vertex_index ):
         v = self.data[vertex_index].uv
-        return (v[0], v[1])
+        return dict(tx=v[0], ty=v[1])
 
 def set_attribute_offsets( attributes ):
     offset = 0
@@ -112,7 +112,7 @@ def build_vertex_attribute_tree( attributes ):
     return tree
 
 def build_mesh(obj):
-    r = {}
+    r = dict()
 
     # Prepare mesh
     try:
@@ -136,10 +136,11 @@ def build_mesh(obj):
         bmesh.ops.triangulate(bm, faces=bm.faces)
         bm.to_mesh(mesh)
         bm.free()
+    else:
+        raise RuntimeError('Only triangulated meshes are supported!')
 
 
-    # Add vertex format
-    attributes = {}
+    attributes = dict()
 
     attributes['position'] = PositionAttribute(mesh.vertices)
     attributes['normal'] = NormalAttribute(mesh.vertices)
@@ -152,34 +153,27 @@ def build_mesh(obj):
 
     set_attribute_offsets(attributes)
 
-    r['vertex_format'] = build_vertex_attribute_tree(attributes)
     r['primitive'] = 'triangles' # See TRIANGULATE
 
 
-    # Add vertex data
-    vertex_size = get_vertex_size(attributes)
-    vertex_count = len(mesh.vertices)
-    vertex_data = [0.0] * vertex_size * vertex_count
-
-    for vertex in range(0, vertex_count):
-        vertex_start = vertex*vertex_size
-
+    # Add vertices
+    vertices = list()
+    for vertex_index in range(0, len(mesh.vertices)):
+        vertex = mesh.vertices[vertex_index]
+        vertex_data = {}
         for attribute in attributes.values():
-            attribute_value = attribute.get_data(vertex)
-            assert len(attribute_value) == attribute.component_count
+            attribute_data = attribute.get_data(vertex_index)
+            vertex_data.update(attribute_data)
+        vertices.append(vertex_data)
+    r['vertices'] = vertices
 
-            for component_index, component_value in enumerate(attribute_value):
-                index = vertex_start + attribute.offset + component_index
-                vertex_data[index] = component_value
 
-    r['vertices'] = vertex_data
-
-    face_count = len(mesh.polygons)
-    faces = [ [0,0,0] ]*face_count
-    for face in range(0, face_count):
-        f = mesh.polygons[face].vertices
-        faces[face] = (f[0], f[1], f[2])
-    r['faces'] = faces
+    # Add indices
+    indices = list()
+    for face in mesh.polygons:
+        for index in face.vertices:
+            indices.append(index)
+    r['indices'] = indices
 
     return r
 
@@ -187,7 +181,7 @@ def build_mesh(obj):
 ##### Object {{{1
 
 def build_object(obj):
-    tree = {}
+    tree = dict()
 
     if obj.type == 'MESH':
         mesh = build_mesh(obj)
@@ -210,7 +204,7 @@ def is_blacklisted_object(obj):
     return False
 
 def build_children(children):
-    tree = {}
+    tree = dict()
     for child in children:
         if is_blacklisted_object(child):
             continue
@@ -222,7 +216,7 @@ def build_children(children):
 
 def save(scene,
          filepath=None,
-         triangulate=False):
+         triangulate=True):
 
     global TRIANGULATE
     TRIANGULATE = triangulate
@@ -237,7 +231,8 @@ def save(scene,
     tree = build_children(filter(filter_children, objects))
 
     file = open(filepath, 'w', encoding='utf8', newline='\n')
-    file.write(json.dumps(tree, sort_keys=True, indent=4, separators=(',', ': ')))
+    #json.dump(tree, file, sort_keys=True, indent=4, separators=(',', ': '))
+    json.dump(tree, file, separators=(',',':'))
     file.close()
 
     return {'FINISHED'}
