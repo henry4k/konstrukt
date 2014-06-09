@@ -48,7 +48,8 @@ int Lua_Load2dTexture( lua_State* l )
     const int options = ReadTextureOptions(l, 2);
 
     const Texture texture = Load2dTexture(options, fileName);
-    if(texture != INVALID_TEXTURE)
+    if(texture != INVALID_TEXTURE &&
+       CopyUserDataToLua(l, TEXTURE_TYPE, sizeof(Texture), &texture))
     {
         return 1;
     }
