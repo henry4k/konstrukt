@@ -400,7 +400,7 @@ void SetUniform( ShaderProgram* program, int index, const UniformValue* value )
     switch(def->type)
     {
         case FLOAT_UNIFORM:
-            glUniform1i(def->location, value->f());
+            glUniform1f(def->location, value->f());
             break;
 
         case VEC3_UNIFORM:

@@ -1,6 +1,8 @@
 #version 120
 
+uniform float Debug;
+
 void main()
 {
-    gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+    gl_FragColor = vec4(Debug, Debug, Debug, 1.0);
 }

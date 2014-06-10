@@ -7,6 +7,8 @@ end)
 
 ---------------------------------------
 
+
+local Texture = require 'core/Texture'
 local Mesh = require 'core/Mesh'
 local MeshBuffer = require 'core/MeshBuffer'
 local Shader = require 'core/Shader'
@@ -22,11 +24,15 @@ myMeshBuffer:appendIndex(0)
 myMeshBuffer:appendIndex(1)
 myMeshBuffer:appendIndex(2)
 
-myMeshBuffer:appendVertex{x=0, y=0, z=3}
-myMeshBuffer:appendVertex{x=0, y=1, z=3}
-myMeshBuffer:appendVertex{x=1, y=1, z=3}
+myMeshBuffer:appendVertex{x=0, y=0, z=3, tx=0, ty=0}
+myMeshBuffer:appendVertex{x=0, y=1, z=3, tx=0, ty=1}
+myMeshBuffer:appendVertex{x=1, y=1, z=3, tx=1, ty=1}
 
 myMesh = Mesh:new(myMeshBuffer)
 
+myTexture = Texture:new('2d', 'core/Textures/Tiles.png')
+
 myModel = Model:new(myProgram)
 myModel:setMesh(myMesh)
+myModel:setTexture(myTexture)
+myModel:setUniform('Debug', 1.0)

@@ -5,6 +5,7 @@
 #include "../RenderManager.h"
 #include "Math.h"
 #include "Mesh.h"
+#include "Texture.h"
 #include "Shader.h"
 #include "RenderManager.h"
 
@@ -13,8 +14,7 @@ const char* MODEL_TYPE = "Model";
 
 int Lua_Model_destructor( lua_State* l )
 {
-    Model* model =
-        reinterpret_cast<Model*>(lua_touserdata(l, 1));
+    Model* model = CheckModelFromLua(l, 1);
     FreeModel(model);
     return 0;
 }
@@ -35,6 +35,13 @@ int Lua_CreateModel( lua_State* l )
     return 0;
 }
 
+int Lua_FreeModel( lua_State* l )
+{
+    Model* model = CheckModelFromLua(l, 1);
+    FreeModel(model);
+    return 0;
+}
+
 int Lua_SetModelTransformation( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
@@ -51,18 +58,56 @@ int Lua_SetModelMesh( lua_State* l )
     return 0;
 }
 
-int Lua_SetModelUniform( lua_State* l )
+int Lua_SetModelTexture( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
-    Mesh* mesh = CheckMeshFromLua(l, 2);
-    SetModelMesh(model, mesh);
+    Texture texture = CheckTextureFromLua(l, 2);
+    SetModelTexture(model, texture);
     return 0;
 }
 
-int Lua_FreeModel( lua_State* l )
+int Lua_SetModelUniform( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
-    FreeModel(model);
+    const char* uniformName = luaL_checkstring(l, 2);
+    UniformValue uniformValue;
+    memset(&uniformValue, 0, sizeof(uniformValue));
+
+    const int argc = lua_gettop(l);
+    static const int FIRST_VALUE = 3;
+
+    if(argc < FIRST_VALUE)
+    {
+        luaL_error(l, "Uniform value missing.");
+        return 0;
+    }
+
+    if(argc >= FIRST_VALUE+3)
+    {
+        luaL_error(l, "Too many arguments.");
+        return 0;
+    }
+
+    if(lua_type(l, FIRST_VALUE) == LUA_TNUMBER)
+    {
+        // float, vec2, vec3, vec4
+        for(int argi = FIRST_VALUE; argi <= argc; argi++)
+            uniformValue.data[argi-FIRST_VALUE] = luaL_checknumber(l, argi);
+    }
+    else
+    {
+        uniformValue.m4() = *CheckMatrix4FromLua(l, FIRST_VALUE);
+    }
+
+    SetModelUniform(model, uniformName, &uniformValue);
+    return 0;
+}
+
+int Lua_UnsetModelUniform( lua_State* l )
+{
+    Model* model = CheckModelFromLua(l, 1);
+    const char* uniformName = luaL_checkstring(l, 2);
+    UnsetModelUniform(model, uniformName);
     return 0;
 }
 
@@ -75,7 +120,10 @@ bool RegisterRenderManagerInLua()
         RegisterFunctionInLua("CreateModel", Lua_CreateModel) &&
         RegisterFunctionInLua("FreeModel", Lua_FreeModel) &&
         RegisterFunctionInLua("SetModelTransformation", Lua_SetModelTransformation) &&
-        RegisterFunctionInLua("SetModelMesh", Lua_SetModelMesh);
+        RegisterFunctionInLua("SetModelMesh", Lua_SetModelMesh) &&
+        RegisterFunctionInLua("SetModelTexture", Lua_SetModelTexture) &&
+        RegisterFunctionInLua("SetModelUniform", Lua_SetModelUniform) &&
+        RegisterFunctionInLua("UnsetModelUniform", Lua_UnsetModelUniform);
 }
 
 Model* GetModelFromLua( lua_State* l, int stackPosition )

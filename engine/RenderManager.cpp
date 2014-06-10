@@ -17,6 +17,7 @@ struct Model
     bool active;
     glm::mat4 transformation;
     Mesh* mesh;
+    Texture texture;
     ShaderProgram* program;
     UniformValue* localUniformValues;
     bool* useLocalUniformValue;
@@ -98,6 +99,7 @@ Model* CreateModel( ShaderProgram* program )
     {
         memset(model, 0, sizeof(Model));
         model->active = true;
+        model->texture = INVALID_TEXTURE;
         model->program = program;
 
         const int uniformCount = GetUniformCount(program);
@@ -132,6 +134,11 @@ void SetModelTransformation( Model* model, glm::mat4 transformation )
 void SetModelMesh( Model* model, Mesh* mesh )
 {
     model->mesh = mesh;
+}
+
+void SetModelTexture( Model* model, Texture texture )
+{
+    model->texture = texture;
 }
 
 void SetModelUniform( Model* model, const char* name, UniformValue* value )

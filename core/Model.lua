@@ -7,17 +7,33 @@ function Model:initialize( shaderProgram )
     self.handle = NATIVE.CreateModel(shaderProgram.handle)
 end
 
-function Model:setMesh( mesh )
-    NATIVE.SetModelMesh(self.handle, mesh.handle)
+function Model:remove()
+    NATIVE.RemoveModel(self.handle)
+    self.handle = nil
 end
 
 function Model:setTransformation( transformation )
     NATIVE.SetModelTransformation(self.handle, transformation.handle)
 end
 
-function Model:remove()
-    NATIVE.RemoveModel(self.handle)
-    self.handle = nil
+function Model:setMesh( mesh )
+    NATIVE.SetModelMesh(self.handle, mesh.handle)
+end
+
+function Model:setTexture( texture )
+    NATIVE.SetModelTexture(self.handle, texture.handle)
+end
+
+function Model:setTexture( texture )
+    NATIVE.SetModelTexture(self.handle, texture.handle)
+end
+
+function Model:setUniform( name, ... )
+    NATIVE.SetModelUniform(self.handle, name, ...)
+end
+
+function Model:unsetUniform( name )
+    NATIVE.UnsetModelUniform(self.handle, name)
 end
 
 
