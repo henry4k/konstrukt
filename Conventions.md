@@ -83,3 +83,25 @@ Example:
      * `aaa` or `0` if `aaa` is negative.
      */
 
+
+
+---------------------------------
+
+
+    Example/
+        FluidTank/
+            Init.lua
+            Diffuse.png
+            Scene.json
+
+    example/
+        fluid_tank/
+            init.lua
+            diffuse.png
+            scene.json
+
+    example/
+        fluid_tank/
+            Init.lua
+            Diffuse.png
+            Scene.json
