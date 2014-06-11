@@ -68,6 +68,8 @@ static void DrawModel( const Model* model, glm::mat4* mvpMatrix )
     ShaderProgram* program = model->program;
     BindShaderProgram(program);
 
+    BindTexture(GL_TEXTURE_2D, model->texture, 0);
+
     UniformValue mvpUniformValue;
     mvpUniformValue.m4() = *mvpMatrix;
     SetUniformDefault(program, "MVP", &mvpUniformValue);
