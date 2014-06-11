@@ -1,3 +1,0 @@
-include_rules
-
-: foreach *.xcf |> !xcf2png |> %B.png
