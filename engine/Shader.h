@@ -13,6 +13,7 @@ static const int MAX_UNIFORM_NAME_LENGTH = 32;
 
 enum UniformType
 {
+    INT_UNIFORM,
     FLOAT_UNIFORM,
     VEC3_UNIFORM,
     VEC4_UNIFORM,

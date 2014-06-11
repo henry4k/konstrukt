@@ -1,8 +1,11 @@
 #version 120
 
-uniform float Debug;
+uniform sampler2D DiffuseSampler;
+
+varying vec2 TexCoord;
 
 void main()
 {
-    gl_FragColor = vec4(Debug, Debug, Debug, 1.0);
+    vec4 diffuse = texture2D(DiffuseSampler, TexCoord);
+    gl_FragColor = diffuse;
 }

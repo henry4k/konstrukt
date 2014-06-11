@@ -226,6 +226,11 @@ static UniformType GLToUniformType( GLenum glType )
 {
     switch(glType)
     {
+        case GL_INT: return INT_UNIFORM;
+        case GL_SAMPLER_1D: return INT_UNIFORM;
+        case GL_SAMPLER_2D: return INT_UNIFORM;
+        case GL_SAMPLER_3D: return INT_UNIFORM;
+        case GL_SAMPLER_CUBE: return INT_UNIFORM;
         case GL_FLOAT: return FLOAT_UNIFORM;
         case GL_FLOAT_VEC3: return VEC3_UNIFORM;
         case GL_FLOAT_VEC4: return VEC4_UNIFORM;
@@ -399,6 +404,10 @@ void SetUniform( ShaderProgram* program, int index, const UniformValue* value )
     const UniformDefinition* def = &program->uniformDefinitions[index];
     switch(def->type)
     {
+        case INT_UNIFORM:
+            glUniform1i(def->location, (int)value->f());
+            break;
+
         case FLOAT_UNIFORM:
             glUniform1f(def->location, value->f());
             break;
