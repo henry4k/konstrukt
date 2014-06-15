@@ -29,88 +29,6 @@ def build_properties(obj):
 
 ##### Mesh {{{1
 
-class VertexAttribute():
-    def __init__( self, data_type, component_count ):
-        self.data_type = data_type
-        self.component_count = component_count
-        self.offset = 0
-
-    def get_data( self, vertex_index ):
-        pass
-
-class PositionAttribute(VertexAttribute):
-    def __init__( self, data ):
-        VertexAttribute.__init__(
-            self,
-            data_type='float',
-            component_count=3)
-
-        self.data = data
-
-    def get_data( self, vertex_index ):
-        v = self.data[vertex_index].co
-        return dict(x=v[0], y=v[1], z=v[2])
-
-class NormalAttribute(VertexAttribute):
-    def __init__( self, data ):
-        VertexAttribute.__init__(
-            self,
-            data_type='float',
-            component_count=3)
-
-        self.data = data
-
-    def get_data( self, vertex_index ):
-        v = self.data[vertex_index].normal
-        return dict(nx=v[0], ny=v[1], nz=v[2])
-
-class ColorAttribute(VertexAttribute):
-    def __init__( self, data ):
-        VertexAttribute.__init__(
-            self,
-            data_type='float',
-            component_count=3)
-
-        self.data = data
-
-    def get_data( self, vertex_index ):
-        v = self.data[vertex_index].color
-        return dict(r=v.r, g=v.g, b=v.b)
-
-class TexCoordAttribute(VertexAttribute):
-    def __init__( self, data ):
-        VertexAttribute.__init__(
-            self,
-            data_type='float',
-            component_count=2)
-
-        self.data = data
-
-    def get_data( self, vertex_index ):
-        v = self.data[vertex_index].uv
-        return dict(tx=v[0], ty=v[1])
-
-def set_attribute_offsets( attributes ):
-    offset = 0
-    for attribute in attributes.values():
-        attribute.offset = offset
-        offset = offset + attribute.component_count
-
-def get_vertex_size( attributes ):
-    size = 0
-    for attribute in attributes.values():
-        size = size + attribute.component_count
-    return size
-
-def build_vertex_attribute_tree( attributes ):
-    tree = {}
-    for attribute_name, attribute in attributes.items():
-        tree[attribute_name] = {
-            'data_type': attribute.data_type,
-            'component_count': attribute.component_count,
-            'offset': attribute.offset }
-    return tree
-
 def build_mesh(obj):
     r = dict()
 
@@ -120,7 +38,7 @@ def build_mesh(obj):
                 scene=SCENE,
                 apply_modifiers=True,
                 settings='PREVIEW',
-                calc_tessface=False)
+                calc_tessface=True)
     except RuntimeError:
         mesh = None
 
@@ -136,44 +54,97 @@ def build_mesh(obj):
         bmesh.ops.triangulate(bm, faces=bm.faces)
         bm.to_mesh(mesh)
         bm.free()
-    else:
-        raise RuntimeError('Only triangulated meshes are supported!')
 
+    mesh.calc_normals()
 
-    attributes = dict()
+    if not mesh.tessfaces and mesh.polygons:
+        mesh.calc_tessface()
 
-    attributes['position'] = PositionAttribute(mesh.vertices)
-    attributes['normal'] = NormalAttribute(mesh.vertices)
+    uv_layer = None
+    if mesh.tessface_uv_textures.active:
+        uv_layer = mesh.tessface_uv_textures.active.data
 
-    for vertex_color in mesh.vertex_colors:
-        attributes[vertex_color.name] = ColorAttribute(vertex_color.data)
+    color_layer = None
+    if mesh.tessface_vertex_colors.active:
+        color_layer = mesh.tessface_vertex_colors.active.data
 
-    for uv_layer in mesh.uv_layers:
-        attributes[uv_layer.name] = TexCoordAttribute(uv_layer.data)
+    def rvec3d(v):
+        return round(v[0], 6), round(v[1], 6), round(v[2], 6)
 
-    set_attribute_offsets(attributes)
+    def rvec2d(v):
+        return round(v[0], 6), round(v[1], 6)
 
-    r['primitive'] = 'triangles' # See TRIANGULATE
+    vertices_out = []
+    faces_out = [[] for f in range(len(mesh.tessfaces))]
+    vdict = [{} for i in range(len(mesh.vertices))]
+    vertex_count = 0
 
+    color = uv = uv_key = normal = normal_key = None
 
-    # Add vertices
-    vertices = list()
-    for vertex_index in range(0, len(mesh.vertices)):
-        vertex = mesh.vertices[vertex_index]
-        vertex_data = {}
-        for attribute in attributes.values():
-            attribute_data = attribute.get_data(vertex_index)
-            vertex_data.update(attribute_data)
-        vertices.append(vertex_data)
-    r['vertices'] = vertices
+    for face_index, face in enumerate(mesh.tessfaces):
+        smooth = face.use_smooth
+        if not smooth:
+            normal = face.normal[:]
+            normal_key = rvec3d(normal)
 
+        if uv_layer:
+            uvs = uv_layer[face_index]
+            uvs = (uvs.uv1,
+                   uvs.uv2,
+                   uvs.uv3,
+                   uvs.uv4)
 
-    # Add indices
-    indices = list()
-    for face in mesh.polygons:
-        for index in face.vertices:
-            indices.append(index)
-    r['indices'] = indices
+        if color_layer:
+            colors = color_layer[face_index]
+            colors = (colors.color1[:],
+                      colors.color2[:],
+                      colors.color3[:],
+                      colors.color4[:])
+
+        face_out = faces_out[face_index]
+        for face_vertex_index, vertex_index in enumerate(face.vertices):
+            vertex = mesh.vertices[vertex_index]
+
+            if smooth:
+                normal = vertex.normal[:]
+                normal_key = rvec3d(normal)
+
+            if uv_layer:
+                uv = (uvs[face_vertex_index][0],
+                      uvs[face_vertex_index][1])
+                uv_key = rvec2d(uv)
+
+            if color_layer:
+                color = colors[face_vertex_index]
+
+            key = normal_key, uv_key, color
+
+            vdict_local = vdict[vertex_index]
+            face_out_vertex_index = vdict_local.get(key)
+
+            if face_out_vertex_index is None:
+                face_out_vertex_index = vdict_local[key] = vertex_count
+
+                vertex_out = dict(x=vertex.co[0],
+                                  y=vertex.co[1],
+                                  z=vertex.co[2],
+                                  nx=normal[0],
+                                  ny=normal[1],
+                                  nz=normal[2])
+                if uv_layer:
+                    vertex_out.update(dict(tx=uv[0],
+                                           ty=uv[1]))
+                if color_layer:
+                    vertex_out.update(dict(r=color[0],
+                                           g=color[1],
+                                           b=color[2]))
+                vertices_out.append(vertex_out)
+                vertex_count += 1
+
+            face_out.append(face_out_vertex_index)
+
+    r['vertices'] = vertices_out
+    r['faces'] = faces_out
 
     return r
 
