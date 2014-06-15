@@ -1,0 +1,4 @@
+include_rules
+
+: foreach *.blend |> !blender |> %B.json
+: foreach *.xcf |> !xcf2png |> %B.png
