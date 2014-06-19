@@ -1,0 +1,43 @@
+Es gibt mehrere Threads:
+- 1+ CA-Threads     (Zellen aktualisieren.)
+- 1+ Physik-Threads (Solids bewegen und kollidieren lassen.)
+- 1  Render-Thread  (Modelle sortiert rendern: Blending, Depth-Sorting, etc.)
+- 1  Lua-Thread     (Events im Lua-Script ausführen. => event queue)
+
+
+Abhängigkeiten / Kommunikation:
+
+Lua    > CA     (SetVoxel)
+Lua    > Physik (SetSolid)
+Lua    > Render (SetModel)
+
+CA     > Lua    (Events)
+
+Physik > Lua    (Events)
+
+Render > Physik (GetSolid)
+
+
+[CA] --> [Lua] <-- [Physik]
+           |        /\
+           v        /
+       [Render] --'
+
+
+Synchronisation:
+
+Die Rate mit der Events an Lua gesendet werden,
+sollte möglichst gering sein, da sonst sehr viele Events in Lua ankommen.
+(Feuer, Gase, etc.)
+
+Update-Rate des Physik-Threads muss mindestens so hoch,
+wie die des Render-Threads sein.
+Ansonsten würde in der Zwischenzeit immer die gleiche Szene gerendert werden.
+(Naja man könnte extrapolieren - in diesem Zeitraum sollten die dadurch
+entstehenden Fehler noch verkraftbar sein.)
+
+Die CA-Threads markieren modifizierte Zellen mit einem Flag.
+In regelmäßigen Abständen werden alle markierten Zellen als Event an Lua
+gegeben und der Flag zurückgesetzt.
+
+
