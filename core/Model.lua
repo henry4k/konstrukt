@@ -8,7 +8,7 @@ function Model:initialize( shaderProgram )
 end
 
 function Model:remove()
-    NATIVE.RemoveModel(self.handle)
+    error('Model:remove() is unimplemented!')
     self.handle = nil
 end
 
