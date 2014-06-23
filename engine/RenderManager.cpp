@@ -2,7 +2,7 @@
 
 #include "Common.h"
 #include "Mesh.h"
-#include "texture.h"
+#include "Texture.h"
 #include "RenderManager.h"
 
 
