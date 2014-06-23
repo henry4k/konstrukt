@@ -133,6 +133,8 @@ void FreeModel( Model* model )
     model->active = false;
     if(model->texture)
         ReleaseTexture(model->texture);
+    if(model->mesh)
+        ReleaseMesh(model->mesh);
     delete[] model->localUniformValues;
     delete[] model->useLocalUniformValue;
 }
@@ -144,7 +146,11 @@ void SetModelTransformation( Model* model, glm::mat4 transformation )
 
 void SetModelMesh( Model* model, Mesh* mesh )
 {
+    if(model->mesh)
+        ReleaseMesh(model->mesh);
     model->mesh = mesh;
+    if(model->mesh)
+        ReferenceMesh(model->mesh);
 }
 
 void SetModelTexture( Model* model, Texture* texture )

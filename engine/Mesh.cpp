@@ -1,13 +1,31 @@
+#include <string.h> // memset
+
 #include "Common.h"
 #include "OpenGL.h"
+#include "Reference.h"
 #include "Mesh.h"
 
-bool CreateMesh( Mesh* mesh, const MeshBuffer* buffer )
+
+struct Mesh
 {
-    assert(mesh);
+    ReferenceCounter refCounter;
+    GLuint vertexBuffer;
+    GLuint indexBuffer;
+    int primitiveType;
+    int size;
+};
+
+
+Mesh* CreateMesh( const MeshBuffer* buffer )
+{
     assert(buffer);
     if(buffer->vertices.empty())
         Error("Creating an empty mesh.");
+
+    Mesh* mesh = new Mesh;
+    memset(mesh, 0, sizeof(Mesh));
+
+    InitReferenceCounter(&mesh->refCounter);
 
     mesh->primitiveType = GL_TRIANGLES; // Default to triangles (can be changed later)
 
@@ -30,15 +48,7 @@ bool CreateMesh( Mesh* mesh, const MeshBuffer* buffer )
         mesh->size = buffer->vertices.size();
     }
 
-    return true;
-}
-
-void FreeMesh( const Mesh* mesh )
-{
-    glDeleteBuffers(1, &mesh->vertexBuffer);
-
-    if(mesh->indexBuffer)
-        glDeleteBuffers(1, &mesh->indexBuffer);
+    return mesh;
 }
 
 void DrawMesh( const Mesh* mesh )
@@ -55,4 +65,28 @@ void DrawMesh( const Mesh* mesh )
     {
         glDrawArrays(mesh->primitiveType, 0, mesh->size);
     }
+}
+
+static void FreeMesh( Mesh* mesh )
+{
+    FreeReferenceCounter(&mesh->refCounter);
+
+    glDeleteBuffers(1, &mesh->vertexBuffer);
+
+    if(mesh->indexBuffer)
+        glDeleteBuffers(1, &mesh->indexBuffer);
+
+    delete mesh;
+}
+
+void ReferenceMesh( Mesh* mesh )
+{
+    Reference(&mesh->refCounter);
+}
+
+void ReleaseMesh( Mesh* mesh )
+{
+    Release(&mesh->refCounter);
+    if(!HasReferences(&mesh->refCounter))
+        FreeMesh(mesh);
 }

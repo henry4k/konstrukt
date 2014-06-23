@@ -1,19 +1,17 @@
-#ifndef __MESH__
-#define __MESH__
+#ifndef __APOAPSIS_MESH__
+#define __APOAPSIS_MESH__
 
 #include "OpenGL.h"
 #include "MeshBuffer.h"
 
-struct Mesh
-{
-    GLuint vertexBuffer;
-    GLuint indexBuffer;
-    int primitiveType;
-    int size;
-};
 
-bool CreateMesh( Mesh* mesh, const MeshBuffer* buffer );
-void FreeMesh( const Mesh* mesh );
+struct Mesh;
+
+
+Mesh* CreateMesh( const MeshBuffer* buffer );
 void DrawMesh( const Mesh* mesh );
+
+void ReferenceMesh( Mesh* mesh );
+void ReleaseMesh( Mesh* mesh );
 
 #endif
