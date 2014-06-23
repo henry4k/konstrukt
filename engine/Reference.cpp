@@ -15,13 +15,13 @@ void FreeReferenceCounter( ReferenceCounter* counter )
 
 void Reference( ReferenceCounter* counter )
 {
-    *counter++;
+    *counter += 1;
 }
 
 void Release( ReferenceCounter* counter )
 {
     assert(*counter > 0);
-    *counter--;
+    *counter -= 1;
 }
 
 bool HasReferences( ReferenceCounter* counter )

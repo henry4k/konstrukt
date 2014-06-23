@@ -3,12 +3,12 @@
 #include "Texture.h"
 
 
-const char* TEXTURE_TYPE = "Texture";
+static const char* TEXTURE_TYPE = "Texture";
 
-int Lua_Texture_destructor( lua_State* l )
+static int Lua_Texture_destructor( lua_State* l )
 {
-    const Texture texture = CheckTextureFromLua(l, 1);
-    FreeTexture(texture);
+    Texture* texture = CheckTextureFromLua(l, 1);
+    ReleaseTexture(texture);
     return 0;
 }
 
@@ -27,13 +27,13 @@ static int TextureOptionMap[] =
     TEX_CLAMP
 };
 
-int ReadTextureOption( lua_State* l, int stackPosition )
+static int ReadTextureOption( lua_State* l, int stackPosition )
 {
     const int index = luaL_checkoption(l, stackPosition, NULL, TextureOptionNames);
     return TextureOptionMap[index];
 }
 
-int ReadTextureOptions( lua_State* l, int startArgument )
+static int ReadTextureOptions( lua_State* l, int startArgument )
 {
     int options = 0;
     const int argc = lua_gettop(l);
@@ -42,14 +42,14 @@ int ReadTextureOptions( lua_State* l, int startArgument )
     return options;
 }
 
-int Lua_Load2dTexture( lua_State* l )
+static int Lua_Load2dTexture( lua_State* l )
 {
     const char* fileName = luaL_checkstring(l, 1);
     const int options = ReadTextureOptions(l, 2);
 
-    const Texture texture = Load2dTexture(options, fileName);
-    if(texture != INVALID_TEXTURE &&
-       CopyUserDataToLua(l, TEXTURE_TYPE, sizeof(Texture), &texture))
+    Texture* texture = Load2dTexture(options, fileName);
+    if(texture &&
+       CopyUserDataToLua(l, TEXTURE_TYPE, sizeof(texture), &texture))
     {
         return 1;
     }
@@ -61,13 +61,14 @@ int Lua_Load2dTexture( lua_State* l )
     }
 }
 
-int Lua_LoadCubeTexture( lua_State* l )
+static int Lua_LoadCubeTexture( lua_State* l )
 {
     const char* filePrefix = luaL_checkstring(l, 1);
     const int options = ReadTextureOptions(l, 2);
 
-    const Texture texture = LoadCubeTexture(options, filePrefix);
-    if(texture != INVALID_TEXTURE)
+    Texture* texture = LoadCubeTexture(options, filePrefix);
+    if(texture &&
+       CopyUserDataToLua(l, TEXTURE_TYPE, sizeof(texture), &texture))
     {
         return 1;
     }
@@ -89,12 +90,12 @@ bool RegisterTextureInLua()
         RegisterFunctionInLua("LoadCubeTexture", Lua_LoadCubeTexture);
 }
 
-Texture GetTextureFromLua( lua_State* l, int stackPosition )
+Texture* GetTextureFromLua( lua_State* l, int stackPosition )
 {
-    return *(Texture*)GetUserDataFromLua(l, stackPosition, TEXTURE_TYPE);
+    return *(Texture**)GetUserDataFromLua(l, stackPosition, TEXTURE_TYPE);
 }
 
-Texture CheckTextureFromLua( lua_State* l, int stackPosition )
+Texture* CheckTextureFromLua( lua_State* l, int stackPosition )
 {
-    return *(Texture*)CheckUserDataFromLua(l, stackPosition, TEXTURE_TYPE);
+    return *(Texture**)CheckUserDataFromLua(l, stackPosition, TEXTURE_TYPE);
 }

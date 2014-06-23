@@ -16,7 +16,7 @@ Model* CreateModel( ShaderProgram* program );
 void FreeModel( Model* model );
 void SetModelTransformation( Model* model, glm::mat4 transformation );
 void SetModelMesh( Model* model, Mesh* mesh );
-void SetModelTexture( Model* model, Texture texture );
+void SetModelTexture( Model* model, Texture* texture );
 void SetModelUniform( Model* model, const char* name, UniformValue* value );
 void UnsetModelUniform( Model* model, const char* name );
 

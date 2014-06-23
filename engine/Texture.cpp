@@ -1,92 +1,133 @@
-#include <string.h>
+#include <stdlib.h> // NULL
+#include <string.h> // strlen, strncpy
 
 #include "Common.h"
 #include "OpenGL.h"
 #include "Image.h"
+#include "Reference.h"
 #include "Texture.h"
 
-void SetTextureOptions( int textureType, int options )
+
+static const int MAX_TEXTURE_UNITS = 8;
+static const GLuint INVALID_TEXTURE_HANDLE = 0;
+
+
+struct Texture
+{
+    ReferenceCounter refCounter;
+    GLenum target;
+    GLuint handle;
+};
+
+
+static void SetTextureOptions( int target, int options )
 {
     const int wrapMode = (options & TEX_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
-    switch(textureType)
+    switch(target)
     {
         case GL_TEXTURE_CUBE_MAP:
         case GL_TEXTURE_3D:
-            glTexParameteri(textureType, GL_TEXTURE_WRAP_R, wrapMode);
+            glTexParameteri(target, GL_TEXTURE_WRAP_R, wrapMode);
         case GL_TEXTURE_2D:
-            glTexParameteri(textureType, GL_TEXTURE_WRAP_T, wrapMode);
+            glTexParameteri(target, GL_TEXTURE_WRAP_T, wrapMode);
         case GL_TEXTURE_1D:
-            glTexParameteri(textureType, GL_TEXTURE_WRAP_S, wrapMode);
+            glTexParameteri(target, GL_TEXTURE_WRAP_S, wrapMode);
             break;
 
         default:
-            FatalError("Unknown texture type 0x%X", textureType);
+            FatalError("Unknown texture target 0x%X", target);
     }
 
     if(options & TEX_MIPMAP)
-        glTexParameteri(textureType, GL_TEXTURE_MIN_FILTER, (options & TEX_FILTER) ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST);
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, (options & TEX_FILTER) ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST);
     else
-        glTexParameteri(textureType, GL_TEXTURE_MIN_FILTER, (options & TEX_FILTER) ? GL_LINEAR : GL_NEAREST);
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, (options & TEX_FILTER) ? GL_LINEAR : GL_NEAREST);
 
-    glTexParameteri(textureType, GL_TEXTURE_MAG_FILTER, (options & TEX_FILTER) ? GL_LINEAR : GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, (options & TEX_FILTER) ? GL_LINEAR : GL_NEAREST);
 
     if(options & TEX_MIPMAP)
-        glTexParameteri(textureType, GL_GENERATE_MIPMAP, GL_TRUE);
+        glTexParameteri(target, GL_GENERATE_MIPMAP, GL_TRUE);
 }
 
-Texture Create2dTexture( int options, const Image* image )
+static Texture* CreateTexture( GLenum target, int options )
 {
-    Texture texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    Texture* texture = new Texture;
+    InitReferenceCounter(&texture->refCounter);
+    texture->target = target;
+    glGenTextures(1, &texture->handle);
 
-    SetTextureOptions(GL_TEXTURE_2D, options);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, image->format,  image->width, image->height, 0, image->format, image->type, image->data);
-
-    glBindTexture(GL_TEXTURE_2D, INVALID_TEXTURE);
+    glBindTexture(target, texture->handle);
+    SetTextureOptions(target, options);
+    glBindTexture(target, INVALID_TEXTURE_HANDLE);
 
     return texture;
 }
 
-Texture Load2dTexture( int options, const char* file )
+Texture* Create2dTexture( int options, const Image* image )
+{
+    Texture* texture = CreateTexture(GL_TEXTURE_2D, options);
+    if(!texture)
+        return NULL;
+
+    glBindTexture(GL_TEXTURE_2D, texture->handle);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 image->format,
+                 image->width,
+                 image->height,
+                 0,
+                 image->format,
+                 image->type,
+                 image->data);
+    glBindTexture(GL_TEXTURE_2D, INVALID_TEXTURE_HANDLE);
+    return texture;
+}
+
+Texture* Load2dTexture( int options, const char* file )
 {
     Image image;
     if(!LoadImage(&image, file))
-        return false;
-    const Texture r = Create2dTexture(options, &image);
+        return NULL;
+    Texture* texture = Create2dTexture(options, &image);
     FreeImage(&image);
-    if(r > 0)
+    if(texture)
         Log("Loaded %s", file);
     else
         Error("Failed to load %s", file);
-    return r;
+    return texture;
 }
 
-Texture CreateCubeTexture( int options, const Image* images )
+Texture* CreateCubeTexture( int options, const Image* images )
 {
-    Texture texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
-
     // Always uses clamp to edge since its the only option that makes sense here.
     options |= TEX_CLAMP;
 
-    SetTextureOptions(GL_TEXTURE_CUBE_MAP, options);
+    Texture* texture = CreateTexture(GL_TEXTURE_CUBE_MAP, options);
+    if(!texture)
+        return NULL;
 
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture->handle);
     for(int i = 0; i < 6; i++)
     {
-        GLenum target = GL_TEXTURE_CUBE_MAP_POSITIVE_X+i;
-        glTexImage2D(target, 0, images[i].format,  images[i].width, images[i].height, 0, images[i].format, images[i].type, images[i].data);
+        const GLenum target = GL_TEXTURE_CUBE_MAP_POSITIVE_X+i;
+        glTexImage2D(target,
+                     0,
+                     images[i].format,
+                     images[i].width,
+                     images[i].height,
+                     0,
+                     images[i].format,
+                     images[i].type,
+                     images[i].data);
     }
-
-    glBindTexture(GL_TEXTURE_CUBE_MAP, INVALID_TEXTURE);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, INVALID_TEXTURE_HANDLE);
 
     return texture;
 }
 
-Texture LoadCubeTexture( int options, const char* path )
+Texture* LoadCubeTexture( int options, const char* path )
 {
+    // Load cube sides:
     Image images[6];
     static const char* names[6] = { "px","nx","ny","py","pz","nz" };
     char buffer[512];
@@ -97,65 +138,76 @@ Texture LoadCubeTexture( int options, const char* path )
         if(!LoadImage(&images[i], Format(path, names[i])))
         {
             Error("Failed to load %s", Format(path, names[i]));
-            return 0;
+            return NULL;
         }
     }
-    const Texture r = CreateCubeTexture(options, images);
+
+    // Create texture form cube sides:
+    Texture* texture = CreateCubeTexture(options, images);
     for(int i = 0; i < 6; i++)
-    {
         FreeImage(&images[i]);
-    }
-    if(r > 0)
+
+    if(texture)
         Log("Loaded %s", Format(path, "*"));
     else
         Error("Failed to load %s", Format(path, "*"));
-    return r;
-}
-
-Texture CreateDepthTexture( int width, int height, int options )
-{
-    Texture texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    float* data = NULL; // new float[width*height];
-    // ^- We don't care about initialization.
-
-    SetTextureOptions(GL_TEXTURE_2D, options);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, data); // TODO: Sure that NULL works here?
-
-
-    //delete[] data;
-
-    glBindTexture(GL_TEXTURE_2D, INVALID_TEXTURE);
-
     return texture;
 }
 
-void FreeTexture( Texture texture )
+Texture* CreateDepthTexture( int width, int height, int options )
 {
-    glDeleteTextures(1, &texture);
+    Texture* texture = CreateTexture(GL_TEXTURE_2D, options);
+    if(!texture)
+        return NULL;
+
+    glBindTexture(GL_TEXTURE_2D, texture->handle);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+    const float* data = NULL; // TODO: Sure that NULL works here?
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_DEPTH_COMPONENT16,
+                 width,
+                 height,
+                 0,
+                 GL_DEPTH_COMPONENT,
+                 GL_FLOAT,
+                 data);
+    glBindTexture(GL_TEXTURE_2D, INVALID_TEXTURE_HANDLE);
+    return texture;
 }
 
-GLenum CurTextureTargets[MAX_TEXTURE_UNITS];
+static GLenum CurTextureTargets[MAX_TEXTURE_UNITS];
 
-int InitTextureUnits()
+static int InitTextureUnits()
 {
-    for(int i = 0; i < 8; i++)
-        CurTextureTargets[i] = INVALID_TEXTURE;
+    for(int i = 0; i < MAX_TEXTURE_UNITS; i++)
+        CurTextureTargets[i] = INVALID_TEXTURE_HANDLE;
     return 0;
 }
 
-void BindTexture( GLenum target, const Texture texture, int unit )
+void BindTexture( const Texture* texture, int unit )
 {
     static int unused = InitTextureUnits();
     glActiveTexture(GL_TEXTURE0+unit);
-    if(CurTextureTargets[unit] && (CurTextureTargets[unit] != target))
+    if(CurTextureTargets[unit] && (CurTextureTargets[unit] != texture->target))
     {
-        glBindTexture(CurTextureTargets[unit], INVALID_TEXTURE);
-        CurTextureTargets[unit] = target;
+        glBindTexture(CurTextureTargets[unit], INVALID_TEXTURE_HANDLE);
+        CurTextureTargets[unit] = texture->target;
     }
-    glBindTexture(target, texture);
+    glBindTexture(texture->target, texture->handle);
+}
+
+void ReferenceTexture( Texture* texture )
+{
+    Reference(&texture->refCounter);
+}
+
+void ReleaseTexture( Texture* texture )
+{
+    Release(&texture->refCounter);
+    if(!HasReferences(&texture->refCounter))
+    {
+        glDeleteTextures(1, &texture->handle);
+        delete texture;
+    }
 }

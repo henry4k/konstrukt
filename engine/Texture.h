@@ -1,15 +1,11 @@
-#ifndef __TEXTURE__
-#define __TEXTURE__
+#ifndef __APOAPSIS_TEXTURE__
+#define __APOAPSIS_TEXTURE__
 
 #include "OpenGL.h"
 #include "Image.h"
 
 
-typedef GLuint Texture;
-
-static const int MAX_TEXTURE_UNITS = 8;
-
-static const Texture INVALID_TEXTURE = 0;
+struct Texture;
 
 enum TextureOptions
 {
@@ -18,15 +14,19 @@ enum TextureOptions
     TEX_CLAMP  = (1 << 2)
 };
 
-Texture Create2dTexture( int options, const Image* image );
-Texture Load2dTexture( int options, const char* file );
 
-Texture CreateCubeTexture( int options, const Image* images );
-Texture LoadCubeTexture( int options, const char* path );
+Texture* Create2dTexture( int options, const Image* image );
+Texture* Load2dTexture( int options, const char* filePath );
 
-Texture CreateDepthTexture( int width, int height, int options );
+Texture* CreateCubeTexture( int options, const Image* images );
+Texture* LoadCubeTexture( int options, const char* filePath );
 
-void BindTexture( GLenum target, Texture texture, int unit );
-void FreeTexture( Texture texture );
+Texture* CreateDepthTexture( int width, int height, int options );
+
+void BindTexture( const Texture* texture, int unit );
+
+void ReferenceTexture( Texture* texture );
+void ReleaseTexture( Texture* texture );
+
 
 #endif

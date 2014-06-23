@@ -10,16 +10,16 @@
 #include "RenderManager.h"
 
 
-const char* MODEL_TYPE = "Model";
+static const char* MODEL_TYPE = "Model";
 
-int Lua_Model_destructor( lua_State* l )
+static int Lua_Model_destructor( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
     FreeModel(model);
     return 0;
 }
 
-int Lua_CreateModel( lua_State* l )
+static int Lua_CreateModel( lua_State* l )
 {
     ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
 
@@ -35,14 +35,14 @@ int Lua_CreateModel( lua_State* l )
     return 0;
 }
 
-int Lua_FreeModel( lua_State* l )
+static int Lua_FreeModel( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
     FreeModel(model);
     return 0;
 }
 
-int Lua_SetModelTransformation( lua_State* l )
+static int Lua_SetModelTransformation( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
     const glm::mat4* transformation = CheckMatrix4FromLua(l, 2);
@@ -50,7 +50,7 @@ int Lua_SetModelTransformation( lua_State* l )
     return 0;
 }
 
-int Lua_SetModelMesh( lua_State* l )
+static int Lua_SetModelMesh( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
     Mesh* mesh = CheckMeshFromLua(l, 2);
@@ -58,15 +58,15 @@ int Lua_SetModelMesh( lua_State* l )
     return 0;
 }
 
-int Lua_SetModelTexture( lua_State* l )
+static int Lua_SetModelTexture( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
-    Texture texture = CheckTextureFromLua(l, 2);
+    Texture* texture = CheckTextureFromLua(l, 2);
     SetModelTexture(model, texture);
     return 0;
 }
 
-int Lua_SetModelUniform( lua_State* l )
+static int Lua_SetModelUniform( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
     const char* uniformName = luaL_checkstring(l, 2);
@@ -103,7 +103,7 @@ int Lua_SetModelUniform( lua_State* l )
     return 0;
 }
 
-int Lua_UnsetModelUniform( lua_State* l )
+static int Lua_UnsetModelUniform( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
     const char* uniformName = luaL_checkstring(l, 2);

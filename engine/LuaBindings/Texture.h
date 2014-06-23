@@ -6,7 +6,7 @@
 
 bool RegisterTextureInLua();
 
-Texture GetTextureFromLua( lua_State* l, int stackPosition );
-Texture CheckTextureFromLua( lua_State* l, int stackPosition );
+Texture* GetTextureFromLua( lua_State* l, int stackPosition );
+Texture* CheckTextureFromLua( lua_State* l, int stackPosition );
 
 #endif
