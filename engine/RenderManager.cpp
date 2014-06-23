@@ -113,7 +113,9 @@ Model* CreateModel( ShaderProgram* program )
         memset(model, 0, sizeof(Model));
         model->active = true;
         InitReferenceCounter(&model->refCounter);
+
         model->program = program;
+        ReferenceShaderProgram(program);
 
         const int uniformCount = GetUniformCount(program);
 
@@ -136,6 +138,7 @@ static void FreeModel( Model* model )
 {
     model->active = false;
     FreeReferenceCounter(&model->refCounter);
+    ReleaseShaderProgram(model->program);
     if(model->texture)
         ReleaseTexture(model->texture);
     if(model->mesh)

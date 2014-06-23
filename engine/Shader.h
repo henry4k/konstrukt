@@ -5,9 +5,8 @@
 #include "Math.h"
 
 
-typedef GLuint Shader;
+struct Shader;
 
-static const Shader INVALID_SHADER = 0;
 static const int INVALID_UNIFORM_INDEX = -1;
 static const int MAX_UNIFORM_NAME_LENGTH = 32;
 
@@ -48,12 +47,13 @@ struct ShaderProgram;
  * The shader type is determined by the file extension automatically.
  *
  * @return
- * May return #INVALID_SHADER if the type could not be determined or
+ * May return `NULL` if the type could not be determined or
  * if the shader source was erroneous.
  */
-Shader LoadShader( const char* fileName );
+Shader* LoadShader( const char* fileName );
 
-void FreeShader( Shader shader );
+void ReferenceShader( Shader* shader );
+void ReleaseShader( Shader* shader );
 
 /**
  * Links the given `shaders` into a shader program.
@@ -61,13 +61,10 @@ void FreeShader( Shader shader );
  * @return
  * `NULL` if and error occured during linkage.
  */
-ShaderProgram* LinkShaderProgram( const Shader* shaders, int shaderCount );
+ShaderProgram* LinkShaderProgram( Shader** shaders, int shaderCount );
 
-/**
- * @note
- * Shaders used by the program should be freed before!
- */
-void FreeShaderProgram( ShaderProgram* program );
+void ReferenceShaderProgram( ShaderProgram* program );
+void ReleaseShaderProgram( ShaderProgram* program );
 
 void BindShaderProgram( const ShaderProgram* program );
 

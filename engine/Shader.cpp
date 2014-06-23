@@ -4,8 +4,17 @@
 #include "Common.h"
 #include "OpenGL.h"
 #include "Vertex.h"
+#include "Reference.h"
 #include "Shader.h"
 
+
+static const GLuint INVALID_SHADER_HANDLE = 0;
+
+struct Shader
+{
+    ReferenceCounter refCounter;
+    GLuint handle;
+};
 
 struct UniformDefinition
 {
@@ -16,7 +25,13 @@ struct UniformDefinition
 
 struct ShaderProgram
 {
+    ReferenceCounter refCounter;
+
     GLuint handle;
+
+    int shaderCount;
+    Shader** shaders;
+
     int uniformCount;
     UniformDefinition* uniformDefinitions;
     UniformValue* currentUniformValues;
@@ -125,16 +140,18 @@ glm::mat4& UniformValue::m4()
 
 // ----- Shader ------
 
-static void ShowShaderLog( Shader shader )
+static void FreeShader( Shader* shader );
+
+static void ShowShaderLog( Shader* shader )
 {
     GLint length = 0;
-    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+    glGetShaderiv(shader->handle, GL_INFO_LOG_LENGTH, &length);
 
     char* log = NULL;
     if(length > 1) // Some drivers wan't me to log single newline characters.
     {
         log = new char[length];
-        glGetShaderInfoLog(shader, length, NULL, log);
+        glGetShaderInfoLog(shader->handle, length, NULL, log);
     }
 
     if(log)
@@ -144,41 +161,43 @@ static void ShowShaderLog( Shader shader )
     }
 }
 
-static Shader CreateShader( const char* fileName, int type )
+static Shader* CreateShader( const char* fileName, int type )
 {
-    Shader shader = glCreateShader(type);
-
     int size;
     const char* source = LoadFile(fileName, &size);
     if(!source)
     {
         Error("Failed to read shader source %s", fileName);
-        return 0;
+        return NULL;
     }
 
-    glShaderSource(shader, 1, &source, &size);
+    Shader* shader = new Shader;
+    InitReferenceCounter(&shader->refCounter);
+    shader->handle = glCreateShader(type);
+
+    glShaderSource(shader->handle, 1, &source, &size);
     FreeFile(source);
 
-    glCompileShader(shader);
+    glCompileShader(shader->handle);
 
     GLint state;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &state);
+    glGetShaderiv(shader->handle, GL_COMPILE_STATUS, &state);
     ShowShaderLog(shader);
 
     if(state)
     {
         Log("Compiled shader successfully: %s", fileName);
+        return shader;
     }
     else
     {
         Error("Error compiling shader %s", fileName);
-        return 0;
+        FreeShader(shader);
+        return NULL;
     }
-
-    return shader;
 }
 
-Shader LoadShader( const char* fileName )
+Shader* LoadShader( const char* fileName )
 {
     if(StringEndsWith(fileName, ".vert"))
     {
@@ -191,17 +210,33 @@ Shader LoadShader( const char* fileName )
     else
     {
         Error("Can't determine shader type of file %s", fileName);
-        return INVALID_SHADER;
+        return NULL;
     }
 }
 
-void FreeShader( Shader shader )
+static void FreeShader( Shader* shader )
 {
-    glDeleteShader(shader);
+    FreeReferenceCounter(&shader->refCounter);
+    glDeleteShader(shader->handle);
+    delete shader;
+}
+
+void ReferenceShader( Shader* shader )
+{
+    Reference(&shader->refCounter);
+}
+
+void ReleaseShader( Shader* shader )
+{
+    Release(&shader->refCounter);
+    if(!HasReferences(&shader->refCounter))
+        FreeShader(shader);
 }
 
 
 // ----- Shader Program -----
+
+static void FreeShaderProgram( ShaderProgram* program );
 
 void ShowShaderProgramLog( ShaderProgram* program )
 {
@@ -299,11 +334,11 @@ static void ReadUniformDefinitions( ShaderProgram* program )
     memset(program->defaultUniformValues, 0, sizeof(UniformValue)*count);
 }
 
-ShaderProgram* LinkShaderProgram( const Shader* shaders, int shaderCount )
+ShaderProgram* LinkShaderProgram( Shader** shaders, int shaderCount )
 {
     for(int i = 0; i < shaderCount; i++)
     {
-        if(shaders[i] == INVALID_SHADER)
+        if(shaders[i] == INVALID_SHADER_HANDLE)
         {
             Error("Cannot link a shader program with invalid shaders.");
             return NULL;
@@ -313,11 +348,20 @@ ShaderProgram* LinkShaderProgram( const Shader* shaders, int shaderCount )
     ShaderProgram* program = new ShaderProgram;
     memset(program, 0, sizeof(ShaderProgram));
 
+    InitReferenceCounter(&program->refCounter);
+
     program->handle = glCreateProgram();
     GLuint programHandle = program->handle;
 
+    program->shaderCount = shaderCount;
+    program->shaders = new Shader*[shaderCount];
+    memcpy(program->shaders, shaders, sizeof(Shader*)*shaderCount);
+
     for(int i = 0; i < shaderCount; i++)
-        glAttachShader(programHandle, shaders[i]);
+    {
+        ReferenceShader(shaders[i]);
+        glAttachShader(programHandle, shaders[i]->handle);
+    }
 
     BindVertexAttributes(programHandle);
 
@@ -334,7 +378,7 @@ ShaderProgram* LinkShaderProgram( const Shader* shaders, int shaderCount )
         else
         {
             Error("Error linking shader programm");
-            delete program;
+            FreeShaderProgram(program);
             return NULL;
         }
     }
@@ -357,9 +401,15 @@ ShaderProgram* LinkShaderProgram( const Shader* shaders, int shaderCount )
     return program;
 }
 
-void FreeShaderProgram( ShaderProgram* program )
+static void FreeShaderProgram( ShaderProgram* program )
 {
+    FreeReferenceCounter(&program->refCounter);
+
     glDeleteProgram(program->handle);
+
+    for(int i = 0; i < program->shaderCount; i++)
+        ReleaseShader(program->shaders[i]);
+    delete[] program->shaders;
 
     if(program->uniformDefinitions)
         delete[] program->uniformDefinitions;
@@ -371,6 +421,18 @@ void FreeShaderProgram( ShaderProgram* program )
         delete[] program->defaultUniformValues;
 
     delete program;
+}
+
+void ReferenceShaderProgram( ShaderProgram* program )
+{
+    Reference(&program->refCounter);
+}
+
+void ReleaseShaderProgram( ShaderProgram* program )
+{
+    Release(&program->refCounter);
+    if(!HasReferences(&program->refCounter))
+        FreeShaderProgram(program);
 }
 
 void BindShaderProgram( const ShaderProgram* program )

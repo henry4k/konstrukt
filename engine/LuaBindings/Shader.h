@@ -6,8 +6,8 @@
 
 bool RegisterShaderInLua();
 
-Shader GetShaderFromLua( lua_State* l, int stackPosition );
-Shader CheckShaderFromLua( lua_State* l, int stackPosition );
+Shader* GetShaderFromLua( lua_State* l, int stackPosition );
+Shader* CheckShaderFromLua( lua_State* l, int stackPosition );
 ShaderProgram* GetShaderProgramFromLua( lua_State* l, int stackPosition );
 ShaderProgram* CheckShaderProgramFromLua( lua_State* l, int stackPosition );
 

@@ -8,28 +8,27 @@ const char* SHADER_PROGRAM_TYPE = "ShaderProgram";
 
 int Lua_Shader_destructor( lua_State* l )
 {
-    const Shader shader =
-        *reinterpret_cast<Shader*>(lua_touserdata(l, 1));
-    FreeShader(shader);
+    Shader* shader = CheckShaderFromLua(l, 1);
+    ReleaseShader(shader);
     return 0;
 }
 
 int Lua_ShaderProgram_destructor( lua_State* l )
 {
-    ShaderProgram* program =
-        *reinterpret_cast<ShaderProgram**>(lua_touserdata(l, 1));
-    FreeShaderProgram(program);
+    ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
+    ReleaseShaderProgram(program);
     return 0;
 }
 
 int Lua_LoadShader( lua_State* l )
 {
     const char* fileName = luaL_checkstring(l, 1);
-    const Shader shader = LoadShader(fileName);
+    Shader* shader = LoadShader(fileName);
 
     if(shader)
     {
         CopyUserDataToLua(l, SHADER_TYPE, sizeof(shader), &shader);
+        ReferenceShader(shader);
         return 1;
     }
     else
@@ -42,11 +41,11 @@ int Lua_LoadShader( lua_State* l )
 int Lua_LinkShaderProgram( lua_State* l )
 {
     const int shaderCount = lua_gettop(l);
-    Shader* shaders = new Shader[shaderCount];
+    Shader** shaders = new Shader*[shaderCount];
     for(int i = 0; i < shaderCount; i++)
     {
-        const Shader shader = GetShaderFromLua(l, i+1);
-        if(shader != INVALID_SHADER)
+        Shader* shader = GetShaderFromLua(l, i+1);
+        if(shader)
         {
             shaders[i] = shader;
         }
@@ -63,6 +62,7 @@ int Lua_LinkShaderProgram( lua_State* l )
     if(program)
     {
         CopyUserDataToLua(l, SHADER_PROGRAM_TYPE, sizeof(program), &program);
+        ReferenceShaderProgram(program);
         return 1;
     }
     else
@@ -137,19 +137,14 @@ bool RegisterShaderInLua()
         RegisterFunctionInLua("SetMatrix4Uniform", Lua_SetMatrix4Uniform);
 }
 
-Shader GetShaderFromLua( lua_State* l, int stackPosition )
+Shader* GetShaderFromLua( lua_State* l, int stackPosition )
 {
-    const Shader* shaderPointer =
-        (Shader*)GetUserDataFromLua(l, stackPosition, SHADER_TYPE);
-    if(shaderPointer)
-        return *shaderPointer;
-    else
-        return INVALID_SHADER;
+    return *(Shader**)GetUserDataFromLua(l, stackPosition, SHADER_TYPE);
 }
 
-Shader CheckShaderFromLua( lua_State* l, int stackPosition )
+Shader* CheckShaderFromLua( lua_State* l, int stackPosition )
 {
-    return *(Shader*)CheckUserDataFromLua(l, stackPosition, SHADER_TYPE);
+    return *(Shader**)CheckUserDataFromLua(l, stackPosition, SHADER_TYPE);
 }
 
 ShaderProgram* GetShaderProgramFromLua( lua_State* l, int stackPosition )
