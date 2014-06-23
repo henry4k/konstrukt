@@ -3,6 +3,7 @@
 #include "Common.h"
 #include "Mesh.h"
 #include "Texture.h"
+#include "Reference.h"
 #include "RenderManager.h"
 
 
@@ -16,6 +17,7 @@ enum UniformValueSource
 struct Model
 {
     bool active;
+    ReferenceCounter refCounter;
     glm::mat4 transformation;
     Mesh* mesh;
     Texture* texture;
@@ -30,6 +32,7 @@ static Model Models[MAX_MODELS];
 
 
 static void DrawModel( const Model* model, glm::mat4* mvpMatrix );
+static void FreeModel( Model* model );
 static bool ModelIsComplete( const Model* model );
 
 bool InitRenderManager()
@@ -109,6 +112,7 @@ Model* CreateModel( ShaderProgram* program )
     {
         memset(model, 0, sizeof(Model));
         model->active = true;
+        InitReferenceCounter(&model->refCounter);
         model->program = program;
 
         const int uniformCount = GetUniformCount(program);
@@ -128,15 +132,28 @@ Model* CreateModel( ShaderProgram* program )
     }
 }
 
-void FreeModel( Model* model )
+static void FreeModel( Model* model )
 {
     model->active = false;
+    FreeReferenceCounter(&model->refCounter);
     if(model->texture)
         ReleaseTexture(model->texture);
     if(model->mesh)
         ReleaseMesh(model->mesh);
     delete[] model->localUniformValues;
     delete[] model->useLocalUniformValue;
+}
+
+void ReferenceModel( Model* model )
+{
+    Reference(&model->refCounter);
+}
+
+void ReleaseModel( Model* model )
+{
+    Release(&model->refCounter);
+    if(!HasReferences(&model->refCounter))
+        FreeModel(model);
 }
 
 void SetModelTransformation( Model* model, glm::mat4 transformation )

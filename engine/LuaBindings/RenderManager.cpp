@@ -15,7 +15,7 @@ static const char* MODEL_TYPE = "Model";
 static int Lua_Model_destructor( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
-    FreeModel(model);
+    ReleaseModel(model);
     return 0;
 }
 
@@ -24,22 +24,18 @@ static int Lua_CreateModel( lua_State* l )
     ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
 
     Model* model = CreateModel(program);
-    if(model)
+    if(model &&
+       CopyUserDataToLua(l, MODEL_TYPE, sizeof(model), &model))
     {
-        if(CopyUserDataToLua(l, MODEL_TYPE, sizeof(model), &model))
-            return 1;
-        else
-            FreeModel(model);
+        ReferenceModel(model);
+        return 1;
     }
-    luaL_error(l, "Can't create more models.");
-    return 0;
-}
-
-static int Lua_FreeModel( lua_State* l )
-{
-    Model* model = CheckModelFromLua(l, 1);
-    FreeModel(model);
-    return 0;
+    else
+    {
+        lua_pop(l, 1);
+        luaL_error(l, "Can't create more models.");
+        return 0;
+    }
 }
 
 static int Lua_SetModelTransformation( lua_State* l )
@@ -118,7 +114,6 @@ bool RegisterRenderManagerInLua()
 
     return
         RegisterFunctionInLua("CreateModel", Lua_CreateModel) &&
-        RegisterFunctionInLua("FreeModel", Lua_FreeModel) &&
         RegisterFunctionInLua("SetModelTransformation", Lua_SetModelTransformation) &&
         RegisterFunctionInLua("SetModelMesh", Lua_SetModelMesh) &&
         RegisterFunctionInLua("SetModelTexture", Lua_SetModelTexture) &&
