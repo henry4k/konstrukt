@@ -51,6 +51,7 @@ static int Lua_Load2dTexture( lua_State* l )
     if(texture &&
        CopyUserDataToLua(l, TEXTURE_TYPE, sizeof(texture), &texture))
     {
+        ReferenceTexture(texture);
         return 1;
     }
     else
@@ -70,6 +71,7 @@ static int Lua_LoadCubeTexture( lua_State* l )
     if(texture &&
        CopyUserDataToLua(l, TEXTURE_TYPE, sizeof(texture), &texture))
     {
+        ReferenceTexture(texture);
         return 1;
     }
     else

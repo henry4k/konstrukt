@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "Mesh.h"
+#include "texture.h"
 #include "RenderManager.h"
 
 
@@ -17,7 +18,7 @@ struct Model
     bool active;
     glm::mat4 transformation;
     Mesh* mesh;
-    Texture texture;
+    Texture* texture;
     ShaderProgram* program;
     UniformValue* localUniformValues;
     bool* useLocalUniformValue;
@@ -29,6 +30,7 @@ static Model Models[MAX_MODELS];
 
 
 static void DrawModel( const Model* model, glm::mat4* mvpMatrix );
+static bool ModelIsComplete( const Model* model );
 
 bool InitRenderManager()
 {
@@ -65,10 +67,16 @@ static void DrawModel( const Model* model, glm::mat4* mvpMatrix )
     if(!model->mesh)
         return;
 
+    if(!ModelIsComplete(model))
+    {
+        Error("Trying to draw incomplete model.");
+        return;
+    }
+
     ShaderProgram* program = model->program;
     BindShaderProgram(program);
 
-    BindTexture(GL_TEXTURE_2D, model->texture, 0);
+    BindTexture(model->texture, 0);
 
     UniformValue mvpUniformValue;
     mvpUniformValue.m4() = *mvpMatrix;
@@ -101,7 +109,6 @@ Model* CreateModel( ShaderProgram* program )
     {
         memset(model, 0, sizeof(Model));
         model->active = true;
-        model->texture = INVALID_TEXTURE;
         model->program = program;
 
         const int uniformCount = GetUniformCount(program);
@@ -124,6 +131,8 @@ Model* CreateModel( ShaderProgram* program )
 void FreeModel( Model* model )
 {
     model->active = false;
+    if(model->texture)
+        ReleaseTexture(model->texture);
     delete[] model->localUniformValues;
     delete[] model->useLocalUniformValue;
 }
@@ -138,9 +147,13 @@ void SetModelMesh( Model* model, Mesh* mesh )
     model->mesh = mesh;
 }
 
-void SetModelTexture( Model* model, Texture texture )
+void SetModelTexture( Model* model, Texture* texture )
 {
+    if(model->texture)
+        ReleaseTexture(model->texture);
     model->texture = texture;
+    if(model->texture)
+        ReferenceTexture(model->texture);
 }
 
 void SetModelUniform( Model* model, const char* name, UniformValue* value )
@@ -158,4 +171,11 @@ void UnsetModelUniform( Model* model, const char* name )
     const int index = GetUniformIndex(model->program, name);
     if(index != INVALID_UNIFORM_INDEX)
         model->useLocalUniformValue[index] = false;
+}
+
+static bool ModelIsComplete( const Model* model )
+{
+    return model->mesh &&
+           model->texture &&
+           model->program;
 }

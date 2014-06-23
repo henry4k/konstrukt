@@ -197,6 +197,13 @@ void BindTexture( const Texture* texture, int unit )
     glBindTexture(texture->target, texture->handle);
 }
 
+static void FreeTexture( Texture* texture )
+{
+    FreeReferenceCounter(&texture->refCounter);
+    glDeleteTextures(1, &texture->handle);
+    delete texture;
+}
+
 void ReferenceTexture( Texture* texture )
 {
     Reference(&texture->refCounter);
@@ -206,8 +213,5 @@ void ReleaseTexture( Texture* texture )
 {
     Release(&texture->refCounter);
     if(!HasReferences(&texture->refCounter))
-    {
-        glDeleteTextures(1, &texture->handle);
-        delete texture;
-    }
+        FreeTexture(texture);
 }
