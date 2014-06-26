@@ -83,7 +83,7 @@ bool InitGame( const int argc, char** argv )
 
     Log("-------------------------------");
 
-    return RunLuaScript(GetLuaState(), "core/Main.lua");
+    return RunLuaScript(GetLuaState(), "core/init.lua");
 }
 
 bool RegisterAllModulesInLua()
