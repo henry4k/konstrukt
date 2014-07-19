@@ -22,6 +22,28 @@ Kurzum: Die Menscheit war in Aufbruchsstimmung wie nie zuvor.
 Ironischerweise suchte sich das Schicksal gerade diesen Zeitpunkt der
 Aufbruchsstimmung aus, um der Menscheit den wohl tödlichen Schlag zu versetzen.
 
+*Anmerkungen von Steve zum Prolog:*
+> Also vorgeschichte würde ich umschreiben wenn du es genau wissen magst
+
+> In nicht allzuferne Zukunft ist es der Menschheit gelungen Weltraumlifte zu
+> entwickeln, mit nur einem Ziel.
+> DEN WELTRAUM ZU EROBERN.
+> Dieses Ziel wurde durch den Zusammenschluss der Weltweit besten
+> Wissenschaftlern erreicht. Dank rasanter Fortschritte in Punkten wie
+> künstliche Gravitation und Erzeugung von Sauerstoff in der Schwerelosigkeit
+> sahen viele globale Unternehmen die Chance und kommerzialisierten den
+> Weltraum. Stationen kamen , Stationen gingen doch das Interesse der Menschen
+> wurde geweckt. Endlich im Weltraum zu leben.
+
+> "Ironischerweise suchte sich das Schicksal gerade diesen Zeitpunkt der
+> Aufbruchsstimmung aus, um der Menscheit den wohl tödlichen Schlag zu
+> versetzen." ist zu sehr plottwist für den "prolog"
+True. Fragt sich nur wie man dann nacher auf die Katastrophe kommt.
+
+> "Kurzum: Die Menscheit war in Aufbruchsstimmung wie nie zuvor."
+> einfach unschön zu lesen
+
+
 
 ### Die Katastrophe v1:
 
@@ -67,6 +89,30 @@ Die übrige Besatzung war nun panikartig geflohen, in der Hoffnung sich auf der 
 in besser in Sicherheit bringen zu können.
 
 ...
+
+*Anmerkungen von Henry zur Katastrophe:*
+> Also worauf ich da im Grunde hinaus will ist folgendes:
+> Du startest auf einer Raumstation und musst feststellen,
+> dass die Welt unter dir nicht mehr die gleiche ist.
+> Es gibt dort vielleicht noch ein paar wenige bekannte Strukturen,
+> aber größtenteils hat sich die Landschaft verändert.
+> => Zerstörung durch Aufschlag, extremere Jahreszeiten, etc. ...
+> So - aber du willst natürlich wieder auf die Erde,
+> also musst du nun von Raumstation zu Raumstation reisen
+> und irgendwie ein Ticket zur Erde zu finden .. oder zu bauen.
+> (Das Verbindungskabel des Weltraumlifts ist praktischerweise
+> kaputt gegangen ..  währ sonst auch zu einfach ^^)
+
+> Allerdings soll die Erde auch kein 0815 postapokaliptischer Ort,
+> mit jeder Menge Staub und Rost werden.
+> Vielmehr geht es mir darum das es dir auf der Erde vorkommt,
+> als währst du auf einem anderen Planeten gelandet.
+> .. aber eben nur fast.
+> Weil man soll ja schon ab und zu alte Strukturen entdecken.
+> (Das man auf der Erde landet und dort herrumläuft gehört allerdings
+> nicht zum Spiel, sondern nur zur Story,
+> weil die Engine dafür wohl nicht gebaut ist)
+
 
 
 ## Weitere Informationen, welche nicht im Einleitungstext genannt werden:
