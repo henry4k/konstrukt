@@ -82,7 +82,7 @@ static void DrawModel( const Model* model, glm::mat4* mvpMatrix )
     BindTexture(model->texture, 0);
 
     UniformValue mvpUniformValue;
-    mvpUniformValue.m4() = *mvpMatrix;
+    mvpUniformValue.m4() = *mvpMatrix * model->transformation;
     SetUniformDefault(program, "MVP", &mvpUniformValue);
 
     const int uniformCount = GetUniformCount(program);

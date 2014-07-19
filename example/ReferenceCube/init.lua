@@ -16,9 +16,6 @@ function ReferenceCube:initialize( shaderProgram )
 
     local scene = Json.decodeFromFile('example/ReferenceCube/Scene.json')
     local meshBuffer = Scene.createMeshBuffer(scene.Cube)
-    local transformation = Matrix4:new()
-    transformation = transformation:translate(0,0,2)
-    meshBuffer:transform(transformation)
     self.mesh = Mesh:new(meshBuffer)
 
     self.diffuseTexture = Texture:new('2d', 'example/ReferenceCube/Diffuse.png')
