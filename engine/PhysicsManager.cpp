@@ -1,12 +1,14 @@
 #include <string.h> // memset
 
 #include "Common.h"
+#include "Reference.h"
 #include "PhysicsManager.h"
 
 
 struct Solid
 {
     bool active;
+    ReferenceCounter refCounter;
     glm::vec3 position;
     Aabb* collisionShapes;
     int collisionShapeCount;
@@ -15,6 +17,9 @@ struct Solid
 
 static const int MAX_SOLIDS = 8;
 static Solid Solids[MAX_SOLIDS];
+
+
+static void FreeSolid( Solid* solid );
 
 bool InitPhysicsManager()
 {
@@ -59,6 +64,7 @@ Solid* CreateSolid()
     {
         memset(solid, 0, sizeof(Solid));
         solid->active = true;
+        InitReferenceCounter(&solid->refCounter);
         return solid;
     }
     else
@@ -68,7 +74,20 @@ Solid* CreateSolid()
     }
 }
 
-void FreeSolid( Solid* solid )
+static void FreeSolid( Solid* solid )
 {
     solid->active = false;
+    FreeReferenceCounter(&solid->refCounter);
+}
+
+void ReferenceSolid( Solid* solid )
+{
+    Reference(&solid->refCounter);
+}
+
+void ReleaseSolid( Solid* solid )
+{
+    Release(&solid->refCounter);
+    if(!HasReferences(&solid->refCounter))
+        FreeSolid(solid);
 }

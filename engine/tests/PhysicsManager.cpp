@@ -38,8 +38,11 @@ int main( int argc, char** argv )
             Solid* s2 = CreateSolid();
             Require(s2 != NULL);
 
-            FreeSolid(s1);
-            FreeSolid(s2);
+            ReferenceSolid(s1);
+            ReferenceSolid(s2);
+
+            ReleaseSolid(s1);
+            ReleaseSolid(s2);
         });
 
     return RunTests();

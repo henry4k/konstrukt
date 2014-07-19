@@ -11,29 +11,25 @@ int Lua_Solid_destructor( lua_State* l )
 {
     Solid* solid =
         reinterpret_cast<Solid*>(lua_touserdata(l, 1));
-    FreeSolid(solid);
+    ReleaseSolid(solid);
     return 0;
 }
 
 int Lua_CreateSolid( lua_State* l )
 {
     Solid* solid = CreateSolid();
-    if(solid)
+    if(solid &&
+       CopyUserDataToLua(l, SOLID_TYPE, sizeof(solid), &solid))
     {
-        if(CopyUserDataToLua(l, SOLID_TYPE, sizeof(solid), &solid))
-            return 1;
-        else
-            FreeSolid(solid);
+        ReferenceSolid(solid);
+        return 1;
     }
-    luaL_error(l, "Can't create more solids.");
-    return 0;
-}
-
-int Lua_FreeSolid( lua_State* l )
-{
-    Solid* solid = CheckSolidFromLua(l, 1);
-    FreeSolid(solid);
-    return 0;
+    else
+    {
+        lua_pop(l, 1);
+        luaL_error(l, "Can't create more solids.");
+        return 0;
+    }
 }
 
 bool RegisterPhysicsManagerInLua()
@@ -42,8 +38,7 @@ bool RegisterPhysicsManagerInLua()
         return false;
 
     return
-        RegisterFunctionInLua("CreateSolid", Lua_CreateSolid) &&
-        RegisterFunctionInLua("FreeSolid", Lua_FreeSolid);
+        RegisterFunctionInLua("CreateSolid", Lua_CreateSolid);
 }
 
 Solid* GetSolidFromLua( lua_State* l, int stackPosition )

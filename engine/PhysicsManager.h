@@ -12,6 +12,8 @@ void DestroyPhysicsManager();
 void UpdatePhysicsManager( double timeDelta );
 
 Solid* CreateSolid();
-void FreeSolid( Solid* solid );
+
+void ReferenceSolid( Solid* solid );
+void ReleaseSolid( Solid* solid );
 
 #endif

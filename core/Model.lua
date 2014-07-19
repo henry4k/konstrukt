@@ -7,11 +7,6 @@ function Model:initialize( shaderProgram )
     self.handle = NATIVE.CreateModel(shaderProgram.handle)
 end
 
-function Model:remove()
-    error('Model:remove() is unimplemented!')
-    self.handle = nil
-end
-
 function Model:setTransformation( transformation )
     NATIVE.SetModelTransformation(self.handle, transformation.handle)
 end
