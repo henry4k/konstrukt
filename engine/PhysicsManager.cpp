@@ -1,4 +1,10 @@
 #include <string.h> // memset
+#include <bullet/BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
+#include <bullet/BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
+#include <bullet/BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>
+#include <bullet/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h>
+#include <bullet/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
+#include <BulletDynamics/Dynamics/btRigidBody.h>
 
 #include "Common.h"
 #include "Reference.h"
@@ -18,12 +24,28 @@ struct Solid
 static const int MAX_SOLIDS = 8;
 static Solid Solids[MAX_SOLIDS];
 
+static btCollisionConfiguration* CollisionConfiguration = NULL;
+static btCollisionDispatcher* CollisionDispatcher = NULL;
+static btBroadphaseInterface* BroadphaseInterface = NULL;
+static btConstraintSolver* ConstraintSolver = NULL;
+static btDiscreteDynamicsWorld* World = NULL;
+
 
 static void FreeSolid( Solid* solid );
 
 bool InitPhysicsManager()
 {
     memset(Solids, 0, sizeof(Solids));
+
+    CollisionConfiguration = new btDefaultCollisionConfiguration();
+    CollisionDispatcher = new btCollisionDispatcher(CollisionConfiguration);
+    BroadphaseInterface = new btDbvtBroadphase();
+    ConstraintSolver = new btSequentialImpulseConstraintSolver();
+    World = new btDiscreteDynamicsWorld(CollisionDispatcher,
+                                        BroadphaseInterface,
+                                        ConstraintSolver,
+                                        CollisionConfiguration);
+
     return true;
 }
 
@@ -33,6 +55,12 @@ void DestroyPhysicsManager()
         if(Solids[i].active)
             Error("Solid #%d (%p) was still active when the manager was destroyed.",
                 i, &Solids[i]);
+
+    delete CollisionConfiguration;
+    delete CollisionDispatcher;
+    delete BroadphaseInterface;
+    delete ConstraintSolver;
+    delete World;
 }
 
 static void UpdateSolid( Solid* solid )

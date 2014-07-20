@@ -7,8 +7,8 @@ CONFIG_LDFLAGS=-g
 CONFIG_LUA_CFLAGS= `pkg-config lua --cflags`
 CONFIG_LUA_LDFLAGS=`pkg-config lua --libs`
 
-CONFIG_INTERNAL_CFLAGS= `pkg-config glfw3 libpng openal alure --cflags` -I/System/Library/Frameworks/OpenGL.framework -I/opt/local/include/GL -Werror -Wall -Wextra -pedantic -Wmissing-include-dirs -Wpointer-arith -Wcast-qual -Winit-self -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter -Wno-literal-range
-CONFIG_INTERNAL_LDFLAGS=`pkg-config glfw3 libpng openal alure --libs` -framework OpenGL -L/opt/local/lib -lGLEW
+CONFIG_INTERNAL_CFLAGS= `pkg-config glfw3 libpng openal alure bullet --cflags` -I/System/Library/Frameworks/OpenGL.framework -I/opt/local/include/GL -Werror -Wall -Wextra -pedantic -Wmissing-include-dirs -Wpointer-arith -Wcast-qual -Winit-self -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter -Wno-literal-range
+CONFIG_INTERNAL_LDFLAGS=`pkg-config glfw3 libpng openal alure bullet --libs` -framework OpenGL -L/opt/local/lib -lGLEW
 
 #CONFIG_BLENDER=blender
 #CONFIG_GIMP=gimp
