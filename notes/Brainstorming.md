@@ -109,3 +109,28 @@ It is called whenever all participating threads are synchronized.
 In case of textures `UpdateObjects()` only job is to garbage collect
 unreferenced objects: Objects that are neither referenced by the render
 nor by the Lua thread.
+
+
+## Fortbewegung in der Schwerelosigkeit
+
+### Vom Boden bzw von den Wänden abstoßen.
+
+Beim drücken der Leertaste wird ein Ray-Test nach unten gemacht.
+
+Wenn der Spieler stillsteht oder sich vom Boden wegbewegt:
+Je näher der Boden unter dem Spieler ist, desto stärker kann sich dieser von ihm abstoßen.
+
+Wenn der Spieler sich zum Boden hinbewegt:
+Je nächer der Boden unter dem Spieler ist, desto stärker bremst der Spieler ab.
+Dadurch können Landungen abgefedert und der Gummiball-Effekt verhindert werden.
+
+Auf dem gleichen Prinzip funktioniert auch die WSAD Steuerung.
+
+
+### Magnet-Schuhe
+
+Jeden Tick wird ein Ray-Test nach unten gemacht.
+
+Je näher der Boden unter dem Spieler ist, desto stärker wird dieser in dessen Richtung bewegt.
+
+Solange die Leertaste gedrückt ist, sind die Magnet-Schuhe deaktiviert.
