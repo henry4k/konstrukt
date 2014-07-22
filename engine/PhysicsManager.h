@@ -16,4 +16,8 @@ Solid* CreateSolid();
 void ReferenceSolid( Solid* solid );
 void ReleaseSolid( Solid* solid );
 
+glm::vec3 GetSolidPosition( const Solid* solid );
+glm::vec3 GetSolidRotation( const Solid* solid );
+glm::mat4 GetSolidTransformation( const Solid* solid );
+
 #endif

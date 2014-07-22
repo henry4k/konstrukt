@@ -119,3 +119,18 @@ void ReleaseSolid( Solid* solid )
     if(!HasReferences(&solid->refCounter))
         FreeSolid(solid);
 }
+
+glm::vec3 GetSolidPosition( const Solid* solid )
+{
+    return glm::vec3(); // TODO: Implement me!
+}
+
+glm::vec3 GetSolidRotation( const Solid* solid )
+{
+    return glm::vec3(); // TODO: Implement me!
+}
+
+glm::mat4 GetSolidTransformation( const Solid* solid )
+{
+    return glm::mat4(); // TODO: Implement me!
+}

@@ -32,13 +32,35 @@ int Lua_CreateSolid( lua_State* l )
     }
 }
 
+static int Lua_GetSolidPosition( lua_State* l )
+{
+    const Solid* solid = CheckSolidFromLua(l, 2);
+    const glm::vec3 position = GetSolidPosition(solid);
+    lua_pushnumber(l, position[0]);
+    lua_pushnumber(l, position[1]);
+    lua_pushnumber(l, position[2]);
+    return 3;
+}
+
+static int Lua_GetSolidRotation( lua_State* l )
+{
+    const Solid* solid = CheckSolidFromLua(l, 2);
+    const glm::vec3 rotation = GetSolidRotation(solid);
+    lua_pushnumber(l, rotation[0]);
+    lua_pushnumber(l, rotation[1]);
+    lua_pushnumber(l, rotation[2]);
+    return 3;
+}
+
 bool RegisterPhysicsManagerInLua()
 {
     if(!RegisterUserDataTypeInLua(SOLID_TYPE, Lua_Solid_destructor))
         return false;
 
     return
-        RegisterFunctionInLua("CreateSolid", Lua_CreateSolid);
+        RegisterFunctionInLua("CreateSolid", Lua_CreateSolid) &&
+        RegisterFunctionInLua("GetSolidPosition", Lua_GetSolidPosition) &&
+        RegisterFunctionInLua("GetSolidRotation", Lua_GetSolidRotation);
 }
 
 Solid* GetSolidFromLua( lua_State* l, int stackPosition )
