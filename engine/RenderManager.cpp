@@ -4,6 +4,7 @@
 #include "Mesh.h"
 #include "Texture.h"
 #include "Reference.h"
+#include "PhysicsManager.h"
 #include "RenderManager.h"
 
 
@@ -24,6 +25,7 @@ struct Model
     ShaderProgram* program;
     UniformValue* localUniformValues;
     bool* useLocalUniformValue;
+    Solid* attachmentTarget;
 };
 
 
@@ -82,7 +84,16 @@ static void DrawModel( const Model* model, glm::mat4* mvpMatrix )
     BindTexture(model->texture, 0);
 
     UniformValue mvpUniformValue;
-    mvpUniformValue.m4() = *mvpMatrix * model->transformation;
+    if(model->attachmentTarget)
+    {
+        mvpUniformValue.m4() = *mvpMatrix *
+                               GetSolidTransformation(model->attachmentTarget) *
+                               model->transformation;
+    }
+    else
+    {
+        mvpUniformValue.m4() = *mvpMatrix * model->transformation;
+    }
     SetUniformDefault(program, "MVP", &mvpUniformValue);
 
     const int uniformCount = GetUniformCount(program);
@@ -143,6 +154,8 @@ static void FreeModel( Model* model )
         ReleaseTexture(model->texture);
     if(model->mesh)
         ReleaseMesh(model->mesh);
+    if(model->attachmentTarget)
+        ReleaseSolid(model->attachmentTarget);
     delete[] model->localUniformValues;
     delete[] model->useLocalUniformValue;
 }
@@ -157,6 +170,15 @@ void ReleaseModel( Model* model )
     Release(&model->refCounter);
     if(!HasReferences(&model->refCounter))
         FreeModel(model);
+}
+
+void SetModelAttachmentTarget( Model* model, Solid* target )
+{
+    if(model->attachmentTarget)
+        ReleaseSolid(model->attachmentTarget);
+    model->attachmentTarget = target;
+    if(model->attachmentTarget)
+        ReferenceSolid(model->attachmentTarget);
 }
 
 void SetModelTransformation( Model* model, glm::mat4 transformation )

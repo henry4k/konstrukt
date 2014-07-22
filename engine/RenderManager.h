@@ -8,6 +8,7 @@
 struct Texture;
 struct Mesh;
 struct Model;
+struct Solid;
 
 
 bool InitRenderManager();
@@ -19,6 +20,7 @@ Model* CreateModel( ShaderProgram* program );
 void ReferenceModel( Model* model );
 void ReleaseModel( Model* model );
 
+void SetModelAttachmentTarget( Model* model, Solid* target );
 void SetModelTransformation( Model* model, glm::mat4 transformation );
 void SetModelMesh( Model* model, Mesh* mesh );
 void SetModelTexture( Model* model, Texture* texture );

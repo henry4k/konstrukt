@@ -7,6 +7,10 @@ function Model:initialize( shaderProgram )
     self.handle = NATIVE.CreateModel(shaderProgram.handle)
 end
 
+function Model:setAttachmentTarget( target )
+    NATIVE.SetModelAttachmentTarget(self.handle, target.handle)
+end
+
 function Model:setTransformation( transformation )
     NATIVE.SetModelTransformation(self.handle, transformation.handle)
 end

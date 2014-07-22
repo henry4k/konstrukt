@@ -7,6 +7,7 @@
 #include "Mesh.h"
 #include "Texture.h"
 #include "Shader.h"
+#include "PhysicsManager.h"
 #include "RenderManager.h"
 
 
@@ -36,6 +37,14 @@ static int Lua_CreateModel( lua_State* l )
         luaL_error(l, "Can't create more models.");
         return 0;
     }
+}
+
+static int Lua_SetModelAttachmentTarget( lua_State* l )
+{
+    Model* model = CheckModelFromLua(l, 1);
+    Solid* target = CheckSolidFromLua(l, 2);
+    SetModelAttachmentTarget(model, target);
+    return 0;
 }
 
 static int Lua_SetModelTransformation( lua_State* l )
@@ -114,6 +123,7 @@ bool RegisterRenderManagerInLua()
 
     return
         RegisterFunctionInLua("CreateModel", Lua_CreateModel) &&
+        RegisterFunctionInLua("SetModelAttachmentTarget", Lua_SetModelAttachmentTarget) &&
         RegisterFunctionInLua("SetModelTransformation", Lua_SetModelTransformation) &&
         RegisterFunctionInLua("SetModelMesh", Lua_SetModelMesh) &&
         RegisterFunctionInLua("SetModelTexture", Lua_SetModelTexture) &&
