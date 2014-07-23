@@ -9,7 +9,7 @@ struct Solid;
 
 bool InitPhysicsManager();
 void DestroyPhysicsManager();
-void UpdatePhysicsManager();
+void UpdatePhysicsManager( double timeDelta );
 
 Solid* CreateSolid();
 
@@ -18,6 +18,6 @@ void ReleaseSolid( Solid* solid );
 
 glm::vec3 GetSolidPosition( const Solid* solid );
 glm::vec3 GetSolidRotation( const Solid* solid );
-glm::mat4 GetSolidTransformation( const Solid* solid );
+void GetSolidTransformation( const Solid* solid, glm::mat4* target );
 
 #endif

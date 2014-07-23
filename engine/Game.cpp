@@ -127,9 +127,9 @@ void RunGame()
         UpdateAudio(timeDelta);
         UpdateControls(timeDelta);
         UpdatePlayer(timeDelta);
+        UpdatePhysicsManager(timeDelta);
         lastTime = curTime;
 
-        UpdatePhysicsManager();
 
         const glm::mat4 mvpMatrix =
             GetPlayerProjectionMatrix() *

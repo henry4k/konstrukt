@@ -84,16 +84,14 @@ static void DrawModel( const Model* model, glm::mat4* mvpMatrix )
     BindTexture(model->texture, 0);
 
     UniformValue mvpUniformValue;
+
+    glm::mat4 solidTransformation;
     if(model->attachmentTarget)
-    {
-        mvpUniformValue.m4() = *mvpMatrix *
-                               GetSolidTransformation(model->attachmentTarget) *
-                               model->transformation;
-    }
-    else
-    {
-        mvpUniformValue.m4() = *mvpMatrix * model->transformation;
-    }
+        GetSolidTransformation(model->attachmentTarget, &solidTransformation);
+
+    mvpUniformValue.m4() = *mvpMatrix *
+                           solidTransformation *
+                           model->transformation;
     SetUniformDefault(program, "MVP", &mvpUniformValue);
 
     const int uniformCount = GetUniformCount(program);

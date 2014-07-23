@@ -2,29 +2,26 @@
 #include <bullet/BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
 #include <bullet/BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
 #include <bullet/BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>
+#include <bullet/BulletCollision/CollisionShapes/btCollisionShape.h>
 #include <bullet/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h>
 #include <bullet/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
-#include <BulletDynamics/Dynamics/btRigidBody.h>
+#include <bullet/BulletDynamics/Dynamics/btRigidBody.h>
+#include <bullet/LinearMath/btDefaultMotionState.h>
 
 #include "Common.h"
+#include "Game.h" // SIMULATION_FREQUENCY, MAX_FRAME_FREQUENCY
 #include "Math.h"
 #include "Reference.h"
-#include "OpenGL.h" // glfwGetTime
 #include "PhysicsManager.h"
 
 
 struct Solid
 {
-    bool active;
     ReferenceCounter refCounter;
-    glm::vec3 position;
-    Aabb* collisionShapes;
-    int collisionShapeCount;
+    btRigidBody* rigidBody;
+    btCollisionShape* customCollisionShape;
 };
 
-
-static const int MAX_SOLIDS = 8;
-static Solid Solids[MAX_SOLIDS];
 
 static btCollisionConfiguration* CollisionConfiguration = NULL;
 static btCollisionDispatcher* CollisionDispatcher = NULL;
@@ -32,16 +29,11 @@ static btBroadphaseInterface* BroadphaseInterface = NULL;
 static btConstraintSolver* ConstraintSolver = NULL;
 static btDiscreteDynamicsWorld* World = NULL;
 
-static const double MAX_STEP_TIME_DELTA = 1.0/20.0;
-static double LastStepTime = 0;
-
 
 static void FreeSolid( Solid* solid );
 
 bool InitPhysicsManager()
 {
-    memset(Solids, 0, sizeof(Solids));
-
     CollisionConfiguration = new btDefaultCollisionConfiguration();
     CollisionDispatcher = new btCollisionDispatcher(CollisionConfiguration);
     BroadphaseInterface = new btDbvtBroadphase();
@@ -51,18 +43,11 @@ bool InitPhysicsManager()
                                         ConstraintSolver,
                                         CollisionConfiguration);
 
-    LastStepTime = glfwGetTime();
-
     return true;
 }
 
 void DestroyPhysicsManager()
 {
-    for(int i = 0; i < MAX_SOLIDS; i++)
-        if(Solids[i].active)
-            Error("Solid #%d (%p) was still active when the manager was destroyed.",
-                i, &Solids[i]);
-
     delete CollisionConfiguration;
     delete CollisionDispatcher;
     delete BroadphaseInterface;
@@ -70,62 +55,46 @@ void DestroyPhysicsManager()
     delete World;
 }
 
-static void UpdateSolid( Solid* solid )
+void UpdatePhysicsManager( double timeDelta )
 {
-    if(!solid->active)
-        return;
-
-    // TODO: Run simulation here!
-}
-
-static void StepPhysicsManager( double timeDelta )
-{
-    for(int i = 0; i < MAX_SOLIDS; i++)
-        UpdateSolid(&Solids[i]);
-
-    World->stepSimulation(timeDelta, 1, MAX_STEP_TIME_DELTA);
-}
-
-void UpdatePhysicsManager()
-{
-    const double currentTime = glfwGetTime();
-    const double timeDelta = currentTime - LastStepTime;
-    const int stepCount = (int)(timeDelta / MAX_STEP_TIME_DELTA);
-    for(int i = 0; i < stepCount; i++)
-        StepPhysicsManager(MAX_STEP_TIME_DELTA);
-    LastStepTime += MAX_STEP_TIME_DELTA * stepCount;
-    // TODO: Prevent spiral of death
-}
-
-static Solid* FindInactiveSolid()
-{
-    for(int i = 0; i < MAX_SOLIDS; i++)
-        if(!Solids[i].active)
-            return &Solids[i];
-    return NULL;
+    static const int maxSteps = MAX_FRAME_FREQUENCY / SIMULATION_FREQUENCY;
+    static const double stepTimeDelta = 1.0 / (double)SIMULATION_FREQUENCY;
+    World->stepSimulation(timeDelta, maxSteps, stepTimeDelta);
 }
 
 Solid* CreateSolid()
 {
-    Solid* solid = FindInactiveSolid();
-    if(solid)
-    {
-        memset(solid, 0, sizeof(Solid));
-        solid->active = true;
-        InitReferenceCounter(&solid->refCounter);
-        return solid;
-    }
-    else
-    {
-        Error("Can't create more solids.");
-        return NULL;
-    }
+    Solid* solid = new Solid;
+    InitReferenceCounter(&solid->refCounter);
+
+    btCollisionShape* collisionShape = NULL; // new btSphereShape(1);
+
+    btMotionState* motionState =
+        new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
+                                             btVector3(0, -1, 0)));
+
+    btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(0,
+                                                         motionState,
+                                                         collisionShape,
+                                                         btVector3(0,0,0));
+
+    btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
+
+    solid->rigidBody = rigidBody;
+    World->addRigidBody(rigidBody);
+
+    return solid;
 }
 
 static void FreeSolid( Solid* solid )
 {
-    solid->active = false;
-    FreeReferenceCounter(&solid->refCounter);
+    World->removeRigidBody(solid->rigidBody);
+
+    if(solid->customCollisionShape)
+        delete solid->customCollisionShape;
+    delete solid->rigidBody->getMotionState();
+    delete solid->rigidBody;
+    delete solid;
 }
 
 void ReferenceSolid( Solid* solid )
@@ -142,15 +111,32 @@ void ReleaseSolid( Solid* solid )
 
 glm::vec3 GetSolidPosition( const Solid* solid )
 {
-    return glm::vec3(); // TODO: Implement me!
+    btTransform transform;
+    solid->rigidBody->getMotionState()->getWorldTransform(transform);
+    const btVector3& position = transform.getOrigin();
+    return glm::vec3(position.getX(),
+                     position.getY(),
+                     position.getZ());
 }
 
 glm::vec3 GetSolidRotation( const Solid* solid )
 {
-    return glm::vec3(); // TODO: Implement me!
+    /*
+    btTransform transform;
+    solid->rigidBody->getMotionState()->getWorldTransform(transform);
+    const btQuaternion& rotation = transform->getRotation();
+    return glm::quat(rotation.getX(),
+                     rotation.getY(),
+                     rotation.getZ(),
+                     rotation.getW());
+    */
+    FatalError("Not yet implemented!");
+    return glm::vec3(); // TODO: Implement quaternion support!
 }
 
-glm::mat4 GetSolidTransformation( const Solid* solid )
+void GetSolidTransformation( const Solid* solid, glm::mat4* target )
 {
-    return glm::mat4(); // TODO: Implement me!
+    btTransform transform;
+    solid->rigidBody->getMotionState()->getWorldTransform(transform);
+    transform.getOpenGLMatrix((float*)target);
 }
