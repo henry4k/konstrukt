@@ -3,6 +3,7 @@
 #include <bullet/BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
 #include <bullet/BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>
 #include <bullet/BulletCollision/CollisionShapes/btCollisionShape.h>
+#include <bullet/BulletCollision/CollisionShapes/btBoxShape.h>
 #include <bullet/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h>
 #include <bullet/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
 #include <bullet/BulletDynamics/Dynamics/btRigidBody.h>
@@ -43,16 +44,18 @@ bool InitPhysicsManager()
                                         ConstraintSolver,
                                         CollisionConfiguration);
 
+    World->setGravity(btVector3(0,-0.1,0));
+
     return true;
 }
 
 void DestroyPhysicsManager()
 {
-    delete CollisionConfiguration;
-    delete CollisionDispatcher;
-    delete BroadphaseInterface;
-    delete ConstraintSolver;
     delete World;
+    delete ConstraintSolver;
+    delete CollisionDispatcher;
+    delete CollisionConfiguration;
+    delete BroadphaseInterface;
 }
 
 void UpdatePhysicsManager( double timeDelta )
@@ -67,13 +70,13 @@ Solid* CreateSolid()
     Solid* solid = new Solid;
     InitReferenceCounter(&solid->refCounter);
 
-    btCollisionShape* collisionShape = NULL; // new btSphereShape(1);
+    btCollisionShape* collisionShape = new btBoxShape(btVector3(0.5, 0.5, 0.5));
 
     btMotionState* motionState =
         new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
                                              btVector3(0, -1, 0)));
 
-    btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(0,
+    btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(1,
                                                          motionState,
                                                          collisionShape,
                                                          btVector3(0,0,0));
@@ -81,6 +84,7 @@ Solid* CreateSolid()
     btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
 
     solid->rigidBody = rigidBody;
+    solid->customCollisionShape = collisionShape;
     World->addRigidBody(rigidBody);
 
     return solid;

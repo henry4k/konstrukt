@@ -23,6 +23,7 @@
 #include "LuaBindings/MeshBuffer.h"
 #include "LuaBindings/Player.h"
 #include "LuaBindings/RenderManager.h"
+#include "LuaBindings/PhysicsManager.h"
 #include "LuaBindings/Shader.h"
 #include "LuaBindings/Texture.h"
 
@@ -97,6 +98,7 @@ bool RegisterAllModulesInLua()
         RegisterMeshBufferInLua() &&
         RegisterPlayerInLua() &&
         RegisterRenderManagerInLua() &&
+        RegisterPhysicsManagerInLua() &&
         RegisterShaderInLua() &&
         RegisterTextureInLua();
 }
