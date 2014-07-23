@@ -1,5 +1,5 @@
-#ifndef __APOPASIS_LUA_BINDINGS_MESH_BUFFER__
-#define __APOPASIS_LUA_BINDINGS_MESH_BUFFER__
+#ifndef __APOAPSIS_LUA_BINDINGS_MESH_BUFFER__
+#define __APOAPSIS_LUA_BINDINGS_MESH_BUFFER__
 
 #include "../MeshBuffer.h"
 #include "../Lua.h"

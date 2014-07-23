@@ -1,5 +1,5 @@
-#ifndef __COMMON__
-#define __COMMON__
+#ifndef __APOAPSIS_COMMON__
+#define __APOAPSIS_COMMON__
 
 #include <stdlib.h>
 #include <stdarg.h>

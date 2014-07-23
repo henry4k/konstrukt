@@ -1,5 +1,5 @@
-#ifndef __MATH__
-#define __MATH__
+#ifndef __APOAPSIS_MATH__
+#define __APOAPSIS_MATH__
 
 #include <math.h>
 #include <float.h>

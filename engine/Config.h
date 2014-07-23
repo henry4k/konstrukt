@@ -1,5 +1,5 @@
-#ifndef __CONFIG__
-#define __CONFIG__
+#ifndef __APOAPSIS_CONFIG__
+#define __APOAPSIS_CONFIG__
 
 bool InitConfig( const int argc, char const * const * argv );
 void DestroyConfig();

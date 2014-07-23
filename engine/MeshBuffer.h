@@ -1,5 +1,5 @@
-#ifndef __MESH_BUFFER__
-#define __MESH_BUFFER__
+#ifndef __APOAPSIS_MESH_BUFFER__
+#define __APOAPSIS_MESH_BUFFER__
 
 #include <vector>
 #include "Vertex.h"

@@ -1,5 +1,5 @@
-#ifndef __PLAYER__
-#define __PLAYER__
+#ifndef __APOAPSIS_PLAYER__
+#define __APOAPSIS_PLAYER__
 
 #include "Math.h"
 

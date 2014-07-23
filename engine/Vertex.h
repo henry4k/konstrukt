@@ -1,5 +1,5 @@
-#ifndef __VERTEX__
-#define __VERTEX__
+#ifndef __APOAPSIS_VERTEX__
+#define __APOAPSIS_VERTEX__
 
 #include "Math.h"
 #include "OpenGL.h"

@@ -9,7 +9,7 @@ struct Solid;
 
 bool InitPhysicsManager();
 void DestroyPhysicsManager();
-void UpdatePhysicsManager( double timeDelta );
+void UpdatePhysicsManager();
 
 Solid* CreateSolid();
 

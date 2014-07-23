@@ -1,5 +1,5 @@
-#ifndef __CONTROLS__
-#define __CONTROLS__
+#ifndef __APOAPSIS_CONTROLS__
+#define __APOAPSIS_CONTROLS__
 
 typedef void (*KeyControlActionFn)( const char* name, bool pressed, void* context );
 typedef void (*AxisControlActionFn)( const char* name, float absolute, float delta, void* context );

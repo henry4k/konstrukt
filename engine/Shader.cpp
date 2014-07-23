@@ -338,7 +338,7 @@ ShaderProgram* LinkShaderProgram( Shader** shaders, int shaderCount )
 {
     for(int i = 0; i < shaderCount; i++)
     {
-        if(shaders[i] == INVALID_SHADER_HANDLE)
+        if(!shaders[i] || shaders[i]->handle == INVALID_SHADER_HANDLE)
         {
             Error("Cannot link a shader program with invalid shaders.");
             return NULL;

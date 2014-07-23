@@ -1,5 +1,5 @@
-#ifndef __AUDIO__
-#define __AUDIO__
+#ifndef __APOAPSIS_AUDIO__
+#define __APOAPSIS_AUDIO__
 
 #include "Math.h"
 

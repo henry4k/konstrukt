@@ -7,7 +7,9 @@
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 
 #include "Common.h"
+#include "Math.h"
 #include "Reference.h"
+#include "OpenGL.h" // glfwGetTime
 #include "PhysicsManager.h"
 
 
@@ -30,6 +32,9 @@ static btBroadphaseInterface* BroadphaseInterface = NULL;
 static btConstraintSolver* ConstraintSolver = NULL;
 static btDiscreteDynamicsWorld* World = NULL;
 
+static const double MAX_STEP_TIME_DELTA = 1.0/20.0;
+static double LastStepTime = 0;
+
 
 static void FreeSolid( Solid* solid );
 
@@ -45,6 +50,8 @@ bool InitPhysicsManager()
                                         BroadphaseInterface,
                                         ConstraintSolver,
                                         CollisionConfiguration);
+
+    LastStepTime = glfwGetTime();
 
     return true;
 }
@@ -71,10 +78,23 @@ static void UpdateSolid( Solid* solid )
     // TODO: Run simulation here!
 }
 
-void UpdatePhysicsManager( double timeDelta )
+static void StepPhysicsManager( double timeDelta )
 {
     for(int i = 0; i < MAX_SOLIDS; i++)
         UpdateSolid(&Solids[i]);
+
+    World->stepSimulation(timeDelta, 1, MAX_STEP_TIME_DELTA);
+}
+
+void UpdatePhysicsManager()
+{
+    const double currentTime = glfwGetTime();
+    const double timeDelta = currentTime - LastStepTime;
+    const int stepCount = (int)(timeDelta / MAX_STEP_TIME_DELTA);
+    for(int i = 0; i < stepCount; i++)
+        StepPhysicsManager(MAX_STEP_TIME_DELTA);
+    LastStepTime += MAX_STEP_TIME_DELTA * stepCount;
+    // TODO: Prevent spiral of death
 }
 
 static Solid* FindInactiveSolid()

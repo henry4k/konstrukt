@@ -1,5 +1,5 @@
-#ifndef __WINDOW__
-#define __WINDOW__
+#ifndef __APOAPSIS_WINDOW__
+#define __APOAPSIS_WINDOW__
 
 #include "Math.h"
 

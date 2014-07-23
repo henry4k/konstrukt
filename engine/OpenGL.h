@@ -1,5 +1,5 @@
-#ifndef __OPENGL__
-#define __OPENGL__
+#ifndef __APOAPSIS_OPENGL__
+#define __APOAPSIS_OPENGL__
 
 #if defined(__APPLE__)
     #include <glew.h>

@@ -129,6 +129,8 @@ void RunGame()
         UpdatePlayer(timeDelta);
         lastTime = curTime;
 
+        UpdatePhysicsManager();
+
         const glm::mat4 mvpMatrix =
             GetPlayerProjectionMatrix() *
             GetPlayerViewMatrix();
