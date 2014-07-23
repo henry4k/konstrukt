@@ -1,4 +1,4 @@
-local class = require 'middleclass'
+local class = require 'core/middleclass.lua'
 
 
 local AudioBuffer = class('core/AudioBuffer')

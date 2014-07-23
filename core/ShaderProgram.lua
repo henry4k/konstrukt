@@ -1,5 +1,5 @@
-local class = require 'middleclass'
-local Matrix4 = require 'core/Matrix4'
+local class = require 'core/middleclass.lua'
+local Matrix4 = require 'core/Matrix4.lua'
 
 
 local ShaderProgram = class('core/ShaderProgram')

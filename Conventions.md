@@ -26,11 +26,10 @@ Use the `const` attribute whenever possible.
 Begin names with an underscore to mark them as private.  
 Like `_myPrivateAttribute`.
 
-Package names resemble the file path that refers to the modue:
-`core/welder/WelderEffects` refers to `core/welder/WelderEffects.lua`.
+Package names resemble the file path that refers to the modue.
 
-Classes created using middleclass,
-must contain the complete package path in their name.
+Classes created using middleclass start with the package name, but
+omit the file extension. (You wouldn't postfix C++ classes either, right?)
 
     local Spark = class('core/effects/Spark', Effect)
 

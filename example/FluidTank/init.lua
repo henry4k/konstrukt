@@ -1,11 +1,11 @@
-local class = require 'middleclass'
+local class = require 'core/middleclass.lua'
 
-local Json    = require 'core/Json'
-local Texture = require 'core/Texture'
-local Mesh    = require 'core/Mesh'
-local Scene   = require 'core/Scene'
-local Model   = require 'core/Model'
-local Matrix4 = require 'core/Matrix4'
+local Json    = require 'core/Json.lua'
+local Texture = require 'core/Texture.lua'
+local Mesh    = require 'core/Mesh.lua'
+local Scene   = require 'core/Scene.lua'
+local Model   = require 'core/Model.lua'
+local Matrix4 = require 'core/Matrix4.lua'
 
 
 local FluidTank = class('example/FluidTank')
