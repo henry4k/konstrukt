@@ -1,9 +1,11 @@
-#include <string.h> // memset, memcpy
+#include <string.h> // memset
 #include <bullet/BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
 #include <bullet/BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
 #include <bullet/BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>
 #include <bullet/BulletCollision/CollisionShapes/btCollisionShape.h>
 #include <bullet/BulletCollision/CollisionShapes/btBoxShape.h>
+#include <bullet/BulletCollision/CollisionShapes/btSphereShape.h>
+#include <bullet/BulletCollision/CollisionShapes/btCompoundShape.h>
 #include <bullet/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h>
 #include <bullet/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
 #include <bullet/BulletDynamics/Dynamics/btRigidBody.h>
@@ -25,8 +27,7 @@ struct Solid
 {
     ReferenceCounter refCounter;
     btRigidBody* rigidBody;
-    CollisionShape** shapes;
-    int shapeCount;
+    CollisionShape* collisionShape;
 };
 
 
@@ -82,9 +83,9 @@ static CollisionShape* CreateCollisionShape( btCollisionShape* bulletInstance )
 
 CollisionShape* CreateBoxCollisionShape( glm::vec3 halfWidth )
 {
-    return CreateCollisionShape(new btBoxShape(halfWidth[0],
-                                               halfWidth[1],
-                                               halfWidth[2]));
+    return CreateCollisionShape(new btBoxShape(btVector3(halfWidth[0],
+                                                         halfWidth[1],
+                                                         halfWidth[2])));
 }
 
 CollisionShape* CreateSphereCollisionShape( float radius )
@@ -94,7 +95,7 @@ CollisionShape* CreateSphereCollisionShape( float radius )
 
 CollisionShape* CreateCompoundCollisionShape( int shapeCount, CollisionShape** shapes, glm::vec3* positions )
 {
-    btCollisionShape* bulletInstance = new btCompoundCollisionShape(false);
+    btCompoundShape* bulletInstance = new btCompoundShape(false);
     for(int i = 0; i < shapeCount; i++)
     {
         const btTransform transform(btQuaternion(),
@@ -103,13 +104,15 @@ CollisionShape* CreateCompoundCollisionShape( int shapeCount, CollisionShape** s
                                               positions[i][2]));
         bulletInstance->addChildShape(transform, shapes[i]->bulletInstance);
     }
-    return CreateCollisionShape(shape);
+    return CreateCollisionShape(bulletInstance);
 }
 
+/*
 static CollisionShape* BulletInstanceToCollisionShape( btCollisionShape* bulletInstance )
 {
     return (CollisionShape*)bulletInstance->getUserPointer();
 }
+*/
 
 static void FreeCollisionShape( CollisionShape* shape )
 {
@@ -133,7 +136,7 @@ void ReleaseCollisionShape( CollisionShape* shape )
         FreeCollisionShape(shape);
 }
 
-Solid* CreateSolid( CollisionShape** shapes, int shapeCount )
+Solid* CreateSolid( CollisionShape* shape )
 {
     Solid* solid = new Solid;
     InitReferenceCounter(&solid->refCounter);
@@ -144,20 +147,15 @@ Solid* CreateSolid( CollisionShape** shapes, int shapeCount )
 
     btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(1,
                                                          motionState,
-                                                         collisionShape,
+                                                         shape->bulletInstance,
                                                          btVector3(0,0,0));
 
     btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
 
     solid->rigidBody = rigidBody;
-
-    solid->shapes = new CollisionShapes**[shapeCount];
-    solid->shapeCount = shapeCount;
-    memcpy(solid->shapes, shapes, shapeCount*sizeof(CollisionShape*));
-    for(int i = 0; i < shapeCount; i++)
-        ReferenceCollisionShape(shapes[i]);
-
+    solid->collisionShape = shape;
     World->addRigidBody(rigidBody);
+    ReferenceCollisionShape(shape);
 
     return solid;
 }
@@ -165,10 +163,7 @@ Solid* CreateSolid( CollisionShape** shapes, int shapeCount )
 static void FreeSolid( Solid* solid )
 {
     World->removeRigidBody(solid->rigidBody);
-
-    for(int i = 0; i < solid->shapeCount; i++)
-        ReleaseCollisionShape(solid->shapes[i]);
-
+    ReleaseCollisionShape(solid->collisionShape);
     delete solid->rigidBody->getMotionState();
     delete solid->rigidBody;
     delete solid;

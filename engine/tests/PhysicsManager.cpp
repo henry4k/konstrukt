@@ -25,17 +25,31 @@ int main( int argc, char** argv )
             DestroyPhysicsManager();
         });
 
-    Describe("Solids")
+    Describe("Collision shapes")
         .use(dummyExceptionSandbox)
 
-        .it("can be created and freed.", [](){
+        .it("can be referenced and released.", [](){
 
             ModuleScope scope;
 
-            Solid* s1 = CreateSolid();
+            CollisionShape* shape = CreateSphereCollisionShape(1);
+            ReferenceCollisionShape(shape);
+            ReleaseCollisionShape(shape);
+        });
+
+    Describe("Solids")
+        .use(dummyExceptionSandbox)
+
+        .it("can be referenced and released.", [](){
+
+            ModuleScope scope;
+
+            CollisionShape* shape = CreateSphereCollisionShape(1);
+
+            Solid* s1 = CreateSolid(shape);
             Require(s1 != NULL);
 
-            Solid* s2 = CreateSolid();
+            Solid* s2 = CreateSolid(shape);
             Require(s2 != NULL);
 
             ReferenceSolid(s1);

@@ -3,8 +3,8 @@ local class = require 'core/middleclass.lua'
 
 local Solid = class('core/Solid')
 
-function Solid:initialize()
-    self.handle = NATIVE.CreateSolid()
+function Solid:initialize( collisionShape )
+    self.handle = NATIVE.CreateSolid( collisionShape.handle )
 end
 
 function Solid:getPosition()

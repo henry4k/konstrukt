@@ -20,7 +20,7 @@ void ReferenceCollisionShape( CollisionShape* shape );
 void ReleaseCollisionShape( CollisionShape* shape );
 
 
-Solid* CreateSolid( CollisionShape** shapes, int shapeCount );
+Solid* CreateSolid( CollisionShape* shape );
 
 void ReferenceSolid( Solid* solid );
 void ReleaseSolid( Solid* solid );
