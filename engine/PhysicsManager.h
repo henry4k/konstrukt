@@ -4,6 +4,7 @@
 #include "Math.h"
 
 
+struct CollisionShape;
 struct Solid;
 
 
@@ -11,7 +12,15 @@ bool InitPhysicsManager();
 void DestroyPhysicsManager();
 void UpdatePhysicsManager( double timeDelta );
 
-Solid* CreateSolid();
+
+CollisionShape* CreateBoxCollisionShape( glm::vec3 halfWidth );
+CollisionShape* CreateSphereCollisionShape( float radius );
+
+void ReferenceCollisionShape( CollisionShape* shape );
+void ReleaseCollisionShape( CollisionShape* shape );
+
+
+Solid* CreateSolid( CollisionShape** shapes, int shapeCount );
 
 void ReferenceSolid( Solid* solid );
 void ReleaseSolid( Solid* solid );

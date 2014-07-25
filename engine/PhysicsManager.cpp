@@ -1,4 +1,4 @@
-#include <string.h> // memset
+#include <string.h> // memset, memcpy
 #include <bullet/BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
 #include <bullet/BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
 #include <bullet/BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>
@@ -15,12 +15,18 @@
 #include "Reference.h"
 #include "PhysicsManager.h"
 
+struct CollisionShape
+{
+    ReferenceCounter refCounter;
+    btCollisionShape* bulletInstance;
+};
 
 struct Solid
 {
     ReferenceCounter refCounter;
     btRigidBody* rigidBody;
-    btCollisionShape* customCollisionShape;
+    CollisionShape** shapes;
+    int shapeCount;
 };
 
 
@@ -65,12 +71,72 @@ void UpdatePhysicsManager( double timeDelta )
     World->stepSimulation(timeDelta, maxSteps, stepTimeDelta);
 }
 
-Solid* CreateSolid()
+static CollisionShape* CreateCollisionShape( btCollisionShape* bulletInstance )
+{
+    CollisionShape* shape = new CollisionShape;
+    InitReferenceCounter(&shape->refCounter);
+    shape->bulletInstance = bulletInstance;
+    shape->bulletInstance->setUserPointer(shape);
+    return shape;
+}
+
+CollisionShape* CreateBoxCollisionShape( glm::vec3 halfWidth )
+{
+    return CreateCollisionShape(new btBoxShape(halfWidth[0],
+                                               halfWidth[1],
+                                               halfWidth[2]));
+}
+
+CollisionShape* CreateSphereCollisionShape( float radius )
+{
+    return CreateCollisionShape(new btSphereShape(radius));
+}
+
+CollisionShape* CreateCompoundCollisionShape( int shapeCount, CollisionShape** shapes, glm::vec3* positions )
+{
+    btCollisionShape* bulletInstance = new btCompoundCollisionShape(false);
+    for(int i = 0; i < shapeCount; i++)
+    {
+        const btTransform transform(btQuaternion(),
+                                    btVector3(positions[i][0],
+                                              positions[i][1],
+                                              positions[i][2]));
+        bulletInstance->addChildShape(transform, shapes[i]->bulletInstance);
+    }
+    return CreateCollisionShape(shape);
+}
+
+static CollisionShape* BulletInstanceToCollisionShape( btCollisionShape* bulletInstance )
+{
+    return (CollisionShape*)bulletInstance->getUserPointer();
+}
+
+static void FreeCollisionShape( CollisionShape* shape )
+{
+    // TODO:
+    // if(shape->bulletInstance instanceof btCompoundCollisionShape)
+    //     for(childs in bulletInstance)
+    //         FreeCollisionShape(child)
+    delete shape->bulletInstance;
+    delete shape;
+}
+
+void ReferenceCollisionShape( CollisionShape* shape )
+{
+    Reference(&shape->refCounter);
+}
+
+void ReleaseCollisionShape( CollisionShape* shape )
+{
+    Release(&shape->refCounter);
+    if(!HasReferences(&shape->refCounter))
+        FreeCollisionShape(shape);
+}
+
+Solid* CreateSolid( CollisionShape** shapes, int shapeCount )
 {
     Solid* solid = new Solid;
     InitReferenceCounter(&solid->refCounter);
-
-    btCollisionShape* collisionShape = new btBoxShape(btVector3(0.5, 0.5, 0.5));
 
     btMotionState* motionState =
         new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
@@ -84,7 +150,13 @@ Solid* CreateSolid()
     btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
 
     solid->rigidBody = rigidBody;
-    solid->customCollisionShape = collisionShape;
+
+    solid->shapes = new CollisionShapes**[shapeCount];
+    solid->shapeCount = shapeCount;
+    memcpy(solid->shapes, shapes, shapeCount*sizeof(CollisionShape*));
+    for(int i = 0; i < shapeCount; i++)
+        ReferenceCollisionShape(shapes[i]);
+
     World->addRigidBody(rigidBody);
 
     return solid;
@@ -94,8 +166,9 @@ static void FreeSolid( Solid* solid )
 {
     World->removeRigidBody(solid->rigidBody);
 
-    if(solid->customCollisionShape)
-        delete solid->customCollisionShape;
+    for(int i = 0; i < solid->shapeCount; i++)
+        ReleaseCollisionShape(solid->shapes[i]);
+
     delete solid->rigidBody->getMotionState();
     delete solid->rigidBody;
     delete solid;
