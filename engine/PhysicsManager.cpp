@@ -141,6 +141,9 @@ Solid* CreateSolid( CollisionShape* shape )
     Solid* solid = new Solid;
     InitReferenceCounter(&solid->refCounter);
 
+    btVector3 localInerita;
+    shape->bulletInstance->calculateLocalInerita(mass, localInerita);
+
     btMotionState* motionState =
         new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
                                              btVector3(0, -1, 0)));
@@ -148,7 +151,7 @@ Solid* CreateSolid( CollisionShape* shape )
     btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(1,
                                                          motionState,
                                                          shape->bulletInstance,
-                                                         btVector3(0,0,0));
+                                                         localInerita);
 
     btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
 
