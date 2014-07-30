@@ -46,10 +46,10 @@ int main( int argc, char** argv )
 
             CollisionShape* shape = CreateSphereCollisionShape(1);
 
-            Solid* s1 = CreateSolid(shape);
+            Solid* s1 = CreateSolid(1, glm::vec3(), glm::quat(), shape);
             Require(s1 != NULL);
 
-            Solid* s2 = CreateSolid(shape);
+            Solid* s2 = CreateSolid(1, glm::vec3(), glm::quat(), shape);
             Require(s2 != NULL);
 
             ReferenceSolid(s1);

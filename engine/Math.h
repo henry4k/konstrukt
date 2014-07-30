@@ -9,6 +9,7 @@
 #define GLM_FORCE_ONLY_XYZW
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 
 glm::mat4 MakeRotationMatrix( glm::mat4 m );

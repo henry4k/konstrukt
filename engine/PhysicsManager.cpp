@@ -17,9 +17,19 @@
 #include "Reference.h"
 #include "PhysicsManager.h"
 
+
+enum CollisionShapeType
+{
+    BOX_SHAPE,
+    SPHERE_SHAPE,
+    COMPOUND_SHAPE
+};
+
+
 struct CollisionShape
 {
     ReferenceCounter refCounter;
+    CollisionShapeType type;
     btCollisionShape* bulletInstance;
 };
 
@@ -72,9 +82,10 @@ void UpdatePhysicsManager( double timeDelta )
     World->stepSimulation(timeDelta, maxSteps, stepTimeDelta);
 }
 
-static CollisionShape* CreateCollisionShape( btCollisionShape* bulletInstance )
+static CollisionShape* CreateCollisionShape( CollisionShapeType type, btCollisionShape* bulletInstance )
 {
     CollisionShape* shape = new CollisionShape;
+    shape->type = type;
     InitReferenceCounter(&shape->refCounter);
     shape->bulletInstance = bulletInstance;
     shape->bulletInstance->setUserPointer(shape);
@@ -83,14 +94,16 @@ static CollisionShape* CreateCollisionShape( btCollisionShape* bulletInstance )
 
 CollisionShape* CreateBoxCollisionShape( glm::vec3 halfWidth )
 {
-    return CreateCollisionShape(new btBoxShape(btVector3(halfWidth[0],
+    return CreateCollisionShape(BOX_SHAPE,
+                                new btBoxShape(btVector3(halfWidth[0],
                                                          halfWidth[1],
                                                          halfWidth[2])));
 }
 
 CollisionShape* CreateSphereCollisionShape( float radius )
 {
-    return CreateCollisionShape(new btSphereShape(radius));
+    return CreateCollisionShape(SPHERE_SHAPE,
+                                new btSphereShape(radius));
 }
 
 CollisionShape* CreateCompoundCollisionShape( int shapeCount, CollisionShape** shapes, glm::vec3* positions )
@@ -104,22 +117,22 @@ CollisionShape* CreateCompoundCollisionShape( int shapeCount, CollisionShape** s
                                               positions[i][2]));
         bulletInstance->addChildShape(transform, shapes[i]->bulletInstance);
     }
-    return CreateCollisionShape(bulletInstance);
+    return CreateCollisionShape(COMPOUND_SHAPE, bulletInstance);
 }
-
-/*
-static CollisionShape* BulletInstanceToCollisionShape( btCollisionShape* bulletInstance )
-{
-    return (CollisionShape*)bulletInstance->getUserPointer();
-}
-*/
 
 static void FreeCollisionShape( CollisionShape* shape )
 {
-    // TODO:
-    // if(shape->bulletInstance instanceof btCompoundCollisionShape)
-    //     for(childs in bulletInstance)
-    //         FreeCollisionShape(child)
+    if(shape->type == COMPOUND_SHAPE)
+    {
+        const btCompoundShape* compound = (btCompoundShape*)shape->bulletInstance;
+        const int childCount = compound->getNumChildShapes();
+        for(int i = 0; i < childCount; i++)
+        {
+            const btCollisionShape* child = compound->getChildShape(i);
+            CollisionShape* childShape = (CollisionShape*)child->getUserPointer();
+            ReleaseCollisionShape(childShape);
+        }
+    }
     delete shape->bulletInstance;
     delete shape;
 }
@@ -136,7 +149,7 @@ void ReleaseCollisionShape( CollisionShape* shape )
         FreeCollisionShape(shape);
 }
 
-Solid* CreateSolid( CollisionShape* shape )
+Solid* CreateSolid( float mass, glm::vec3 position, glm::quat rotation, CollisionShape* shape )
 {
     Solid* solid = new Solid;
     InitReferenceCounter(&solid->refCounter);
@@ -145,10 +158,15 @@ Solid* CreateSolid( CollisionShape* shape )
     shape->bulletInstance->calculateLocalInerita(mass, localInerita);
 
     btMotionState* motionState =
-        new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
-                                             btVector3(0, -1, 0)));
+        new btDefaultMotionState(btTransform(btQuaternion(rotation[0],
+                                                          rotation[1],
+                                                          rotation[2],
+                                                          rotation[3]),
+                                             btVector3(position[0],
+                                                       position[1],
+                                                       position[2])));
 
-    btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(1,
+    btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass,
                                                          motionState,
                                                          shape->bulletInstance,
                                                          localInerita);
@@ -184,6 +202,16 @@ void ReleaseSolid( Solid* solid )
         FreeSolid(solid);
 }
 
+float GetSolidMass( const Solid* solid )
+{
+    return 1.0f / solid->rigidBody->getInvMass();
+}
+
+void SetSolidMass( const Solid* solid, float mass )
+{
+    solid->rigidBody->setMassProps(mass, btVector3(0,0,0));
+}
+
 glm::vec3 GetSolidPosition( const Solid* solid )
 {
     btTransform transform;
@@ -194,19 +222,15 @@ glm::vec3 GetSolidPosition( const Solid* solid )
                      position.getZ());
 }
 
-glm::vec3 GetSolidRotation( const Solid* solid )
+glm::quat GetSolidRotation( const Solid* solid )
 {
-    /*
     btTransform transform;
     solid->rigidBody->getMotionState()->getWorldTransform(transform);
-    const btQuaternion& rotation = transform->getRotation();
+    const btQuaternion& rotation = transform.getRotation();
     return glm::quat(rotation.getX(),
                      rotation.getY(),
                      rotation.getZ(),
                      rotation.getW());
-    */
-    FatalError("Not yet implemented!");
-    return glm::vec3(); // TODO: Implement quaternion support!
 }
 
 void GetSolidTransformation( const Solid* solid, glm::mat4* target )
