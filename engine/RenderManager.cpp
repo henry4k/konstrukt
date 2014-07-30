@@ -1,227 +1,112 @@
-#include <string.h> // memset, strcmp, strncpy
-
-#include "Common.h"
-#include "Mesh.h"
-#include "Texture.h"
+#include "Math.h"
+#include <glm/gtc/matrix_transform.hpp>
+#include "Vertex.h"
+#include "Window.h"
 #include "Reference.h"
 #include "PhysicsManager.h"
+#include "ModelManager.h"
 #include "RenderManager.h"
 
 
-enum UniformValueSource
-{
-    DEFAULT_UNIFORM_VALUE = 0,
-    LOCAL_UNIFORM_VALUE,
-    UNIFORM_VALUE_SOURCE_COUNT
-};
+static float CameraFieldOfView = 90;
+static Solid* CameraAttachmentTarget = NULL;
+static glm::mat4 CameraViewTransformation;
+static glm::mat4 CameraProjectionTransformation;
 
-struct Model
-{
-    bool active;
-    ReferenceCounter refCounter;
-    glm::mat4 transformation;
-    Mesh* mesh;
-    Texture* texture;
-    ShaderProgram* program;
-    UniformValue* localUniformValues;
-    bool* useLocalUniformValue;
-    Solid* attachmentTarget;
-};
-
-
-static const int MAX_MODELS = 8;
-static Model Models[MAX_MODELS];
-
-
-static void DrawModel( const Model* model, glm::mat4* mvpMatrix );
-static void FreeModel( Model* model );
-static bool ModelIsComplete( const Model* model );
+static void UpdateProjectionTransformation();
+static void OnFramebufferResize( int width, int height );
 
 bool InitRenderManager()
 {
-    memset(Models, 0, sizeof(Models));
+    CameraAttachmentTarget = NULL;
+
+    EnableVertexArrays();
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    //glEnable(GL_CULL_FACE);
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glClearColor(0.5, 0.5, 0.5, 1);
+
+    SetFrambufferFn(OnFramebufferResize);
     return true;
 }
 
 void DestroyRenderManager()
 {
-    for(int i = 0; i < MAX_MODELS; i++)
-    {
-        if(Models[i].active)
-        {
-            Error("Model #%d (%p) was still active when the manager was destroyed.",
-                i, &Models[i]);
-            FreeModel(&Models[i]);
-        }
-    }
+    SetCameraAttachmentTarget(NULL);
 }
 
-void DrawModels( glm::mat4 mvpMatrix )
+void SetCameraAttachmentTarget( Solid* target )
 {
-    // Naive draw method:
-    for(int i = 0; i < MAX_MODELS; i++)
-    {
-        const Model* model = &Models[i];
-        if(model->active)
-            DrawModel(model, &mvpMatrix);
-    }
+    if(CameraAttachmentTarget)
+        ReleaseSolid(CameraAttachmentTarget);
+    CameraAttachmentTarget = target;
+    if(CameraAttachmentTarget)
+        ReferenceSolid(CameraAttachmentTarget);
 }
 
-static void DrawModel( const Model* model, glm::mat4* mvpMatrix )
+void SetCameraViewTransformation( glm::mat4 transformation )
 {
-    if(!model->mesh)
-        return;
-
-    if(!ModelIsComplete(model))
-    {
-        Error("Trying to draw incomplete model.");
-        return;
-    }
-
-    ShaderProgram* program = model->program;
-    BindShaderProgram(program);
-
-    BindTexture(model->texture, 0);
-
-    UniformValue mvpUniformValue;
-
-    glm::mat4 solidTransformation;
-    if(model->attachmentTarget)
-        GetSolidTransformation(model->attachmentTarget, &solidTransformation);
-
-    mvpUniformValue.m4() = *mvpMatrix *
-                           solidTransformation *
-                           model->transformation;
-    SetUniformDefault(program, "MVP", &mvpUniformValue);
-
-    const int uniformCount = GetUniformCount(program);
-    for(int i = 0; i < uniformCount; i++)
-    {
-        if(model->useLocalUniformValue[i])
-            SetUniform(program, i, &model->localUniformValues[i]);
-        else
-            ResetUniform(program, i);
-    }
-
-    DrawMesh(model->mesh);
+    CameraViewTransformation = transformation;
 }
 
-static Model* FindInactiveModel()
+void SetCameraFieldOfView( float fov )
 {
-    for(int i = 0; i < MAX_MODELS; i++)
-        if(!Models[i].active)
-            return &Models[i];
-    return NULL;
+    CameraFieldOfView = fov;
+    UpdateProjectionTransformation();
 }
 
-Model* CreateModel( ShaderProgram* program )
+static void OnFramebufferResize( int width, int height )
 {
-    Model* model = FindInactiveModel();
-    if(model)
-    {
-        memset(model, 0, sizeof(Model));
-        model->active = true;
-        InitReferenceCounter(&model->refCounter);
-
-        model->program = program;
-        ReferenceShaderProgram(program);
-
-        const int uniformCount = GetUniformCount(program);
-
-        model->localUniformValues = new UniformValue[uniformCount];
-        memset(model->localUniformValues, 0, sizeof(UniformValue)*uniformCount);
-
-        model->useLocalUniformValue = new bool[uniformCount];
-        memset(model->useLocalUniformValue, 0, sizeof(bool)*uniformCount);
-
-        return model;
-    }
-    else
-    {
-        Error("Can't create more models.");
-        return NULL;
-    }
+    glViewport(0, 0, width, height);
+    UpdateProjectionTransformation();
 }
 
-static void FreeModel( Model* model )
+static void UpdateProjectionTransformation()
 {
-    model->active = false;
-    FreeReferenceCounter(&model->refCounter);
-    ReleaseShaderProgram(model->program);
-    if(model->texture)
-        ReleaseTexture(model->texture);
-    if(model->mesh)
-        ReleaseMesh(model->mesh);
-    if(model->attachmentTarget)
-        ReleaseSolid(model->attachmentTarget);
-    delete[] model->localUniformValues;
-    delete[] model->useLocalUniformValue;
+    using namespace glm;
+    const ivec2 framebufferSize = GetFramebufferSize();
+    const float aspect = float(framebufferSize[0]) / float(framebufferSize[1]);
+    CameraProjectionTransformation = perspective(CameraFieldOfView,
+                                                 aspect,
+                                                 0.1f, 100.0f);
 }
 
-void ReferenceModel( Model* model )
+void RenderScene()
 {
-    Reference(&model->refCounter);
-}
+    glm::mat4 cameraTargetTransformation;
+    if(CameraAttachmentTarget)
+        GetSolidTransformation(CameraAttachmentTarget, &cameraTargetTransformation);
 
-void ReleaseModel( Model* model )
-{
-    Release(&model->refCounter);
-    if(!HasReferences(&model->refCounter))
-        FreeModel(model);
-}
+    const glm::mat4 cameraTransformation = cameraTargetTransformation *
+                                           CameraViewTransformation *
+                                           CameraProjectionTransformation;
 
-void SetModelAttachmentTarget( Model* model, Solid* target )
-{
-    if(model->attachmentTarget)
-        ReleaseSolid(model->attachmentTarget);
-    model->attachmentTarget = target;
-    if(model->attachmentTarget)
-        ReferenceSolid(model->attachmentTarget);
-}
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    DrawModels(&cameraTransformation);
+    SwapBuffers();
 
-void SetModelTransformation( Model* model, glm::mat4 transformation )
-{
-    model->transformation = transformation;
-}
+    /*
+    // Render shadow map
+    BeginRenderShadowTexture();
+    glClear(GL_DEPTH_BUFFER_BIT);
+    DrawGraphicsObjects();
+    DrawPlayer();
+    EndRenderShadowTexture();
 
-void SetModelMesh( Model* model, Mesh* mesh )
-{
-    if(model->mesh)
-        ReleaseMesh(model->mesh);
-    model->mesh = mesh;
-    if(model->mesh)
-        ReferenceMesh(model->mesh);
-}
+    // Render world
+    BeginRender();
+    glClear(GL_DEPTH_BUFFER_BIT);
+    BindProgram(GetDefaultProgram());
+    SetModelViewProjectionMatrix(GetDefaultProgram(), &mvpMatrix);
+    DrawGraphicsObjects();
+    DrawPlayer();
+    EndRender();
 
-void SetModelTexture( Model* model, Texture* texture )
-{
-    if(model->texture)
-        ReleaseTexture(model->texture);
-    model->texture = texture;
-    if(model->texture)
-        ReferenceTexture(model->texture);
-}
-
-void SetModelUniform( Model* model, const char* name, UniformValue* value )
-{
-    const int index = GetUniformIndex(model->program, name);
-    if(index != INVALID_UNIFORM_INDEX)
-    {
-        model->useLocalUniformValue[index] = true;
-        model->localUniformValues[index] = *value;
-    }
-}
-
-void UnsetModelUniform( Model* model, const char* name )
-{
-    const int index = GetUniformIndex(model->program, name);
-    if(index != INVALID_UNIFORM_INDEX)
-        model->useLocalUniformValue[index] = false;
-}
-
-static bool ModelIsComplete( const Model* model )
-{
-    return model->mesh &&
-           model->texture &&
-           model->program;
+    // Render HUD
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+    */
 }
