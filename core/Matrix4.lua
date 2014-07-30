@@ -12,19 +12,19 @@ function Matrix4:copy()
 end
 
 function Matrix4:__add( other )
-    return Matrix4:new(NATIVE.AddMatrix4(self, other))
+    return Matrix4:new(NATIVE.Matrix4Op(self.handle, other.handle, '+'))
 end
 
 function Matrix4:__sub( other )
-    return Matrix4:new(NATIVE.SubMatrix4(self, other))
+    return Matrix4:new(NATIVE.Matrix4Op(self.handle, other.handle, '-'))
 end
 
 function Matrix4:__mul( other )
-    return Matrix4:new(NATIVE.MulMatrix4(self, other))
+    return Matrix4:new(NATIVE.Matrix4Op(self.handle, other.handle, '*'))
 end
 
 function Matrix4:__div( other )
-    return Matrix4:new(NATIVE.DivMatrix4(self, other))
+    return Matrix4:new(NATIVE.Matrix4Op(self.handle, other.handle, '/'))
 end
 
 function Matrix4:translate( x, y, z )
