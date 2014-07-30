@@ -2,6 +2,7 @@
 
 #include "../Lua.h"
 #include "../PhysicsManager.h"
+#include "Math.h"
 #include "PhysicsManager.h"
 
 
@@ -83,11 +84,8 @@ int Lua_CreateSolid( lua_State* l )
     const glm::vec3 position(luaL_checknumber(l, 2),
                              luaL_checknumber(l, 3),
                              luaL_checknumber(l, 4));
-    const glm::quat rotation(luaL_checknumber(l, 5),
-                             luaL_checknumber(l, 6),
-                             luaL_checknumber(l, 7),
-                             luaL_checknumber(l, 8));
-    CollisionShape* shape = CheckCollisionShapeFromLua(l, 9);
+    const glm::quat rotation = *CheckQuaternionFromLua(l, 5);
+    CollisionShape* shape = CheckCollisionShapeFromLua(l, 6);
 
     Solid* solid = CreateSolid(mass, position, rotation, shape);
     if(solid &&
@@ -133,12 +131,9 @@ static int Lua_GetSolidPosition( lua_State* l )
 static int Lua_GetSolidRotation( lua_State* l )
 {
     const Solid* solid = CheckSolidFromLua(l, 1);
-    const glm::quat rotation = GetSolidRotation(solid);
-    lua_pushnumber(l, rotation[0]);
-    lua_pushnumber(l, rotation[1]);
-    lua_pushnumber(l, rotation[2]);
-    lua_pushnumber(l, rotation[3]);
-    return 4;
+    glm::quat* rotation = CreateQuaternionInLua( lua_State* l );
+    *rotation = GetSolidRotation(solid);
+    return 1;
 }
 
 Solid* GetSolidFromLua( lua_State* l, int stackPosition )
@@ -154,15 +149,13 @@ Solid* CheckSolidFromLua( lua_State* l, int stackPosition )
 
 bool RegisterPhysicsManagerInLua()
 {
-    if(!RegisterUserDataTypeInLua(COLLISION_SHAPE_TYPE, Lua_CollisionShape_destructor))
-        return false;
-    if(!RegisterUserDataTypeInLua(SOLID_TYPE, Lua_Solid_destructor))
-        return false;
-
     return
+        RegisterUserDataTypeInLua(COLLISION_SHAPE_TYPE, Lua_CollisionShape_destructor) &&
         RegisterFunctionInLua("CreateBoxCollisionShape", Lua_CreateBoxCollisionShape) &&
         RegisterFunctionInLua("CreateSphereCollisionShape", Lua_CreateSphereCollisionShape) &&
-        RegisterFunctionInLua("CreateCompoundCollisionShape", Lua_CreateCompoundCollisionShape) &&
+        RegisterFunctionInLua("CreateCompoundCollisionShape", Lua_CreateCompoundColliosionShape) &&
+
+        RegisterUserDataTypeInLua(SOLID_TYPE, Lua_Solid_destructor) &&
         RegisterFunctionInLua("CreateSolid", Lua_CreateSolid) &&
         RegisterFunctionInLua("GetSolidMass", Lua_GetSolidMass) &&
         RegisterFunctionInLua("SetSolidMass", Lua_SetSolidMass) &&

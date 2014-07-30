@@ -154,7 +154,6 @@ Solid* CreateSolid( float mass, glm::vec3 position, glm::quat rotation, Collisio
     Solid* solid = new Solid;
     InitReferenceCounter(&solid->refCounter);
 
-    const float mass = 1;
     btVector3 localInertia;
     shape->bulletInstance->calculateLocalInertia(mass, localInertia);
 

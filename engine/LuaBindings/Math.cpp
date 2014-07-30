@@ -79,14 +79,19 @@ int Lua_LerpQuaternion( lua_State* l )
     return 1;
 }
 
-glm::quat* GetQuaternionFromLua( lua_State* l, int stackPosition )
+quat* CreateQuaternionInLua( lua_State* l )
 {
-    return (glm::quat*)GetUserDataFromLua(l, stackPosition, QUATERNION_TYPE);
+    return (quat*)PushUserDataToLua(l, QUATERNION_TYPE, sizeof(quat));
 }
 
-glm::quat* CheckQuaternionFromLua( lua_State* l, int stackPosition )
+quat* GetQuaternionFromLua( lua_State* l, int stackPosition )
 {
-    return (glm::quat*)CheckUserDataFromLua(l, stackPosition, QUATERNION_TYPE);
+    return (quat*)GetUserDataFromLua(l, stackPosition, QUATERNION_TYPE);
+}
+
+quat* CheckQuaternionFromLua( lua_State* l, int stackPosition )
+{
+    return (quat*)CheckUserDataFromLua(l, stackPosition, QUATERNION_TYPE);
 }
 
 
@@ -201,14 +206,19 @@ int Lua_MakeRotationMatrix( lua_State* l )
     return 1;
 }
 
-glm::mat4* GetMatrix4FromLua( lua_State* l, int stackPosition )
+mat4* CreateMatrix4InLua( lua_State* l )
 {
-    return (glm::mat4*)GetUserDataFromLua(l, stackPosition, MATRIX4_TYPE);
+    return (mat4*)PushUserDataToLua(l, MATRIX4_TYPE, sizeof(mat4));
 }
 
-glm::mat4* CheckMatrix4FromLua( lua_State* l, int stackPosition )
+mat4* GetMatrix4FromLua( lua_State* l, int stackPosition )
 {
-    return (glm::mat4*)CheckUserDataFromLua(l, stackPosition, MATRIX4_TYPE);
+    return (mat4*)GetUserDataFromLua(l, stackPosition, MATRIX4_TYPE);
+}
+
+mat4* CheckMatrix4FromLua( lua_State* l, int stackPosition )
+{
+    return (mat4*)CheckUserDataFromLua(l, stackPosition, MATRIX4_TYPE);
 }
 
 
