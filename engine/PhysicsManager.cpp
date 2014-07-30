@@ -154,8 +154,9 @@ Solid* CreateSolid( float mass, glm::vec3 position, glm::quat rotation, Collisio
     Solid* solid = new Solid;
     InitReferenceCounter(&solid->refCounter);
 
-    btVector3 localInerita;
-    shape->bulletInstance->calculateLocalInerita(mass, localInerita);
+    const float mass = 1;
+    btVector3 localInertia;
+    shape->bulletInstance->calculateLocalInertia(mass, localInertia);
 
     btMotionState* motionState =
         new btDefaultMotionState(btTransform(btQuaternion(rotation[0],
@@ -169,7 +170,7 @@ Solid* CreateSolid( float mass, glm::vec3 position, glm::quat rotation, Collisio
     btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass,
                                                          motionState,
                                                          shape->bulletInstance,
-                                                         localInerita);
+                                                         localInertia);
 
     btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
 
