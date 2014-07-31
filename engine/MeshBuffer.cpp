@@ -19,7 +19,7 @@ void FreeMeshBuffer( MeshBuffer* buffer )
     buffer->indices.clear();
 }
 
-void TransformMeshBufferRange( MeshBuffer* buffer, const glm::mat4* transformation, int firstVertex, int vertexCount )
+static void TransformMeshBufferRange( MeshBuffer* buffer, const glm::mat4* transformation, int firstVertex, int vertexCount )
 {
     using namespace glm;
 

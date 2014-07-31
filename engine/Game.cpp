@@ -28,8 +28,8 @@
 #include "LuaBindings/Texture.h"
 
 
-void OnExitKey( const char* name, bool pressed, void* context );
-bool RegisterAllModulesInLua();
+static void OnExitKey( const char* name, bool pressed, void* context );
+static bool RegisterAllModulesInLua();
 
 bool InitGame( const int argc, char** argv )
 {
@@ -81,7 +81,7 @@ bool InitGame( const int argc, char** argv )
     return RunLuaScript(GetLuaState(), "core/init.lua");
 }
 
-bool RegisterAllModulesInLua()
+static bool RegisterAllModulesInLua()
 {
     return
         RegisterAudioInLua() &&
@@ -133,7 +133,7 @@ void RunGame()
     }
 }
 
-void OnExitKey( const char* name, bool pressed, void* context )
+static void OnExitKey( const char* name, bool pressed, void* context )
 {
     if(pressed)
         FlagWindowForClose();

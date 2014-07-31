@@ -9,9 +9,9 @@
 using namespace std;
 
 
-map<string,string> g_ConfigValues;
+static map<string,string> g_ConfigValues;
 
-int IniEntryCallback( void* user, const char* section, const char* name, const char* value );
+static int IniEntryCallback( void* user, const char* section, const char* name, const char* value );
 
 bool InitConfig( const int argc, char const * const * argv )
 {
@@ -118,7 +118,7 @@ bool GetConfigBool( const char* key, bool defaultValue )
     }
 }
 
-int IniEntryCallback( void* user, const char* section, const char* name, const char* value )
+static int IniEntryCallback( void* user, const char* section, const char* name, const char* value )
 {
     using namespace std;
 

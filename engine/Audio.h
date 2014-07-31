@@ -20,8 +20,6 @@ bool InitAudio();
 void DestroyAudio();
 void UpdateAudio( float timeFrame );
 
-void SetAudioGain( float gain );
-
 /**
  * Sets the listeners properties. (i.e. where your ears are in the virtual world)
  *
@@ -38,6 +36,8 @@ void SetAudioGain( float gain );
  *      3D vector
  */
 void UpdateAudioListener( glm::vec3 position, glm::vec3 velocity, glm::vec3 direction, glm::vec3 up );
+
+void SetAudioGain( float gain );
 
 AudioBuffer LoadAudioBuffer( const char* fileName );
 void FreeAudioBuffer( AudioBuffer buffer );

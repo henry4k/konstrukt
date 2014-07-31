@@ -45,7 +45,7 @@ bool CreateImage( Image* image, int width, int height, int bpp )
 }
 
 
-bool LoadPngImage( Image* image, const char* file )
+static bool LoadPngImage( Image* image, const char* file )
 {
     //header for testing if it is a png
     png_byte header[8];

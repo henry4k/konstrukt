@@ -2,9 +2,10 @@
 #define __APOAPSIS_VERTEX__
 
 #include "Math.h"
-#include "OpenGL.h"
+
 
 typedef unsigned short VertexIndex;
+
 
 struct Vertex
 {
@@ -15,8 +16,9 @@ struct Vertex
     glm::vec4 tangent;
 };
 
+
 void EnableVertexArrays();
-void BindVertexAttributes( GLuint programHandle );
+void BindVertexAttributes( unsigned int programHandle );
 void SetVertexAttributePointers( const void* data );
 
 

@@ -154,6 +154,8 @@ Solid* CheckSolidFromLua( lua_State* l, int stackPosition )
 }
 
 
+// --- Register in Lua ---
+
 bool RegisterPhysicsManagerInLua()
 {
     return

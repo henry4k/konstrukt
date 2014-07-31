@@ -1,5 +1,6 @@
 #include "Math.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include "OpenGL.h"
 #include "Vertex.h"
 #include "Window.h"
 #include "Reference.h"

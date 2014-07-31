@@ -12,22 +12,24 @@ extern "C"
 }
 
 
-lua_State* g_LuaState = NULL;
+static const int MAX_LUA_EVENT_NAME_LENGTH = 32;
 
-const int MAX_LUA_EVENT_NAME_LENGTH = 32;
+
 struct LuaEvent
 {
     char name[MAX_LUA_EVENT_NAME_LENGTH];
     int callbackReference;
 };
-std::vector<LuaEvent> g_LuaEvents;
 
-int g_LuaErrorFunction = LUA_NOREF;
 
-int Lua_SetErrorFunction( lua_State* l );
-int Lua_SetEventCallback( lua_State* l );
-int Lua_ErrorProxy( lua_State* l );
-int Lua_Log( lua_State* l );
+static lua_State* g_LuaState = NULL;
+static std::vector<LuaEvent> g_LuaEvents;
+static int g_LuaErrorFunction = LUA_NOREF;
+
+static int Lua_SetErrorFunction( lua_State* l );
+static int Lua_SetEventCallback( lua_State* l );
+static int Lua_ErrorProxy( lua_State* l );
+static int Lua_Log( lua_State* l );
 
 
 bool InitLua()
@@ -71,7 +73,7 @@ lua_State* GetLuaState()
     return g_LuaState;
 }
 
-int GetLuaMemoryInBytes()
+static int GetLuaMemoryInBytes()
 {
     assert(g_LuaState);
     return lua_gc(g_LuaState, LUA_GCCOUNT, 0)*1024 +
@@ -189,7 +191,7 @@ void* CheckUserDataFromLua( lua_State* l, int stackPosition, const char* typeNam
     }
 }
 
-int Lua_SetErrorFunction( lua_State* l )
+static int Lua_SetErrorFunction( lua_State* l )
 {
     luaL_checktype(l, 1, LUA_TFUNCTION);
     lua_pushvalue(l, 1); // duplicate callback, because luaL_ref pops it
@@ -209,7 +211,7 @@ int Lua_SetErrorFunction( lua_State* l )
     }
 }
 
-int Lua_ErrorProxy( lua_State* l )
+static int Lua_ErrorProxy( lua_State* l )
 {
     if((g_LuaErrorFunction != LUA_NOREF) &&
        (g_LuaErrorFunction != LUA_REFNIL))
@@ -226,7 +228,7 @@ int Lua_ErrorProxy( lua_State* l )
     return 1;
 }
 
-bool HandleLuaCallResult( lua_State* l, int result )
+static bool HandleLuaCallResult( lua_State* l, int result )
 {
     switch(result)
     {
@@ -271,7 +273,7 @@ bool RunLuaScript( lua_State* l, const char* filePath )
     return HandleLuaCallResult(l, callResult);
 }
 
-int FindLuaEventByName( const char* name )
+static int FindLuaEventByName( const char* name )
 {
     assert(name != NULL);
     for(int i = 0; i < g_LuaEvents.size(); i++)
@@ -414,7 +416,7 @@ int GetLuaArraySize( lua_State* l, int stackPosition )
         return 0;
 }
 
-int Lua_SetEventCallback( lua_State* l )
+static int Lua_SetEventCallback( lua_State* l )
 {
     const char* name = luaL_checkstring(l, 1);
     const int id = FindLuaEventByName(name);
@@ -427,7 +429,7 @@ int Lua_SetEventCallback( lua_State* l )
     return 0;
 }
 
-int Lua_Log( lua_State* l )
+static int Lua_Log( lua_State* l )
 {
     const char* message = luaL_checkstring(l, 1);
     Log("%s", message);

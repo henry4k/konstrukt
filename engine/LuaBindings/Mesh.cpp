@@ -4,16 +4,16 @@
 #include "Mesh.h"
 
 
-const char* MESH_TYPE = "Mesh";
+static const char* MESH_TYPE = "Mesh";
 
-int Lua_Mesh_destructor( lua_State* l )
+static int Lua_Mesh_destructor( lua_State* l )
 {
     Mesh* mesh = CheckMeshFromLua(l, 1);
     ReleaseMesh(mesh);
     return 0;
 }
 
-int Lua_CreateMesh( lua_State* l )
+static int Lua_CreateMesh( lua_State* l )
 {
     const MeshBuffer* buffer = CheckMeshBufferFromLua(l, 1);
 
@@ -32,15 +32,6 @@ int Lua_CreateMesh( lua_State* l )
     }
 }
 
-bool RegisterMeshInLua()
-{
-    if(!RegisterUserDataTypeInLua(MESH_TYPE, Lua_Mesh_destructor))
-        return false;
-
-    return
-        RegisterFunctionInLua("CreateMesh", Lua_CreateMesh);
-}
-
 Mesh* GetMeshFromLua( lua_State* l, int stackPosition )
 {
     return *(Mesh**)GetUserDataFromLua(l, stackPosition, MESH_TYPE);
@@ -49,4 +40,11 @@ Mesh* GetMeshFromLua( lua_State* l, int stackPosition )
 Mesh* CheckMeshFromLua( lua_State* l, int stackPosition )
 {
     return *(Mesh**)CheckUserDataFromLua(l, stackPosition, MESH_TYPE);
+}
+
+bool RegisterMeshInLua()
+{
+    return
+        RegisterUserDataTypeInLua(MESH_TYPE, Lua_Mesh_destructor) &&
+        RegisterFunctionInLua("CreateMesh", Lua_CreateMesh);
 }

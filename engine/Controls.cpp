@@ -14,8 +14,8 @@
 
 static const int MAX_CONTROL_NAME_LENGTH = 31;
 
-bool CreateKeyBindingFromString( const char* str, int keyControl );
-bool CreateAxisBindingFromString( const char* str, int axisControl );
+static bool CreateKeyBindingFromString( const char* str, int keyControl );
+static bool CreateAxisBindingFromString( const char* str, int axisControl );
 
 enum AxisInterpretation
 {
@@ -43,8 +43,8 @@ struct AxisControl
     float sensitivity; // Raw input is multiplied by this factor.
 };
 
-std::vector<KeyControl>  g_KeyControls;
-std::vector<AxisControl> g_AxisControls;
+static std::vector<KeyControl>  g_KeyControls;
+static std::vector<AxisControl> g_AxisControls;
 
 bool InitControls()
 {
@@ -86,7 +86,7 @@ void UpdateControls( float timeFrame )
     }
 }
 
-bool ControlNameIsOkay( const char* name )
+static bool ControlNameIsOkay( const char* name )
 {
     if(strlen(name) > MAX_CONTROL_NAME_LENGTH)
     {
@@ -250,7 +250,7 @@ void HandleAxisEvent( int axisControlIndex, float value )
     }
 }
 
-bool CreateKeyBindingFromString( const char* str, int keyControl )
+static bool CreateKeyBindingFromString( const char* str, int keyControl )
 {
     if(Keyboard_CreateKeyBindingFromString(str, keyControl))
         return true;
@@ -264,7 +264,7 @@ bool CreateKeyBindingFromString( const char* str, int keyControl )
     return false;
 }
 
-bool CreateAxisBindingFromString( const char* str, int axisControl )
+static bool CreateAxisBindingFromString( const char* str, int axisControl )
 {
     if(Mouse_CreateAxisBindingFromString(str, axisControl))
         return true;

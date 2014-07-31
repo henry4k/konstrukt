@@ -1,3 +1,4 @@
+#include "../Lua.h"
 #include "Math.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/projection.hpp>
@@ -7,16 +8,16 @@ using namespace glm;
 
 // --- Quaternion ---
 
-const char* QUATERNION_TYPE = "Quaternion";
+static const char* QUATERNION_TYPE = "Quaternion";
 
-int Lua_CreateQuaternion( lua_State* l )
+static int Lua_CreateQuaternion( lua_State* l )
 {
     const quat r;
     CopyUserDataToLua(l, QUATERNION_TYPE, sizeof(quat), &r);
     return 1;
 }
 
-int Lua_CreateQuaternionFromEulerAngles( lua_State* l )
+static int Lua_CreateQuaternionFromEulerAngles( lua_State* l )
 {
     const quat r(vec3(luaL_checknumber(l, 1),
                       luaL_checknumber(l, 2),
@@ -25,7 +26,7 @@ int Lua_CreateQuaternionFromEulerAngles( lua_State* l )
     return 1;
 }
 
-int Lua_CreateQuaternionFromMatrix( lua_State* l )
+static int Lua_CreateQuaternionFromMatrix( lua_State* l )
 {
     const mat4* matrix = CheckMatrix4FromLua(l, 1);
     const quat r(*matrix);
@@ -33,14 +34,14 @@ int Lua_CreateQuaternionFromMatrix( lua_State* l )
     return 1;
 }
 
-int Lua_CopyQuaternion( lua_State* l )
+static int Lua_CopyQuaternion( lua_State* l )
 {
     const quat* source = CheckQuaternionFromLua(l, 1);
     CopyUserDataToLua(l, QUATERNION_TYPE, sizeof(quat), source);
     return 1;
 }
 
-int Lua_InvertQuaternion( lua_State* l )
+static int Lua_InvertQuaternion( lua_State* l )
 {
     const quat* source = CheckQuaternionFromLua(l, 1);
     quat* r = (quat*)PushUserDataToLua(l, QUATERNION_TYPE, sizeof(quat));
@@ -48,7 +49,7 @@ int Lua_InvertQuaternion( lua_State* l )
     return 1;
 }
 
-int Lua_QuaternionOp( lua_State* l )
+static int Lua_QuaternionOp( lua_State* l )
 {
     const quat* a = CheckQuaternionFromLua(l, 1);
     const quat* b = CheckQuaternionFromLua(l, 2);
@@ -63,7 +64,7 @@ int Lua_QuaternionOp( lua_State* l )
     return 1;
 }
 
-int Lua_LerpQuaternion( lua_State* l )
+static int Lua_LerpQuaternion( lua_State* l )
 {
     const quat* a = CheckQuaternionFromLua(l, 1);
     const quat* b = CheckQuaternionFromLua(l, 2);
@@ -97,23 +98,23 @@ quat* CheckQuaternionFromLua( lua_State* l, int stackPosition )
 
 // --- Matrix4 ---
 
-const char* MATRIX4_TYPE = "Matrix4";
+static const char* MATRIX4_TYPE = "Matrix4";
 
-int Lua_CreateMatrix4( lua_State* l )
+static int Lua_CreateMatrix4( lua_State* l )
 {
     const mat4 matrix(1.0f);
     CopyUserDataToLua(l, MATRIX4_TYPE, sizeof(mat4), &matrix);
     return 1;
 }
 
-int Lua_CopyMatrix4( lua_State* l )
+static int Lua_CopyMatrix4( lua_State* l )
 {
     const mat4* source = CheckMatrix4FromLua(l, 1);
     CopyUserDataToLua(l, MATRIX4_TYPE, sizeof(mat4), source);
     return 1;
 }
 
-int Lua_Matrix4Op( lua_State* l )
+static int Lua_Matrix4Op( lua_State* l )
 {
     const mat4* a = CheckMatrix4FromLua(l, 1);
     const mat4* b = CheckMatrix4FromLua(l, 2);
@@ -131,7 +132,7 @@ int Lua_Matrix4Op( lua_State* l )
     return 1;
 }
 
-int Lua_TranslateMatrix4( lua_State* l )
+static int Lua_TranslateMatrix4( lua_State* l )
 {
     const mat4* a = CheckMatrix4FromLua(l, 1);
 
@@ -146,7 +147,7 @@ int Lua_TranslateMatrix4( lua_State* l )
     return 1;
 }
 
-int Lua_ScaleMatrix4( lua_State* l )
+static int Lua_ScaleMatrix4( lua_State* l )
 {
     const mat4* a = CheckMatrix4FromLua(l, 1);
 
@@ -161,7 +162,7 @@ int Lua_ScaleMatrix4( lua_State* l )
     return 1;
 }
 
-int Lua_RotateMatrix4( lua_State* l )
+static int Lua_RotateMatrix4( lua_State* l )
 {
     const mat4* a = CheckMatrix4FromLua(l, 1);
 
@@ -178,7 +179,7 @@ int Lua_RotateMatrix4( lua_State* l )
     return 1;
 }
 
-int Lua_Matrix4TransformVector( lua_State* l )
+static int Lua_Matrix4TransformVector( lua_State* l )
 {
     const mat4* a = CheckMatrix4FromLua(l, 1);
 
@@ -197,7 +198,7 @@ int Lua_Matrix4TransformVector( lua_State* l )
     return 4;
 }
 
-int Lua_MakeRotationMatrix( lua_State* l )
+static int Lua_MakeRotationMatrix( lua_State* l )
 {
     const mat4* a = CheckMatrix4FromLua(l, 1);
 

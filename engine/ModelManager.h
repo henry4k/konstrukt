@@ -2,13 +2,14 @@
 #define __APOAPSIS_MODEL_MANAGER__
 
 #include "Math.h"
-#include "Shader.h"
 
 
 struct Texture;
 struct Mesh;
 struct Model;
+struct ShaderProgram;
 struct Solid;
+struct UniformValue;
 
 
 bool InitModelManager();

@@ -27,15 +27,15 @@ void FreeAudioSourceOnStop( AudioSource source, void* context )
     FreeAudioSource(source);
 }
 
-void FreeAudioSourceAtIndex( int index );
+static void FreeAudioSourceAtIndex( int index );
 
-AudioSourceInfo* g_AudioSources;
-int g_AudioSourceCount;
+static AudioSourceInfo* g_AudioSources;
+static int g_AudioSourceCount;
 
-float g_MaxAudioSourceDistance;
-float g_AudioSourceReferenceDistance;
+static float g_MaxAudioSourceDistance;
+static float g_AudioSourceReferenceDistance;
 
-const char* GetALErrorString()
+static const char* GetALErrorString()
 {
     const ALenum error = alGetError();
     if(error != AL_NO_ERROR)
@@ -54,7 +54,7 @@ const char* GetALErrorString()
     return NULL;
 }
 
-bool PrintALError( const char* origin )
+static bool PrintALError( const char* origin )
 {
     const char* error = GetALErrorString();
     if(error)
@@ -68,7 +68,7 @@ bool PrintALError( const char* origin )
     }
 }
 
-void PrintAudioDevices()
+static void PrintAudioDevices()
 {
     ALCsizei deviceCount = 0;
     const char** deviceNames = alureGetDeviceNames(true, &deviceCount);

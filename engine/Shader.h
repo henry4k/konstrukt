@@ -1,7 +1,6 @@
 #ifndef __APOAPSIS_SHADER__
 #define __APOAPSIS_SHADER__
 
-#include "OpenGL.h"
 #include "Math.h"
 
 

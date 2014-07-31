@@ -6,29 +6,29 @@
 
 /****** Variables *******/
 
-GLFWwindow* g_Window = NULL;
-int g_WindowWidth  = 0;
-int g_WindowHeight = 0;
-int g_FramebufferWidth  = 0;
-int g_FramebufferHeight = 0;
-FramebufferResizeFn g_FramebufferResizeFn = NULL;
-CursorMoveFn        g_CursorMoveFn = NULL;
-MouseButtonActionFn g_MouseButtonActionFn = NULL;
-MouseScrollFn       g_MouseScrollFn = NULL;
-KeyActionFn         g_KeyActionFn = NULL;
+static GLFWwindow* g_Window = NULL;
+static int g_WindowWidth  = 0;
+static int g_WindowHeight = 0;
+static int g_FramebufferWidth  = 0;
+static int g_FramebufferHeight = 0;
+static FramebufferResizeFn g_FramebufferResizeFn = NULL;
+static CursorMoveFn        g_CursorMoveFn = NULL;
+static MouseButtonActionFn g_MouseButtonActionFn = NULL;
+static MouseScrollFn       g_MouseScrollFn = NULL;
+static KeyActionFn         g_KeyActionFn = NULL;
 
 
 
 /****** General *******/
 
-void OnGLFWError( int code, const char* description );
-void OnDebugEvent( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char* message, void* userParam );
-void OnWindowResize( GLFWwindow* window, int width, int height );
-void OnFramebufferResize( GLFWwindow* window, int width, int height );
-void OnMouseButtonAction( GLFWwindow* window, int button, int action, int mods );
-void OnMouseScroll( GLFWwindow* window, double xoffset, double yoffset );
-void OnCursorMove( GLFWwindow* window, double x, double y );
-void OnKeyAction( GLFWwindow* window, int key, int scancode, int action, int mods );
+static void OnGLFWError( int code, const char* description );
+static void OnDebugEvent( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char* message, void* userParam );
+static void OnWindowResize( GLFWwindow* window, int width, int height );
+static void OnFramebufferResize( GLFWwindow* window, int width, int height );
+static void OnMouseButtonAction( GLFWwindow* window, int button, int action, int mods );
+static void OnMouseScroll( GLFWwindow* window, double xoffset, double yoffset );
+static void OnCursorMove( GLFWwindow* window, double x, double y );
+static void OnKeyAction( GLFWwindow* window, int key, int scancode, int action, int mods );
 
 bool InitWindow()
 {
@@ -216,12 +216,12 @@ void SetKeyActionFn( KeyActionFn fn )
 
 /******* Callbacks ********/
 
-void OnGLFWError( int code, const char* description )
+static void OnGLFWError( int code, const char* description )
 {
     Error("GLFW error %d: %s", code, description);
 }
 
-void OnDebugEvent( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char* message, void* userParam )
+static void OnDebugEvent( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char* message, void* userParam )
 {
     const char* sourceName = "";
     switch(source)
@@ -257,7 +257,7 @@ void OnDebugEvent( GLenum source, GLenum type, GLuint id, GLenum severity, GLsiz
     //Error("%s severity %s %s %d:\n%s", severityName, sourceName, typeName, id, message);
 }
 
-void OnWindowResize( GLFWwindow* window, int width, int height )
+static void OnWindowResize( GLFWwindow* window, int width, int height )
 {
     Log("window resize %dx%d", width, height);
     g_WindowWidth = width;
@@ -265,7 +265,7 @@ void OnWindowResize( GLFWwindow* window, int width, int height )
     // TODO: Update cursor position
 }
 
-void OnFramebufferResize( GLFWwindow* window, int width, int height )
+static void OnFramebufferResize( GLFWwindow* window, int width, int height )
 {
     Log("framebuffer resize %dx%d", width, height);
     g_FramebufferWidth = width;
@@ -275,19 +275,19 @@ void OnFramebufferResize( GLFWwindow* window, int width, int height )
         g_FramebufferResizeFn(width, height);
 }
 
-void OnMouseButtonAction( GLFWwindow* window, int button, int action, int mods )
+static void OnMouseButtonAction( GLFWwindow* window, int button, int action, int mods )
 {
     if(g_MouseButtonActionFn)
         g_MouseButtonActionFn(button, action==GLFW_PRESS);
 }
 
-void OnMouseScroll( GLFWwindow* window, double xoffset, double yoffset )
+static void OnMouseScroll( GLFWwindow* window, double xoffset, double yoffset )
 {
     if(g_MouseScrollFn)
         g_MouseScrollFn(xoffset, yoffset);
 }
 
-void OnCursorMove( GLFWwindow* window, double x, double y )
+static void OnCursorMove( GLFWwindow* window, double x, double y )
 {
     x *= g_FramebufferWidth / g_WindowWidth;
     y *= g_FramebufferHeight / g_WindowHeight;
@@ -296,7 +296,7 @@ void OnCursorMove( GLFWwindow* window, double x, double y )
         g_CursorMoveFn(x, y);
 }
 
-void OnKeyAction( GLFWwindow* window, int key, int scancode, int action, int mods )
+static void OnKeyAction( GLFWwindow* window, int key, int scancode, int action, int mods )
 {
     if(action != GLFW_REPEAT && g_KeyActionFn)
         g_KeyActionFn(key, scancode, action==GLFW_PRESS);

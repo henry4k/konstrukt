@@ -14,18 +14,18 @@ static const float MOVEMENT_FRICTION = 6;
 static const glm::vec3 PLAYER_HALF_WIDTH(0.3, 0.8, 0.3);
 static const float PLAYER_HEAD_OFFSET = 0.6;
 
-bool g_ForwardKey;
-bool g_BackwardKey;
-bool g_RightKey;
-bool g_LeftKey;
-float g_LookX;
-float g_LookY;
+static bool g_ForwardKey;
+static bool g_BackwardKey;
+static bool g_RightKey;
+static bool g_LeftKey;
+static float g_LookX;
+static float g_LookY;
 
-glm::vec3 g_PlayerPosition;
-glm::vec3 g_PlayerVelocity;
-glm::quat g_PlayerOrientation;
-glm::mat4 g_PlayerViewMatrix;
-glm::mat4 g_PlayerProjectionMatrix;
+static glm::vec3 g_PlayerPosition;
+static glm::vec3 g_PlayerVelocity;
+static glm::quat g_PlayerOrientation;
+static glm::mat4 g_PlayerViewMatrix;
+static glm::mat4 g_PlayerProjectionMatrix;
 
 bool InitPlayer()
 {

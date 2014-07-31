@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "OpenGL.h"
+#include "MeshBuffer.h"
 #include "Reference.h"
 #include "Mesh.h"
 

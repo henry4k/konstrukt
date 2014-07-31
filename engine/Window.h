@@ -3,6 +3,7 @@
 
 #include "Math.h"
 
+
 // Callback functions
 typedef void (*FramebufferResizeFn)( int width, int height );
 typedef void (*CursorMoveFn)( double x, double y );

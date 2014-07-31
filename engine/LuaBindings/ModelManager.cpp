@@ -2,6 +2,7 @@
 
 #include "../Lua.h"
 #include "../Mesh.h"
+#include "../Shader.h"
 #include "../ModelManager.h"
 #include "Math.h"
 #include "Mesh.h"
@@ -116,21 +117,6 @@ static int Lua_UnsetModelUniform( lua_State* l )
     return 0;
 }
 
-bool RegisterModelManagerInLua()
-{
-    if(!RegisterUserDataTypeInLua(MODEL_TYPE, Lua_Model_destructor))
-        return false;
-
-    return
-        RegisterFunctionInLua("CreateModel", Lua_CreateModel) &&
-        RegisterFunctionInLua("SetModelAttachmentTarget", Lua_SetModelAttachmentTarget) &&
-        RegisterFunctionInLua("SetModelTransformation", Lua_SetModelTransformation) &&
-        RegisterFunctionInLua("SetModelMesh", Lua_SetModelMesh) &&
-        RegisterFunctionInLua("SetModelTexture", Lua_SetModelTexture) &&
-        RegisterFunctionInLua("SetModelUniform", Lua_SetModelUniform) &&
-        RegisterFunctionInLua("UnsetModelUniform", Lua_UnsetModelUniform);
-}
-
 Model* GetModelFromLua( lua_State* l, int stackPosition )
 {
     return *(Model**)GetUserDataFromLua(l, stackPosition, MODEL_TYPE);
@@ -139,4 +125,17 @@ Model* GetModelFromLua( lua_State* l, int stackPosition )
 Model* CheckModelFromLua( lua_State* l, int stackPosition )
 {
     return *(Model**)CheckUserDataFromLua(l, stackPosition, MODEL_TYPE);
+}
+
+bool RegisterModelManagerInLua()
+{
+    return
+        RegisterUserDataTypeInLua(MODEL_TYPE, Lua_Model_destructor) &&
+        RegisterFunctionInLua("CreateModel", Lua_CreateModel) &&
+        RegisterFunctionInLua("SetModelAttachmentTarget", Lua_SetModelAttachmentTarget) &&
+        RegisterFunctionInLua("SetModelTransformation", Lua_SetModelTransformation) &&
+        RegisterFunctionInLua("SetModelMesh", Lua_SetModelMesh) &&
+        RegisterFunctionInLua("SetModelTexture", Lua_SetModelTexture) &&
+        RegisterFunctionInLua("SetModelUniform", Lua_SetModelUniform) &&
+        RegisterFunctionInLua("UnsetModelUniform", Lua_UnsetModelUniform);
 }

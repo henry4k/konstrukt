@@ -82,16 +82,6 @@ static int Lua_LoadCubeTexture( lua_State* l )
     }
 }
 
-bool RegisterTextureInLua()
-{
-    if(!RegisterUserDataTypeInLua(TEXTURE_TYPE, Lua_Texture_destructor))
-        return false;
-
-    return
-        RegisterFunctionInLua("Load2dTexture", Lua_Load2dTexture) &&
-        RegisterFunctionInLua("LoadCubeTexture", Lua_LoadCubeTexture);
-}
-
 Texture* GetTextureFromLua( lua_State* l, int stackPosition )
 {
     return *(Texture**)GetUserDataFromLua(l, stackPosition, TEXTURE_TYPE);
@@ -100,4 +90,12 @@ Texture* GetTextureFromLua( lua_State* l, int stackPosition )
 Texture* CheckTextureFromLua( lua_State* l, int stackPosition )
 {
     return *(Texture**)CheckUserDataFromLua(l, stackPosition, TEXTURE_TYPE);
+}
+
+bool RegisterTextureInLua()
+{
+    return
+        RegisterUserDataTypeInLua(TEXTURE_TYPE, Lua_Texture_destructor) &&
+        RegisterFunctionInLua("Load2dTexture", Lua_Load2dTexture) &&
+        RegisterFunctionInLua("LoadCubeTexture", Lua_LoadCubeTexture);
 }

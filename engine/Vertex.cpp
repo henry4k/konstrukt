@@ -19,7 +19,7 @@ void EnableVertexArrays()
     glEnableVertexAttribArray(VERTEX_TANGENT);
 }
 
-void BindVertexAttributes( GLuint programHandle )
+void BindVertexAttributes( unsigned int programHandle )
 {
     glBindAttribLocation(programHandle, VERTEX_POSITION, "VertexPosition");
     glBindAttribLocation(programHandle, VERTEX_COLOR,    "VertexColor");

@@ -2,10 +2,11 @@
 #define __APOAPSIS_TEXTURE__
 
 #include "OpenGL.h"
-#include "Image.h"
 
 
+struct Image;
 struct Texture;
+
 
 enum TextureOptions
 {

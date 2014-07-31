@@ -16,7 +16,7 @@ const char* Format( const char* format, ... )
     return buffer;
 }
 
-LogHandler g_LogHandler = DefaultLogHandler;
+static LogHandler g_LogHandler = DefaultLogHandler;
 
 void DefaultLogHandler( LogLevel level, const char* line )
 {

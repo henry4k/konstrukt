@@ -10,6 +10,7 @@
 
 static const GLuint INVALID_SHADER_HANDLE = 0;
 
+
 struct Shader
 {
     ReferenceCounter refCounter;
@@ -73,7 +74,7 @@ static void FreeFile( const char* fileData )
     delete[] fileData;
 }
 
-bool StringEndsWith( const char* target, const char* end )
+static bool StringEndsWith( const char* target, const char* end )
 {
     const int targetLength = strlen(target);
     const int endLength = strlen(end);
