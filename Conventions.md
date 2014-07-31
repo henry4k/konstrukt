@@ -83,6 +83,17 @@ Example:
      */
 
 
+Issues Tracker
+--------------
+
+When picking issues from the issue tracker, you should always fix bugs
+first, then fix quality issues. Features have the lowest priority,
+since you rather want a simple but stable game,
+than a complex but error-prone one, right?
+
+Add `Closes #N` to your commit, to signal that this commit closes a
+specific issue. `N` is the issue ID.
+
 
 ---------------------------------
 
