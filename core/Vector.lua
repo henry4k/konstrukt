@@ -15,6 +15,18 @@ function Vector:isInstance( v )
     return getmetatable(v) == self.mt
 end
 
+function Vector.prototype:unpack( componentCount )
+    if #self == componentCount then
+        return table.unpack(self)
+    else
+        local r = {}
+        for i = 1, componentCount do
+            r[i] = self[i]
+        end
+        return table.unpack(r)
+    end
+end
+
 function Vector.prototype:operate( other, operationFn )
     local r = Vector:new()
     for i = 1, math.max(#self, #other) do

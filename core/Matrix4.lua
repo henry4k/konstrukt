@@ -1,4 +1,5 @@
 local class = require 'core/middleclass.lua'
+local Vec   = require 'core/Vector.lua'
 
 
 local Matrix4 = class('core/Matrix4')
@@ -27,21 +28,34 @@ function Matrix4:__div( other )
     return Matrix4:new(NATIVE.Matrix4Op(self.handle, other.handle, '/'))
 end
 
-function Matrix4:translate( x, y, z )
-    return Matrix4:new(NATIVE.TranslateMatrix4(self.handle, x, y, z))
+function Matrix4:translate( vec )
+    return Matrix4:new(NATIVE.TranslateMatrix4(self.handle,
+                                               vec[1],
+                                               vec[2],
+                                               vec[3]))
 end
 
-function Matrix4:scale( x, y, z )
-    return Matrix4:new(NATIVE.ScaleMatrix4(self.handle, x, y, z))
+function Matrix4:scale( vec )
+    return Matrix4:new(NATIVE.ScaleMatrix4(self.handle,
+                                           vec[1],
+                                           vec[2],
+                                           vec[3]))
 end
 
-function Matrix4:rotate( angle, x, y, z )
-    return Matrix4:new(NATIVE.RotateMatrix4(self.handle, angle, x, y, z))
+function Matrix4:rotate( angle, vec )
+    return Matrix4:new(NATIVE.RotateMatrix4(self.handle,
+                                            angle,
+                                            vec[1],
+                                            vec[2],
+                                            vec[3]))
 end
 
-function Matrix4:transform( x, y, z, w )
-    w = w or 0
-    return NATIVE.Matrix4TransformVector(self.handle, x, y, z, w)
+function Matrix4:transform( vec )
+    return Vec:new(NATIVE.Matrix4TransformVector(self.handle,
+                                                 vec[1],
+                                                 vec[2],
+                                                 vec[3],
+                                                 vec[4]))
 end
 
 function Matrix4:toRotationMatrix()

@@ -1,5 +1,6 @@
 local class = require 'core/middleclass.lua'
-local Matrix4 = require 'core/Matrix4.lua'
+local Vec   = require 'core/Vector.lua'
+local Mat4  = require 'core/Matrix4.lua'
 
 
 local ShaderProgram = class('core/ShaderProgram')
@@ -13,30 +14,32 @@ function ShaderProgram:initialize( ... )
     self.handle = NATIVE.LinkShaderProgram(table.unpack(shaderHandles))
 end
 
-function ShaderProgram:setNumberUniform( name, number )
-    NATIVE.SetFloatUnifrom(self.handle, name, number)
-end
-
-function ShaderProgram:setVectorUniform( name, ... )
-    NATIVE.SetVectorUnifrom(self.handle, name, ...)
-end
-
-function ShaderProgram:setMatrixUniform( name, matrix )
-    NATIVE.SetMatrix4Unifrom(self.handle, name, matrix.handle)
-end
-
 function ShaderProgram:setUniform( name, ... )
     local argCount = select('#', ...)
     if argCount == 1 then
         local arg = ...
-        if class.Object.isInstanceOf(arg, Matrix4) then
+        if class.Object.isInstanceOf(arg, Mat4) then
             self:setMatrix4Uniform(name, arg)
+        elseif class.Object.isInstanceOf(arg, Vec) then
+            self:_setVectorUniform(name, table.unpack(arg))
         else
-            self:setNumberUniform(name, arg)
+            self:_setNumberUniform(name, arg)
         end
     else
-        self:setVectorUniform(name, ...)
+        self:_setVectorUniform(name, ...)
     end
+end
+
+function ShaderProgram:_setNumberUniform( name, number )
+    NATIVE.SetFloatUnifrom(self.handle, name, number)
+end
+
+function ShaderProgram:_setVectorUniform( name, ... )
+    NATIVE.SetVectorUnifrom(self.handle, name, ...)
+end
+
+function ShaderProgram:_setMatrixUniform( name, matrix )
+    NATIVE.SetMatrix4Unifrom(self.handle, name, matrix.handle)
 end
 
 

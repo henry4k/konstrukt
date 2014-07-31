@@ -1,22 +1,24 @@
-local class = require 'core/middleclass.lua'
+local class  = require 'core/middleclass.lua'
 local Object = class.Object
-local Matrix4 = require 'core/Matrix4.lua'
+local Mat4   = require 'core/Matrix4.lua'
 
 
 local Quat = class('core/Quaternion')
 
 function Quat:initialize( ... )
-    local args = {...}
-    if #args == 0 then
+    local argCount = select('#', ...)
+    if argCount == 0 then
         self.handle = handle or NATIVE.CreateQuaternion()
-    elseif #args == 1 then
-        local arg = args[1]
+    elseif argCount == 1 then
+        local arg = ...
         if Object.isInstanceOf(arg, Quat) then
             self.handle = NATIVE.CopyQuaternion(arg.handle)
-        elseif Object.isInstanceOf(arg, Matrix4) then
+        elseif Object.isInstanceOf(arg, Vec) then
+            self.handle = NATIVE.CreateQuaternionFromEulerAngles(arg:unpack(3))
+        elseif Object.isInstanceOf(arg, Mat4) then
             self.handle = NATIVE.CreateQuaternionFromMatrix(arg.handle)
         end
-    elseif #args == 3 then
+    elseif argCount == 3 then
         self.handle = NATIVE.CreateQuaternionFromEulerAngles(...)
     else
         error('Unknown constructor syntax.')
