@@ -48,6 +48,13 @@ int Lua_CreateSphereCollisionShape( lua_State* l )
     return CreateLuaCollisionShape(l, CreateSphereCollisionShape(radius));
 }
 
+int Lua_CreateCapsuleCollisionShape( lua_State* l )
+{
+    const float radius = luaL_checknumber(l, 1);
+    const float height = luaL_checknumber(l, 2);
+    return CreateLuaCollisionShape(l, CreateCapsuleCollisionShape(radius, height));
+}
+
 int Lua_CreateCompoundCollisionShape( lua_State* l )
 {
     // TODO
@@ -131,7 +138,7 @@ static int Lua_GetSolidPosition( lua_State* l )
 static int Lua_GetSolidRotation( lua_State* l )
 {
     const Solid* solid = CheckSolidFromLua(l, 1);
-    glm::quat* rotation = CreateQuaternionInLua( lua_State* l );
+    glm::quat* rotation = CreateQuaternionInLua(l);
     *rotation = GetSolidRotation(solid);
     return 1;
 }
@@ -153,7 +160,8 @@ bool RegisterPhysicsManagerInLua()
         RegisterUserDataTypeInLua(COLLISION_SHAPE_TYPE, Lua_CollisionShape_destructor) &&
         RegisterFunctionInLua("CreateBoxCollisionShape", Lua_CreateBoxCollisionShape) &&
         RegisterFunctionInLua("CreateSphereCollisionShape", Lua_CreateSphereCollisionShape) &&
-        RegisterFunctionInLua("CreateCompoundCollisionShape", Lua_CreateCompoundColliosionShape) &&
+        RegisterFunctionInLua("CreateCapsuleCollisionShape", Lua_CreateCapsuleCollisionShape) &&
+        RegisterFunctionInLua("CreateCompoundCollisionShape", Lua_CreateCompoundCollisionShape) &&
 
         RegisterUserDataTypeInLua(SOLID_TYPE, Lua_Solid_destructor) &&
         RegisterFunctionInLua("CreateSolid", Lua_CreateSolid) &&

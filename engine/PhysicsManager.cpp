@@ -5,6 +5,7 @@
 #include <bullet/BulletCollision/CollisionShapes/btCollisionShape.h>
 #include <bullet/BulletCollision/CollisionShapes/btBoxShape.h>
 #include <bullet/BulletCollision/CollisionShapes/btSphereShape.h>
+#include <bullet/BulletCollision/CollisionShapes/btCapsuleShape.h>
 #include <bullet/BulletCollision/CollisionShapes/btCompoundShape.h>
 #include <bullet/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h>
 #include <bullet/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
@@ -22,6 +23,7 @@ enum CollisionShapeType
 {
     BOX_SHAPE,
     SPHERE_SHAPE,
+    CAPSULE_SHAPE,
     COMPOUND_SHAPE
 };
 
@@ -104,6 +106,12 @@ CollisionShape* CreateSphereCollisionShape( float radius )
 {
     return CreateCollisionShape(SPHERE_SHAPE,
                                 new btSphereShape(radius));
+}
+
+CollisionShape* CreateCapsuleCollisionShape( float radius, float height )
+{
+    return CreateCollisionShape(CAPSULE_SHAPE,
+                                new btCapsuleShape(radius, height));
 }
 
 CollisionShape* CreateCompoundCollisionShape( int shapeCount, CollisionShape** shapes, glm::vec3* positions )
