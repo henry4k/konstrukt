@@ -1,5 +1,4 @@
 #include <string.h>
-#include <vector>
 #include <map>
 #include "../Common.h"
 #include "../OpenGL.h"
