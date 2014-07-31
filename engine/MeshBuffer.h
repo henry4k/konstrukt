@@ -1,22 +1,22 @@
 #ifndef __APOAPSIS_MESH_BUFFER__
 #define __APOAPSIS_MESH_BUFFER__
 
-#include <vector>
 #include "Vertex.h"
 #include "Math.h"
 
-// TODO: Hide MeshBuffer structure and provide a better API instead.
+struct MeshBuffer;
 
-struct MeshBuffer
-{
-    std::vector<Vertex> vertices;
-    std::vector<VertexIndex> indices;
-};
-
-void CreateMeshBuffer( MeshBuffer* buffer );
+MeshBuffer* CreateMeshBuffer();
 void FreeMeshBuffer( MeshBuffer* buffer );
 
+void AddVertexToMeshBuffer( MeshBuffer* buffer, const Vertex* vertex );
+void AddIndexToMeshBuffer( MeshBuffer* buffer, VertexIndex index );
 void TransformMeshBuffer( MeshBuffer* buffer, const glm::mat4* transformation );
 void AppendMeshBuffer( MeshBuffer* buffer, const MeshBuffer* otherBuffer, const glm::mat4* transformation );
+
+int GetMeshBufferVertexCount( const MeshBuffer* buffer );
+const Vertex* GetMeshBufferVertices( const MeshBuffer* buffer );
+int GetMeshBufferIndexCount( const MeshBuffer* buffer );
+const VertexIndex* GetMeshBufferIndices( const MeshBuffer* buffer );
 
 #endif

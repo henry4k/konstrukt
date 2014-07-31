@@ -6,13 +6,13 @@
 using namespace glm;
 
 
-Vertex CreateVertex( float x, float y, float z )
+Vertex* CreateVertex( float x, float y, float z )
 {
-    Vertex v;
+    static Vertex v;
     memset(&v, 0, sizeof(v));
     v.position = vec3(x,y,z);
     v.normal = vec3(0,1,0);
-    return v;
+    return &v;
 }
 
 int main( int argc, char** argv )
@@ -24,98 +24,99 @@ int main( int argc, char** argv )
 
         .it("can be created, modified and freed.", [](){
 
-            MeshBuffer buffer;
-            CreateMeshBuffer(&buffer);
-            buffer.vertices.push_back(CreateVertex(0,0,0));
-            buffer.indices.push_back(0);
-            FreeMeshBuffer(&buffer);
+            MeshBuffer* buffer = CreateMeshBuffer();
+            AddVertexToMeshBuffer(buffer, CreateVertex(0,0,0));
+            AddIndexToMeshBuffer(buffer, 0);
+            FreeMeshBuffer(buffer);
         })
 
         .it("can be transformed.", [](){
 
-            MeshBuffer buffer;
-            CreateMeshBuffer(&buffer);
+            MeshBuffer* buffer = CreateMeshBuffer();
 
-            buffer.vertices.push_back(CreateVertex(0,0,0));
-            buffer.indices.push_back(0);
-            buffer.vertices.push_back(CreateVertex(0,1,0));
-            buffer.indices.push_back(1);
+            AddVertexToMeshBuffer(buffer, CreateVertex(0,0,0));
+            AddIndexToMeshBuffer(buffer, 0);
+            AddVertexToMeshBuffer(buffer, CreateVertex(0,1,0));
+            AddIndexToMeshBuffer(buffer, 1);
 
             mat4 m(1); // identity matrix
             m = translate(m, vec3(1,0,0));
-            TransformMeshBuffer(&buffer, &m);
+            TransformMeshBuffer(buffer, &m);
 
-            Require(buffer.vertices[0].position == vec3(1,0,0));
-            Require(buffer.vertices[1].position == vec3(1,1,0));
+            const Vertex* vertices = GetMeshBufferVertices(buffer);
+            Require(vertices[0].position == vec3(1,0,0));
+            Require(vertices[1].position == vec3(1,1,0));
             // TODO: Test if normal and tangent are transformed correctly.
 
-            FreeMeshBuffer(&buffer);
+            FreeMeshBuffer(buffer);
         })
 
         .it("can be appended to another buffer.", [](){
 
-            MeshBuffer a;
-            CreateMeshBuffer(&a);
+            MeshBuffer* a = CreateMeshBuffer();
 
-            a.vertices.push_back(CreateVertex(0,0,0));
-            a.indices.push_back(0);
-            a.vertices.push_back(CreateVertex(0,1,0));
-            a.indices.push_back(1);
+            AddVertexToMeshBuffer(a, CreateVertex(0,0,0));
+            AddIndexToMeshBuffer(a, 0);
+            AddVertexToMeshBuffer(a, CreateVertex(0,1,0));
+            AddIndexToMeshBuffer(a, 1);
 
-            MeshBuffer b;
-            CreateMeshBuffer(&b);
+            MeshBuffer* b = CreateMeshBuffer();
 
-            b.vertices.push_back(CreateVertex(2,3,4));
-            b.indices.push_back(0);
-            b.vertices.push_back(CreateVertex(5,6,7));
-            b.indices.push_back(1);
+            AddVertexToMeshBuffer(b, CreateVertex(2,3,4));
+            AddIndexToMeshBuffer(b, 0);
+            AddVertexToMeshBuffer(b, CreateVertex(5,6,7));
+            AddIndexToMeshBuffer(b, 1);
 
-            AppendMeshBuffer(&a, &b, NULL);
+            AppendMeshBuffer(a, b, NULL);
 
-            Require(a.vertices.size() == 4);
-            Require(a.vertices[2].position == vec3(2,3,4));
-            Require(a.vertices[3].position == vec3(5,6,7));
-            Require(a.indices.size() == 4);
-            Require(a.indices[2] == 2);
-            Require(a.indices[3] == 3);
+            const Vertex* vertices = GetMeshBufferVertices(a);
+            const VertexIndex* indices = GetMeshBufferIndices(a);
 
-            FreeMeshBuffer(&a);
-            FreeMeshBuffer(&b);
+            Require(GetMeshBufferVertexCount(a) == 4);
+            Require(vertices[2].position == vec3(2,3,4));
+            Require(vertices[3].position == vec3(5,6,7));
+            Require(GetMeshBufferIndexCount(a) == 4);
+            Require(indices[2] == 2);
+            Require(indices[3] == 3);
+
+            FreeMeshBuffer(a);
+            FreeMeshBuffer(b);
         })
 
         .it("can be appended to another buffer while transforming it.", [](){
 
-            MeshBuffer a;
-            CreateMeshBuffer(&a);
+            MeshBuffer* a = CreateMeshBuffer();
 
-            a.vertices.push_back(CreateVertex(0,0,0));
-            a.indices.push_back(0);
-            a.vertices.push_back(CreateVertex(0,1,0));
-            a.indices.push_back(1);
+            AddVertexToMeshBuffer(a, CreateVertex(0,0,0));
+            AddIndexToMeshBuffer(a, 0);
+            AddVertexToMeshBuffer(a, CreateVertex(0,1,0));
+            AddIndexToMeshBuffer(a, 1);
 
-            MeshBuffer b;
-            CreateMeshBuffer(&b);
+            MeshBuffer* b = CreateMeshBuffer();
 
-            b.vertices.push_back(CreateVertex(2,3,4));
-            b.indices.push_back(0);
-            b.vertices.push_back(CreateVertex(5,6,7));
-            b.indices.push_back(1);
+            AddVertexToMeshBuffer(b, CreateVertex(2,3,4));
+            AddIndexToMeshBuffer(b, 0);
+            AddVertexToMeshBuffer(b, CreateVertex(5,6,7));
+            AddIndexToMeshBuffer(b, 1);
 
             mat4 m(1); // identity matrix
             m = translate(m, vec3(1,0,0));
 
-            AppendMeshBuffer(&a, &b, &m);
+            AppendMeshBuffer(a, b, &m);
 
-            Require(a.vertices.size() == 4);
-            Require(a.vertices[2].position == vec3(3,3,4));
-            Require(a.vertices[3].position == vec3(6,6,7));
-            Require(a.indices.size() == 4);
-            Require(a.indices[2] == 2);
-            Require(a.indices[3] == 3);
+            const Vertex* vertices = GetMeshBufferVertices(a);
+            const VertexIndex* indices = GetMeshBufferIndices(a);
+
+            Require(GetMeshBufferVertexCount(a) == 4);
+            Require(vertices[2].position == vec3(3,3,4));
+            Require(vertices[3].position == vec3(6,6,7));
+            Require(GetMeshBufferIndexCount(a) == 4);
+            Require(indices[2] == 2);
+            Require(indices[3] == 3);
             // TODO: Test if normal and tangent are transformed correctly.
 
-            FreeMeshBuffer(&a);
-            FreeMeshBuffer(&b);
+            FreeMeshBuffer(a);
+            FreeMeshBuffer(b);
         });
 
     return RunTests();

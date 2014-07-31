@@ -17,7 +17,7 @@ static int Lua_MeshBuffer_destructor( lua_State* l )
 
 static int Lua_CreateMeshBuffer( lua_State* l )
 {
-    MeshBuffer* buffer = new MeshBuffer();
+    MeshBuffer* buffer = CreateMeshBuffer();
     CopyUserDataToLua(l, MESH_BUFFER_TYPE, sizeof(buffer), &buffer);
     return 1;
 }
@@ -48,7 +48,7 @@ static int Lua_AppendIndexToMeshBuffer( lua_State* l )
 {
     MeshBuffer* targetBuffer = CheckMeshBufferFromLua(l, 1);
     const VertexIndex index = luaL_checkinteger(l, 2);
-    targetBuffer->indices.push_back(index);
+    AddIndexToMeshBuffer(targetBuffer, index);
     return 0;
 }
 
@@ -79,7 +79,7 @@ static int Lua_AppendVertexToMeshBuffer( lua_State* l )
     vertex.tangent[2] = luaL_checknumber(l, i++);
     vertex.tangent[3] = luaL_checknumber(l, i++);
 
-    targetBuffer->vertices.push_back(vertex);
+    AddVertexToMeshBuffer(targetBuffer, &vertex);
     return 0;
 }
 

@@ -1,3 +1,5 @@
+#include <vector>
+
 #include "Common.h"
 #include "Math.h"
 #include <glm/gtc/type_ptr.hpp>
@@ -7,16 +9,31 @@
 using namespace glm;
 
 
-void CreateMeshBuffer( MeshBuffer* buffer )
+struct MeshBuffer
 {
-    buffer->vertices.clear();
-    buffer->indices.clear();
+    std::vector<Vertex> vertices;
+    std::vector<VertexIndex> indices;
+};
+
+
+MeshBuffer* CreateMeshBuffer()
+{
+    return new MeshBuffer;
 }
 
 void FreeMeshBuffer( MeshBuffer* buffer )
 {
-    buffer->vertices.clear();
-    buffer->indices.clear();
+    delete buffer;
+}
+
+void AddVertexToMeshBuffer( MeshBuffer* buffer, const Vertex* vertex )
+{
+    buffer->vertices.push_back(*vertex);
+}
+
+void AddIndexToMeshBuffer( MeshBuffer* buffer, VertexIndex index )
+{
+    buffer->indices.push_back(index);
 }
 
 static void TransformMeshBufferRange( MeshBuffer* buffer, const glm::mat4* transformation, int firstVertex, int vertexCount )
@@ -59,4 +76,24 @@ void AppendMeshBuffer( MeshBuffer* buffer, const MeshBuffer* otherBuffer, const 
     );
     if(transformation)
         TransformMeshBufferRange(buffer, transformation, start, otherBuffer->vertices.size());
+}
+
+int GetMeshBufferVertexCount( const MeshBuffer* buffer )
+{
+    return buffer->vertices.size();
+}
+
+const Vertex* GetMeshBufferVertices( const MeshBuffer* buffer )
+{
+    return &buffer->vertices[0];
+}
+
+int GetMeshBufferIndexCount( const MeshBuffer* buffer )
+{
+    return buffer->indices.size();
+}
+
+const VertexIndex* GetMeshBufferIndices( const MeshBuffer* buffer )
+{
+    return &buffer->indices[0];
 }

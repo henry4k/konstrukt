@@ -19,8 +19,10 @@ struct Mesh
 
 Mesh* CreateMesh( const MeshBuffer* buffer )
 {
-    assert(buffer);
-    if(buffer->vertices.empty())
+    const int vertexCount = GetMeshBufferVertexCount(buffer);
+    const int indexCount = GetMeshBufferIndexCount(buffer);
+
+    if(!vertexCount)
         Error("Creating an empty mesh.");
 
     Mesh* mesh = new Mesh;
@@ -33,20 +35,26 @@ Mesh* CreateMesh( const MeshBuffer* buffer )
     glGenBuffers(1, &mesh->vertexBuffer);
 
     glBindBuffer(GL_ARRAY_BUFFER, mesh->vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, buffer->vertices.size()*sizeof(Vertex), &buffer->vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER,
+                 vertexCount*sizeof(Vertex),
+                 GetMeshBufferVertices(buffer),
+                 GL_STATIC_DRAW);
 
-    if(buffer->indices.size() > 0)
+    if(indexCount)
     {
         glGenBuffers(1, &mesh->indexBuffer);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->indexBuffer);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer->indices.size()*sizeof(unsigned short), &buffer->indices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                     indexCount*sizeof(unsigned short),
+                     GetMeshBufferIndices(buffer),
+                     GL_STATIC_DRAW);
 
-        mesh->size = buffer->indices.size();
+        mesh->size = indexCount;
     }
     else
     {
-        mesh->size = buffer->vertices.size();
+        mesh->size = vertexCount;
     }
 
     return mesh;
