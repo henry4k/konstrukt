@@ -1,12 +1,31 @@
 #include "../Lua.h"
 #include "../Audio.h"
+#include "Math.h"
+#include "PhysicsManager.h"
 
-const char* AUDIO_BUFFER_TYPE = "AudioBuffer";
-const char* STOP_AUDIO_SOURCE_EVENT_NAME = "StopAudioSource";
 
-int g_StopAudioSourceEvent = INVALID_LUA_EVENT;
+// --- AudioListener ---
 
-int Lua_AudioBuffer_destructor( lua_State* l )
+static int Lua_SetAudioListenerAttachmentTarget( lua_State* l )
+{
+    Solid* target = CheckSolidFromLua(l, 1);
+    SetAudioListenerAttachmentTarget(target);
+    return 0;
+}
+
+static int Lua_SetAudioListenerTransformation( lua_State* l )
+{
+    const glm::mat4* transformation = CheckMatrix4FromLua(l, 1);
+    SetAudioListenerTransformation(*transformation);
+    return 0;
+}
+
+
+// --- AudioBuffer ---
+
+static const char* AUDIO_BUFFER_TYPE = "AudioBuffer";
+
+static int Lua_AudioBuffer_destructor( lua_State* l )
 {
     const AudioBuffer* buffer =
         reinterpret_cast<AudioBuffer*>(lua_touserdata(l, 1));
@@ -14,7 +33,7 @@ int Lua_AudioBuffer_destructor( lua_State* l )
     return 0;
 }
 
-int Lua_LoadAudioBuffer( lua_State* l ) // string fileName
+static int Lua_LoadAudioBuffer( lua_State* l ) // string fileName
 {
     const char* fileName = luaL_checkstring(l, 1);
 
@@ -30,14 +49,21 @@ int Lua_LoadAudioBuffer( lua_State* l ) // string fileName
     return 0;
 }
 
-void OnStopLuaAudioSource( AudioSource source, void* context )
+
+// --- AudioSource ---
+
+static const char* STOP_AUDIO_SOURCE_EVENT_NAME = "StopAudioSource";
+
+static int StopAudioSourceEvent = INVALID_LUA_EVENT;
+
+static void OnStopLuaAudioSource( AudioSource source, void* context )
 {
     lua_State* l = GetLuaState();
     lua_pushinteger(l, source);
-    FireLuaEvent(l, g_StopAudioSourceEvent, 1, false);
+    FireLuaEvent(l, StopAudioSourceEvent, 1, false);
 }
 
-int Lua_CreateAudioSource( lua_State* l )
+static int Lua_CreateAudioSource( lua_State* l )
 {
     luaL_checktype(l, 1, LUA_TBOOLEAN);
     const bool triggerCallback = lua_toboolean(l, 1);
@@ -51,7 +77,7 @@ int Lua_CreateAudioSource( lua_State* l )
     return 1;
 }
 
-int Lua_SetAudioSourceRelative( lua_State* l )
+static int Lua_SetAudioSourceRelative( lua_State* l )
 {
     const AudioSource source = (AudioSource)luaL_checkinteger(l, 1);
 
@@ -62,7 +88,7 @@ int Lua_SetAudioSourceRelative( lua_State* l )
     return 0;
 }
 
-int Lua_SetAudioSourceLooping( lua_State* l )
+static int Lua_SetAudioSourceLooping( lua_State* l )
 {
     const AudioSource source = (AudioSource)luaL_checkinteger(l, 1);
 
@@ -73,7 +99,7 @@ int Lua_SetAudioSourceLooping( lua_State* l )
     return 0;
 }
 
-int Lua_SetAudioSourcePitch( lua_State* l )
+static int Lua_SetAudioSourcePitch( lua_State* l )
 {
     const AudioSource source = (AudioSource)luaL_checkinteger(l, 1);
     const float pitch = luaL_checknumber(l, 2);
@@ -81,7 +107,7 @@ int Lua_SetAudioSourcePitch( lua_State* l )
     return 0;
 }
 
-int Lua_SetAudioSourceGain( lua_State* l )
+static int Lua_SetAudioSourceGain( lua_State* l )
 {
     const AudioSource source = (AudioSource)luaL_checkinteger(l, 1);
     const float gain = luaL_checknumber(l, 2);
@@ -89,7 +115,23 @@ int Lua_SetAudioSourceGain( lua_State* l )
     return 0;
 }
 
-int Lua_EnqueueAudioBuffer( lua_State* l )
+static int Lua_SetAudioSourceAttachmentTarget( lua_State* l )
+{
+    const AudioSource source = (AudioSource)luaL_checkinteger(l, 1);
+    Solid* target = CheckSolidFromLua(l, 2);
+    SetAudioSourceAttachmentTarget(source, target);
+    return 0;
+}
+
+static int Lua_SetAudioSourceTransformation( lua_State* l )
+{
+    const AudioSource source = (AudioSource)luaL_checkinteger(l, 1);
+    const glm::mat4* transformation = CheckMatrix4FromLua(l, 2);
+    SetAudioSourceTransformation(source, *transformation);
+    return 0;
+}
+
+static int Lua_EnqueueAudioBuffer( lua_State* l )
 {
     const AudioSource source = (AudioSource)luaL_checkinteger(l, 1);
 
@@ -100,43 +142,48 @@ int Lua_EnqueueAudioBuffer( lua_State* l )
     return 0;
 }
 
-int Lua_PlayAudioSource( lua_State* l )
+static int Lua_PlayAudioSource( lua_State* l )
 {
     const AudioSource source = (AudioSource)luaL_checkinteger(l, 1);
     PlayAudioSource(source);
     return 0;
 }
 
-int Lua_PauseAudioSource( lua_State* l )
+static int Lua_PauseAudioSource( lua_State* l )
 {
     const AudioSource source = (AudioSource)luaL_checkinteger(l, 1);
     PauseAudioSource(source);
     return 0;
 }
 
-int Lua_FreeAudioSource( lua_State* l )
+static int Lua_FreeAudioSource( lua_State* l )
 {
     const AudioSource source = (AudioSource)luaL_checkinteger(l, 1);
     FreeAudioSource(source);
     return 0;
 }
 
+
+// --- Register in Lua ---
+
 bool RegisterAudioInLua()
 {
-    if(!RegisterUserDataTypeInLua(AUDIO_BUFFER_TYPE, Lua_AudioBuffer_destructor))
-        return false;
-
-    g_StopAudioSourceEvent = RegisterLuaEvent(STOP_AUDIO_SOURCE_EVENT_NAME);
-    if(g_StopAudioSourceEvent == INVALID_LUA_EVENT)
+    StopAudioSourceEvent = RegisterLuaEvent(STOP_AUDIO_SOURCE_EVENT_NAME);
+    if(StopAudioSourceEvent == INVALID_LUA_EVENT)
         return false;
 
     return
+        RegisterUserDataTypeInLua(AUDIO_BUFFER_TYPE, Lua_AudioBuffer_destructor) &&
+        RegisterFunctionInLua("SetAudioListenerAttachmentTarget", Lua_SetAudioListenerAttachmentTarget) &&
+        RegisterFunctionInLua("SetAudioListenerTransformation", Lua_SetAudioListenerTransformation) &&
         RegisterFunctionInLua("LoadAudioBuffer", Lua_LoadAudioBuffer) &&
         RegisterFunctionInLua("CreateAudioSource", Lua_CreateAudioSource) &&
         RegisterFunctionInLua("SetAudioSourceRelative", Lua_SetAudioSourceRelative) &&
         RegisterFunctionInLua("SetAudioSourceLooping", Lua_SetAudioSourceLooping) &&
         RegisterFunctionInLua("SetAudioSourcePitch", Lua_SetAudioSourcePitch) &&
         RegisterFunctionInLua("SetAudioSourceGain", Lua_SetAudioSourceGain) &&
+        RegisterFunctionInLua("SetAudioSourceAttachmentTarget", Lua_SetAudioSourceAttachmentTarget) &&
+        RegisterFunctionInLua("SetAudioSourceTransformation", Lua_SetAudioSourceTransformation) &&
         RegisterFunctionInLua("EnqueueAudioBuffer", Lua_EnqueueAudioBuffer) &&
         RegisterFunctionInLua("PlayAudioSource", Lua_PlayAudioSource) &&
         RegisterFunctionInLua("PauseAudioSource", Lua_PauseAudioSource) &&

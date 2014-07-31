@@ -23,6 +23,14 @@ function AudioSource:setGain( gain )
     NATIVE.SetAudioSourceGain(self.handle, gain)
 end
 
+function AudioSource:setAttachmentTarget( solid )
+    NATIVE.SetAudioSourceAttachmentTarget(self.handle, solid.handle)
+end
+
+function AudioSource:setTransformation( matrix )
+    NATIVE.SetAudioSourceTransformation(self.handle, matrix.handle)
+end
+
 function AudioSource:enqueue( buffer )
     NATIVE.EnqueueAudioBuffer(self.handle, buffer.handle)
 end

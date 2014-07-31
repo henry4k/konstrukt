@@ -122,7 +122,7 @@ void RunGame()
         const double curTime = glfwGetTime();
         const double timeDelta = curTime-lastTime;
         //UpdateLua();
-        UpdateAudio(timeDelta);
+        UpdateAudio();
         UpdateControls(timeDelta);
         UpdatePlayer(timeDelta);
         UpdatePhysicsManager(timeDelta);

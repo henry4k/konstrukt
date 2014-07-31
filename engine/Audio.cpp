@@ -13,6 +13,7 @@
 
 #include "Common.h"
 #include "Config.h"
+#include "PhysicsManager.h"
 #include "Audio.h"
 
 struct AudioSourceInfo
@@ -20,6 +21,8 @@ struct AudioSourceInfo
     AudioSource handle;
     AudioSourceStopFn stopFn;
     void* context;
+    Solid* attachmentTarget;
+    glm::mat4 transformation;
 };
 
 void FreeAudioSourceOnStop( AudioSource source, void* context )
@@ -28,12 +31,15 @@ void FreeAudioSourceOnStop( AudioSource source, void* context )
 }
 
 static void FreeAudioSourceAtIndex( int index );
+static void UpdateAudioListener();
+static void UpdateAudioSource( const AudioSourceInfo* sourceInfo );
 
-static AudioSourceInfo* g_AudioSources;
-static int g_AudioSourceCount;
-
-static float g_MaxAudioSourceDistance;
-static float g_AudioSourceReferenceDistance;
+static AudioSourceInfo* AudioSources = NULL;
+static int AudioSourceCount;
+static float MaxAudioSourceDistance;
+static float AudioSourceReferenceDistance;
+static Solid* ListenerAttachmentTarget = NULL;
+static glm::mat4 ListenerTransformation;
 
 static const char* GetALErrorString()
 {
@@ -121,12 +127,14 @@ bool InitAudio()
         alureMajor, alureMinor
     );
 
-    g_AudioSourceCount = GetConfigInt("audio.max-sources", 32);
-    g_AudioSources = new AudioSourceInfo[g_AudioSourceCount];
-    memset(g_AudioSources, 0, sizeof(AudioSourceInfo)*g_AudioSourceCount);
+    AudioSourceCount = GetConfigInt("audio.max-sources", 32);
+    AudioSources = new AudioSourceInfo[AudioSourceCount];
+    memset(AudioSources, 0, sizeof(AudioSourceInfo)*AudioSourceCount);
 
-    g_MaxAudioSourceDistance = GetConfigFloat("audio.max-distance", 100);
-    g_AudioSourceReferenceDistance = GetConfigFloat("audio.reference-distance", 100);
+    MaxAudioSourceDistance = GetConfigFloat("audio.max-distance", 100);
+    AudioSourceReferenceDistance = GetConfigFloat("audio.reference-distance", 100);
+
+    ListenerAttachmentTarget = NULL;
 
     SetAudioGain(GetConfigFloat("audio.gain", 1.0f));
 
@@ -140,35 +148,62 @@ bool InitAudio()
 
 void DestroyAudio()
 {
-    for(int i = 0; i < g_AudioSourceCount; ++i)
-        if(g_AudioSources[i].handle)
-            alDeleteSources(1, &g_AudioSources[i].handle);
-    delete[] g_AudioSources;
+    SetAudioListenerAttachmentTarget(NULL);
+
+    for(int i = 0; i < AudioSourceCount; ++i)
+        if(AudioSources[i].handle)
+            alDeleteSources(1, &AudioSources[i].handle);
+    delete[] AudioSources;
 
     alureShutdownDevice();
 }
 
-void UpdateAudio( float timeFrame )
+void UpdateAudio()
 {
-    for(int i = 0; i < g_AudioSourceCount; ++i)
+    UpdateAudioListener();
+
+    for(int i = 0; i < AudioSourceCount; ++i)
     {
-        const AudioSourceInfo* sourceInfo = &g_AudioSources[i];
-
-        if(sourceInfo->handle && sourceInfo->stopFn)
-        {
-            int state = 0;
-            alGetSourcei(sourceInfo->handle, AL_SOURCE_STATE, &state);
-
-            if(!PrintALError("InitAudio") && (state == AL_STOPPED || state == AL_INITIAL)) // TODO: Check enum values
-            {
-                sourceInfo->stopFn( sourceInfo->handle, sourceInfo->context );
-            }
-        }
+        const AudioSourceInfo* sourceInfo = &AudioSources[i];
+        if(sourceInfo->handle)
+            UpdateAudioSource(sourceInfo);
     }
 }
 
-void UpdateAudioListener( glm::vec3 position, glm::vec3 velocity, glm::vec3 direction, glm::vec3 up )
+void SetAudioGain( float gain )
 {
+    alListenerf(AL_GAIN, gain);
+}
+
+void SetAudioListenerAttachmentTarget( Solid* target )
+{
+    if(ListenerAttachmentTarget)
+        ReleaseSolid(ListenerAttachmentTarget);
+    ListenerAttachmentTarget = target;
+    if(ListenerAttachmentTarget)
+        ReferenceSolid(ListenerAttachmentTarget);
+}
+
+void SetAudioListenerTransformation( glm::mat4 transformation )
+{
+    ListenerTransformation = transformation;
+}
+
+static void UpdateAudioListener()
+{
+    using namespace glm;
+
+    mat4 targetTransformation;
+    if(ListenerAttachmentTarget)
+        GetSolidTransformation(ListenerAttachmentTarget, &targetTransformation);
+    const mat4 finalTransformation = targetTransformation *
+                                     ListenerTransformation;
+
+    const vec3 position(finalTransformation * vec4());
+    const vec3 velocity;
+    const vec3 direction(0,0,1);
+    const vec3 up(0,1,0);
+
     float orientation[6];
     memcpy(orientation,   glm::value_ptr(direction), sizeof(float)*3);
     memcpy(orientation+3, glm::value_ptr(up),        sizeof(float)*3);
@@ -176,11 +211,6 @@ void UpdateAudioListener( glm::vec3 position, glm::vec3 velocity, glm::vec3 dire
     alListenerfv(AL_POSITION, glm::value_ptr(position));
     alListenerfv(AL_VELOCITY, glm::value_ptr(velocity));
     alListenerfv(AL_ORIENTATION, orientation);
-}
-
-void SetAudioGain( float gain )
-{
-    alListenerf(AL_GAIN, gain);
 }
 
 AudioBuffer LoadAudioBuffer( const char* fileName )
@@ -207,9 +237,9 @@ void FreeAudioBuffer( AudioBuffer buffer )
 
 AudioSource CreateAudioSource( AudioSourceStopFn stopFn, void* context )
 {
-    for(int i = 0; i < g_AudioSourceCount; ++i)
+    for(int i = 0; i < AudioSourceCount; ++i)
     {
-        AudioSourceInfo* sourceInfo = &g_AudioSources[i];
+        AudioSourceInfo* sourceInfo = &AudioSources[i];
         if(sourceInfo->handle == AL_NONE)
         {
             ALuint source = AL_NONE;
@@ -219,19 +249,19 @@ AudioSource CreateAudioSource( AudioSourceStopFn stopFn, void* context )
             sourceInfo->stopFn = stopFn;
             sourceInfo->context = context;
 
-            alSourcef(source, AL_MAX_DISTANCE, g_MaxAudioSourceDistance);
-            alSourcef(source, AL_REFERENCE_DISTANCE, g_AudioSourceReferenceDistance);
+            alSourcef(source, AL_MAX_DISTANCE, MaxAudioSourceDistance);
+            alSourcef(source, AL_REFERENCE_DISTANCE, AudioSourceReferenceDistance);
 
             return (AudioSource)source;
         }
     }
-    Error("Reached audio source limit! (%d sources)", g_AudioSourceCount);
+    Error("Reached audio source limit! (%d sources)", AudioSourceCount);
     return 0;
 }
 
 void FreeAudioSourceAtIndex( int index )
 {
-    AudioSourceInfo* sourceInfo = &g_AudioSources[index];
+    AudioSourceInfo* sourceInfo = &AudioSources[index];
     alDeleteSources(1, &sourceInfo->handle);
     memset(sourceInfo, 0, sizeof(AudioSourceInfo));
     PrintALError("FreeAudioSourceAtIndex");
@@ -239,9 +269,9 @@ void FreeAudioSourceAtIndex( int index )
 
 void FreeAudioSource( AudioSource source )
 {
-    for(int i = 0; i < g_AudioSourceCount; ++i)
+    for(int i = 0; i < AudioSourceCount; ++i)
     {
-        if(g_AudioSources[i].handle == source)
+        if(AudioSources[i].handle == source)
         {
             FreeAudioSourceAtIndex(i);
             return;
@@ -274,6 +304,68 @@ void SetAudioSourceGain( AudioSource source, float gain )
     PrintALError("SetAudioSourceGain");
 }
 
+void SetAudioSourceAttachmentTarget( AudioSource source, Solid* target )
+{
+    AudioSourceInfo* sourceInfo = NULL;
+    for(int i = 0; i < AudioSourceCount; ++i)
+        if(AudioSources[i].handle == source)
+            sourceInfo = &AudioSources[i];
+    if(!sourceInfo)
+        return;
+
+    if(sourceInfo->attachmentTarget)
+        ReleaseSolid(sourceInfo->attachmentTarget);
+    sourceInfo->attachmentTarget = target;
+    if(sourceInfo->attachmentTarget)
+        ReferenceSolid(sourceInfo->attachmentTarget);
+}
+
+void SetAudioSourceTransformation( AudioSource source, glm::mat4 transformation )
+{
+    AudioSourceInfo* sourceInfo = NULL;
+    for(int i = 0; i < AudioSourceCount; ++i)
+        if(AudioSources[i].handle == source)
+            sourceInfo = &AudioSources[i];
+    if(!sourceInfo)
+        return;
+
+    sourceInfo->transformation = transformation;
+}
+
+static void UpdateAudioSource( const AudioSourceInfo* sourceInfo )
+{
+    if(sourceInfo->stopFn)
+    {
+        int state = 0;
+        alGetSourcei(sourceInfo->handle, AL_SOURCE_STATE, &state);
+        if(!PrintALError("UpdateAudio") && (state == AL_STOPPED || state == AL_INITIAL)) // TODO: Check enum values
+        {
+            sourceInfo->stopFn( sourceInfo->handle, sourceInfo->context );
+            return;
+        }
+    }
+
+    using namespace glm;
+
+    mat4 targetTransformation;
+    if(sourceInfo->attachmentTarget)
+        GetSolidTransformation(sourceInfo->attachmentTarget, &targetTransformation);
+    const mat4 finalTransformation = targetTransformation *
+                                     sourceInfo->transformation;
+
+    const vec3 position(finalTransformation * vec4());
+    const vec3 velocity;
+    const vec3 direction(0,0,1);
+    const vec3 up(0,1,0);
+
+    const ALuint s = (ALuint)sourceInfo->handle;
+    alSourcefv(s, AL_POSITION, glm::value_ptr(position));
+    alSourcefv(s, AL_VELOCITY, glm::value_ptr(velocity));
+    alSourcefv(s, AL_DIRECTION, glm::value_ptr(direction));
+
+    PrintALError("UpdateAudioSource");
+}
+
 void EnqueueAudioBuffer( AudioSource source, AudioBuffer buffer )
 {
     const ALuint b = (ALuint)buffer;
@@ -295,23 +387,14 @@ void PauseAudioSource( AudioSource source )
 
 void PlayAllAudioSources( AudioSource source )
 {
-    for(int i = 0; i < g_AudioSourceCount; ++i)
-        if(g_AudioSources[i].handle)
-            PlayAudioSource(g_AudioSources[i].handle);
+    for(int i = 0; i < AudioSourceCount; ++i)
+        if(AudioSources[i].handle)
+            PlayAudioSource(AudioSources[i].handle);
 }
 
 void PauseAllAudioSources( AudioSource source )
 {
-    for(int i = 0; i < g_AudioSourceCount; ++i)
-        if(g_AudioSources[i].handle)
-            PauseAudioSource(g_AudioSources[i].handle); // TODO: Maybe use a 'pause'-stack or so?
-}
-
-void UpdateAudioSource( AudioSource source, glm::vec3 position, glm::vec3 velocity, glm::vec3 direction )
-{
-    const ALuint s = (ALuint)source;
-    alSourcefv(s, AL_POSITION, glm::value_ptr(position));
-    alSourcefv(s, AL_VELOCITY, glm::value_ptr(velocity));
-    alSourcefv(s, AL_DIRECTION, glm::value_ptr(direction));
-    PrintALError("UpdateAudioSource");
+    for(int i = 0; i < AudioSourceCount; ++i)
+        if(AudioSources[i].handle)
+            PauseAudioSource(AudioSources[i].handle); // TODO: Maybe use a 'pause'-stack or so?
 }

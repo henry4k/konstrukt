@@ -3,8 +3,13 @@
 
 #include "Math.h"
 
+
+struct Solid;
+
+
 typedef unsigned int AudioBuffer;
 typedef unsigned int AudioSource;
+
 
 /**
  * Keep in mind that this function may or may not be called,
@@ -18,26 +23,11 @@ void FreeAudioSourceOnStop( AudioSource source, void* context );
 
 bool InitAudio();
 void DestroyAudio();
-void UpdateAudio( float timeFrame );
-
-/**
- * Sets the listeners properties. (i.e. where your ears are in the virtual world)
- *
- * @param position
- *      3D vector
- *
- * @param velocity
- *      3D vector
- *
- * @param direction
- *      3D vector
- *
- * @param up
- *      3D vector
- */
-void UpdateAudioListener( glm::vec3 position, glm::vec3 velocity, glm::vec3 direction, glm::vec3 up );
+void UpdateAudio();
 
 void SetAudioGain( float gain );
+void SetAudioListenerAttachmentTarget( Solid* target );
+void SetAudioListenerTransformation( glm::mat4 transformation );
 
 AudioBuffer LoadAudioBuffer( const char* fileName );
 void FreeAudioBuffer( AudioBuffer buffer );
@@ -60,23 +50,11 @@ void SetAudioSourceRelative( AudioSource source, bool relative );
 void SetAudioSourceLooping( AudioSource source, bool loop );
 void SetAudioSourcePitch( AudioSource source, float pitch );
 void SetAudioSourceGain( AudioSource source, float gain );
+void SetAudioSourceAttachmentTarget( AudioSource source, Solid* target );
+void SetAudioSourceTransformation( AudioSource source, glm::mat4 transformation );
 
 void EnqueueAudioBuffer( AudioSource source, AudioBuffer buffer );
 void PlayAudioSource( AudioSource source );
 void PauseAudioSource( AudioSource source );
-
-/**
- * Sets source properties.
- *
- * @param position
- *      3D vector
- *
- * @param velocity
- *      3D vector
- *
- * @param direction
- *      3D vector
- */
-void UpdateAudioSource( AudioSource source, glm::vec3 position, glm::vec3 velocity, glm::vec3 direction );
 
 #endif

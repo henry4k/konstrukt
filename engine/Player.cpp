@@ -148,7 +148,7 @@ void UpdatePlayer( float timeFrame )
     UpdatePlayerViewMatrix();
 
     // --- Update listener ---
-    UpdateAudioListener(g_PlayerPosition, g_PlayerVelocity, g_PlayerOrientation*glm::vec3(0,0,1), glm::vec3(0,1,0));
+    //UpdateAudioListener(g_PlayerPosition, g_PlayerVelocity, g_PlayerOrientation*glm::vec3(0,0,1), glm::vec3(0,1,0));
 }
 
 glm::vec3 GetPlayerPosition()
