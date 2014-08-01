@@ -32,6 +32,12 @@ INTERNAL_LDFLAGS += @(INTERNAL_LDFLAGS)
 !ldcxx = |> ^o Linking %o^ @(CXX) %f -o %o $(LDFLAGS) |>
 
 
+# -- tests --
+
+STUB_SCRIPT = $(TUP_CWD)/tools/gen_stubs.py
+!stub = |> ^o Stubbing %f^ $(STUB_SCRIPT) --lang cpp %f |> %B_stub.h %B_stub.cpp
+
+
 # -- xcf2png --
 
 ifdef XCF2PNG

@@ -1,0 +1,7 @@
+include_rules
+
+ENGINE=../..
+STUBS=../stubs
+
+: ConfigBah.cpp | $(STUBS)/Common_stub.h |> !cxx |> ConfigBah.o
+: ConfigBah.o $(ENGINE)/Config.o $(STUBS)/Common_stub.o $(TEST_ARCHIVES) |> !ldcxx |> ConfigBah.t

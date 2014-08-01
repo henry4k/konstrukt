@@ -1,0 +1,6 @@
+include_rules
+.gitignore
+
+: foreach ../../*.h |> !stub |>
+: foreach *.cpp | *.h |> !cxx |>
+# ^- Not optimal, but this'll have to do.
