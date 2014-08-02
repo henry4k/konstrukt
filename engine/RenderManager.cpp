@@ -81,9 +81,9 @@ void RenderScene()
     if(CameraAttachmentTarget)
         GetSolidTransformation(CameraAttachmentTarget, &cameraTargetTransformation);
 
-    const glm::mat4 cameraTransformation = cameraTargetTransformation *
+    const glm::mat4 cameraTransformation = CameraProjectionTransformation *
                                            CameraViewTransformation *
-                                           CameraProjectionTransformation;
+                                           cameraTargetTransformation;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     DrawModels(&cameraTransformation);
