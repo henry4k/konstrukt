@@ -3,6 +3,14 @@ local class = require 'core/middleclass.lua'
 
 local AudioSource = class('core/AudioSource')
 
+function AudioSource.static:playAll()
+    NATIVE.PlayAllAudioSources()
+end
+
+function AudioSource.static:pauseAll()
+    NATIVE.PauseAllAudioSources()
+end
+
 function AudioSource:initialize( triggerCallback )
     self.handle = NATIVE.CreateAudioSource(triggerCallback or false)
 end
