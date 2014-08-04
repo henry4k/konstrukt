@@ -30,7 +30,8 @@ void SetAudioListenerAttachmentTarget( Solid* target );
 void SetAudioListenerTransformation( glm::mat4 transformation );
 
 AudioBuffer* LoadAudioBuffer( const char* fileName );
-void FreeAudioBuffer( AudioBuffer* buffer );
+void ReferenceAudioBuffer( AudioBuffer* buffer );
+void ReleaseAudioBuffer( AudioBuffer* buffer );
 
 /**
  * Tries to create a new audio source.
@@ -43,8 +44,9 @@ void FreeAudioBuffer( AudioBuffer* buffer );
  *      Only relevant if stopFn is given.
  *
  */
-AudioSource* CreateAudioSource( AudioSourceStopFn* stopFn, void* context );
-void FreeAudioSource( AudioSource* source );
+AudioSource* CreateAudioSource( AudioSourceStopFn stopFn, void* context );
+void ReferenceAudioSource( AudioSource* source );
+void ReleaseAudioSource( AudioSource* source );
 
 void SetAudioSourceRelative( AudioSource* source, bool relative );
 void SetAudioSourceLooping( AudioSource* source, bool loop );

@@ -13,17 +13,21 @@
 
 #include "Common.h"
 #include "Config.h"
+#include "Reference.h"
 #include "PhysicsManager.h"
 #include "Audio.h"
 
 
 struct AudioBuffer
 {
+    ReferenceCounter refCounter;
     ALuint handle;
 };
 
 struct AudioSource
 {
+    ReferenceCounter refCounter;
+
     ALuint handle;
 
     AudioSourceStopFn stopFn;
@@ -35,12 +39,13 @@ struct AudioSource
 
 void FreeAudioSourceOnStop( AudioSource* source, void* context )
 {
-    FreeAudioSource(source);
+    FatalError("FreeAudioSourceOnStop is not implemented.");
 }
 
 
 static bool IsActiveAudioSource( AudioSource* source );
 static void UpdateAudioListener();
+static void FreeAudioSource( AudioSource* source );
 static void UpdateAudioSource( AudioSource* source );
 static const char* GetALErrorString();
 static bool PrintALError( const char* origin );
@@ -196,11 +201,23 @@ AudioBuffer* LoadAudioBuffer( const char* fileName )
     }
 }
 
-void FreeAudioBuffer( AudioBuffer* buffer )
+static void FreeAudioBuffer( AudioBuffer* buffer )
 {
     alDeleteBuffers(1, &buffer->handle);
     PrintALError("FreeAudioBuffer");
     delete buffer;
+}
+
+void ReferenceAudioBuffer( AudioBuffer* buffer )
+{
+    Reference(&buffer->refCounter);
+}
+
+void ReleaseAudioBuffer( AudioBuffer* buffer )
+{
+    Release(&buffer->refCounter);
+    if(!HasReferences(&buffer->refCounter))
+        FreeAudioBuffer(buffer);
 }
 
 
@@ -243,12 +260,24 @@ AudioSource* CreateAudioSource( AudioSourceStopFn stopFn, void* context )
     }
 }
 
-void FreeAudioSource( AudioSource* source )
+static void FreeAudioSource( AudioSource* source )
 {
     alDeleteSources(1, &source->handle);
     memset(source, 0, sizeof(AudioSource));
     source->handle = AL_NONE;
     PrintALError("FreeAudioSourceAtIndex");
+}
+
+void ReferenceAudioSource( AudioSource* source )
+{
+    Reference(&source->refCounter);
+}
+
+void ReleaseAudioSource( AudioSource* source )
+{
+    Release(&source->refCounter);
+    if(!HasReferences(&source->refCounter))
+        FreeAudioSource(source);
 }
 
 void SetAudioSourceRelative( AudioSource* source, bool relative )
