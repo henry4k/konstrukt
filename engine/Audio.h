@@ -11,16 +11,6 @@ struct AudioBuffer;
 struct AudioSource;
 
 
-/**
- * Keep in mind that this function may or may not be called, depending on
- * how the sound is stopped. E.g. DestroyAudio() forcefully deletes all
- * sounds and doesn't care about stop functions.
- */
-typedef void (*AudioSourceStopFn)( AudioSource* source, void* context );
-
-void FreeAudioSourceOnStop( AudioSource source, void* context );
-
-
 bool InitAudio();
 void DestroyAudio();
 void UpdateAudio();
@@ -33,18 +23,7 @@ AudioBuffer* LoadAudioBuffer( const char* fileName );
 void ReferenceAudioBuffer( AudioBuffer* buffer );
 void ReleaseAudioBuffer( AudioBuffer* buffer );
 
-/**
- * Tries to create a new audio source.
- *
- * @param stopFn
- *      Function that is called when the source stopps playing.
- *      If the parameter is `NULL`, nothing will be done.
- *
- * @param context
- *      Only relevant if stopFn is given.
- *
- */
-AudioSource* CreateAudioSource( AudioSourceStopFn stopFn, void* context );
+AudioSource* CreateAudioSource();
 void ReferenceAudioSource( AudioSource* source );
 void ReleaseAudioSource( AudioSource* source );
 
@@ -59,7 +38,5 @@ void EnqueueAudioBuffer( AudioSource* source, AudioBuffer* buffer );
 void PlayAudioSource( AudioSource* source );
 void PauseAudioSource( AudioSource* source );
 
-void PlayAllAudioSources();
-void PauseAllAudioSources();
 
 #endif

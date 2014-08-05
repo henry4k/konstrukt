@@ -21,18 +21,6 @@ static int Lua_SetAudioListenerTransformation( lua_State* l )
     return 0;
 }
 
-static int Lua_PlayAllAudioSources( lua_State* l )
-{
-    PlayAllAudioSources();
-    return 0;
-}
-
-static int Lua_PauseAllAudioSources( lua_State* l )
-{
-    PauseAllAudioSources();
-    return 0;
-}
-
 
 // --- AudioBuffer ---
 
@@ -76,10 +64,6 @@ AudioBuffer* CheckAudioBufferFromLua( lua_State* l, int stackPosition )
 
 // --- AudioSource ---
 
-static const char* STOP_AUDIO_SOURCE_EVENT_NAME = "StopAudioSource";
-
-static int StopAudioSourceEvent = INVALID_LUA_EVENT;
-
 static const char* AUDIO_SOURCE_TYPE = "AudioSource";
 
 static int Lua_AudioSource_destructor( lua_State* l )
@@ -89,26 +73,10 @@ static int Lua_AudioSource_destructor( lua_State* l )
     return 0;
 }
 
-static bool PushAudioSourceToLua( lua_State* l, AudioSource* source )
-{
-    return CopyUserDataToLua(l, AUDIO_SOURCE_TYPE, sizeof(source), &source);
-}
-
-static void OnStopLuaAudioSource( AudioSource* source, void* context )
-{
-    lua_State* l = GetLuaState();
-    PushAudioSourceToLua(l, source);
-    FireLuaEvent(l, StopAudioSourceEvent, 1, false);
-}
-
 static int Lua_CreateAudioSource( lua_State* l )
 {
-    luaL_checktype(l, 1, LUA_TBOOLEAN);
-    const bool triggerCallback = lua_toboolean(l, 1);
-    AudioSourceStopFn callback = triggerCallback ? OnStopLuaAudioSource :
-                                                   NULL;
-    AudioSource* source = CreateAudioSource(callback, NULL);
-    if(source && PushAudioSourceToLua(l, source))
+    AudioSource* source = CreateAudioSource();
+    if(source && CopyUserDataToLua(l, AUDIO_SOURCE_TYPE, sizeof(source), &source))
     {
         ReferenceAudioSource(source);
         return 1;
@@ -212,15 +180,9 @@ AudioSource* CheckAudioSourceFromLua( lua_State* l, int stackPosition )
 
 bool RegisterAudioInLua()
 {
-    StopAudioSourceEvent = RegisterLuaEvent(STOP_AUDIO_SOURCE_EVENT_NAME);
-    if(StopAudioSourceEvent == INVALID_LUA_EVENT)
-        return false;
-
     return
         RegisterFunctionInLua("SetAudioListenerAttachmentTarget", Lua_SetAudioListenerAttachmentTarget) &&
         RegisterFunctionInLua("SetAudioListenerTransformation", Lua_SetAudioListenerTransformation) &&
-        RegisterFunctionInLua("PlayAllAudioSources", Lua_PlayAllAudioSources) &&
-        RegisterFunctionInLua("PauseAllAudioSources", Lua_PauseAllAudioSources) &&
 
         RegisterUserDataTypeInLua(AUDIO_BUFFER_TYPE, Lua_AudioBuffer_destructor) &&
         RegisterFunctionInLua("LoadAudioBuffer", Lua_LoadAudioBuffer) &&

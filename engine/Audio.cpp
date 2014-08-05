@@ -27,20 +27,11 @@ struct AudioBuffer
 struct AudioSource
 {
     ReferenceCounter refCounter;
-
     ALuint handle;
-
-    AudioSourceStopFn stopFn;
-    void* context;
-
+    bool active;
     Solid* attachmentTarget;
     glm::mat4 transformation;
 };
-
-void FreeAudioSourceOnStop( AudioSource* source, void* context )
-{
-    FatalError("FreeAudioSourceOnStop is not implemented.");
-}
 
 
 static bool IsActiveAudioSource( AudioSource* source );
@@ -236,7 +227,7 @@ static AudioSource* FindFreeAudioSource()
     return NULL;
 }
 
-AudioSource* CreateAudioSource( AudioSourceStopFn stopFn, void* context )
+AudioSource* CreateAudioSource()
 {
     AudioSource* source = FindFreeAudioSource();
     if(source)
@@ -244,9 +235,9 @@ AudioSource* CreateAudioSource( AudioSourceStopFn stopFn, void* context )
         ALuint handle = AL_NONE;
         alGenSources(1, &handle);
 
+        memset(source, 0, sizeof(AudioSource));
         source->handle = handle;
-        source->stopFn = stopFn;
-        source->context = context;
+        source->transformation = glm::mat4();
 
         alSourcef(handle, AL_MAX_DISTANCE, MaxAudioSourceDistance);
         alSourcef(handle, AL_REFERENCE_DISTANCE, AudioSourceReferenceDistance);
@@ -263,7 +254,6 @@ AudioSource* CreateAudioSource( AudioSourceStopFn stopFn, void* context )
 static void FreeAudioSource( AudioSource* source )
 {
     alDeleteSources(1, &source->handle);
-    memset(source, 0, sizeof(AudioSource));
     source->handle = AL_NONE;
     PrintALError("FreeAudioSourceAtIndex");
 }
@@ -320,34 +310,48 @@ void SetAudioSourceTransformation( AudioSource* source, glm::mat4 transformation
 
 static void UpdateAudioSource( AudioSource* source )
 {
-    if(source->stopFn)
+    int state = 0;
+    alGetSourcei(source->handle, AL_SOURCE_STATE, &state);
+    if(state == AL_PLAYING)
     {
-        int state = 0;
-        alGetSourcei(source->handle, AL_SOURCE_STATE, &state);
-        if(!PrintALError("UpdateAudio") && (state == AL_STOPPED || state == AL_INITIAL)) // TODO: Check enum values
+        using namespace glm;
+
+        mat4 targetTransformation;
+        if(source->attachmentTarget)
+            GetSolidTransformation(source->attachmentTarget, &targetTransformation);
+        const mat4 finalTransformation = targetTransformation *
+                                         source->transformation;
+
+        const vec3 position(finalTransformation * vec4());
+        alSourcefv(source->handle, AL_POSITION, glm::value_ptr(position));
+
+        if(source->attachmentTarget)
         {
-            source->stopFn(source, source->context);
-            return;
+            // TODO: Retrieve velocity and orientation.
+
+            const vec3 velocity;
+            const vec3 direction(0,0,1);
+
+            alSourcefv(source->handle, AL_VELOCITY, glm::value_ptr(velocity));
+            alSourcefv(source->handle, AL_DIRECTION, glm::value_ptr(direction));
+        }
+
+        if(!source->active)
+        {
+            ReferenceAudioSource(source);
+            source->active = true;
+            Log("Source %p activated!", source);
         }
     }
-
-    using namespace glm;
-
-    mat4 targetTransformation;
-    if(source->attachmentTarget)
-        GetSolidTransformation(source->attachmentTarget, &targetTransformation);
-    const mat4 finalTransformation = targetTransformation *
-                                     source->transformation;
-
-    // TODO: Retrieve velocity and orientation.
-    const vec3 position(finalTransformation * vec4());
-    const vec3 velocity;
-    const vec3 direction(0,0,1);
-    const vec3 up(0,1,0);
-
-    alSourcefv(source->handle, AL_POSITION, glm::value_ptr(position));
-    alSourcefv(source->handle, AL_VELOCITY, glm::value_ptr(velocity));
-    alSourcefv(source->handle, AL_DIRECTION, glm::value_ptr(direction));
+    else
+    {
+        if(source->active)
+        {
+            ReleaseAudioSource(source);
+            source->active = false;
+            Log("Source %p deactivated!", source);
+        }
+    }
 
     PrintALError("UpdateAudioSource");
 }
@@ -368,20 +372,6 @@ void PauseAudioSource( AudioSource* source )
 {
     alSourcePause(source->handle);
     PrintALError("PauseAudioSource");
-}
-
-void PlayAllAudioSources()
-{
-    for(int i = 0; i < AudioSourceCount; ++i)
-        if(!IsActiveAudioSource(&AudioSources[i]))
-            PlayAudioSource(&AudioSources[i]);
-}
-
-void PauseAllAudioSources()
-{
-    for(int i = 0; i < AudioSourceCount; ++i)
-        if(!IsActiveAudioSource(&AudioSources[i]))
-            PauseAudioSource(&AudioSources[i]); // TODO: Maybe use a 'pause'-stack or so?
 }
 
 
