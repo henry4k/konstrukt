@@ -125,6 +125,22 @@ static int Lua_SetSolidMass( lua_State* l )
     return 0;
 }
 
+static int Lua_GetSolidRestitution( lua_State* l )
+{
+    const Solid* solid = CheckSolidFromLua(l, 1);
+    const float restitution = GetSolidRestitution(solid);
+    lua_pushnumber(l, restitution);
+    return 1;
+}
+
+static int Lua_SetSolidRestitution( lua_State* l )
+{
+    const Solid* solid = CheckSolidFromLua(l, 1);
+    const float restitution = luaL_checknumber(l, 2);
+    SetSolidRestitution(solid, restitution);
+    return 0;
+}
+
 static int Lua_GetSolidPosition( lua_State* l )
 {
     const Solid* solid = CheckSolidFromLua(l, 1);
@@ -141,6 +157,26 @@ static int Lua_GetSolidRotation( lua_State* l )
     glm::quat* rotation = CreateQuaternionInLua(l);
     *rotation = GetSolidRotation(solid);
     return 1;
+}
+
+static int Lua_GetSolidLinearVelocity( lua_State* l )
+{
+    const Solid* solid = CheckSolidFromLua(l, 1);
+    const glm::vec3 linearVelocity = GetSolidLinearVelocity(solid);
+    lua_pushnumber(l, linearVelocity[0]);
+    lua_pushnumber(l, linearVelocity[1]);
+    lua_pushnumber(l, linearVelocity[2]);
+    return 3;
+}
+
+static int Lua_GetSolidAngularVelocity( lua_State* l )
+{
+    const Solid* solid = CheckSolidFromLua(l, 1);
+    const glm::vec3 angularVelocity = GetSolidAngularVelocity(solid);
+    lua_pushnumber(l, angularVelocity[0]);
+    lua_pushnumber(l, angularVelocity[1]);
+    lua_pushnumber(l, angularVelocity[2]);
+    return 3;
 }
 
 Solid* GetSolidFromLua( lua_State* l, int stackPosition )
@@ -169,6 +205,10 @@ bool RegisterPhysicsManagerInLua()
         RegisterFunctionInLua("CreateSolid", Lua_CreateSolid) &&
         RegisterFunctionInLua("GetSolidMass", Lua_GetSolidMass) &&
         RegisterFunctionInLua("SetSolidMass", Lua_SetSolidMass) &&
+        RegisterFunctionInLua("GetSolidRestitution", Lua_GetSolidRestitution) &&
+        RegisterFunctionInLua("SetSolidRestitution", Lua_SetSolidRestitution) &&
         RegisterFunctionInLua("GetSolidPosition", Lua_GetSolidPosition) &&
-        RegisterFunctionInLua("GetSolidRotation", Lua_GetSolidRotation);
+        RegisterFunctionInLua("GetSolidRotation", Lua_GetSolidRotation) &&
+        RegisterFunctionInLua("GetSolidLinearVelocity", Lua_GetSolidLinearVelocity) &&
+        RegisterFunctionInLua("GetSolidAngularVelocity", Lua_GetSolidAngularVelocity);
 }

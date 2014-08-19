@@ -220,6 +220,16 @@ void SetSolidMass( const Solid* solid, float mass )
     solid->rigidBody->setMassProps(mass, btVector3(0,0,0));
 }
 
+float GetSolidRestitution( const Solid* solid )
+{
+    return solid->rigidBody->getRestitution();
+}
+
+void SetSolidRestitution( const Solid* solid, float restitution )
+{
+    solid->rigidBody->setRestitution(restitution);
+}
+
 glm::vec3 GetSolidPosition( const Solid* solid )
 {
     btTransform transform;
@@ -246,4 +256,20 @@ void GetSolidTransformation( const Solid* solid, glm::mat4* target )
     btTransform transform;
     solid->rigidBody->getMotionState()->getWorldTransform(transform);
     transform.getOpenGLMatrix((float*)target);
+}
+
+glm::vec3 GetSolidLinearVelocity( const Solid* solid )
+{
+    const btVector3& velocity = solid->rigidBody->getLinearVelocity();
+    return glm::vec3(velocity.getX(),
+                     velocity.getY(),
+                     velocity.getZ());
+}
+
+glm::vec3 GetSolidAngularVelocity( const Solid* solid )
+{
+    const btVector3& velocity = solid->rigidBody->getAngularVelocity();
+    return glm::vec3(velocity.getX(),
+                     velocity.getY(),
+                     velocity.getZ());
 }

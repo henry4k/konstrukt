@@ -34,8 +34,12 @@ void ReleaseSolid( Solid* solid );
 
 float GetSolidMass( const Solid* solid );
 void SetSolidMass( const Solid* solid, float mass );
+float GetSolidRestitution( const Solid* solid );
+void SetSolidRestitution( const Solid* solid, float restitution );
 glm::vec3 GetSolidPosition( const Solid* solid );
 glm::quat GetSolidRotation( const Solid* solid );
 void GetSolidTransformation( const Solid* solid, glm::mat4* target );
+glm::vec3 GetSolidLinearVelocity( const Solid* solid );
+glm::vec3 GetSolidAngularVelocity( const Solid* solid );
 
 #endif
