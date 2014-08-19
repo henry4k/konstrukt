@@ -1,6 +1,6 @@
-local class = require 'core/middleclass.lua'
+local class = require 'core/middleclass'
 local Object = class.Object
-local Effect = require 'core/effect/Effect.lua'
+local Effect = require 'core/effect/Effect'
 
 
 local EffectTarget = {}
@@ -16,7 +16,7 @@ function EffectTarget:destroyEffectTarget()
 end
 
 function EffectTarget:addEffect( effectClass, ... )
-    assert(Object.isSubclassOf(effectClass, Effect), "effectClass must inherit Effect.")
+    assert(Object.isSubclassOf(effectClass, Effect), 'effectClass must inherit Effect.')
     local effect = effectClass:new(self, ...)
     table.insert(self.effects, effect)
     table.sort(self.effects)

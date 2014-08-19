@@ -1,5 +1,4 @@
-package.cpath = ''
-package.path = '?'
+package.path = '?;'..package.path
 
 local fileSearcher = function( name )
     local path, message = package.searchpath(name, package.path, '/')
@@ -11,33 +10,6 @@ local fileSearcher = function( name )
     end
 end
 
-package.searchers = { fileSearcher }
+table.insert(package.searchers, 1, fileSearcher)
 
-NATIVE.SetErrorFunction(function( message )
-    return debug.traceback(message)
-end)
-
-------------------{ TEST }---------------------
-
-local Vec           = require 'core/Vector.lua'
-local Quat          = require 'core/Quaternion.lua'
-local Mat4          = require 'core/Matrix4.lua'
-local Shader        = require 'core/Shader.lua'
-local ShaderProgram = require 'core/ShaderProgram.lua'
-local BoxCollisionShape = require 'core/collision_shapes/BoxCollisionShape.lua'
-local Solid         = require 'core/Solid.lua'
-local ReferenceCube = require 'example/ReferenceCube/init.lua'
-
-myProgram = ShaderProgram:new(
-    Shader:new('core/Shaders/Test.vert'),
-    Shader:new('core/Shaders/Test.frag'))
-
-myShape = BoxCollisionShape:new(Vec:new(0.5, 0.5, 0.5))
-mySolid = Solid:new(1,
-                    Vec:new(0,0,0),
-                    Quat:new(),
-                    myShape)
-
-myCube = ReferenceCube:new(myProgram)
-myCube.model:setTransformation(Matrix4:new():translate(Vec:new(0,0,4)))
-myCube.model:setAttachmentTarget(mySolid)
+print('CORE/INIT LOADED')

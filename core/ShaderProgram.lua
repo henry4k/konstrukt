@@ -1,6 +1,6 @@
-local class = require 'core/middleclass.lua'
-local Vec   = require 'core/Vector.lua'
-local Mat4  = require 'core/Matrix4.lua'
+local class = require 'core/middleclass'
+local Vec   = require 'core/Vector'
+local Mat4  = require 'core/Matrix4'
 
 
 local ShaderProgram = class('core/ShaderProgram')

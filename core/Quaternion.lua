@@ -1,6 +1,6 @@
-local class  = require 'core/middleclass.lua'
+local class  = require 'core/middleclass'
 local Object = class.Object
-local Mat4   = require 'core/Matrix4.lua'
+local Mat4   = require 'core/Matrix4'
 
 
 local Quat = class('core/Quaternion')

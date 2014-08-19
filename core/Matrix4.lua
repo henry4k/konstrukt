@@ -1,5 +1,5 @@
-local class = require 'core/middleclass.lua'
-local Vec   = require 'core/Vector.lua'
+local class = require 'core/middleclass'
+local Vec   = require 'core/Vector'
 
 
 local Matrix4 = class('core/Matrix4')

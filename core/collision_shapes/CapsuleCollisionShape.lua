@@ -1,5 +1,5 @@
-local class = require 'core/middleclass.lua'
-local CollisionShape = require 'core/CollisionShape.lua'
+local class = require 'core/middleclass'
+local CollisionShape = require 'core/CollisionShape'
 
 
 local CapsuleCollisionShape = class('core/collision_shapes/CapsuleCollisionShape', CollisionShape)

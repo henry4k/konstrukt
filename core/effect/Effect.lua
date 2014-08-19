@@ -1,4 +1,4 @@
-local class = require 'core/middleclass.lua'
+local class = require 'core/middleclass'
 local Object = class.Object
 
 
@@ -16,7 +16,7 @@ end
 function Effect:destroy() end
 
 function Effect:__lt( other )
-    assert(Object.instanceOf(other, Effect), "Can compare only Effect instances.")
+    assert(Object.instanceOf(other, Effect), 'Can compare only Effect instances.')
     return self.prioriy < other.priority
 end
 
