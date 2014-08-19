@@ -134,3 +134,28 @@ Jeden Tick wird ein Ray-Test nach unten gemacht.
 Je näher der Boden unter dem Spieler ist, desto stärker wird dieser in dessen Richtung bewegt.
 
 Solange die Leertaste gedrückt ist, sind die Magnet-Schuhe deaktiviert.
+
+
+## Effekte
+
+Von "Clonk" inspirierte Effekte.
+Effekte sind Klasseninstanzen, welche an andere Klasseninstanzen angehangen werden
+können um deren Verhalten temporär zu ändern. Scheint starke Ähnlichkeiten zu
+den "States" von kikito zu haben. Das währe also eine interessante Möglichkeit.
+Die States haben allerdings diverse Probleme:
+- States arbeiten ausschliesslich auf der Klasseninstanz,
+  d.h. sie haben keinen privaten Bereich. (scheinbar)
+- States agieren vorallem durch überschreiben von Methoden,
+  es kann immer nur ein State eine Funktion überschreiben.
+  Hmm..
+Alles in allem sind States nicht so ganz das was ich eigentlich will.
+
+Beispiele:
+
+Brand Effekt:
+    Push:  Objekt einfärben
+    Timer: Feuer Partikel spawnen
+    Pop: Einfärbung zurücksetzen
+
+Antriebs Effekt:
+    Timer:
