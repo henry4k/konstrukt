@@ -1,6 +1,6 @@
-local class = require 'core/middleclass.lua'
-local Vec   = require 'core/Vector.lua'
-local Quat  = require 'core/Quaternion.lua'
+local class = require 'core/middleclass'
+local Vec   = require 'core/Vector'
+local Quat  = require 'core/Quaternion'
 
 
 local Solid = class('core/Solid')

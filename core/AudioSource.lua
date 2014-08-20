@@ -1,10 +1,10 @@
-local class = require 'core/middleclass.lua'
+local class = require 'core/middleclass'
 
 
 local AudioSource = class('core/AudioSource')
 
-function AudioSource:initialize( triggerCallback )
-    self.handle = NATIVE.CreateAudioSource(triggerCallback or false)
+function AudioSource:initialize()
+    self.handle = NATIVE.CreateAudioSource()
 end
 
 function AudioSource:setRelative( relative )
@@ -41,10 +41,6 @@ end
 
 function AudioSource:pause()
     NATIVE.PauseAudioSource(self.handle)
-end
-
-function AudioSource:free()
-    NATIVE.FreeAudioSource(self.handle)
 end
 
 

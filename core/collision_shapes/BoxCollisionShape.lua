@@ -1,6 +1,6 @@
-local class = require 'core/middleclass.lua'
-local Vec   = require 'core/Vector.lua'
-local CollisionShape = require 'core/CollisionShape.lua'
+local class = require 'core/middleclass'
+local Vec   = require 'core/Vector'
+local CollisionShape = require 'core/CollisionShape'
 
 
 local BoxCollisionShape = class('core/collision_shapes/BoxCollisionShape', CollisionShape)

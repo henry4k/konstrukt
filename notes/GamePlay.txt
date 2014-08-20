@@ -66,3 +66,33 @@ Rohre:
 Kommunikationsnetzwerk: (aka LAN)
     Alle ans Netzwerk angeschlossenen Geräte können untereinander kommunizieren.
     Jedes Gerät verfügt über eine Liste von Aktionen, die man an diesem ausführen kann.
+
+Ausrüstung:
+    "Universal-Rucksack":
+        Wird auf dem Rücken getragen.
+        Kann mit Modulen bestückt werden. (Dient als Resourcen-Knotenpunkt)
+        Kann Ausrüstung aufnehmen?
+
+    Akumulator-Zelle:
+        Kann an den Universalrucksack angebracht werden.
+        Versorgt angeschlossene Ausrüstung mit Energie.
+
+    Lufttank:
+        Kann an den Universalrucksack angebracht werden.
+        Versorgt einen angeschlossenen Helm mit Atemluft.
+
+    Magnet-Schuhe: (siehe Brainstorming.md)
+        Benötigen Energie-Zufuhr, wenn aktiv.
+
+    Luftdichter Overall:
+        Deckt Arme, Torso und Beine ab.
+        (D.h. für Kopf, Hände und Füße ist separate Ausrüstung erforderlich.)
+
+    Helm:
+        Deckt Kopf ab.
+        Ohne Energie-Zufuhr sind die Lebenserhaltungssysteme nur eingeschränkt
+        nutzbar.
+        Benötigt Atemluft.
+
+    Exoskelett:
+        ..???
