@@ -77,6 +77,7 @@ describe('An effect')
         target:destroy()
         target:destroy()
         target:removeEffect(effect)
+        target:removeEffect(effect)
 
         FakeEffect.destroy:assertCallCount(1)
         FakeEffect.destroy:assertCalledWith(effect)
