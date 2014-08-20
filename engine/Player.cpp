@@ -124,18 +124,6 @@ void UpdatePlayer( float timeFrame )
         g_PlayerVelocity *= MAX_MOVEMENT_SPEED / g_PlayerVelocity.length();
 
 
-    // --- Resolve collisions ---
-    Box playerBox;
-    playerBox.position  = g_PlayerPosition;
-    playerBox.halfWidth = PLAYER_HALF_WIDTH;
-    playerBox.velocity  = g_PlayerVelocity;
-
-    // TODO: Use physics manager here!
-    //SimulateBoxInMap(&playerBox, timeFrame);
-    g_PlayerPosition = playerBox.position;
-    g_PlayerVelocity = playerBox.velocity;
-
-
     // --- Final steps ---
     g_PlayerVelocity.y = 0;
     g_PlayerPosition.y = PLAYER_HALF_WIDTH.y;
