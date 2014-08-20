@@ -29,8 +29,14 @@ end
 
 function Vector.prototype:operate( other, operationFn )
     local r = Vector:new()
-    for i = 1, math.max(#self, #other) do
-        rawset(r, i, operationFn(self[i], other[i]))
+    if Vector:isInstance(other) then
+        for i = 1, math.max(#self, #other) do
+            rawset(r, i, operationFn(self[i], other[i]))
+        end
+    else -- treat as single value
+        for i = 1, #self do
+            rawset(r, i, operationFn(self[i], other))
+        end
     end
     return r
 end
