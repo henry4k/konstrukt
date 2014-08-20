@@ -13,6 +13,7 @@ function EffectTarget:destroyEffectTarget()
     for _,effect in ipairs(self.effects) do
         effect:destroy()
     end
+    self.effects = {}
 end
 
 function EffectTarget:addEffect( effectClass, ... )
