@@ -510,21 +510,21 @@ void ResetUniform( ShaderProgram* program, int index )
     SetUniform(program, index, defaultValue);
 }
 
-void SetUniform( ShaderProgram* program, const char* name, const UniformValue* value )
+void SetUniformByName( ShaderProgram* program, const char* name, const UniformValue* value )
 {
     const int index = GetUniformIndex(program, name);
     if(index != INVALID_UNIFORM_INDEX)
         SetUniform(program, index, value);
 }
 
-void SetUniformDefault( ShaderProgram* program, const char* name, const UniformValue* value )
+void SetUniformDefaultByName( ShaderProgram* program, const char* name, const UniformValue* value )
 {
     const int index = GetUniformIndex(program, name);
     if(index != INVALID_UNIFORM_INDEX)
         SetUniformDefault(program, index, value);
 }
 
-void ResetUniform( ShaderProgram* program, const char* name )
+void ResetUniformByName( ShaderProgram* program, const char* name )
 {
     const int index = GetUniformIndex(program, name);
     if(index != INVALID_UNIFORM_INDEX)

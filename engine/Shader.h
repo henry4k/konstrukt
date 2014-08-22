@@ -79,8 +79,8 @@ void SetUniform( ShaderProgram* program, int index, const UniformValue* value );
 void SetUniformDefault( ShaderProgram* program, int index, const UniformValue* value );
 void ResetUniform( ShaderProgram* program, int index );
 
-void SetUniform( ShaderProgram* program, const char* name, const UniformValue* value );
-void SetUniformDefault( ShaderProgram* program, const char* name, const UniformValue* value );
-void ResetUniform( ShaderProgram* program, const char* name );
+void SetUniformByName( ShaderProgram* program, const char* name, const UniformValue* value );
+void SetUniformDefaultByName( ShaderProgram* program, const char* name, const UniformValue* value );
+void ResetUniformByName( ShaderProgram* program, const char* name );
 
 #endif

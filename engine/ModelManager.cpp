@@ -93,7 +93,7 @@ static void DrawModel( const Model* model, const glm::mat4* mvpMatrix )
     mvpUniformValue.m4() = *mvpMatrix *
                            solidTransformation *
                            model->transformation;
-    SetUniformDefault(program, "MVP", &mvpUniformValue);
+    SetUniformDefaultByName(program, "MVP", &mvpUniformValue);
 
     const int uniformCount = GetUniformCount(program);
     for(int i = 0; i < uniformCount; i++)

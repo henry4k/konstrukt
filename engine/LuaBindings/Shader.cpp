@@ -95,7 +95,7 @@ static int Lua_SetFloatUniform( lua_State* l )
     const char* name = luaL_checkstring(l, 2);
     UniformValue value;
     value.f() = luaL_checknumber(l, 3);
-    SetUniform(program, name, &value);
+    SetUniformByName(program, name, &value);
     return 0;
 }
 
@@ -125,7 +125,7 @@ static int Lua_SetVectorUniform( lua_State* l )
         }
     }
 
-    SetUniform(program, name, &uniformValue);
+    SetUniformByName(program, name, &uniformValue);
     return 0;
 }
 
@@ -134,7 +134,7 @@ static int Lua_SetMatrix4Uniform( lua_State* l )
     ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
     const char* name = luaL_checkstring(l, 2);
     const glm::mat4* value = CheckMatrix4FromLua(l, 3);
-    SetUniform(program, name, (const UniformValue*)value);
+    SetUniformByName(program, name, (const UniformValue*)value);
     return 0;
 }
 

@@ -51,18 +51,26 @@ function_pattern = re.compile(r'''
     (?P<name> [a-zA-Z_:0-9]+)
     \s*
     \(
-    (?P<parameters> .*)
+    (?P<parameters> [^()]*)
     \)
     \s*
     ;\s*$
     ''', re.VERBOSE)
+#typedef void (*LogHandler)( LogLevel level, const char* line );
+
+class_pattern = re.compile(r'^\s*class\s*')
+
+log_filter = {}
 
 def log(type, format, *args):
-    message = str.format(format, *args)
-    output = sys.stdout
-    if type != 'INFO':
-        output = sys.stderr
-    print(str.format('{}: {}', type, message), file=output)
+    if type in log_filter:
+        return
+    else:
+        message = str.format(format, *args)
+        output = sys.stdout
+        if type != 'INFO':
+            output = sys.stderr
+        print(str.format('{}: {}', type, message), file=output)
 
 def parse_cparameters(parameters):
     for parameter_string in parameters.split(','):
@@ -72,9 +80,11 @@ def parse_cparameters(parameters):
             name = parameter_match.group('name')
             type = parameter_match.group('type')
             yield CParameter(name=name, type=type)
+        elif parameter_string == '':
+            continue
+        elif parameter_string == '...':
+            raise RuntimeError('Functions with variadic arguments can\'t be stubbed.')
         else:
-            if parameter_string == '...':
-                raise RuntimeError('Variadic arguments not supported yet.')
             raise RuntimeError('Can\'t parse parameter: "'+parameter_string+'" (This is probably a bug.)')
 
 def try_parse_cfunction(function_string):
@@ -88,7 +98,7 @@ def try_parse_cfunction(function_string):
                          return_type=return_type,
                          parameters=parameters)
     else:
-        if 'class' in function_string:
+        if class_pattern.match(function_string):
             raise RuntimeError('Found a class definition. Methods can\'t be stubbed yet.')
         return None
 
@@ -158,6 +168,8 @@ def write_stub_implementation(language, name, functions):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate stubs for C functions.')
+    parser.add_argument('-q', '--quiet',
+                        action='store_true')
     parser.add_argument('--lang',
                         default='c',
                         choices=['c','cpp'])
@@ -166,9 +178,10 @@ if __name__ == '__main__':
                         nargs='+')
     args = parser.parse_args()
 
+    if args.quiet:
+        log_filter['INFO'] = True
     lang = args.lang
     headers = args.headers
-    exit_code = 0
 
     for header in headers:
         module_name = os.path.splitext(os.path.basename(header))[0]
@@ -176,7 +189,7 @@ if __name__ == '__main__':
         with open(header, 'r', encoding='UTF-8') as file:
             functions = []
             for line_number, line in enumerate(file):
-                location = str.format('{}:{}', header, line_number)
+                location = str.format('{}:{}', header, line_number+1)
                 try:
                     function = try_parse_cfunction(line)
                     if function:
@@ -184,7 +197,6 @@ if __name__ == '__main__':
                         log('INFO', '{} Found {}', location, function)
                 except RuntimeError as error:
                     log('WARN', '{} {}', location, error)
-                    exit_code = 1
 
         write_stub_header(language=lang,
                           name=module_name,
@@ -194,5 +206,3 @@ if __name__ == '__main__':
         write_stub_implementation(language=lang,
                                   name=module_name,
                                   functions=functions)
-
-    sys.exit(exit_code)
