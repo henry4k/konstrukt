@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.3
 
 import re
+import sys
 import os.path
 import argparse
 
@@ -44,24 +45,37 @@ parameter_pattern = re.compile(r'''
     ''', re.VERBOSE)
 
 function_pattern = re.compile(r'''
+    ^\s*
     (?P<return_type> [a-zA-Z_:][a-zA-Z_:*0-9 ]+)
     \s+
     (?P<name> [a-zA-Z_:0-9]+)
     \s*
     \(
-    (?P<parameters> [a-zA-Z_:*0-9. ]*)
+    (?P<parameters> .*)
     \)
     \s*
-    ;
+    ;\s*$
     ''', re.VERBOSE)
+
+def log(type, format, *args):
+    message = str.format(format, *args)
+    output = sys.stdout
+    if type != 'INFO':
+        output = sys.stderr
+    print(str.format('{}: {}', type, message), file=output)
 
 def parse_cparameters(parameters):
     for parameter_string in parameters.split(','):
+        parameter_string = parameter_string.strip()
         parameter_match = parameter_pattern.search(parameter_string)
         if parameter_match:
             name = parameter_match.group('name')
             type = parameter_match.group('type')
             yield CParameter(name=name, type=type)
+        else:
+            if parameter_string == '...':
+                raise RuntimeError('Variadic arguments not supported yet.')
+            raise RuntimeError('Can\'t parse parameter: "'+parameter_string+'" (This is probably a bug.)')
 
 def try_parse_cfunction(function_string):
     function_match = function_pattern.search(function_string)
@@ -74,6 +88,8 @@ def try_parse_cfunction(function_string):
                          return_type=return_type,
                          parameters=parameters)
     else:
+        if 'class' in function_string:
+            raise RuntimeError('Found a class definition. Methods can\'t be stubbed yet.')
         return None
 
 def get_cfunction_stub_pointer_name(function):
@@ -152,16 +168,23 @@ if __name__ == '__main__':
 
     lang = args.lang
     headers = args.headers
+    exit_code = 0
 
     for header in headers:
         module_name = os.path.splitext(os.path.basename(header))[0]
 
         with open(header, 'r', encoding='UTF-8') as file:
             functions = []
-            for line in file:
-                function = try_parse_cfunction(line)
-                if function:
-                    functions.append(function)
+            for line_number, line in enumerate(file):
+                location = str.format('{}:{}', header, line_number)
+                try:
+                    function = try_parse_cfunction(line)
+                    if function:
+                        functions.append(function)
+                        log('INFO', '{} Found {}', location, function)
+                except RuntimeError as error:
+                    log('WARN', '{} {}', location, error)
+                    exit_code = 1
 
         write_stub_header(language=lang,
                           name=module_name,
@@ -171,3 +194,5 @@ if __name__ == '__main__':
         write_stub_implementation(language=lang,
                                   name=module_name,
                                   functions=functions)
+
+    sys.exit(exit_code)
