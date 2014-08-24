@@ -259,6 +259,8 @@ static bool HandleLuaCallResult( lua_State* l, int result )
 
 bool RunLuaScript( lua_State* l, const char* filePath )
 {
+    Log("Running %s ...", filePath);
+
     lua_pushcfunction(l, Lua_ErrorProxy);
 
     const int loadResult = luaL_loadfile(l, filePath);
