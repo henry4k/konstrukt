@@ -217,17 +217,19 @@ float GetSolidMass( const Solid* solid )
 
 void SetSolidMass( const Solid* solid, float mass )
 {
-    solid->rigidBody->setMassProps(mass, btVector3(0,0,0));
-}
-
-float GetSolidRestitution( const Solid* solid )
-{
-    return solid->rigidBody->getRestitution();
+    btVector3 localInertia;
+    solid->collisionShape->bulletInstance->calculateLocalInertia(mass, localInertia);
+    solid->rigidBody->setMassProps(mass, localInertia);
 }
 
 void SetSolidRestitution( const Solid* solid, float restitution )
 {
     solid->rigidBody->setRestitution(restitution);
+}
+
+void SetSolidFriction( const Solid* solid, float friction )
+{
+    solid->rigidBody->setFriction(friction);
 }
 
 glm::vec3 GetSolidPosition( const Solid* solid )

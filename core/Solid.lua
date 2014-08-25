@@ -22,6 +22,14 @@ function Solid:setMass( mass )
     return NATIVE.SetSolidMass(self.handle, mass)
 end
 
+function Solid:setRestitution( restitution )
+    return NATIVE.SetSolidRestitution(self.handle, restitution)
+end
+
+function Solid:setFriction( friction )
+    return NATIVE.SetSolidFriction(self.handle, friction)
+end
+
 function Solid:getPosition()
     return Vec:new(NATIVE.GetSolidPosition(self.handle))
 end

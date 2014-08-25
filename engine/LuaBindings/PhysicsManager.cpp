@@ -125,19 +125,19 @@ static int Lua_SetSolidMass( lua_State* l )
     return 0;
 }
 
-static int Lua_GetSolidRestitution( lua_State* l )
-{
-    const Solid* solid = CheckSolidFromLua(l, 1);
-    const float restitution = GetSolidRestitution(solid);
-    lua_pushnumber(l, restitution);
-    return 1;
-}
-
 static int Lua_SetSolidRestitution( lua_State* l )
 {
     const Solid* solid = CheckSolidFromLua(l, 1);
     const float restitution = luaL_checknumber(l, 2);
     SetSolidRestitution(solid, restitution);
+    return 0;
+}
+
+static int Lua_SetSolidFriction( lua_State* l )
+{
+    const Solid* solid = CheckSolidFromLua(l, 1);
+    const float friction = luaL_checknumber(l, 2);
+    SetSolidFriction(solid, friction);
     return 0;
 }
 
@@ -205,8 +205,8 @@ bool RegisterPhysicsManagerInLua()
         RegisterFunctionInLua("CreateSolid", Lua_CreateSolid) &&
         RegisterFunctionInLua("GetSolidMass", Lua_GetSolidMass) &&
         RegisterFunctionInLua("SetSolidMass", Lua_SetSolidMass) &&
-        RegisterFunctionInLua("GetSolidRestitution", Lua_GetSolidRestitution) &&
         RegisterFunctionInLua("SetSolidRestitution", Lua_SetSolidRestitution) &&
+        RegisterFunctionInLua("SetSolidFriction", Lua_SetSolidFriction) &&
         RegisterFunctionInLua("GetSolidPosition", Lua_GetSolidPosition) &&
         RegisterFunctionInLua("GetSolidRotation", Lua_GetSolidRotation) &&
         RegisterFunctionInLua("GetSolidLinearVelocity", Lua_GetSolidLinearVelocity) &&
