@@ -5,6 +5,7 @@ local Mat4  = require 'core/Matrix4'
 
 local ShaderProgram = class('core/ShaderProgram')
 
+--- Links the given `shaders` into a shader program.
 function ShaderProgram:initialize( ... )
     local shaders = {...}
     local shaderHandles = {}
@@ -14,32 +15,14 @@ function ShaderProgram:initialize( ... )
     self.handle = NATIVE.LinkShaderProgram(table.unpack(shaderHandles))
 end
 
-function ShaderProgram:setUniform( name, ... )
-    local argCount = select('#', ...)
-    if argCount == 1 then
-        local arg = ...
-        if class.Object.isInstanceOf(arg, Mat4) then
-            self:setMatrix4Uniform(name, arg)
-        elseif class.Object.isInstanceOf(arg, Vec) then
-            self:_setVectorUniform(name, table.unpack(arg))
-        else
-            self:_setNumberUniform(name, arg)
-        end
+function ShaderProgram:setUniform( name, value )
+    if class.Object.isInstanceOf(value, Mat4) then
+        NATIVE.SetMatrix4Unifrom(self.handle, name, value.handle)
+    elseif class.Object.isInstanceOf(value, Vec) then
+        NATIVE.SetVectorUnifrom(self.handle, name, value:unpack())
     else
-        self:_setVectorUniform(name, ...)
+        NATIVE.SetFloatUnifrom(self.handle, name, value)
     end
-end
-
-function ShaderProgram:_setNumberUniform( name, number )
-    NATIVE.SetFloatUnifrom(self.handle, name, number)
-end
-
-function ShaderProgram:_setVectorUniform( name, ... )
-    NATIVE.SetVectorUnifrom(self.handle, name, ...)
-end
-
-function ShaderProgram:_setMatrixUniform( name, matrix )
-    NATIVE.SetMatrix4Unifrom(self.handle, name, matrix.handle)
 end
 
 
