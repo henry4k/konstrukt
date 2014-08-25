@@ -79,4 +79,18 @@ glm::vec3 GetSolidLinearVelocity( const Solid* solid );
  */
 glm::vec3 GetSolidAngularVelocity( const Solid* solid );
 
+/**
+ * Sets a force that is applied permanently, just like gravity.
+ *
+ * The force is applied at every simulation step.
+ */
+void SetSolidPermanentForce( const Solid* solid, glm::vec3 permanentForce );
+
+/**
+ * Instantly applies an impulse.
+ *
+ * In contrast to forces, impulses are independent of the simulation rate.
+ */
+void ApplySolidImpulse( const Solid* solid, glm::vec3 impulse, glm::vec3 relativePosition );
+
 #endif

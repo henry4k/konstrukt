@@ -54,5 +54,25 @@ function Solid:getAngularVelocity()
     return Vec:new(NATIVE.GetSolidAngularVelocity(self.handle))
 end
 
+--- Sets a force that is applied permanently, just like gravity.
+-- The force is applied at every simulation step.
+function Solid:setPermanentForce( forceVector )
+    NATIVE.SetSolidPermanentForce(self.handle, forceVector:unpack(3))
+end
+
+--- Instantly applies an impulse.
+-- In contrast to forces, impulses are independent of the simulation rate.
+-- @param relativePosition Optional (defaults to 0,0,0)
+function Solid:setPermanentForce( impulseVector, relativePosition )
+    relativePosition = relativePosition or Vec:new(0,0,0)
+    NATIVE.ApplySolidImpulse(self.handle,
+                             impulseVector[1],
+                             impulseVector[2],
+                             impulseVector[3],
+                             relativePosition[1],
+                             relativePosition[2],
+                             relativePosition[3])
+end
+
 
 return Solid

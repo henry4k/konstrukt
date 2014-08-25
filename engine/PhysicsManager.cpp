@@ -275,3 +275,22 @@ glm::vec3 GetSolidAngularVelocity( const Solid* solid )
                      velocity.getY(),
                      velocity.getZ());
 }
+
+void SetSolidPermanentForce( const Solid* solid, glm::vec3 permanentForce )
+{
+    const btVector3 finalForce = World->getGravity() +
+                                 btVector3(permanentForce[0],
+                                           permanentForce[1],
+                                           permanentForce[2]);
+    solid->rigidBody->setGravity(finalForce);
+}
+
+void ApplySolidImpulse( const Solid* solid, glm::vec3 impulse, glm::vec3 relativePosition )
+{
+    solid->rigidBody->applyImpulse(btVector3(impulse[0],
+                                             impulse[1],
+                                             impulse[2]),
+                                   btVector3(relativePosition[0],
+                                             relativePosition[1],
+                                             relativePosition[2]));
+}

@@ -179,6 +179,29 @@ static int Lua_GetSolidAngularVelocity( lua_State* l )
     return 3;
 }
 
+static int Lua_SetSolidPermanentForce( lua_State* l )
+{
+    const Solid* solid = CheckSolidFromLua(l, 1);
+    const glm::vec3 permanentForce(luaL_checknumber(l, 2),
+                                   luaL_checknumber(l, 3),
+                                   luaL_checknumber(l, 4));
+    SetSolidPermanentForce(solid, permanentForce);
+    return 0;
+}
+
+static int Lua_ApplySolidImpulse( lua_State* l )
+{
+    const Solid* solid = CheckSolidFromLua(l, 1);
+    const glm::vec3 impulse(luaL_checknumber(l, 2),
+                            luaL_checknumber(l, 3),
+                            luaL_checknumber(l, 4));
+    const glm::vec3 relativePosition(luaL_checknumber(l, 5),
+                                     luaL_checknumber(l, 6),
+                                     luaL_checknumber(l, 7));
+    ApplySolidImpulse(solid, impulse, relativePosition);
+    return 0;
+}
+
 Solid* GetSolidFromLua( lua_State* l, int stackPosition )
 {
     return *(Solid**)GetUserDataFromLua(l, stackPosition, SOLID_TYPE);
@@ -210,5 +233,7 @@ bool RegisterPhysicsManagerInLua()
         RegisterFunctionInLua("GetSolidPosition", Lua_GetSolidPosition) &&
         RegisterFunctionInLua("GetSolidRotation", Lua_GetSolidRotation) &&
         RegisterFunctionInLua("GetSolidLinearVelocity", Lua_GetSolidLinearVelocity) &&
-        RegisterFunctionInLua("GetSolidAngularVelocity", Lua_GetSolidAngularVelocity);
+        RegisterFunctionInLua("GetSolidAngularVelocity", Lua_GetSolidAngularVelocity) &&
+        RegisterFunctionInLua("SetSolidPermanentForce", Lua_SetSolidPermanentForce) &&
+        RegisterFunctionInLua("ApplySolidImpulse", Lua_ApplySolidImpulse);
 }
