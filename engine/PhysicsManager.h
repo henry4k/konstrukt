@@ -13,6 +13,16 @@
 struct CollisionShape;
 
 /**
+ * Changes the velocity of a solid over time.
+ *
+ * Here a force is defined by its vector and position. The vector defines the
+ * Forces that are at the center will only change the solids linear velocity,
+ * while forces that are applied off-center will also change the angular
+ * velocity. They are applied in each simulation step until you 'destroy' them.
+ */
+struct Force;
+
+/**
  * A body that is simulated by the physics engine.
  *
  * If a solid has no mass (i.e. it equals zero), it is concidered to be static.
@@ -80,17 +90,49 @@ glm::vec3 GetSolidLinearVelocity( const Solid* solid );
 glm::vec3 GetSolidAngularVelocity( const Solid* solid );
 
 /**
- * Sets a force that is applied permanently, just like gravity.
- *
- * The force is applied at every simulation step.
- */
-void SetSolidPermanentForce( const Solid* solid, glm::vec3 permanentForce );
-
-/**
  * Instantly applies an impulse.
  *
  * In contrast to forces, impulses are independent of the simulation rate.
+ *
+ * @param impulse
+ * Describes the magnitude and direction.
+ *
+ * @param relativePosition
+ * Point where the impulse is applied to the solid.
+ *
+ * @param useLocalCoordinates
+ * If set direction and position will be relative to the solids orientation.
  */
-void ApplySolidImpulse( const Solid* solid, glm::vec3 impulse, glm::vec3 relativePosition );
+void ApplySolidImpulse( const Solid* solid,
+                        glm::vec3 impulse,
+                        glm::vec3 relativePosition,
+                        bool useLocalCoordinates );
+
+/**
+ * Initially all properties are zero, so that the force has no effect.
+ *
+ * @return
+ * The handle or `NULL` if the force couldn't be created.
+ */
+Force* CreateForce( Solid* solid );
+
+/**
+ * Changes the properties of the force.
+ *
+ * @param value
+ * Describes the magnitude and direction that is applied in one second.
+ *
+ * @param relativePosition
+ * Point where the force is applied to the solid.
+ *
+ * @param useLocalCoordinates
+ * If set direction and position will be relative to the solids orientation.
+ */
+void SetForce( Force* force,
+               glm::vec3 value,
+               glm::vec3 relativePosition,
+               bool useLocalCoordinates );
+
+void DestroyForce( Force* force );
 
 #endif

@@ -1,6 +1,7 @@
 local class = require 'core/middleclass'
 local Vec   = require 'core/Vector'
 local Quat  = require 'core/Quaternion'
+local Force = require 'core/Force'
 
 
 --- A body that is simulated by the physics engine.
@@ -17,6 +18,15 @@ function Solid:initialize( mass, position, rotation, collisionShape )
                                      position[3],
                                      rotation.handle,
                                      collisionShape.handle)
+    self.forces = {}
+    setmetatable(self.forces, {__mode='v'})
+end
+
+function Solid:destroy()
+    for force,_ in pairs(self.forces) do
+        force:destroy()
+    end
+    self.handle = nil
 end
 
 function Solid:getMass()
@@ -54,16 +64,19 @@ function Solid:getAngularVelocity()
     return Vec:new(NATIVE.GetSolidAngularVelocity(self.handle))
 end
 
---- Sets a force that is applied permanently, just like gravity.
--- The force is applied at every simulation step.
-function Solid:setPermanentForce( forceVector )
-    NATIVE.SetSolidPermanentForce(self.handle, forceVector:unpack(3))
-end
-
 --- Instantly applies an impulse.
 -- In contrast to forces, impulses are independent of the simulation rate.
--- @param relativePosition Optional (defaults to 0,0,0)
-function Solid:setPermanentForce( impulseVector, relativePosition )
+--
+-- @param impulseVector
+-- Describes the magnitude and direction.
+--
+-- @param relativePosition
+-- Point where the impulse is applied to the solid.
+-- Optional: defaults to 0,0,0
+--
+-- @param useLocalCoordinates
+-- If set direction and position will be relative to the solids orientation.
+function Solid:applyImpulse( impulseVector, relativePosition, useLocalCoordinates )
     relativePosition = relativePosition or Vec:new(0,0,0)
     NATIVE.ApplySolidImpulse(self.handle,
                              impulseVector[1],
@@ -71,7 +84,14 @@ function Solid:setPermanentForce( impulseVector, relativePosition )
                              impulseVector[3],
                              relativePosition[1],
                              relativePosition[2],
-                             relativePosition[3])
+                             relativePosition[3],
+                             useLocalCoordinates)
+end
+
+function Solid:createForce()
+    local force = Force:new(self.handle)
+    self.forces[force] = force.handle
+    return force
 end
 
 

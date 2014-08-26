@@ -73,6 +73,59 @@ CollisionShape* CheckCollisionShapeFromLua( lua_State* l, int stackPosition )
 }
 
 
+// --- Force ---
+
+const char* FORCE_TYPE = "Force";
+
+static int Lua_CreateForce( lua_State* l )
+{
+    Solid* solid = CheckSolidFromLua(l, 1);
+    Force* force = CreateForce(solid);
+    if(force &&
+       CopyUserDataToLua(l, FORCE_TYPE, sizeof(force), &force))
+    {
+        return 1;
+    }
+    else
+    {
+        lua_pop(l, 1);
+        luaL_error(l, "Can't create force.");
+        return 0;
+    }
+}
+
+static int Lua_SetForce( lua_State* l )
+{
+    Force* force = CheckForceFromLua(l, 1);
+    const glm::vec3 value(luaL_checknumber(l, 2),
+                          luaL_checknumber(l, 3),
+                          luaL_checknumber(l, 4));
+    const glm::vec3 relativePosition(luaL_checknumber(l, 5),
+                                     luaL_checknumber(l, 6),
+                                     luaL_checknumber(l, 7));
+    const bool useLocalCoordinates = (bool)lua_toboolean(l, 8);
+    SetForce(force, value, relativePosition, useLocalCoordinates);
+    return 0;
+}
+
+static int Lua_DestroyForce( lua_State* l )
+{
+    Force* force = CheckForceFromLua(l, 1);
+    DestroyForce(force);
+    return 0;
+}
+
+Force* GetForceFromLua( lua_State* l, int stackPosition )
+{
+    return *(Force**)GetUserDataFromLua(l, stackPosition, FORCE_TYPE);
+}
+
+Force* CheckForceFromLua( lua_State* l, int stackPosition )
+{
+    return *(Force**)CheckUserDataFromLua(l, stackPosition, FORCE_TYPE);
+}
+
+
 // --- Solid ---
 
 const char* SOLID_TYPE = "Solid";
@@ -179,16 +232,6 @@ static int Lua_GetSolidAngularVelocity( lua_State* l )
     return 3;
 }
 
-static int Lua_SetSolidPermanentForce( lua_State* l )
-{
-    const Solid* solid = CheckSolidFromLua(l, 1);
-    const glm::vec3 permanentForce(luaL_checknumber(l, 2),
-                                   luaL_checknumber(l, 3),
-                                   luaL_checknumber(l, 4));
-    SetSolidPermanentForce(solid, permanentForce);
-    return 0;
-}
-
 static int Lua_ApplySolidImpulse( lua_State* l )
 {
     const Solid* solid = CheckSolidFromLua(l, 1);
@@ -198,7 +241,8 @@ static int Lua_ApplySolidImpulse( lua_State* l )
     const glm::vec3 relativePosition(luaL_checknumber(l, 5),
                                      luaL_checknumber(l, 6),
                                      luaL_checknumber(l, 7));
-    ApplySolidImpulse(solid, impulse, relativePosition);
+    const bool useLocalCoordinates = (bool)lua_toboolean(l, 8);
+    ApplySolidImpulse(solid, impulse, relativePosition, useLocalCoordinates);
     return 0;
 }
 
@@ -224,6 +268,11 @@ bool RegisterPhysicsManagerInLua()
         RegisterFunctionInLua("CreateCapsuleCollisionShape", Lua_CreateCapsuleCollisionShape) &&
         RegisterFunctionInLua("CreateCompoundCollisionShape", Lua_CreateCompoundCollisionShape) &&
 
+        RegisterUserDataTypeInLua(FORCE_TYPE, NULL) &&
+        RegisterFunctionInLua("CreateForce", Lua_CreateForce) &&
+        RegisterFunctionInLua("SetForce", Lua_SetForce) &&
+        RegisterFunctionInLua("DestroyForce", Lua_DestroyForce) &&
+
         RegisterUserDataTypeInLua(SOLID_TYPE, Lua_Solid_destructor) &&
         RegisterFunctionInLua("CreateSolid", Lua_CreateSolid) &&
         RegisterFunctionInLua("GetSolidMass", Lua_GetSolidMass) &&
@@ -234,6 +283,5 @@ bool RegisterPhysicsManagerInLua()
         RegisterFunctionInLua("GetSolidRotation", Lua_GetSolidRotation) &&
         RegisterFunctionInLua("GetSolidLinearVelocity", Lua_GetSolidLinearVelocity) &&
         RegisterFunctionInLua("GetSolidAngularVelocity", Lua_GetSolidAngularVelocity) &&
-        RegisterFunctionInLua("SetSolidPermanentForce", Lua_SetSolidPermanentForce) &&
         RegisterFunctionInLua("ApplySolidImpulse", Lua_ApplySolidImpulse);
 }
