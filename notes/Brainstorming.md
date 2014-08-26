@@ -3,9 +3,9 @@ Brainstorming
 
 ## Sounds
 
-Minimaler Abstand zu Objekten -> Predelay (0-N ms) (Warscheinlich konstant, weil die Decke/der Boden immer am nächsten sind)
-Raumgröße -> Reverb Time (0.1-N s)
-Gasdruck -> Lautstärke (100-0%)
+- Minimaler Abstand zu Objekten -> Predelay (0-N ms)
+- Raumgröße -> Reverb Time (0.1-N s)
+- Gasdruck -> Lautstärke (100-0%)
 
 Reverb Damping:
 > The more less-reflective surfaces the sound bounces around from, the more the reverb is dampened the higher frequencies.
@@ -153,9 +153,11 @@ Alles in allem sind States nicht so ganz das was ich eigentlich will.
 Beispiele:
 
 Brand Effekt:
+
     Push:  Objekt einfärben
     Timer: Feuer Partikel spawnen
     Pop: Einfärbung zurücksetzen
 
 Antriebs Effekt:
+
     Timer:

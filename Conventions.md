@@ -50,9 +50,11 @@ Separate them by using 2 empty lines.
 
 Hide as much implementation details as possible!  
 E.g. don't declare structures in the header, but forward-declare them:
+
     struct MeshBuffer;
     MeshBuffer* CreateMeshBuffer();
     FreeMeshBuffer( MeshBuffer* buffer );
+
 You can then be sure, that the only way to modify the MeshBuffer is to
 *use the modules functions*.  
 That makes testing alot easier.
@@ -95,8 +97,10 @@ Add `Closes #N` to your commit, to signal that this commit closes a
 specific issue. `N` is the issue ID.
 
 
----------------------------------
+File Organization
+-----------------
 
+(I'm still indecided..)
 
     Example/
         FluidTank/
