@@ -1,4 +1,6 @@
 local class = require 'core/middleclass'
+local Vec   = require 'core/Vector'
+local Mat4  = require 'core/Matrix4'
 
 
 local Model = class('core/Model')
@@ -27,8 +29,14 @@ function Model:setTexture( texture )
     NATIVE.SetModelTexture(self.handle, texture.handle)
 end
 
-function Model:setUniform( name, ... )
-    NATIVE.SetModelUniform(self.handle, name, ...)
+function Model:setUniform( name, value )
+    if class.Object.isInstanceOf(value, Mat4) then
+        NATIVE.SetModelUniform(self.handle, name, value.handle)
+    elseif class.Object.isInstanceOf(value, Vec) then
+        NATIVE.SetModelUniform(self.handle, name, value:unpack())
+    else
+        NATIVE.SetModelUniform(self.handle, name, value)
+    end
 end
 
 function Model:unsetUniform( name )

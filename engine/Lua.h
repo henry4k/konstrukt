@@ -40,8 +40,8 @@ bool RegisterFunctionInLua( const char* name, lua_CFunction fn );
 /**
  * Registers a user data type by name.
  *
- * User data created by ::PushUserDataToLua is annotated with type information,
- * so ::GetUserDataFromLua can assure that the element has the correct type.
+ * User data created by #PushUserDataToLua is annotated with type information,
+ * so #GetUserDataFromLua can assure that the element has the correct type.
  *
  * @param gcCallback
  * Function that is called before Lua frees garbage collected user data.
@@ -93,13 +93,13 @@ bool CopyUserDataToLua( lua_State* l, const char* typeName, int size, const void
  * Pointer to the user data or `NULL` if the type does not match.
  *
  * @note
- * Alternatively CheckUserDataFromLua() can be used to retrieve and check userdata.
+ * Alternatively #CheckUserDataFromLua can be used to retrieve and check userdata.
  * It raises an Lua exception if the userdata doesn't match the given type.
  */
 void* GetUserDataFromLua( lua_State* l, int stackPosition, const char* typeName );
 
 /**
- * Like GetUserDataFromLua(), but may raise an Lua error.
+ * Like #GetUserDataFromLua, but may raise an Lua error.
  *
  * @return
  * Pointer to the user data.
@@ -130,7 +130,7 @@ int RegisterLuaEvent( const char* name );
  * it will behave as if an empty function was called.
  *
  * @param id
- * Event id returned by ::RegisterLuaEvent.
+ * Event id returned by #RegisterLuaEvent.
  *
  * @param argumentCount
  * Number of elements in the lua stack, that shall be used
@@ -158,7 +158,7 @@ bool PushArrayToLua( lua_State* l, LuaArrayType elementType, int elementCount, c
  * @param destination
  * C array that can hold at least `maxElementCount` elements of type `elementType`.
  *
- * TODO: Return void and use lua_error instead!
+ * TODO: Return void and use `lua_error instead!
  */
 bool GetArrayFromLua( lua_State* l, int stackPosition, LuaArrayType elementType, int maxElementCount, void* destination );
 
