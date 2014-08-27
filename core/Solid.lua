@@ -11,6 +11,9 @@ local Force = require 'core/Force'
 -- memory.
 local Solid = class('core/Solid')
 
+local SolidHandlesToSolids = {}
+setmetatable(SolidHandlesToSolids, {__mode='k'})
+
 function Solid:initialize( mass, position, rotation, collisionShape )
     self.handle = NATIVE.CreateSolid(mass,
                                      position[1],
@@ -20,6 +23,8 @@ function Solid:initialize( mass, position, rotation, collisionShape )
                                      collisionShape.handle)
     self.forces = {}
     setmetatable(self.forces, {__mode='v'})
+
+    SolidHandlesToSolids[self.handle] = self
 end
 
 function Solid:destroy()
@@ -44,6 +49,12 @@ end
 
 function Solid:setFriction( friction )
     return NATIVE.SetSolidFriction(self.handle, friction)
+end
+
+--- Only collisions with an impulse greater than `thresholdImpulse` will trigger the collision event.
+-- The default threshold is `math.huge`.
+function Solid:setCollisionThreshold( threshold )
+    return NATIVE.SetSolidCollisionThreshold(self.handle, threshold)
 end
 
 function Solid:getPosition()
@@ -93,6 +104,30 @@ function Solid:createForce()
     self.forces[force] = force.handle
     return force
 end
+
+
+local function CollisionHandler( solidAHandle,
+                                 solidBHandle,
+                                 pointOnAX, pointOnAY, pointOnAZ,
+                                 pointOnBX, pointOnBY, pointOnBZ,
+                                 normalOnBX, normalOnBY, normalOnBZ,
+                                 impulse )
+
+    print(string.format('collision with %f N/s', impulse))
+
+    --local pointOnA  = Vec:new(pointOnAX, pointOnAY, pointOnAZ)
+    --local pointOnB  = Vec:new(pointOnBX, pointOnBY, pointOnBZ)
+    --local normalOnB = Vec:new(normalOnBX, normalOnBY, normalOnBZ)
+    --
+    --local solidA = SolidHandlesToSolids[solidAHandle]
+    --local solidB = SolidHandlesToSolids[solidBHandle]
+    --
+    --print(string.format('%s and %s collide with %f N/s',
+    --                    solidAHandle,
+    --                    solidBHandle,
+    --                    impulse))
+end
+NATIVE.SetEventCallback('Collision', CollisionHandler)
 
 
 return Solid

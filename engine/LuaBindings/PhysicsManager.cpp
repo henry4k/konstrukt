@@ -194,6 +194,14 @@ static int Lua_SetSolidFriction( lua_State* l )
     return 0;
 }
 
+static int Lua_SetSolidCollisionThreshold( lua_State* l )
+{
+    Solid* solid = CheckSolidFromLua(l, 1);
+    const float threshold = luaL_checknumber(l, 2);
+    SetSolidCollisionThreshold(solid, threshold);
+    return 0;
+}
+
 static int Lua_GetSolidPosition( lua_State* l )
 {
     const Solid* solid = CheckSolidFromLua(l, 1);
@@ -257,10 +265,43 @@ Solid* CheckSolidFromLua( lua_State* l, int stackPosition )
 }
 
 
+// --- Collision ---
+
+const char* COLLISION_EVENT_NAME = "Collision";
+
+int CollisionEvent = INVALID_LUA_EVENT;
+
+static void LuaCollisionCallback( const Collision* collision )
+{
+    lua_State* l = GetLuaState();
+
+    CopyUserDataToLua(l, SOLID_TYPE, sizeof(Solid*), &collision->a); // 1
+    CopyUserDataToLua(l, SOLID_TYPE, sizeof(Solid*), &collision->b); // 2
+    lua_pushnumber(l, collision->pointOnA[0]); // 3
+    lua_pushnumber(l, collision->pointOnA[1]);
+    lua_pushnumber(l, collision->pointOnA[2]);
+    lua_pushnumber(l, collision->pointOnB[0]); // 6
+    lua_pushnumber(l, collision->pointOnB[1]);
+    lua_pushnumber(l, collision->pointOnB[2]);
+    lua_pushnumber(l, collision->normalOnB[0]); // 9
+    lua_pushnumber(l, collision->normalOnB[1]);
+    lua_pushnumber(l, collision->normalOnB[2]);
+    lua_pushnumber(l, collision->impulse); // 12
+
+    FireLuaEvent(l, CollisionEvent, 12, false);
+}
+
+
 // --- Register in Lua ---
 
 bool RegisterPhysicsManagerInLua()
 {
+    CollisionEvent = RegisterLuaEvent(COLLISION_EVENT_NAME);
+    if(CollisionEvent == INVALID_LUA_EVENT)
+        return false;
+
+    SetCollisionCallback(LuaCollisionCallback);
+
     return
         RegisterUserDataTypeInLua(COLLISION_SHAPE_TYPE, Lua_CollisionShape_destructor) &&
         RegisterFunctionInLua("CreateBoxCollisionShape", Lua_CreateBoxCollisionShape) &&
@@ -279,6 +320,7 @@ bool RegisterPhysicsManagerInLua()
         RegisterFunctionInLua("SetSolidMass", Lua_SetSolidMass) &&
         RegisterFunctionInLua("SetSolidRestitution", Lua_SetSolidRestitution) &&
         RegisterFunctionInLua("SetSolidFriction", Lua_SetSolidFriction) &&
+        RegisterFunctionInLua("SetSolidCollisionThreshold", Lua_SetSolidCollisionThreshold) &&
         RegisterFunctionInLua("GetSolidPosition", Lua_GetSolidPosition) &&
         RegisterFunctionInLua("GetSolidRotation", Lua_GetSolidRotation) &&
         RegisterFunctionInLua("GetSolidLinearVelocity", Lua_GetSolidLinearVelocity) &&

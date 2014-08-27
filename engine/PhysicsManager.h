@@ -1,6 +1,7 @@
 #ifndef __APOAPSIS_PHYSICS_MANAGER__
 #define __APOAPSIS_PHYSICS_MANAGER__
 
+#include <float.h> // FLOAT_MAX
 #include "Math.h"
 
 
@@ -33,9 +34,25 @@ struct Force;
 struct Solid;
 
 
+struct Collision
+{
+    Solid* a;
+    Solid* b;
+    glm::vec3 pointOnA;
+    glm::vec3 pointOnB;
+    glm::vec3 normalOnB;
+    float impulse;
+};
+
+static const float INFINITE_COLLISION_THRESHOLD = FLT_MAX; // Safer than INFINITY
+
+typedef void (*CollisionCallback)( const Collision* collision );
+
+
 bool InitPhysicsManager();
 void DestroyPhysicsManager();
 void UpdatePhysicsManager( double timeDelta );
+void SetCollisionCallback( CollisionCallback callback );
 
 
 CollisionShape* CreateBoxCollisionShape( glm::vec3 halfWidth );
@@ -66,6 +83,12 @@ void SetSolidMass( const Solid* solid, float mass );
 void SetSolidRestitution( const Solid* solid, float restitution );
 
 void SetSolidFriction( const Solid* solid, float friction );
+
+/**
+ * Only collisions with an impulse greater than `thresholdImpulse` will trigger
+ * the #CollisionCallback. The default threshold is #INFINITE_COLLISION_THRESHOLD.
+ */
+void SetSolidCollisionThreshold( Solid* solid, float threshold );
 
 glm::vec3 GetSolidPosition( const Solid* solid );
 
