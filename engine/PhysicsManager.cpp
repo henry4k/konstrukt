@@ -339,18 +339,6 @@ void ApplySolidImpulse( const Solid* solid,
                                    BulletFromGlmVec(relativePosition));
 }
 
-/**
- * Sets a force that is applied permanently, just like gravity.
- *
- * The force is applied at every simulation step.
- */
-static void SetSolidPermanentForce( const Solid* solid, glm::vec3 permanentForce )
-{
-    const btVector3 finalForce = World->getGravity() +
-                                 BulletFromGlmVec(permanentForce);
-    solid->rigidBody->setGravity(finalForce);
-}
-
 static void DestroyAllFocesOfSolid( Solid* solid )
 {
     for(int i = 0; i < MAX_FORCES; i++)
