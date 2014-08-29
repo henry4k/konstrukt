@@ -13,6 +13,11 @@ function AudioSource:initialize()
     self.handle = NATIVE.CreateAudioSource()
 end
 
+function AudioSource:destroy()
+    NATIVE.DestroyAudioSouce(self.handle)
+    self.handle = nil
+end
+
 --- If set, the audio sources position is relative to the listeners position.
 -- I.e. if you position it at (1,0,0) the sound will always be on the listeners
 -- right side. No matter how the listener is positioned.

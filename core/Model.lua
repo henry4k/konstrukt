@@ -9,6 +9,11 @@ function Model:initialize( shaderProgram )
     self.handle = NATIVE.CreateModel(shaderProgram.handle)
 end
 
+function Model:destroy()
+    NATIVE.DestroyModel(self.handle)
+    self.handle = nil
+end
+
 function Model:setAttachmentTarget( target )
     NATIVE.SetModelAttachmentTarget(self.handle, target.handle)
 end

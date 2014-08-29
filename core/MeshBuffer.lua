@@ -7,6 +7,11 @@ function MeshBuffer:initialize()
     self.handle = NATIVE.CreateMeshBuffer()
 end
 
+function MeshBuffer:destroy()
+    NATIVE.DestroyMeshBuffer(self.handle)
+    self.handle = nil
+end
+
 function MeshBuffer:transform( transformation )
     NATIVE.TransformMeshBuffer(self.handle, transformation.handle)
 end

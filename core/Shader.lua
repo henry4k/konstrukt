@@ -9,5 +9,10 @@ function Shader:initialize( fileName )
     self.handle = NATIVE.LoadShader(fileName)
 end
 
+function Shader:destroy()
+    NATIVE.DestroyShader(self.handle)
+    self.handle = nil
+end
+
 
 return Shader
