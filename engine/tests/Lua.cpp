@@ -100,6 +100,34 @@ int main( int argc, char** argv )
             Require(retrievedData->value == 43);
         })
 
+        .it("can push and retrieve pointers.", [](){
+
+            LuaScope luaScope;
+            lua_State* l = GetLuaState();
+
+            // Push a new pointer
+            int data = 42;
+            PushPointerToLua(l, &data);
+
+            // Inspect pointer, that was pushed
+            int* retrievedData = reinterpret_cast<int*>(
+                GetPointerFromLua(l, -1));
+            Require(retrievedData == &data);
+
+            luaScope.destroy();
+        })
+
+        .it("pushes nil object instead of null pointer.", [](){
+
+            LuaScope luaScope;
+            lua_State* l = GetLuaState();
+
+            PushPointerToLua(l, NULL);
+            Require(GetPointerFromLua(l, -1) == NULL);
+
+            luaScope.destroy();
+        })
+
         .it("can run script files.", [](){
 
             LuaScope luaScope;
