@@ -6,15 +6,6 @@
 
 // --- Shader ---
 
-static const char* SHADER_TYPE = "Shader";
-
-static int Lua_Shader_destructor( lua_State* l )
-{
-    Shader* shader = CheckShaderFromLua(l, 1);
-    ReleaseShader(shader);
-    return 0;
-}
-
 static int Lua_LoadShader( lua_State* l )
 {
     const char* fileName = luaL_checkstring(l, 1);
@@ -22,7 +13,7 @@ static int Lua_LoadShader( lua_State* l )
 
     if(shader)
     {
-        CopyUserDataToLua(l, SHADER_TYPE, sizeof(shader), &shader);
+        PushPointerToLua(l, shader);
         ReferenceShader(shader);
         return 1;
     }
@@ -33,27 +24,25 @@ static int Lua_LoadShader( lua_State* l )
     }
 }
 
+static int Lua_DestroyShader( lua_State* l )
+{
+    Shader* shader = CheckShaderFromLua(l, 1);
+    ReleaseShader(shader);
+    return 0;
+}
+
 Shader* GetShaderFromLua( lua_State* l, int stackPosition )
 {
-    return *(Shader**)GetUserDataFromLua(l, stackPosition, SHADER_TYPE);
+    return (Shader*)GetPointerFromLua(l, stackPosition);
 }
 
 Shader* CheckShaderFromLua( lua_State* l, int stackPosition )
 {
-    return *(Shader**)CheckUserDataFromLua(l, stackPosition, SHADER_TYPE);
+    return (Shader*)CheckPointerFromLua(l, stackPosition);
 }
 
 
 // --- ShaderProgram ---
-
-static const char* SHADER_PROGRAM_TYPE = "ShaderProgram";
-
-static int Lua_ShaderProgram_destructor( lua_State* l )
-{
-    ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
-    ReleaseShaderProgram(program);
-    return 0;
-}
 
 static int Lua_LinkShaderProgram( lua_State* l )
 {
@@ -78,7 +67,7 @@ static int Lua_LinkShaderProgram( lua_State* l )
     delete[] shaders;
     if(program)
     {
-        CopyUserDataToLua(l, SHADER_PROGRAM_TYPE, sizeof(program), &program);
+        PushPointerToLua(l, program);
         ReferenceShaderProgram(program);
         return 1;
     }
@@ -87,6 +76,13 @@ static int Lua_LinkShaderProgram( lua_State* l )
         luaL_error(l, "Can't create shader program.");
         return 0;
     }
+}
+
+static int Lua_DestroyShaderProgram( lua_State* l )
+{
+    ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
+    ReleaseShaderProgram(program);
+    return 0;
 }
 
 static int Lua_SetFloatUniform( lua_State* l )
@@ -140,12 +136,12 @@ static int Lua_SetMatrix4Uniform( lua_State* l )
 
 ShaderProgram* GetShaderProgramFromLua( lua_State* l, int stackPosition )
 {
-    return *(ShaderProgram**)GetUserDataFromLua(l, stackPosition, SHADER_PROGRAM_TYPE);
+    return (ShaderProgram*)GetPointerFromLua(l, stackPosition);
 }
 
 ShaderProgram* CheckShaderProgramFromLua( lua_State* l, int stackPosition )
 {
-    return *(ShaderProgram**)CheckUserDataFromLua(l, stackPosition, SHADER_PROGRAM_TYPE);
+    return (ShaderProgram*)CheckPointerFromLua(l, stackPosition);
 }
 
 
@@ -154,11 +150,11 @@ ShaderProgram* CheckShaderProgramFromLua( lua_State* l, int stackPosition )
 bool RegisterShaderInLua()
 {
     return
-        RegisterUserDataTypeInLua(SHADER_TYPE, Lua_Shader_destructor) &&
         RegisterFunctionInLua("LoadShader", Lua_LoadShader) &&
+        RegisterFunctionInLua("DestroyShader", Lua_DestroyShader) &&
 
-        RegisterUserDataTypeInLua(SHADER_PROGRAM_TYPE, Lua_ShaderProgram_destructor) &&
         RegisterFunctionInLua("LinkShaderProgram", Lua_LinkShaderProgram) &&
+        RegisterFunctionInLua("DestroyShaderProgram", Lua_DestroyShaderProgram) &&
         RegisterFunctionInLua("SetFloatUniform", Lua_SetFloatUniform) &&
         RegisterFunctionInLua("SetVectorUniform", Lua_SetVectorUniform) &&
         RegisterFunctionInLua("SetMatrix4Uniform", Lua_SetMatrix4Uniform);

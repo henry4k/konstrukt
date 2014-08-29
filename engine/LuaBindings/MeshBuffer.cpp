@@ -6,20 +6,18 @@
 using namespace glm;
 
 
-static const char* MESH_BUFFER_TYPE = "MeshBuffer";
+static int Lua_CreateMeshBuffer( lua_State* l )
+{
+    MeshBuffer* buffer = CreateMeshBuffer();
+    PushPointerToLua(l, buffer);
+    return 1;
+}
 
-static int Lua_MeshBuffer_destructor( lua_State* l )
+static int Lua_DestroyMeshBuffer( lua_State* l )
 {
     MeshBuffer* buffer = CheckMeshBufferFromLua(l, 1);
     FreeMeshBuffer(buffer);
     return 0;
-}
-
-static int Lua_CreateMeshBuffer( lua_State* l )
-{
-    MeshBuffer* buffer = CreateMeshBuffer();
-    CopyUserDataToLua(l, MESH_BUFFER_TYPE, sizeof(buffer), &buffer);
-    return 1;
 }
 
 static int Lua_TransformMeshBuffer( lua_State* l )
@@ -85,19 +83,19 @@ static int Lua_AppendVertexToMeshBuffer( lua_State* l )
 
 MeshBuffer* GetMeshBufferFromLua( lua_State* l, int stackPosition )
 {
-    return *(MeshBuffer**)GetUserDataFromLua(l, stackPosition, MESH_BUFFER_TYPE);
+    return (MeshBuffer*)GetPointerFromLua(l, stackPosition);
 }
 
 MeshBuffer* CheckMeshBufferFromLua( lua_State* l, int stackPosition )
 {
-    return *(MeshBuffer**)CheckUserDataFromLua(l, stackPosition, MESH_BUFFER_TYPE);
+    return (MeshBuffer*)CheckPointerFromLua(l, stackPosition);
 }
 
 bool RegisterMeshBufferInLua()
 {
     return
-        RegisterUserDataTypeInLua(MESH_BUFFER_TYPE, Lua_MeshBuffer_destructor) &&
         RegisterFunctionInLua("CreateMeshBuffer", Lua_CreateMeshBuffer) &&
+        RegisterFunctionInLua("DestroyMeshBuffer", Lua_DestroyMeshBuffer) &&
         RegisterFunctionInLua("TransformMeshBuffer", Lua_TransformMeshBuffer) &&
         RegisterFunctionInLua("AppendMeshBuffer", Lua_AppendMeshBuffer) &&
         RegisterFunctionInLua("AppendIndexToMeshBuffer", Lua_AppendIndexToMeshBuffer) &&

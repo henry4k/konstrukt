@@ -107,39 +107,36 @@ void* GetUserDataFromLua( lua_State* l, int stackPosition, const char* typeName 
 void* CheckUserDataFromLua( lua_State* l, int stackPosition, const char* typeName );
 
 /**
- * Pushes a user pointer (light userdata) on top of the stack.
+ * Pushes a pointer (light userdata) on top of the stack.
  *
  * A `NULL` pointer will be pushed as `nil` value.
  *
  * @note
- * Since user pointers have no meta table, they don't provide a gc callpack or
- * a possibillity to check their actual C types. The only (!) advantage is, that
- * they are equal to each other user pointer with the same address.
+ * Since light userdata has no meta table, it doesn't provide a gc callpack or
+ * a possibillity to check its actual C types. The only (!) advantage is, that
+ * its are equal to each other light userdata with the same pointer.
  */
-void PushUserPointerToLua( lua_State* l, void* pointer );
+void PushPointerToLua( lua_State* l, void* pointer );
 
 /**
  * Retrieves the user pointer (light userdata) at the given `stackPosition`
  * and returns it.
  *
  * @return
- * Pointer to the user data or `NULL` if an error occures: e.g. `stackPosition`
- * is invalid or it doesn't hold a light userdata object.
+ * Pointer or `NULL` if an error occures: e.g. `stackPosition` is invalid or it
+ * doesn't hold a light userdata object.
  *
  * @note
- * Alternatively #CheckUserPointerFromLua can be used to retrieve and check
- * userdata. It raises an Lua exception if the userdata doesn't match the given
- * type.
+ * Alternatively #CheckPointerFromLua can be used to retrieve and check
+ * light userdata. It raises an Lua exception if the userdata doesn't match the
+ * given type.
  */
-void* GetUserPointerFromLua( lua_State* l, int stackPosition );
+void* GetPointerFromLua( lua_State* l, int stackPosition );
 
 /**
- * Like #GetUserPointerFromLua, but may raise an Lua error.
- *
- * @return
- * Pointer to the user pointer.
+ * Like #GetPointerFromLua, but may raise an Lua error.
  */
-void* CheckUserPointerFromLua( lua_State* l, int stackPosition );
+void* CheckPointerFromLua( lua_State* l, int stackPosition );
 
 /**
  * Loads a script from `filePath` and executes it.

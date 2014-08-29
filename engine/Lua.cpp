@@ -191,7 +191,7 @@ void* CheckUserDataFromLua( lua_State* l, int stackPosition, const char* typeNam
     }
 }
 
-void PushUserPointerToLua( lua_State* l, void* pointer )
+void PushPointerToLua( lua_State* l, void* pointer )
 {
     if(pointer)
         lua_pushlightuserdata(l, pointer);
@@ -199,14 +199,14 @@ void PushUserPointerToLua( lua_State* l, void* pointer )
         lua_pushnil(l);
 }
 
-void* GetUserPointerFromLua( lua_State* l, int stackPosition )
+void* GetPointerFromLua( lua_State* l, int stackPosition )
 {
     return lua_touserdata(l, stackPosition);
 }
 
-void* CheckUserPointerFromLua( lua_State* l, int stackPosition )
+void* CheckPointerFromLua( lua_State* l, int stackPosition )
 {
-    void* pointer = GetUserPointerFromLua(l, stackPosition);
+    void* pointer = GetPointerFromLua(l, stackPosition);
     if(pointer)
     {
         return pointer;

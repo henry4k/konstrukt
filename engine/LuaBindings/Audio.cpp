@@ -24,69 +24,65 @@ static int Lua_SetAudioListenerTransformation( lua_State* l )
 
 // --- AudioBuffer ---
 
-static const char* AUDIO_BUFFER_TYPE = "AudioBuffer";
+static int Lua_LoadAudioBuffer( lua_State* l ) // string fileName
+{
+    const char* fileName = luaL_checkstring(l, 1);
 
-static int Lua_AudioBuffer_destructor( lua_State* l )
+    AudioBuffer* buffer = LoadAudioBuffer(fileName);
+    if(buffer)
+    {
+        PushPointerToLua(l, buffer);
+        ReferenceAudioBuffer(buffer);
+        return 1;
+    }
+    else
+    {
+        luaL_error(l, "Failed to create audio buffer.");
+        return 0;
+    }
+}
+
+static int Lua_DestroyAudioBuffer( lua_State* l )
 {
     AudioBuffer* buffer = CheckAudioBufferFromLua(l, 1);
     ReleaseAudioBuffer(buffer);
     return 0;
 }
 
-static int Lua_LoadAudioBuffer( lua_State* l ) // string fileName
-{
-    const char* fileName = luaL_checkstring(l, 1);
-
-    AudioBuffer* buffer = LoadAudioBuffer(fileName);
-    if(buffer && CopyUserDataToLua(l, AUDIO_BUFFER_TYPE, sizeof(buffer), &buffer))
-    {
-        ReferenceAudioBuffer(buffer);
-        return 1;
-    }
-    else
-    {
-        ReleaseAudioBuffer(buffer);
-        luaL_error(l, "Failed to create audio buffer.");
-        return 0;
-    }
-}
-
 AudioBuffer* GetAudioBufferFromLua( lua_State* l, int stackPosition )
 {
-    return *(AudioBuffer**)GetUserDataFromLua(l, stackPosition, AUDIO_BUFFER_TYPE);
+    return (AudioBuffer*)GetPointerFromLua(l, stackPosition);
 }
 
 AudioBuffer* CheckAudioBufferFromLua( lua_State* l, int stackPosition )
 {
-    return *(AudioBuffer**)CheckUserDataFromLua(l, stackPosition, AUDIO_BUFFER_TYPE);
+    return (AudioBuffer*)CheckPointerFromLua(l, stackPosition);
 }
 
 
 // --- AudioSource ---
 
-static const char* AUDIO_SOURCE_TYPE = "AudioSource";
-
-static int Lua_AudioSource_destructor( lua_State* l )
-{
-    AudioSource* source = CheckAudioSourceFromLua(l, 1);
-    ReleaseAudioSource(source);
-    return 0;
-}
-
 static int Lua_CreateAudioSource( lua_State* l )
 {
     AudioSource* source = CreateAudioSource();
-    if(source && CopyUserDataToLua(l, AUDIO_SOURCE_TYPE, sizeof(source), &source))
+    if(source)
     {
+        PushPointerToLua(l, source);
         ReferenceAudioSource(source);
         return 1;
     }
     else
     {
-        ReleaseAudioSource(source);
         luaL_error(l, "Failed to create audio source.");
         return 0;
     }
+}
+
+static int Lua_DestroyAudioSource( lua_State* l )
+{
+    AudioSource* source = CheckAudioSourceFromLua(l, 1);
+    ReleaseAudioSource(source);
+    return 0;
 }
 
 static int Lua_SetAudioSourceRelative( lua_State* l )
@@ -167,12 +163,12 @@ static int Lua_PauseAudioSource( lua_State* l )
 
 AudioSource* GetAudioSourceFromLua( lua_State* l, int stackPosition )
 {
-    return *(AudioSource**)GetUserDataFromLua(l, stackPosition, AUDIO_SOURCE_TYPE);
+    return (AudioSource*)GetPointerFromLua(l, stackPosition);
 }
 
 AudioSource* CheckAudioSourceFromLua( lua_State* l, int stackPosition )
 {
-    return *(AudioSource**)CheckUserDataFromLua(l, stackPosition, AUDIO_SOURCE_TYPE);
+    return (AudioSource*)CheckPointerFromLua(l, stackPosition);
 }
 
 
@@ -184,11 +180,11 @@ bool RegisterAudioInLua()
         RegisterFunctionInLua("SetAudioListenerAttachmentTarget", Lua_SetAudioListenerAttachmentTarget) &&
         RegisterFunctionInLua("SetAudioListenerTransformation", Lua_SetAudioListenerTransformation) &&
 
-        RegisterUserDataTypeInLua(AUDIO_BUFFER_TYPE, Lua_AudioBuffer_destructor) &&
         RegisterFunctionInLua("LoadAudioBuffer", Lua_LoadAudioBuffer) &&
+        RegisterFunctionInLua("DestroyAudioBuffer", Lua_DestroyAudioBuffer) &&
 
-        RegisterUserDataTypeInLua(AUDIO_SOURCE_TYPE, Lua_AudioSource_destructor) &&
         RegisterFunctionInLua("CreateAudioSource", Lua_CreateAudioSource) &&
+        RegisterFunctionInLua("DestroyAudioSource", Lua_DestroyAudioSource) &&
         RegisterFunctionInLua("SetAudioSourceRelative", Lua_SetAudioSourceRelative) &&
         RegisterFunctionInLua("SetAudioSourceLooping", Lua_SetAudioSourceLooping) &&
         RegisterFunctionInLua("SetAudioSourcePitch", Lua_SetAudioSourcePitch) &&

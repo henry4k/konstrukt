@@ -12,32 +12,29 @@
 #include "ModelManager.h"
 
 
-static const char* MODEL_TYPE = "Model";
-
-static int Lua_Model_destructor( lua_State* l )
-{
-    Model* model = CheckModelFromLua(l, 1);
-    ReleaseModel(model);
-    return 0;
-}
-
 static int Lua_CreateModel( lua_State* l )
 {
     ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
 
     Model* model = CreateModel(program);
-    if(model &&
-       CopyUserDataToLua(l, MODEL_TYPE, sizeof(model), &model))
+    if(model)
     {
+        PushPointerToLua(l, model);
         ReferenceModel(model);
         return 1;
     }
     else
     {
-        lua_pop(l, 1);
         luaL_error(l, "Can't create more models.");
         return 0;
     }
+}
+
+static int Lua_DestroyModel( lua_State* l )
+{
+    Model* model = CheckModelFromLua(l, 1);
+    ReleaseModel(model);
+    return 0;
 }
 
 static int Lua_SetModelAttachmentTarget( lua_State* l )
@@ -119,19 +116,19 @@ static int Lua_UnsetModelUniform( lua_State* l )
 
 Model* GetModelFromLua( lua_State* l, int stackPosition )
 {
-    return *(Model**)GetUserDataFromLua(l, stackPosition, MODEL_TYPE);
+    return (Model*)GetPointerFromLua(l, stackPosition);
 }
 
 Model* CheckModelFromLua( lua_State* l, int stackPosition )
 {
-    return *(Model**)CheckUserDataFromLua(l, stackPosition, MODEL_TYPE);
+    return (Model*)CheckPointerFromLua(l, stackPosition);
 }
 
 bool RegisterModelManagerInLua()
 {
     return
-        RegisterUserDataTypeInLua(MODEL_TYPE, Lua_Model_destructor) &&
         RegisterFunctionInLua("CreateModel", Lua_CreateModel) &&
+        RegisterFunctionInLua("DestroyModel", Lua_DestroyModel) &&
         RegisterFunctionInLua("SetModelAttachmentTarget", Lua_SetModelAttachmentTarget) &&
         RegisterFunctionInLua("SetModelTransformation", Lua_SetModelTransformation) &&
         RegisterFunctionInLua("SetModelMesh", Lua_SetModelMesh) &&
