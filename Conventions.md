@@ -119,3 +119,11 @@ File Organization
             Init.lua
             Diffuse.png
             Scene.json
+
+
+Lua
+---
+
+Don't use `__gc` in Lua scripts, because some Lua implementations don't support
+it. Create `:destroy()` methods instead and declare an authority that is in
+charge of the object and calls `:destroy()` at some point.
