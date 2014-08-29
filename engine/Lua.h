@@ -86,7 +86,7 @@ void* PushUserDataToLua( lua_State* l, const char* typeName, int size );
 bool CopyUserDataToLua( lua_State* l, const char* typeName, int size, const void* data );
 
 /**
- * Checks if the element at stackPosition has the requested user data type
+ * Checks if the element at `stackPosition` has the requested user data type
  * and retrieves it.
  *
  * @return
@@ -105,6 +105,41 @@ void* GetUserDataFromLua( lua_State* l, int stackPosition, const char* typeName 
  * Pointer to the user data.
  */
 void* CheckUserDataFromLua( lua_State* l, int stackPosition, const char* typeName );
+
+/**
+ * Pushes a user pointer (light userdata) on top of the stack.
+ *
+ * A `NULL` pointer will be pushed as `nil` value.
+ *
+ * @note
+ * Since user pointers have no meta table, they don't provide a gc callpack or
+ * a possibillity to check their actual C types. The only (!) advantage is, that
+ * they are equal to each other user pointer with the same address.
+ */
+void PushUserPointerToLua( lua_State* l, void* pointer );
+
+/**
+ * Retrieves the user pointer (light userdata) at the given `stackPosition`
+ * and returns it.
+ *
+ * @return
+ * Pointer to the user data or `NULL` if an error occures: e.g. `stackPosition`
+ * is invalid or it doesn't hold a light userdata object.
+ *
+ * @note
+ * Alternatively #CheckUserPointerFromLua can be used to retrieve and check
+ * userdata. It raises an Lua exception if the userdata doesn't match the given
+ * type.
+ */
+void* GetUserPointerFromLua( lua_State* l, int stackPosition );
+
+/**
+ * Like #GetUserPointerFromLua, but may raise an Lua error.
+ *
+ * @return
+ * Pointer to the user pointer.
+ */
+void* CheckUserPointerFromLua( lua_State* l, int stackPosition );
 
 /**
  * Loads a script from `filePath` and executes it.
