@@ -23,9 +23,18 @@ static int Lua_Model_destructor( lua_State* l )
 
 static int Lua_CreateModel( lua_State* l )
 {
-    ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
+    static const char* stages[] =
+    {
+        "world",
+        "background",
+        "hud",
+        NULL
+    };
 
-    Model* model = CreateModel(program);
+    const ModelStage stage = (ModelStage)luaL_checkoption(l, 1, NULL, stages);
+    ShaderProgram* program = CheckShaderProgramFromLua(l, 2);
+
+    Model* model = CreateModel(stage, program);
     if(model &&
        CopyUserDataToLua(l, MODEL_TYPE, sizeof(model), &model))
     {

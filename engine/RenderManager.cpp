@@ -79,14 +79,15 @@ void RenderScene()
 {
     glm::mat4 cameraTargetTransformation;
     if(CameraAttachmentTarget)
+    {
         GetSolidTransformation(CameraAttachmentTarget, &cameraTargetTransformation);
-
-    const glm::mat4 cameraTransformation = CameraProjectionTransformation *
-                                           CameraViewTransformation *
-                                           cameraTargetTransformation;
+        cameraTargetTransformation = glm::inverse(cameraTargetTransformation);
+    }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    DrawModels(&cameraTransformation);
+    DrawModels(&CameraProjectionTransformation,
+               &CameraViewTransformation,
+               &cameraTargetTransformation);
     SwapBuffers();
 
     /*

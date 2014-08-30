@@ -1,6 +1,7 @@
 #include <string.h> // memset, strcmp, strncpy
 
 #include "Math.h"
+#include <glm/gtc/matrix_transform.hpp>
 #include "Common.h"
 #include "Mesh.h"
 #include "Texture.h"
@@ -32,11 +33,12 @@ struct Model
 
 
 static const int MAX_MODELS = 8;
-static Model Models[MAX_MODELS];
+static Model Models[STAGE_COUNT][MAX_MODELS];
 
-static void DrawModel( const Model* model, const glm::mat4* mvpMatrix );
+static void DrawModel( const Model* model, const glm::mat4* transformations );
 static void FreeModel( Model* model );
 static bool ModelIsComplete( const Model* model );
+static const char* GetStageName( ModelStage stage );
 
 bool InitModelManager()
 {
@@ -46,25 +48,54 @@ bool InitModelManager()
 
 void DestroyModelManager()
 {
+    for(int stage = 0; stage < STAGE_COUNT; stage++)
     for(int i = 0; i < MAX_MODELS; i++)
     {
-        if(Models[i].active)
+        Model* model = &Models[stage][i];
+        if(model->active)
         {
-            Error("Model #%d (%p) was still active when the manager was destroyed.",
-                i, &Models[i]);
-            FreeModel(&Models[i]);
+            Error("%s model #%d (%p) was still active when the manager was destroyed.",
+                GetStageName((ModelStage)stage), i, model);
+            FreeModel(model);
         }
     }
 }
 
-void DrawModels( const glm::mat4* mvpMatrix )
+void DrawModels( const glm::mat4* projectionTransformation,
+                 const glm::mat4* viewTransformation,
+                 const glm::mat4* modelTransformation )
 {
-    // Naive draw method:
+    // Draw background:
+    const glm::mat4 backgroundMVP = *projectionTransformation *
+                                    *viewTransformation;
     for(int i = 0; i < MAX_MODELS; i++)
     {
-        const Model* model = &Models[i];
+        const Model* model = &Models[BACKGROUND_STAGE][i];
         if(model->active)
-            DrawModel(model, mvpMatrix);
+            DrawModel(model, &backgroundMVP);
+    }
+
+    // Draw world:
+    glClear(GL_DEPTH_BUFFER_BIT);
+    const glm::mat4 worldMVP = *projectionTransformation *
+                               *viewTransformation *
+                               *modelTransformation;
+    for(int i = 0; i < MAX_MODELS; i++)
+    {
+        const Model* model = &Models[WORLD_STAGE][i];
+        if(model->active)
+            DrawModel(model, &worldMVP);
+    }
+
+    // Draw HUD:
+    glClear(GL_DEPTH_BUFFER_BIT);
+    const glm::mat4 hudMVP = glm::scale(*projectionTransformation,
+                                        glm::vec3(1, 1, -1));
+    for(int i = 0; i < MAX_MODELS; i++)
+    {
+        const Model* model = &Models[HUD_STAGE][i];
+        if(model->active)
+            DrawModel(model, &hudMVP);
     }
 }
 
@@ -107,22 +138,27 @@ static void DrawModel( const Model* model, const glm::mat4* mvpMatrix )
     DrawMesh(model->mesh);
 }
 
-static Model* FindInactiveModel()
+static Model* FindInactiveModel( ModelStage stage )
 {
     for(int i = 0; i < MAX_MODELS; i++)
-        if(!Models[i].active)
-            return &Models[i];
+    {
+        Model* model = &Models[stage][i];
+        if(!model->active)
+            return model;
+    }
     return NULL;
 }
 
-Model* CreateModel( ShaderProgram* program )
+Model* CreateModel( ModelStage stage, ShaderProgram* program )
 {
-    Model* model = FindInactiveModel();
+    Model* model = FindInactiveModel(stage);
     if(model)
     {
         memset(model, 0, sizeof(Model));
         model->active = true;
         InitReferenceCounter(&model->refCounter);
+
+        model->transformation = glm::mat4();
 
         model->program = program;
         ReferenceShaderProgram(program);
@@ -139,7 +175,7 @@ Model* CreateModel( ShaderProgram* program )
     }
     else
     {
-        Error("Can't create more models.");
+        Error("Can't create more %s models.", GetStageName(stage));
         return NULL;
     }
 }
@@ -225,4 +261,15 @@ static bool ModelIsComplete( const Model* model )
     return model->mesh &&
            model->texture &&
            model->program;
+}
+
+static const char* GetStageName( ModelStage stage )
+{
+    switch(stage)
+    {
+        case WORLD_STAGE: return "world";
+        case BACKGROUND_STAGE: return "background";
+        case HUD_STAGE: return "hud";
+        default: FatalError("Unknown stage."); return NULL;
+    }
 }

@@ -5,8 +5,8 @@ local Mat4  = require 'core/Matrix4'
 
 local Model = class('core/Model')
 
-function Model:initialize( shaderProgram )
-    self.handle = NATIVE.CreateModel(shaderProgram.handle)
+function Model:initialize( stage, shaderProgram )
+    self.handle = NATIVE.CreateModel(stage, shaderProgram.handle)
 end
 
 function Model:setAttachmentTarget( target )

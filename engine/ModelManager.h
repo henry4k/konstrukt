@@ -12,11 +12,22 @@ struct Solid;
 struct UniformValue;
 
 
+enum ModelStage
+{
+    WORLD_STAGE,
+    BACKGROUND_STAGE,
+    HUD_STAGE,
+    STAGE_COUNT
+};
+
+
 bool InitModelManager();
 void DestroyModelManager();
-void DrawModels( const glm::mat4* mvpMatrix );
+void DrawModels( const glm::mat4* projectionTransformation,
+                 const glm::mat4* viewTransformation,
+                 const glm::mat4* modelTransformation );
 
-Model* CreateModel( ShaderProgram* program );
+Model* CreateModel( ModelStage stage, ShaderProgram* program );
 
 void ReferenceModel( Model* model );
 void ReleaseModel( Model* model );
