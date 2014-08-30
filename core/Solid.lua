@@ -31,6 +31,7 @@ function Solid:destroy()
     for force,_ in pairs(self.forces) do
         force:destroy()
     end
+    NATIVE.DestroySolid(self.handle)
     self.handle = nil
 end
 

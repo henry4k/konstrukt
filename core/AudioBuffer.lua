@@ -8,5 +8,10 @@ function AudioBuffer:initialize( fileName )
     self.handle = NATIVE.LoadAudioBuffer(fileName)
 end
 
+function AudioBuffer:destroy()
+    NATIVE.DestroyAudioBuffer(self.handle)
+    self.handle = nil
+end
+
 
 return AudioBuffer

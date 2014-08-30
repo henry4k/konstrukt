@@ -13,5 +13,10 @@ function Texture:initialize( target, fileName, ... )
     end
 end
 
+function Texture:destroy()
+    NATIVE.DestroyTexture(self.handle)
+    self.handle = nil
+end
+
 
 return Texture

@@ -8,33 +8,29 @@
 
 // --- Collision Shape ---
 
-const char* COLLISION_SHAPE_TYPE = "CollisionShape";
-
-int Lua_CollisionShape_destructor( lua_State* l )
-{
-    CollisionShape* shape =
-        reinterpret_cast<CollisionShape*>(lua_touserdata(l, 1));
-    ReleaseCollisionShape(shape);
-    return 0;
-}
-
 static int CreateLuaCollisionShape( lua_State* l, CollisionShape* shape )
 {
-    if(shape &&
-       CopyUserDataToLua(l, COLLISION_SHAPE_TYPE, sizeof(shape), &shape))
+    if(shape)
     {
+        PushPointerToLua(l, shape);
         ReferenceCollisionShape(shape);
         return 1;
     }
     else
     {
-        lua_pop(l, 1);
         luaL_error(l, "Can't create collision shape.");
         return 0;
     }
 }
 
-int Lua_CreateBoxCollisionShape( lua_State* l )
+static int Lua_DestroyCollisionShape( lua_State* l )
+{
+    CollisionShape* shape = CheckCollisionShapeFromLua(l, 1);
+    ReleaseCollisionShape(shape);
+    return 0;
+}
+
+static int Lua_CreateBoxCollisionShape( lua_State* l )
 {
     const glm::vec3 halfWidth(luaL_checknumber(l, 1),
                               luaL_checknumber(l, 2),
@@ -42,20 +38,20 @@ int Lua_CreateBoxCollisionShape( lua_State* l )
     return CreateLuaCollisionShape(l, CreateBoxCollisionShape(halfWidth));
 }
 
-int Lua_CreateSphereCollisionShape( lua_State* l )
+static int Lua_CreateSphereCollisionShape( lua_State* l )
 {
     const float radius = luaL_checknumber(l, 1);
     return CreateLuaCollisionShape(l, CreateSphereCollisionShape(radius));
 }
 
-int Lua_CreateCapsuleCollisionShape( lua_State* l )
+static int Lua_CreateCapsuleCollisionShape( lua_State* l )
 {
     const float radius = luaL_checknumber(l, 1);
     const float height = luaL_checknumber(l, 2);
     return CreateLuaCollisionShape(l, CreateCapsuleCollisionShape(radius, height));
 }
 
-int Lua_CreateCompoundCollisionShape( lua_State* l )
+static int Lua_CreateCompoundCollisionShape( lua_State* l )
 {
     // TODO
     //CollisionShape* shape = CreateCompoundCollisionShape(...);
@@ -64,34 +60,38 @@ int Lua_CreateCompoundCollisionShape( lua_State* l )
 
 CollisionShape* GetCollisionShapeFromLua( lua_State* l, int stackPosition )
 {
-    return *(CollisionShape**)GetUserDataFromLua(l, stackPosition, COLLISION_SHAPE_TYPE);
+    return (CollisionShape*)GetPointerFromLua(l, stackPosition);
 }
 
 CollisionShape* CheckCollisionShapeFromLua( lua_State* l, int stackPosition )
 {
-    return *(CollisionShape**)CheckUserDataFromLua(l, stackPosition, COLLISION_SHAPE_TYPE);
+    return (CollisionShape*)CheckPointerFromLua(l, stackPosition);
 }
 
 
 // --- Force ---
 
-const char* FORCE_TYPE = "Force";
-
 static int Lua_CreateForce( lua_State* l )
 {
     Solid* solid = CheckSolidFromLua(l, 1);
     Force* force = CreateForce(solid);
-    if(force &&
-       CopyUserDataToLua(l, FORCE_TYPE, sizeof(force), &force))
+    if(force)
     {
+        PushPointerToLua(l, force);
         return 1;
     }
     else
     {
-        lua_pop(l, 1);
         luaL_error(l, "Can't create force.");
         return 0;
     }
+}
+
+static int Lua_DestroyForce( lua_State* l )
+{
+    Force* force = CheckForceFromLua(l, 1);
+    DestroyForce(force);
+    return 0;
 }
 
 static int Lua_SetForce( lua_State* l )
@@ -108,37 +108,20 @@ static int Lua_SetForce( lua_State* l )
     return 0;
 }
 
-static int Lua_DestroyForce( lua_State* l )
-{
-    Force* force = CheckForceFromLua(l, 1);
-    DestroyForce(force);
-    return 0;
-}
-
 Force* GetForceFromLua( lua_State* l, int stackPosition )
 {
-    return *(Force**)GetUserDataFromLua(l, stackPosition, FORCE_TYPE);
+    return (Force*)GetPointerFromLua(l, stackPosition);
 }
 
 Force* CheckForceFromLua( lua_State* l, int stackPosition )
 {
-    return *(Force**)CheckUserDataFromLua(l, stackPosition, FORCE_TYPE);
+    return (Force*)CheckPointerFromLua(l, stackPosition);
 }
 
 
 // --- Solid ---
 
-const char* SOLID_TYPE = "Solid";
-
-int Lua_Solid_destructor( lua_State* l )
-{
-    Solid* solid =
-        reinterpret_cast<Solid*>(lua_touserdata(l, 1));
-    ReleaseSolid(solid);
-    return 0;
-}
-
-int Lua_CreateSolid( lua_State* l )
+static int Lua_CreateSolid( lua_State* l )
 {
     const float mass = luaL_checknumber(l, 1);
     const glm::vec3 position(luaL_checknumber(l, 2),
@@ -148,18 +131,24 @@ int Lua_CreateSolid( lua_State* l )
     CollisionShape* shape = CheckCollisionShapeFromLua(l, 6);
 
     Solid* solid = CreateSolid(mass, position, rotation, shape);
-    if(solid &&
-       CopyUserDataToLua(l, SOLID_TYPE, sizeof(solid), &solid))
+    if(solid)
     {
+        PushPointerToLua(l, solid);
         ReferenceSolid(solid);
         return 1;
     }
     else
     {
-        lua_pop(l, 1);
         luaL_error(l, "Can't create solid.");
         return 0;
     }
+}
+
+static int Lua_DestroySolid( lua_State* l )
+{
+    Solid* solid = CheckSolidFromLua(l, 1);
+    ReleaseSolid(solid);
+    return 0;
 }
 
 static int Lua_GetSolidMass( lua_State* l )
@@ -256,12 +245,12 @@ static int Lua_ApplySolidImpulse( lua_State* l )
 
 Solid* GetSolidFromLua( lua_State* l, int stackPosition )
 {
-    return *(Solid**)GetUserDataFromLua(l, stackPosition, SOLID_TYPE);
+    return (Solid*)GetPointerFromLua(l, stackPosition);
 }
 
 Solid* CheckSolidFromLua( lua_State* l, int stackPosition )
 {
-    return *(Solid**)CheckUserDataFromLua(l, stackPosition, SOLID_TYPE);
+    return (Solid*)CheckPointerFromLua(l, stackPosition);
 }
 
 
@@ -269,14 +258,14 @@ Solid* CheckSolidFromLua( lua_State* l, int stackPosition )
 
 const char* COLLISION_EVENT_NAME = "Collision";
 
-int CollisionEvent = INVALID_LUA_EVENT;
+static int CollisionEvent = INVALID_LUA_EVENT;
 
 static void LuaCollisionCallback( const Collision* collision )
 {
     lua_State* l = GetLuaState();
 
-    CopyUserDataToLua(l, SOLID_TYPE, sizeof(Solid*), &collision->a); // 1
-    CopyUserDataToLua(l, SOLID_TYPE, sizeof(Solid*), &collision->b); // 2
+    PushPointerToLua(l, collision->a); // 1
+    PushPointerToLua(l, collision->b); // 2
     lua_pushnumber(l, collision->pointOnA[0]); // 3
     lua_pushnumber(l, collision->pointOnA[1]);
     lua_pushnumber(l, collision->pointOnA[2]);
@@ -303,19 +292,18 @@ bool RegisterPhysicsManagerInLua()
     SetCollisionCallback(LuaCollisionCallback);
 
     return
-        RegisterUserDataTypeInLua(COLLISION_SHAPE_TYPE, Lua_CollisionShape_destructor) &&
+        RegisterFunctionInLua("DestroyCollisionShape", Lua_DestroyCollisionShape) &&
         RegisterFunctionInLua("CreateBoxCollisionShape", Lua_CreateBoxCollisionShape) &&
         RegisterFunctionInLua("CreateSphereCollisionShape", Lua_CreateSphereCollisionShape) &&
         RegisterFunctionInLua("CreateCapsuleCollisionShape", Lua_CreateCapsuleCollisionShape) &&
         RegisterFunctionInLua("CreateCompoundCollisionShape", Lua_CreateCompoundCollisionShape) &&
 
-        RegisterUserDataTypeInLua(FORCE_TYPE, NULL) &&
         RegisterFunctionInLua("CreateForce", Lua_CreateForce) &&
-        RegisterFunctionInLua("SetForce", Lua_SetForce) &&
         RegisterFunctionInLua("DestroyForce", Lua_DestroyForce) &&
+        RegisterFunctionInLua("SetForce", Lua_SetForce) &&
 
-        RegisterUserDataTypeInLua(SOLID_TYPE, Lua_Solid_destructor) &&
         RegisterFunctionInLua("CreateSolid", Lua_CreateSolid) &&
+        RegisterFunctionInLua("DestroySolid", Lua_DestroySolid) &&
         RegisterFunctionInLua("GetSolidMass", Lua_GetSolidMass) &&
         RegisterFunctionInLua("SetSolidMass", Lua_SetSolidMass) &&
         RegisterFunctionInLua("SetSolidRestitution", Lua_SetSolidRestitution) &&

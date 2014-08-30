@@ -191,6 +191,33 @@ void* CheckUserDataFromLua( lua_State* l, int stackPosition, const char* typeNam
     }
 }
 
+void PushPointerToLua( lua_State* l, void* pointer )
+{
+    if(pointer)
+        lua_pushlightuserdata(l, pointer);
+    else
+        lua_pushnil(l);
+}
+
+void* GetPointerFromLua( lua_State* l, int stackPosition )
+{
+    return lua_touserdata(l, stackPosition);
+}
+
+void* CheckPointerFromLua( lua_State* l, int stackPosition )
+{
+    void* pointer = GetPointerFromLua(l, stackPosition);
+    if(pointer)
+    {
+        return pointer;
+    }
+    else
+    {
+        luaL_argerror(l, stackPosition, "was null or not a user pointer");
+        return NULL;
+    }
+}
+
 static int Lua_SetErrorFunction( lua_State* l )
 {
     luaL_checktype(l, 1, LUA_TFUNCTION);

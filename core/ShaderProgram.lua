@@ -15,6 +15,11 @@ function ShaderProgram:initialize( ... )
     self.handle = NATIVE.LinkShaderProgram(table.unpack(shaderHandles))
 end
 
+function ShaderProgram:destroy()
+    NATIVE.DestroyShaderProgram(self.handle)
+    self.handle = nil
+end
+
 function ShaderProgram:setUniform( name, value )
     if class.Object.isInstanceOf(value, Mat4) then
         NATIVE.SetMatrix4Unifrom(self.handle, name, value.handle)

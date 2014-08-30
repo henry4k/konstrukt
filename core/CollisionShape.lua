@@ -10,5 +10,10 @@ function CollisionShape:initialize( handle )
     self.handle = handle
 end
 
+function CollisionShape:destroy()
+    NATIVE.DestroyCollisionShape(self.handle)
+    self.handle = nil
+end
+
 
 return CollisionShape
