@@ -62,15 +62,6 @@ describe('An effect')
         FakeEffect.destroy:assertCalledWith(effect)
     end)
 
-    :it('destructor is called on removal.', function()
-        local target = TestTarget()
-        local effect = target:addEffect(FakeEffect, 'green')
-        target:destroy()
-
-        FakeEffect.destroy:assertCallCount(1)
-        FakeEffect.destroy:assertCalledWith(effect)
-    end)
-
     :it('destructor is called only once.', function()
         local target = TestTarget()
         local effect = target:addEffect(FakeEffect, 'green')
