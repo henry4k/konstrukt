@@ -8,7 +8,6 @@
 #include "Texture.h"
 
 
-static const int MAX_TEXTURE_UNITS = 8;
 static const GLuint INVALID_TEXTURE_HANDLE = 0;
 
 

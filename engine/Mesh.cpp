@@ -60,7 +60,7 @@ Mesh* CreateMesh( const MeshBuffer* buffer )
     return mesh;
 }
 
-void DrawMesh( const Mesh* mesh )
+static void BindMesh( const Mesh* mesh )
 {
     glBindBuffer(GL_ARRAY_BUFFER, mesh->vertexBuffer);
     SetVertexAttributePointers(NULL);
@@ -74,6 +74,22 @@ void DrawMesh( const Mesh* mesh )
     {
         glDrawArrays(mesh->primitiveType, 0, mesh->size);
     }
+}
+
+static const Mesh* CurrentMesh = NULL;
+
+void DrawMesh( const Mesh* mesh )
+{
+    if(mesh != CurrentMesh)
+    {
+        BindMesh(mesh);
+        CurrentMesh = mesh;
+    }
+
+    if(mesh->indexBuffer)
+        glDrawElements(mesh->primitiveType, mesh->size, GL_UNSIGNED_SHORT, 0);
+    else
+        glDrawArrays(mesh->primitiveType, 0, mesh->size);
 }
 
 static void FreeMesh( Mesh* mesh )

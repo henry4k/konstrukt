@@ -26,12 +26,8 @@ function Model:setMesh( mesh )
     NATIVE.SetModelMesh(self.handle, mesh.handle)
 end
 
-function Model:setTexture( texture )
-    NATIVE.SetModelTexture(self.handle, texture.handle)
-end
-
-function Model:setTexture( texture )
-    NATIVE.SetModelTexture(self.handle, texture.handle)
+function Model:setTexture( unit, texture )
+    NATIVE.SetModelTexture(self.handle, unit, texture.handle)
 end
 
 function Model:setUniform( name, value )

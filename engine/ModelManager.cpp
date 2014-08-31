@@ -1,7 +1,9 @@
 #include <string.h> // memset, strcmp, strncpy
+#include <stdlib.h> // qsort
 
 #include "Math.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
 #include "Common.h"
 #include "Mesh.h"
 #include "Texture.h"
@@ -10,10 +12,12 @@
 #include "PhysicsManager.h"
 #include "ModelManager.h"
 
+using glm::mat4;
+
 
 enum UniformValueSource
 {
-    DEFAULT_UNIFORM_VALUE = 0,
+    DEFAULT_UNIFORM_VALUE,
     LOCAL_UNIFORM_VALUE,
     UNIFORM_VALUE_SOURCE_COUNT
 };
@@ -22,9 +26,10 @@ struct Model
 {
     bool active;
     ReferenceCounter refCounter;
-    glm::mat4 transformation;
+    int stage;
+    mat4 transformation;
     Mesh* mesh;
-    Texture* texture;
+    Texture* textures[MAX_TEXTURE_UNITS];
     ShaderProgram* program;
     UniformValue* localUniformValues;
     bool* useLocalUniformValue;
@@ -33,12 +38,10 @@ struct Model
 
 
 static const int MAX_MODELS = 8;
-static Model Models[STAGE_COUNT][MAX_MODELS];
+static Model Models[MAX_MODELS];
 
-static void DrawModel( const Model* model, const glm::mat4* transformations );
 static void FreeModel( Model* model );
 static bool ModelIsComplete( const Model* model );
-static const char* GetStageName( ModelStage stage );
 
 bool InitModelManager()
 {
@@ -48,84 +51,76 @@ bool InitModelManager()
 
 void DestroyModelManager()
 {
-    for(int stage = 0; stage < STAGE_COUNT; stage++)
     for(int i = 0; i < MAX_MODELS; i++)
     {
-        Model* model = &Models[stage][i];
+        Model* model = &Models[i];
         if(model->active)
         {
-            Error("%s model #%d (%p) was still active when the manager was destroyed.",
-                GetStageName((ModelStage)stage), i, model);
+            Error("Model #%d (%p) was still active when the manager was destroyed.",
+                  i, model);
             FreeModel(model);
         }
     }
 }
 
-void DrawModels( const glm::mat4* projectionTransformation,
-                 const glm::mat4* viewTransformation,
-                 const glm::mat4* modelTransformation )
+static void SetGlobalUniforms( ShaderProgram* program,
+                               const mat4* projectionTransformation,
+                               const mat4* viewTransformation )
 {
-    // Draw background:
-    const glm::mat4 backgroundMVP = *projectionTransformation *
-                                    *viewTransformation;
-    for(int i = 0; i < MAX_MODELS; i++)
-    {
-        const Model* model = &Models[BACKGROUND_STAGE][i];
-        if(model->active)
-            DrawModel(model, &backgroundMVP);
-    }
+    const mat4 viewInverseTranspose = glm::inverseTranspose(*viewTransformation);
 
-    // Draw world:
-    glClear(GL_DEPTH_BUFFER_BIT);
-    const glm::mat4 worldMVP = *projectionTransformation *
-                               *viewTransformation *
-                               *modelTransformation;
-    for(int i = 0; i < MAX_MODELS; i++)
-    {
-        const Model* model = &Models[WORLD_STAGE][i];
-        if(model->active)
-            DrawModel(model, &worldMVP);
-    }
-
-    // Draw HUD:
-    glClear(GL_DEPTH_BUFFER_BIT);
-    const glm::mat4 hudMVP = glm::scale(*projectionTransformation,
-                                        glm::vec3(1, 1, -1));
-    for(int i = 0; i < MAX_MODELS; i++)
-    {
-        const Model* model = &Models[HUD_STAGE][i];
-        if(model->active)
-            DrawModel(model, &hudMVP);
-    }
+    SetUniformDefault(program,
+                      "Projection",
+                      (const UniformValue*)projectionTransformation);
+    SetUniformDefault(program,
+                      "View",
+                      (const UniformValue*)viewTransformation);
+    SetUniformDefault(program,
+                      "ViewInverseTranspose",
+                      (const UniformValue*)&viewInverseTranspose);
 }
 
-static void DrawModel( const Model* model, const glm::mat4* mvpMatrix )
+static mat4 CalculateFinalModelTransformation( const Model* model,
+                                               const mat4* modelTransformation )
 {
-    if(!model->mesh)
-        return;
-
-    if(!ModelIsComplete(model))
-    {
-        Error("Trying to draw incomplete model.");
-        return;
-    }
-
-    ShaderProgram* program = model->program;
-    BindShaderProgram(program);
-
-    BindTexture(model->texture, 0);
-
-    UniformValue mvpUniformValue;
-
-    glm::mat4 solidTransformation;
+    mat4 solidTransformation;
     if(model->attachmentTarget)
         GetSolidTransformation(model->attachmentTarget, &solidTransformation);
 
-    mvpUniformValue.m4() = *mvpMatrix *
-                           solidTransformation *
-                           model->transformation;
-    SetUniformDefault(program, "MVP", &mvpUniformValue);
+    return *modelTransformation * solidTransformation * model->transformation;
+}
 
+static void SetModelUniforms( const Model* model,
+                              const mat4* projectionTransformation,
+                              const mat4* viewTransformation,
+                              const mat4* modelTransformation )
+{
+    ShaderProgram* program = model->program;
+
+    const mat4 finalModelTransformation =
+        CalculateFinalModelTransformation(model, modelTransformation);
+
+    const mat4 modelView = *viewTransformation * finalModelTransformation;
+    const mat4 mvp = *projectionTransformation * modelView;
+    const mat4 modelViewInverseTranspose = glm::inverseTranspose(modelView);
+
+    SetUniformDefault(program, // TODO: Is this actually used in shaders?
+                      "Model",
+                      (const UniformValue*)&finalModelTransformation);
+    SetUniformDefault(program,
+                      "ModelView",
+                      (const UniformValue*)&modelView);
+    SetUniformDefault(program,
+                      "MVP",
+                      (const UniformValue*)&mvp);
+    SetUniformDefault(program,
+                      "ModelViewInverseTranspose",
+                      (const UniformValue*)&modelViewInverseTranspose);
+}
+
+static void ApplyModelUniforms( const Model* model )
+{
+    ShaderProgram* program = model->program;
     const int uniformCount = GetUniformCount(program);
     for(int i = 0; i < uniformCount; i++)
     {
@@ -134,15 +129,109 @@ static void DrawModel( const Model* model, const glm::mat4* mvpMatrix )
         else
             ResetUniform(program, i);
     }
-
-    DrawMesh(model->mesh);
 }
 
-static Model* FindInactiveModel( ModelStage stage )
+static int Compare( long a, long b )
+{
+    if(a == b)
+        return 0;
+    else if(a < b)
+        return -1;
+    else
+        return 1;
+}
+
+static int CompareModels( const void* a_, const void* b_ )
+{
+    const Model* a = *(const Model**)a_;
+    const Model* b = *(const Model**)b_;
+
+    int r;
+    r = Compare(a->stage, b->stage);
+    if(r != 0)
+        return r;
+    r = Compare((long)a->program, (long)b->program);
+    if(r != 0)
+        return r;
+    r = Compare((long)a->mesh, (long)b->mesh);
+    if(r != 0)
+        return r;
+    r = Compare((long)a->textures[0], (long)b->textures[0]);
+    if(r != 0)
+        return r;
+    return 0;
+}
+
+void DrawModels( const mat4* projectionTransformation,
+                 const mat4* viewTransformation,
+                 const mat4* modelTransformation )
+{
+    const Model* drawList[MAX_MODELS];
+    int drawListSize = 0;
+
+    // Fill draw list:
+    for(int i = 0; i < MAX_MODELS; i++)
+    {
+        const Model* model = &Models[i];
+        if(model->active)
+        {
+            drawList[i] = &Models[i];
+            drawListSize++;
+        }
+    }
+
+    // Sort draw list:
+    qsort(drawList, drawListSize, sizeof(Model*), CompareModels);
+
+    // Render draw list:
+    int currentStage = 0;
+    ShaderProgram* currentProgram = NULL;
+    for(int i = 0; i < drawListSize; i++)
+    {
+        const Model* model = drawList[i];
+
+        if(!ModelIsComplete(model))
+        {
+            Error("Trying to draw incomplete model %p.", model);
+            continue;
+        }
+
+        if(model->stage != currentStage)
+        {
+            glClear(GL_DEPTH_BUFFER_BIT);
+            currentStage = model->stage;
+        }
+
+        //if(model->program != currentProgram)
+        {
+            SetGlobalUniforms(model->program,
+                              projectionTransformation,
+                              viewTransformation);
+            BindShaderProgram(model->program);
+            currentProgram = model->program;
+        }
+
+        // Texture optimization is handled by the texture module already.
+        for(int i = 0; i < MAX_TEXTURE_UNITS; i++)
+            if(model->textures[i])
+                BindTexture(model->textures[i], i);
+
+        SetModelUniforms(model,
+                         projectionTransformation,
+                         viewTransformation,
+                         modelTransformation);
+        ApplyModelUniforms(model);
+
+        // Mesh optimization is handled by the mesh module already.
+        DrawMesh(model->mesh);
+    }
+}
+
+static Model* FindInactiveModel()
 {
     for(int i = 0; i < MAX_MODELS; i++)
     {
-        Model* model = &Models[stage][i];
+        Model* model = &Models[i];
         if(!model->active)
             return model;
     }
@@ -151,14 +240,16 @@ static Model* FindInactiveModel( ModelStage stage )
 
 Model* CreateModel( ModelStage stage, ShaderProgram* program )
 {
-    Model* model = FindInactiveModel(stage);
+    Model* model = FindInactiveModel();
     if(model)
     {
         memset(model, 0, sizeof(Model));
         model->active = true;
         InitReferenceCounter(&model->refCounter);
 
-        model->transformation = glm::mat4();
+        model->stage = stage;
+
+        model->transformation = mat4();
 
         model->program = program;
         ReferenceShaderProgram(program);
@@ -175,7 +266,7 @@ Model* CreateModel( ModelStage stage, ShaderProgram* program )
     }
     else
     {
-        Error("Can't create more %s models.", GetStageName(stage));
+        Error("Can't create more models.");
         return NULL;
     }
 }
@@ -185,8 +276,9 @@ static void FreeModel( Model* model )
     model->active = false;
     FreeReferenceCounter(&model->refCounter);
     ReleaseShaderProgram(model->program);
-    if(model->texture)
-        ReleaseTexture(model->texture);
+    for(int i = 0; i < MAX_TEXTURE_UNITS; i++)
+        if(model->textures[i])
+            ReleaseTexture(model->textures[i]);
     if(model->mesh)
         ReleaseMesh(model->mesh);
     if(model->attachmentTarget)
@@ -216,7 +308,7 @@ void SetModelAttachmentTarget( Model* model, Solid* target )
         ReferenceSolid(model->attachmentTarget);
 }
 
-void SetModelTransformation( Model* model, glm::mat4 transformation )
+void SetModelTransformation( Model* model, mat4 transformation )
 {
     model->transformation = transformation;
 }
@@ -230,13 +322,13 @@ void SetModelMesh( Model* model, Mesh* mesh )
         ReferenceMesh(model->mesh);
 }
 
-void SetModelTexture( Model* model, Texture* texture )
+void SetModelTexture( Model* model, int unit, Texture* texture )
 {
-    if(model->texture)
-        ReleaseTexture(model->texture);
-    model->texture = texture;
-    if(model->texture)
-        ReferenceTexture(model->texture);
+    if(model->textures[unit])
+        ReleaseTexture(model->textures[unit]);
+    model->textures[unit] = texture;
+    if(model->textures[unit])
+        ReferenceTexture(model->textures[unit]);
 }
 
 void SetModelUniform( Model* model, const char* name, UniformValue* value )
@@ -259,17 +351,5 @@ void UnsetModelUniform( Model* model, const char* name )
 static bool ModelIsComplete( const Model* model )
 {
     return model->mesh &&
-           model->texture &&
            model->program;
-}
-
-static const char* GetStageName( ModelStage stage )
-{
-    switch(stage)
-    {
-        case WORLD_STAGE: return "world";
-        case BACKGROUND_STAGE: return "background";
-        case HUD_STAGE: return "hud";
-        default: FatalError("Unknown stage."); return NULL;
-    }
 }

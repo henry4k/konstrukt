@@ -20,7 +20,7 @@ function ReferenceCube:initialize( stage, shaderProgram )
 
     self.model = Model:new(stage, shaderProgram)
     self.model:setMesh(mesh)
-    self.model:setTexture(diffuseTexture)
+    self.model:setTexture(0, diffuseTexture)
     self.model:setUniform('DiffuseSampler', 0)
 end
 

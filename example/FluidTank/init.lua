@@ -22,7 +22,7 @@ function FluidTank:initialize( shaderProgram )
 
     self.model = Model:new(self.shaderProgram)
     self.model:setMesh(self.mesh)
-    self.model:setTexture(self.diffuseTexture)
+    self.model:setTexture(0, self.diffuseTexture)
     self.model:setUniform('DiffuseSampler', 0)
 end
 

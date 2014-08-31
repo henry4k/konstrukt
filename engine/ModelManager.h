@@ -14,8 +14,8 @@ struct UniformValue;
 
 enum ModelStage
 {
-    WORLD_STAGE,
     BACKGROUND_STAGE,
+    WORLD_STAGE,
     HUD_STAGE,
     STAGE_COUNT
 };
@@ -35,7 +35,7 @@ void ReleaseModel( Model* model );
 void SetModelAttachmentTarget( Model* model, Solid* target );
 void SetModelTransformation( Model* model, glm::mat4 transformation );
 void SetModelMesh( Model* model, Mesh* mesh );
-void SetModelTexture( Model* model, Texture* texture );
+void SetModelTexture( Model* model, int unit, Texture* texture );
 void SetModelUniform( Model* model, const char* name, UniformValue* value );
 void UnsetModelUniform( Model* model, const char* name );
 

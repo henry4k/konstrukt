@@ -139,7 +139,7 @@ static void ShowShaderLog( Shader* shader )
     glGetShaderiv(shader->handle, GL_INFO_LOG_LENGTH, &length);
 
     char* log = NULL;
-    if(length > 1) // Some drivers wan't me to log single newline characters.
+    if(length > 1) // Some drivers want me to log single newline characters.
     {
         log = new char[length];
         glGetShaderInfoLog(shader->handle, length, NULL, log);
@@ -269,6 +269,23 @@ static UniformType GLToUniformType( GLenum glType )
     }
 }
 
+static int GetUniformSize( UniformType type )
+{
+    switch(type)
+    {
+        case INT_UNIFORM: return sizeof(int);
+        case FLOAT_UNIFORM: return sizeof(float);
+        case VEC3_UNIFORM: return sizeof(float)*3;
+        case VEC4_UNIFORM: return sizeof(float)*4;
+        case MAT3_UNIFORM: return sizeof(float)*3*3;
+        case MAT4_UNIFORM: return sizeof(float)*4*4;
+
+        default:
+            FatalError("Unsupported gl constant!");
+            return 0;
+    }
+}
+
 static void ReadUniformDefinitions( ShaderProgram* program )
 {
     if(program->uniformDefinitions)
@@ -368,7 +385,7 @@ ShaderProgram* LinkShaderProgram( Shader** shaders, int shaderCount )
         }
         else
         {
-            Error("Error linking shader programm");
+            Error("Error linking shader program");
             FreeShaderProgram(program);
             return NULL;
         }
@@ -426,9 +443,15 @@ void ReleaseShaderProgram( ShaderProgram* program )
         FreeShaderProgram(program);
 }
 
+static const ShaderProgram* CurrentShaderProgram = NULL;
+
 void BindShaderProgram( const ShaderProgram* program )
 {
-    glUseProgram(program->handle);
+    if(program != CurrentShaderProgram)
+    {
+        glUseProgram(program->handle);
+        CurrentShaderProgram = program;
+    }
 }
 
 int GetUniformCount( const ShaderProgram* program )
@@ -444,6 +467,14 @@ int GetUniformIndex( const ShaderProgram* program, const char* name )
     return INVALID_UNIFORM_INDEX;
 }
 
+static bool UniformValuesAreEqual( const UniformDefinition* definition,
+                                   const UniformValue* a,
+                                   const UniformValue* b )
+{
+    const int size = GetUniformSize(definition->type);
+    return memcmp(a, b, size) == 0;
+}
+
 void SetUniform( ShaderProgram* program, int index, const UniformValue* value )
 {
     assert(program);
@@ -451,35 +482,39 @@ void SetUniform( ShaderProgram* program, int index, const UniformValue* value )
     assert(index < program->uniformCount);
     assert(value);
 
-    // TODO: Check currentUniformValues here!
-
-    BindShaderProgram(program);
     const UniformDefinition* def = &program->uniformDefinitions[index];
-    switch(def->type)
+    const UniformValue* curValue = &program->currentUniformValues[index];
+    if(!UniformValuesAreEqual(def, value, curValue))
     {
-        case INT_UNIFORM:
-            glUniform1i(def->location, value->i);
-            break;
+        BindShaderProgram(program);
+        switch(def->type)
+        {
+            case INT_UNIFORM:
+                glUniform1i(def->location, value->i);
+                break;
 
-        case FLOAT_UNIFORM:
-            glUniform1f(def->location, value->f);
-            break;
+            case FLOAT_UNIFORM:
+                glUniform1f(def->location, value->f);
+                break;
 
-        case VEC3_UNIFORM:
-            glUniform3fv(def->location, 1, (const float*)value);
-            break;
+            case VEC3_UNIFORM:
+                glUniform3fv(def->location, 1, (const float*)value);
+                break;
 
-        case VEC4_UNIFORM:
-            glUniform4fv(def->location, 1, (const float*)value);
-            break;
+            case VEC4_UNIFORM:
+                glUniform4fv(def->location, 1, (const float*)value);
+                break;
 
-        case MAT3_UNIFORM:
-            glUniformMatrix3fv(def->location, 1, GL_FALSE, (const float*)value);
-            break;
+            case MAT3_UNIFORM:
+                glUniformMatrix3fv(def->location, 1, GL_FALSE, (const float*)value);
+                break;
 
-        case MAT4_UNIFORM:
-            glUniformMatrix4fv(def->location, 1, GL_FALSE, (const float*)value);
-            break;
+            case MAT4_UNIFORM:
+                glUniformMatrix4fv(def->location, 1, GL_FALSE, (const float*)value);
+                break;
+        }
+
+        program->currentUniformValues[index] = *value;
     }
 }
 

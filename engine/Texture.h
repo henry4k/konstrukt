@@ -7,6 +7,7 @@
 struct Image;
 struct Texture;
 
+static const int MAX_TEXTURE_UNITS = 8;
 
 enum TextureOptions
 {

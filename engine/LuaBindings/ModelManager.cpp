@@ -16,8 +16,8 @@ static int Lua_CreateModel( lua_State* l )
 {
     static const char* stages[] =
     {
-        "world",
         "background",
+        "world",
         "hud",
         NULL
     };
@@ -73,8 +73,9 @@ static int Lua_SetModelMesh( lua_State* l )
 static int Lua_SetModelTexture( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
-    Texture* texture = CheckTextureFromLua(l, 2);
-    SetModelTexture(model, texture);
+    const int unit = luaL_checkinteger(l, 2);
+    Texture* texture = CheckTextureFromLua(l, 3);
+    SetModelTexture(model, unit, texture);
     return 0;
 }
 
