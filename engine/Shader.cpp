@@ -88,11 +88,6 @@ static bool StringEndsWith( const char* target, const char* end )
 
 // ----- UniformValue ------
 
-const float& UniformValue::f() const
-{
-    return *(const float*)data;
-}
-
 const glm::vec3& UniformValue::v3() const
 {
     return *(const glm::vec3*)data;
@@ -111,11 +106,6 @@ const glm::mat3& UniformValue::m3() const
 const glm::mat4& UniformValue::m4() const
 {
     return *(const glm::mat4*)data;
-}
-
-float& UniformValue::f()
-{
-    return *(float*)data;
 }
 
 glm::vec3& UniformValue::v3()
@@ -468,27 +458,27 @@ void SetUniform( ShaderProgram* program, int index, const UniformValue* value )
     switch(def->type)
     {
         case INT_UNIFORM:
-            glUniform1i(def->location, (int)value->f());
+            glUniform1i(def->location, value->i);
             break;
 
         case FLOAT_UNIFORM:
-            glUniform1f(def->location, value->f());
+            glUniform1f(def->location, value->f);
             break;
 
         case VEC3_UNIFORM:
-            glUniform3fv(def->location, 1, value->data);
+            glUniform3fv(def->location, 1, (const float*)value);
             break;
 
         case VEC4_UNIFORM:
-            glUniform4fv(def->location, 1, value->data);
+            glUniform4fv(def->location, 1, (const float*)value);
             break;
 
         case MAT3_UNIFORM:
-            glUniformMatrix3fv(def->location, 1, GL_FALSE, value->data);
+            glUniformMatrix3fv(def->location, 1, GL_FALSE, (const float*)value);
             break;
 
         case MAT4_UNIFORM:
-            glUniformMatrix4fv(def->location, 1, GL_FALSE, value->data);
+            glUniformMatrix4fv(def->location, 1, GL_FALSE, (const float*)value);
             break;
     }
 }

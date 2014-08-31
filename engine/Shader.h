@@ -4,10 +4,12 @@
 #include "Math.h"
 
 
-struct Shader;
-
 static const int INVALID_UNIFORM_INDEX = -1;
 static const int MAX_UNIFORM_NAME_LENGTH = 32;
+
+struct Texture;
+struct Shader;
+struct ShaderProgram;
 
 enum UniformType
 {
@@ -21,24 +23,23 @@ enum UniformType
 
 struct UniformValue
 {
-    const float& f() const;
+    union
+    {
+        int i;
+        float f;
+        float data[4*4];
+    };
+
     const glm::vec3& v3() const;
     const glm::vec4& v4() const;
     const glm::mat3& m3() const;
     const glm::mat4& m4() const;
 
-    float& f();
     glm::vec3& v3();
     glm::vec4& v4();
     glm::mat3& m3();
     glm::mat4& m4();
-
-    float data[4*4];
 };
-
-struct UniformDefinition;
-
-struct ShaderProgram;
 
 
 /**

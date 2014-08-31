@@ -90,7 +90,7 @@ static int Lua_SetFloatUniform( lua_State* l )
     ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
     const char* name = luaL_checkstring(l, 2);
     UniformValue value;
-    value.f() = luaL_checknumber(l, 3);
+    value.f = luaL_checknumber(l, 3);
     SetUniform(program, name, &value);
     return 0;
 }
