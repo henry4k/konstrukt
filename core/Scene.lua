@@ -22,7 +22,7 @@ function Scene.createMeshBuffer( definition )
     assert(definition.vertices)
     assert(definition.faces)
 
-    local buffer = MeshBuffer:new()
+    local buffer = MeshBuffer()
 
     for _,vertex in ipairs(definition.vertices) do
         buffer:appendVertex(vertex)

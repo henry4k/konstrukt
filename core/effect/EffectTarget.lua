@@ -18,7 +18,7 @@ end
 
 function EffectTarget:addEffect( effectClass, ... )
     assert(Object.isSubclassOf(effectClass, Effect), 'effectClass must inherit Effect.')
-    local effect = effectClass:new(self, ...)
+    local effect = effectClass(self, ...)
     table.insert(self.effects, effect)
     table.sort(self.effects)
     return effect

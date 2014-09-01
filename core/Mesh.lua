@@ -9,7 +9,7 @@ function Mesh.static:load( sceneFileName, objectName )
     local scene = Json.decodeFromFile(sceneFileName)
     if scene then
         local meshBuffer = Scene.createMeshBufferByPath(scene, objectName)
-        return Mesh:new(meshBuffer)
+        return Mesh(meshBuffer)
     else
         return nil
     end

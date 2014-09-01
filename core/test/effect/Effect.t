@@ -28,15 +28,15 @@ describe('An effect')
 
         FakeEffect = class('FakeEffect', Effect)
 
-        FakeEffect.initialize = Spy:new(function( self, target, ... )
+        FakeEffect.initialize = Spy(function( self, target, ... )
             Effect.initialize(self, target)
         end)
 
-        FakeEffect.destroy = Spy:new(function( self )
+        FakeEffect.destroy = Spy(function( self )
             Effect.destroy(self)
         end)
 
-        FakeEffect.onTick = Spy:new(function( self, time ) end)
+        FakeEffect.onTick = Spy(function( self, time ) end)
     end)
 
     :beforeEach(function()

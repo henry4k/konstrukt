@@ -6,7 +6,7 @@ local Texture = class('core/Texture')
 Texture:include(Resource)
 
 function Texture.static:load( ... )
-    return Texture:new(...)
+    return Texture(...)
 end
 
 function Texture:initialize( target, fileName, ... )

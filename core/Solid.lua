@@ -59,21 +59,21 @@ function Solid:setCollisionThreshold( threshold )
 end
 
 function Solid:getPosition()
-    return Vec:new(NATIVE.GetSolidPosition(self.handle))
+    return Vec(NATIVE.GetSolidPosition(self.handle))
 end
 
 function Solid:getRotation()
-    return Quat:new(NATIVE.GetSolidRotation(self.handle))
+    return Quat(NATIVE.GetSolidRotation(self.handle))
 end
 
 --- Velocity at which the solid moves through space.
 function Solid:getLinearVelocity()
-    return Vec:new(NATIVE.GetSolidLinearVelocity(self.handle))
+    return Vec(NATIVE.GetSolidLinearVelocity(self.handle))
 end
 
 --- Velocity at which the solid rotates around itself.
 function Solid:getAngularVelocity()
-    return Vec:new(NATIVE.GetSolidAngularVelocity(self.handle))
+    return Vec(NATIVE.GetSolidAngularVelocity(self.handle))
 end
 
 --- Instantly applies an impulse.
@@ -89,7 +89,7 @@ end
 -- @param useLocalCoordinates
 -- If set direction and position will be relative to the solids orientation.
 function Solid:applyImpulse( impulseVector, relativePosition, useLocalCoordinates )
-    relativePosition = relativePosition or Vec:new(0,0,0)
+    relativePosition = relativePosition or Vec(0,0,0)
     NATIVE.ApplySolidImpulse(self.handle,
                              impulseVector[1],
                              impulseVector[2],
@@ -101,7 +101,7 @@ function Solid:applyImpulse( impulseVector, relativePosition, useLocalCoordinate
 end
 
 function Solid:createForce()
-    local force = Force:new(self.handle)
+    local force = Force(self.handle)
     self.forces[force] = force.handle
     return force
 end
@@ -116,9 +116,9 @@ local function CollisionHandler( solidAHandle,
 
     print(string.format('collision with %f N/s', impulse))
 
-    --local pointOnA  = Vec:new(pointOnAX, pointOnAY, pointOnAZ)
-    --local pointOnB  = Vec:new(pointOnBX, pointOnBY, pointOnBZ)
-    --local normalOnB = Vec:new(normalOnBX, normalOnBY, normalOnBZ)
+    --local pointOnA  = Vec(pointOnAX, pointOnAY, pointOnAZ)
+    --local pointOnB  = Vec(pointOnBX, pointOnBY, pointOnBZ)
+    --local normalOnB = Vec(normalOnBX, normalOnBY, normalOnBZ)
     --
     --local solidA = SolidHandlesToSolids[solidAHandle]
     --local solidB = SolidHandlesToSolids[solidBHandle]

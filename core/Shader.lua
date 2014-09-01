@@ -8,7 +8,7 @@ local Shader = class('core/Shader')
 Shader:include(Resource)
 
 function Shader.static:load( fileName )
-    return Shader:new(fileName)
+    return Shader(fileName)
 end
 
 function Shader:initialize( fileName )

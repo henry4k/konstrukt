@@ -7,7 +7,7 @@ local AudioBuffer = class('core/AudioBuffer')
 AudioBuffer:include(Resource)
 
 function AudioBuffer.static:load( fileName )
-    return AudioBuffer:new(fileName)
+    return AudioBuffer(fileName)
 end
 
 function AudioBuffer:initialize( fileName )

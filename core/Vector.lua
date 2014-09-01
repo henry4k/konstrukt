@@ -7,7 +7,7 @@ Vector.mt.__index = Vector.prototype
 setmetatable(Vector.prototype, Vector.prototype)
 
 
-function Vector:new( ... )
+function Vector( ... )
     return setmetatable({...}, self.mt)
 end
 
@@ -28,7 +28,7 @@ function Vector.prototype:unpack( componentCount )
 end
 
 function Vector.prototype:operate( other, operationFn )
-    local r = Vector:new()
+    local r = Vector()
     if Vector:isInstance(other) then
         for i = 1, math.max(#self, #other) do
             rawset(r, i, operationFn(self[i], other[i]))
@@ -71,7 +71,7 @@ function Vector.mt:__div( other )
 end
 
 function Vector.mt:__unm()
-    local r = Vector:new()
+    local r = Vector()
     for i = 1, #self do
         rawset(r, i, -self[i])
     end

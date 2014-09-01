@@ -14,11 +14,11 @@ function Skybox:initialize()
                                              'example/Skybox/shader.frag')
     local mesh = Mesh:load('example/Skybox/Scene.json', 'Skybox')
     local diffuseTexture = Texture:load('cube', 'example/Skybox/%s.png')
-    self.model = Model:new('background', shaderProgram)
+    self.model = Model('background', shaderProgram)
     self.model:setMesh(mesh)
     self.model:setTexture(0, diffuseTexture)
     self.model:setUniform('DiffuseSampler', 0)
-    self.model:setTransformation(Mat4:new():scale(Vec:new(10,10,10)))
+    self.model:setTransformation(Mat4():scale(Vec(10,10,10)))
 end
 
 return Skybox

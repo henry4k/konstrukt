@@ -14,7 +14,7 @@ function ShaderProgram.static:load( ... )
             shaders[i] = ResourceManager.load('core/Shader', shader)
         end
     end
-    return ShaderProgram:new(table.unpack(shaders))
+    return ShaderProgram(table.unpack(shaders))
 end
 
 --- Links the given `shaders` into a shader program.

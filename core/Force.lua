@@ -30,7 +30,7 @@ end
 -- @param useLocalCoordinates
 -- If set direction and position will be relative to the solids orientation.
 function Force:set( value, relativePosition, useLocalCoordinates )
-    relativePosition = relativePosition or Vec:new(0,0,0)
+    relativePosition = relativePosition or Vec(0,0,0)
     NATIVE.SetForce(self.handle,
                     value[1],
                     value[2],

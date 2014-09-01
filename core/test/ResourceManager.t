@@ -9,9 +9,9 @@ local ResourceManager = require 'core.ResourceManager'
 describe('The resource manager')
     :setup(function()
 
-        MeshDestructor = Spy:new(function( self ) end)
+        MeshDestructor = Spy(function( self ) end)
 
-        MeshLoader = Spy:new(function( sceneFile, objectName )
+        MeshLoader = Spy(function( sceneFile, objectName )
             if sceneFile == 'AirLock.json' and objectName == 'AirLock.Door' then
                 return {
                     name = objectName,
