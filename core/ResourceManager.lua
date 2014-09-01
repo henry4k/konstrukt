@@ -1,3 +1,6 @@
+local Shutdown = require 'core/Shutdown'
+
+
 local ResourceManager = {
     loaders = {},
     resources = {}
@@ -57,6 +60,7 @@ function ResourceManager.clear()
     end
     ResourceManager.resources = {}
 end
+Shutdown.registerHandler(ResourceManager.clear)
 
 --- Use the given parameters to create an unique identifier.
 -- Each parameter set creates a unique identifier that equals only other

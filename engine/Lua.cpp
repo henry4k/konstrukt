@@ -25,6 +25,7 @@ struct LuaEvent
 static lua_State* g_LuaState = NULL;
 static std::vector<LuaEvent> g_LuaEvents;
 static int g_LuaErrorFunction = LUA_NOREF;
+static int g_LuaShutdownEvent = INVALID_LUA_EVENT;
 
 static int Lua_SetErrorFunction( lua_State* l );
 static int Lua_SetEventCallback( lua_State* l );
@@ -55,12 +56,16 @@ bool InitLua()
     RegisterFunctionInLua("SetEventCallback", Lua_SetEventCallback);
     RegisterFunctionInLua("Log", Lua_Log);
 
+    g_LuaShutdownEvent = RegisterLuaEvent("Shutdown");
+
     return true;
 }
 
 void DestroyLua()
 {
     assert(g_LuaState);
+
+    FireLuaEvent(g_LuaState, g_LuaShutdownEvent, 0, false);
 
     lua_close(g_LuaState);
     g_LuaState = NULL;
