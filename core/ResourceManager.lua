@@ -16,6 +16,7 @@ function ResourceManager.registerLoader( type, loader )
         error('A loader for "'..type..'" has already been registered.')
     else
         ResourceManager.loaders[type] = loader
+        print('Registered '..type..' loader.')
     end
 end
 
