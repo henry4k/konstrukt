@@ -1,21 +1,20 @@
 local class = require 'core/middleclass'
 local Vec   = require 'core/Vector'
 local Mat4  = require 'core/Matrix4'
-local ResourceManager = require 'core/ResourceManager'
+local Resource = require 'core/Resource'
 
 
 local ShaderProgram = class('core/ShaderProgram')
+ShaderProgram:include(Resource)
 
-function ShaderProgram.static:registerResource()
-    ResourceManager.registerLoader('core/ShaderProgram', function( ... )
-        local shaders = {...}
-        for i,shader in ipairs(shaders) do
-            if type(shader) == 'string' then
-                shaders[i] = ResourceManager.load('core/Shader', shader)
-            end
+function ShaderProgram.static:load( ... )
+    local shaders = {...}
+    for i,shader in ipairs(shaders) do
+        if type(shader) == 'string' then
+            shaders[i] = ResourceManager.load('core/Shader', shader)
         end
-        return ShaderProgram:new(table.unpack(shaders))
-    end)
+    end
+    return ShaderProgram:new(table.unpack(shaders))
 end
 
 --- Links the given `shaders` into a shader program.

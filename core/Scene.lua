@@ -1,6 +1,21 @@
 local MeshBuffer = require 'core/MeshBuffer'
 
 
+
+local GetEntryByPath = function( table, path, delimiters )
+    local delimiters = delimiters or '.'
+    local current = table
+    for entry in path:gmatch('[^'..delimiters..']+') do
+        if current[entry] then
+            current = current[entry]
+        else
+            return nil
+        end
+    end
+    return current
+end
+
+
 local Scene = {}
 
 function Scene.createMeshBuffer( definition )
@@ -22,5 +37,11 @@ function Scene.createMeshBuffer( definition )
 
     return buffer
 end
+
+function Scene.createMeshBufferByPath( sceneGraph, objectName )
+    local definition = GetEntryByPath(sceneGraph, objectName, './')
+    return Scene.createMeshBuffer(definition)
+end
+
 
 return Scene

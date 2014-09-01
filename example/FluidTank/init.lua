@@ -1,28 +1,17 @@
 local class = require 'core/middleclass'
-
-local Json    = require 'core/Json'
+local Model = require 'core/Model'
+local Mesh  = require 'core/Mesh'
 local Texture = require 'core/Texture'
-local Mesh    = require 'core/Mesh'
-local Scene   = require 'core/Scene'
-local Model   = require 'core/Model'
-local Matrix4 = require 'core/Matrix4'
 
 
 local FluidTank = class('example/FluidTank')
 
 function FluidTank:initialize( shaderProgram )
-
-    self.shaderProgram = shaderProgram
-
-    local scene = Json.decodeFromFile('example/FluidTank/Scene.json')
-    local meshBuffer = Scene.createMeshBuffer(scene.Cylinder)
-    self.mesh = Mesh:new(meshBuffer)
-
-    self.diffuseTexture = Texture:new('2d', 'example/FluidTank/Diffuse.png')
-
-    self.model = Model:new(self.shaderProgram)
-    self.model:setMesh(self.mesh)
-    self.model:setTexture(0, self.diffuseTexture)
+    local mesh = Mesh:load('example/FluidTank/Scene.json', 'Cylinder')
+    local diffuseTexture = Texture:load('2d', 'example/FluidTank/Diffuse.png')
+    self.model = Model:new(shaderProgram)
+    self.model:setMesh(mesh)
+    self.model:setTexture(0, diffuseTexture)
     self.model:setUniform('DiffuseSampler', 0)
 end
 

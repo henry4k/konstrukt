@@ -1,13 +1,12 @@
 local class = require 'core/middleclass'
-local ResourceManager = require 'core/ResourceManager'
+local Resource = require 'core/Resource'
 
 
 local Texture = class('core/Texture')
+Texture:include(Resource)
 
-function Texture.static:registerResource()
-    ResourceManager.registerLoader('core/Texture', function( ... )
-        return Texture:new(...)
-    end)
+function Texture.static:load( ... )
+    return Texture:new(...)
 end
 
 function Texture:initialize( target, fileName, ... )
@@ -24,5 +23,6 @@ function Texture:destroy()
     NATIVE.DestroyTexture(self.handle)
     self.handle = nil
 end
+
 
 return Texture

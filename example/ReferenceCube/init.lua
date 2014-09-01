@@ -1,23 +1,14 @@
 local class = require 'core/middleclass'
-
-local Json    = require 'core/Json'
+local Model = require 'core/Model'
+local Mesh  = require 'core/Mesh'
 local Texture = require 'core/Texture'
-local Mesh    = require 'core/Mesh'
-local Scene   = require 'core/Scene'
-local Model   = require 'core/Model'
-local Matrix4 = require 'core/Matrix4'
 
 
 local ReferenceCube = class('example/ReferenceCube')
 
 function ReferenceCube:initialize( stage, shaderProgram )
-
-    local scene = Json.decodeFromFile('example/ReferenceCube/Scene.json')
-    local meshBuffer = Scene.createMeshBuffer(scene.Cube)
-    local mesh = Mesh:new(meshBuffer)
-
-    local diffuseTexture = Texture:new('2d', 'example/ReferenceCube/Diffuse.png')
-
+    local mesh = Mesh:load('example/ReferenceCube/Scene.json', 'Cube')
+    local diffuseTexture = Texture:load('2d', 'example/ReferenceCube/Diffuse.png')
     self.model = Model:new(stage, shaderProgram)
     self.model:setMesh(mesh)
     self.model:setTexture(0, diffuseTexture)

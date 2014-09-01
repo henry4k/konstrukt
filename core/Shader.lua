@@ -1,15 +1,14 @@
 local class = require 'core/middleclass'
-local ResourceManager = require 'core/ResourceManager'
+local Resource = require 'core/Resource'
 
 
 --- Creates a shader by reading the given `fileName`.
 -- The shader type is determined by the file extension automatically.
 local Shader = class('core/Shader')
+Shader:include(Resource)
 
-function Shader.static:registerResource()
-    ResourceManager.registerLoader('core/Shader', function( fileName )
-        return Shader:new(fileName)
-    end)
+function Shader.static:load( fileName )
+    return Shader:new(fileName)
 end
 
 function Shader:initialize( fileName )
