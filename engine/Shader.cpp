@@ -1,5 +1,5 @@
 #include <assert.h>
-#include <string.h> // strlen, memcmp
+#include <string.h> // strncmp, strlen, memcmp, memset, strncpy
 
 #include "Common.h"
 #include "OpenGL.h"
@@ -9,6 +9,7 @@
 
 
 static const GLuint INVALID_SHADER_HANDLE = 0;
+static const int MAX_GLOBAL_UNIFORMS = 8;
 
 
 struct Shader
@@ -19,7 +20,7 @@ struct Shader
 
 struct UniformDefinition
 {
-    char name[MAX_UNIFORM_NAME_LENGTH];
+    char name[MAX_UNIFORM_NAME_LENGTH+1];
     int location;
     UniformType type;
 };
@@ -36,8 +37,27 @@ struct ShaderProgram
     int uniformCount;
     UniformDefinition* uniformDefinitions;
     UniformValue* currentUniformValues;
-    UniformValue* defaultUniformValues;
 };
+
+struct GlobalUniform
+{
+    bool active;
+    char name[MAX_UNIFORM_NAME_LENGTH+1];
+    UniformType type;
+    UniformValue value;
+};
+
+static GlobalUniform GlobalUniforms[MAX_GLOBAL_UNIFORMS];
+
+bool InitShader()
+{
+    memset(GlobalUniforms, 0, sizeof(GlobalUniforms));
+    return true;
+}
+
+void DestroyShader()
+{
+}
 
 
 // ----- Tools ------
@@ -229,7 +249,7 @@ void ReleaseShader( Shader* shader )
 
 static void FreeShaderProgram( ShaderProgram* program );
 
-void ShowShaderProgramLog( ShaderProgram* program )
+static void ShowShaderProgramLog( ShaderProgram* program )
 {
     GLint length = 0;
     glGetProgramiv(program->handle, GL_INFO_LOG_LENGTH, &length);
@@ -269,7 +289,7 @@ static UniformType GLToUniformType( GLenum glType )
     }
 }
 
-static int GetUniformSize( UniformType type )
+int GetUniformSize( UniformType type )
 {
     switch(type)
     {
@@ -300,12 +320,6 @@ static void ReadUniformDefinitions( ShaderProgram* program )
         program->currentUniformValues = NULL;
     }
 
-    if(program->defaultUniformValues)
-    {
-        delete[] program->defaultUniformValues;
-        program->defaultUniformValues = NULL;
-    }
-
     int count = 0;
     glGetProgramiv(program->handle, GL_ACTIVE_UNIFORMS, &count);
 
@@ -329,6 +343,7 @@ static void ReadUniformDefinitions( ShaderProgram* program )
             &glType,
             def->name
         );
+        def->name[MAX_UNIFORM_NAME_LENGTH] = '\0';
         assert(nameLength > 0);
 
         def->location = glGetUniformLocation(program->handle, def->name);
@@ -337,9 +352,6 @@ static void ReadUniformDefinitions( ShaderProgram* program )
 
     program->currentUniformValues = new UniformValue[count];
     memset(program->currentUniformValues, 0, sizeof(UniformValue)*count);
-
-    program->defaultUniformValues = new UniformValue[count];
-    memset(program->defaultUniformValues, 0, sizeof(UniformValue)*count);
 }
 
 ShaderProgram* LinkShaderProgram( Shader** shaders, int shaderCount )
@@ -425,9 +437,6 @@ static void FreeShaderProgram( ShaderProgram* program )
     if(program->currentUniformValues)
         delete[] program->currentUniformValues;
 
-    if(program->defaultUniformValues)
-        delete[] program->defaultUniformValues;
-
     delete program;
 }
 
@@ -454,12 +463,11 @@ void BindShaderProgram( const ShaderProgram* program )
     }
 }
 
-int GetUniformCount( const ShaderProgram* program )
-{
-    return program->uniformCount;
-}
-
-int GetUniformIndex( const ShaderProgram* program, const char* name )
+/**
+ * @return
+ * The uniforms index or #INVALID_UNIFORM_INDEX.
+ */
+static int GetUniformIndex( const ShaderProgram* program, const char* name )
 {
     for(int i = 0; i < program->uniformCount; i++)
         if(strncmp(name, program->uniformDefinitions[i].name, MAX_UNIFORM_NAME_LENGTH) == 0)
@@ -475,7 +483,7 @@ static bool UniformValuesAreEqual( const UniformDefinition* definition,
     return memcmp(a, b, size) == 0;
 }
 
-void SetUniform( ShaderProgram* program, int index, const UniformValue* value )
+static void SetUniform( ShaderProgram* program, int index, const UniformValue* value )
 {
     assert(program);
     assert(index >= 0);
@@ -518,40 +526,63 @@ void SetUniform( ShaderProgram* program, int index, const UniformValue* value )
     }
 }
 
-void SetUniformDefault( ShaderProgram* program, int index, const UniformValue* value )
-{
-    assert(index >= 0);
-    assert(index < program->uniformCount);
-
-    program->defaultUniformValues[index] = *value;
-}
-
-void ResetUniform( ShaderProgram* program, int index )
-{
-    assert(index >= 0);
-    assert(index < program->uniformCount);
-
-    const UniformValue* defaultValue = &program->defaultUniformValues[index];
-    SetUniform(program, index, defaultValue);
-}
-
-void SetUniform( ShaderProgram* program, const char* name, const UniformValue* value )
+void SetUniform( ShaderProgram* program,
+                 const char* name,
+                 UniformType type,
+                 const UniformValue* value )
 {
     const int index = GetUniformIndex(program, name);
     if(index != INVALID_UNIFORM_INDEX)
         SetUniform(program, index, value);
 }
 
-void SetUniformDefault( ShaderProgram* program, const char* name, const UniformValue* value )
+static GlobalUniform* FindGlobalUniform( const char* name )
 {
-    const int index = GetUniformIndex(program, name);
-    if(index != INVALID_UNIFORM_INDEX)
-        SetUniformDefault(program, index, value);
+    for(int i = 0; i < MAX_GLOBAL_UNIFORMS; i++)
+        if(strncmp(name, GlobalUniforms[i].name, MAX_UNIFORM_NAME_LENGTH) == 0)
+            return &GlobalUniforms[i];
+    return NULL;
 }
 
-void ResetUniform( ShaderProgram* program, const char* name )
+static GlobalUniform* FindFreeGlobalUniform()
 {
-    const int index = GetUniformIndex(program, name);
-    if(index != INVALID_UNIFORM_INDEX)
-        ResetUniform(program, index);
+    for(int i = 0; i < MAX_GLOBAL_UNIFORMS; i++)
+        if(!GlobalUniforms[i].active)
+            return &GlobalUniforms[i];
+    return NULL;
+}
+
+void SetGlobalUniform( const char* name,
+                       UniformType type,
+                       const UniformValue* value )
+{
+    GlobalUniform* uniform = FindGlobalUniform(name);
+    if(!uniform)
+        uniform = FindFreeGlobalUniform();
+    if(!uniform)
+        FatalError("Too many global uniforms.");
+
+    memset(uniform, 0, sizeof(GlobalUniform));
+
+    uniform->active = true;
+    strncpy(uniform->name, name, MAX_UNIFORM_NAME_LENGTH);
+    uniform->type = type;
+    memcpy(&uniform->value, value, GetUniformSize(type));
+}
+
+void UnsetGlobalUniform( const char* name )
+{
+    GlobalUniform* uniform = FindGlobalUniform(name);
+    if(uniform)
+        uniform->active = false;
+}
+
+void ApplyGlobalUniforms( ShaderProgram* program )
+{
+    for(int i = 0; i < MAX_GLOBAL_UNIFORMS; i++)
+    {
+        GlobalUniform* uniform = &GlobalUniforms[i];
+        if(uniform->active)
+            SetUniform(program, uniform->name, uniform->type, &uniform->value);
+    }
 }

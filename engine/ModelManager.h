@@ -2,6 +2,7 @@
 #define __APOAPSIS_MODEL_MANAGER__
 
 #include "Math.h"
+#include "Shader.h" // UniformType
 
 
 struct Texture;
@@ -9,7 +10,6 @@ struct Mesh;
 struct Model;
 struct ShaderProgram;
 struct Solid;
-struct UniformValue;
 
 
 enum ModelStage
@@ -36,7 +36,10 @@ void SetModelAttachmentTarget( Model* model, Solid* target );
 void SetModelTransformation( Model* model, glm::mat4 transformation );
 void SetModelMesh( Model* model, Mesh* mesh );
 void SetModelTexture( Model* model, int unit, Texture* texture );
-void SetModelUniform( Model* model, const char* name, UniformValue* value );
+void SetModelUniform( Model* model,
+                      const char* name,
+                      UniformType type,
+                      const UniformValue* value );
 void UnsetModelUniform( Model* model, const char* name );
 
 #endif

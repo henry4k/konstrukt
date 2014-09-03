@@ -34,8 +34,7 @@ static int Lua_CreateModel( lua_State* l )
     }
     else
     {
-        luaL_error(l, "Can't create more models.");
-        return 0;
+        return luaL_error(l, "Can't create more models.");
     }
 }
 
@@ -79,40 +78,62 @@ static int Lua_SetModelTexture( lua_State* l )
     return 0;
 }
 
+void SetModelUniform( Model* model, const char* name, UniformValue* value );
+
 static int Lua_SetModelUniform( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
-    const char* uniformName = luaL_checkstring(l, 2);
-    UniformValue uniformValue;
-    memset(&uniformValue, 0, sizeof(uniformValue));
+    const char* name = luaL_checkstring(l, 2);
 
-    const int argc = lua_gettop(l);
-    static const int FIRST_VALUE = 3;
-
-    if(argc < FIRST_VALUE)
+    static const char* types[] =
     {
-        luaL_error(l, "Uniform value missing.");
-        return 0;
+        "int",
+        "float",
+        "vec3",
+        "vec4",
+        "mat3",
+        "mat4",
+        NULL
+    };
+    const UniformType type = (UniformType)luaL_checkoption(l, 3, NULL, types);
+
+    UniformValue value;
+    switch(type)
+    {
+        case INT_UNIFORM:
+            value.i = (int)luaL_checknumber(l, 4);
+            SetModelUniform(model, name, type, &value);
+            break;
+
+        case FLOAT_UNIFORM:
+            value.f = luaL_checknumber(l, 4);
+            SetModelUniform(model, name, type, &value);
+            break;
+
+        case VEC3_UNIFORM:
+            value.data[0] = luaL_checknumber(l, 4);
+            value.data[1] = luaL_checknumber(l, 5);
+            value.data[2] = luaL_checknumber(l, 6);
+            SetModelUniform(model, name, type, &value);
+            break;
+
+        case VEC4_UNIFORM:
+            value.data[0] = luaL_checknumber(l, 4);
+            value.data[1] = luaL_checknumber(l, 5);
+            value.data[2] = luaL_checknumber(l, 6);
+            value.data[3] = luaL_checknumber(l, 7);
+            SetModelUniform(model, name, type, &value);
+            break;
+
+        case MAT3_UNIFORM:
+            return luaL_argerror(l, 3, "mat3 is not support by the Lua api.");
+
+        case MAT4_UNIFORM:
+            const glm::mat4* m = CheckMatrix4FromLua(l, 4);
+            SetModelUniform(model, name, type, (const UniformValue*)&m);
+            break;
     }
 
-    if(argc >= FIRST_VALUE+3)
-    {
-        luaL_error(l, "Too many arguments.");
-        return 0;
-    }
-
-    if(lua_type(l, FIRST_VALUE) == LUA_TNUMBER)
-    {
-        // float, vec2, vec3, vec4
-        for(int argi = FIRST_VALUE; argi <= argc; argi++)
-            uniformValue.data[argi-FIRST_VALUE] = luaL_checknumber(l, argi);
-    }
-    else
-    {
-        uniformValue.m4() = *CheckMatrix4FromLua(l, FIRST_VALUE);
-    }
-
-    SetModelUniform(model, uniformName, &uniformValue);
     return 0;
 }
 

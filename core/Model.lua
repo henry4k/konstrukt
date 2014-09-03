@@ -30,18 +30,18 @@ function Model:setTexture( unit, texture )
     NATIVE.SetModelTexture(self.handle, unit, texture.handle)
 end
 
-function Model:setUniform( name, value )
-    if class.Object.isInstanceOf(value, Mat4) then
-        NATIVE.SetModelUniform(self.handle, name, value.handle)
-    elseif class.Object.isInstanceOf(value, Vec) then
-        NATIVE.SetModelUniform(self.handle, name, value:unpack())
+function Model:setUniform( name, value, type )
+    if value == nil then
+        if class.Object.isInstanceOf(value, Mat4) then
+            NATIVE.SetModelUniform(self.handle, name, 'mat4', value.handle)
+        elseif class.Object.isInstanceOf(value, Vec) then
+            NATIVE.SetModelUniform(self.handle, name, 'vec'..#value, value:unpack())
+        else
+            NATIVE.SetModelUniform(self.handle, name, type, value)
+        end
     else
-        NATIVE.SetModelUniform(self.handle, name, value)
+        NATIVE.UnsetModelUniform(self.handle, name)
     end
-end
-
-function Model:unsetUniform( name )
-    NATIVE.UnsetModelUniform(self.handle, name)
 end
 
 

@@ -5,7 +5,7 @@
 
 
 static const int INVALID_UNIFORM_INDEX = -1;
-static const int MAX_UNIFORM_NAME_LENGTH = 32;
+static const int MAX_UNIFORM_NAME_LENGTH = 31;
 
 struct Texture;
 struct Shader;
@@ -42,6 +42,11 @@ struct UniformValue
 };
 
 
+bool InitShader();
+void DestroyShader();
+
+int GetUniformSize( UniformType type );
+
 /**
  * Creates a shader by reading the given `fileName`.
  * The shader type is determined by the file extension automatically.
@@ -68,20 +73,17 @@ void ReleaseShaderProgram( ShaderProgram* program );
 
 void BindShaderProgram( const ShaderProgram* program );
 
-int GetUniformCount( const ShaderProgram* program );
+void SetUniform( ShaderProgram* program,
+                 const char* name,
+                 UniformType type,
+                 const UniformValue* value );
 
-/**
- * @return
- * The uniforms index or #INVALID_UNIFORM_INDEX.
- */
-int GetUniformIndex( const ShaderProgram* program, const char* name );
+void SetGlobalUniform( const char* name,
+                       UniformType type,
+                       const UniformValue* value );
 
-void SetUniform( ShaderProgram* program, int index, const UniformValue* value );
-void SetUniformDefault( ShaderProgram* program, int index, const UniformValue* value );
-void ResetUniform( ShaderProgram* program, int index );
+void UnsetGlobalUniform( const char* name );
 
-void SetUniform( ShaderProgram* program, const char* name, const UniformValue* value );
-void SetUniformDefault( ShaderProgram* program, const char* name, const UniformValue* value );
-void ResetUniform( ShaderProgram* program, const char* name );
+void ApplyGlobalUniforms( ShaderProgram* program );
 
 #endif

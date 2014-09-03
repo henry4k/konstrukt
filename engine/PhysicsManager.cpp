@@ -222,8 +222,6 @@ Solid* CreateSolid( float mass, glm::vec3 position, glm::quat rotation, Collisio
 
     // TEST BEGIN
     solid->rigidBody->setSleepingThresholds(0, 0);
-    Force* force = CreateForce(solid);
-    SetForce(force, glm::vec3(10,0,0), glm::vec3(0,0,0), false);
     // TEST END
 
     return solid;

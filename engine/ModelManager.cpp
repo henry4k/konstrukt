@@ -15,11 +15,14 @@
 using glm::mat4;
 
 
-enum UniformValueSource
+static const int MAX_LOCAL_UNIFORMS = 8;
+
+struct LocalUniform
 {
-    DEFAULT_UNIFORM_VALUE,
-    LOCAL_UNIFORM_VALUE,
-    UNIFORM_VALUE_SOURCE_COUNT
+    bool active;
+    char name[MAX_UNIFORM_NAME_LENGTH+1];
+    UniformType type;
+    UniformValue value;
 };
 
 struct Model
@@ -31,8 +34,7 @@ struct Model
     Mesh* mesh;
     Texture* textures[MAX_TEXTURE_UNITS];
     ShaderProgram* program;
-    UniformValue* localUniformValues;
-    bool* useLocalUniformValue;
+    LocalUniform uniforms[MAX_LOCAL_UNIFORMS];
     Solid* attachmentTarget;
 };
 
@@ -63,21 +65,21 @@ void DestroyModelManager()
     }
 }
 
-static void SetGlobalUniforms( ShaderProgram* program,
+static void SetLocalUniforms( ShaderProgram* program,
                                const mat4* projectionTransformation,
                                const mat4* viewTransformation )
 {
     const mat4 viewInverseTranspose = glm::inverseTranspose(*viewTransformation);
 
-    SetUniformDefault(program,
-                      "Projection",
-                      (const UniformValue*)projectionTransformation);
-    SetUniformDefault(program,
-                      "View",
-                      (const UniformValue*)viewTransformation);
-    SetUniformDefault(program,
-                      "ViewInverseTranspose",
-                      (const UniformValue*)&viewInverseTranspose);
+    SetGlobalUniform("Projection",
+                     MAT4_UNIFORM,
+                     (const UniformValue*)projectionTransformation);
+    SetGlobalUniform("View",
+                     MAT4_UNIFORM,
+                     (const UniformValue*)viewTransformation);
+    SetGlobalUniform("ViewInverseTranspose",
+                     MAT4_UNIFORM,
+                     (const UniformValue*)&viewInverseTranspose);
 }
 
 static mat4 CalculateFinalModelTransformation( const Model* model,
@@ -104,30 +106,28 @@ static void SetModelUniforms( const Model* model,
     const mat4 mvp = *projectionTransformation * modelView;
     const mat4 modelViewInverseTranspose = glm::inverseTranspose(modelView);
 
-    SetUniformDefault(program, // TODO: Is this actually used in shaders?
-                      "Model",
-                      (const UniformValue*)&finalModelTransformation);
-    SetUniformDefault(program,
-                      "ModelView",
-                      (const UniformValue*)&modelView);
-    SetUniformDefault(program,
-                      "MVP",
-                      (const UniformValue*)&mvp);
-    SetUniformDefault(program,
-                      "ModelViewInverseTranspose",
-                      (const UniformValue*)&modelViewInverseTranspose);
+    SetGlobalUniform("Model", // TODO: Is this actually used in shaders?
+                     MAT4_UNIFORM,
+                     (const UniformValue*)&finalModelTransformation);
+    SetGlobalUniform("ModelView",
+                     MAT4_UNIFORM,
+                     (const UniformValue*)&modelView);
+    SetGlobalUniform("MVP",
+                     MAT4_UNIFORM,
+                     (const UniformValue*)&mvp);
+    SetGlobalUniform("ModelViewInverseTranspose",
+                     MAT4_UNIFORM,
+                     (const UniformValue*)&modelViewInverseTranspose);
 }
 
 static void ApplyModelUniforms( const Model* model )
 {
     ShaderProgram* program = model->program;
-    const int uniformCount = GetUniformCount(program);
-    for(int i = 0; i < uniformCount; i++)
+    for(int i = 0; i < MAX_LOCAL_UNIFORMS; i++)
     {
-        if(model->useLocalUniformValue[i])
-            SetUniform(program, i, &model->localUniformValues[i]);
-        else
-            ResetUniform(program, i);
+        const LocalUniform* uniform = &model->uniforms[i];
+        if(uniform->active)
+            SetUniform(program, uniform->name, uniform->type, &uniform->value);
     }
 }
 
@@ -204,7 +204,7 @@ void DrawModels( const mat4* projectionTransformation,
 
         //if(model->program != currentProgram)
         {
-            SetGlobalUniforms(model->program,
+            SetLocalUniforms(model->program,
                               projectionTransformation,
                               viewTransformation);
             BindShaderProgram(model->program);
@@ -254,14 +254,6 @@ Model* CreateModel( ModelStage stage, ShaderProgram* program )
         model->program = program;
         ReferenceShaderProgram(program);
 
-        const int uniformCount = GetUniformCount(program);
-
-        model->localUniformValues = new UniformValue[uniformCount];
-        memset(model->localUniformValues, 0, sizeof(UniformValue)*uniformCount);
-
-        model->useLocalUniformValue = new bool[uniformCount];
-        memset(model->useLocalUniformValue, 0, sizeof(bool)*uniformCount);
-
         return model;
     }
     else
@@ -283,8 +275,6 @@ static void FreeModel( Model* model )
         ReleaseMesh(model->mesh);
     if(model->attachmentTarget)
         ReleaseSolid(model->attachmentTarget);
-    delete[] model->localUniformValues;
-    delete[] model->useLocalUniformValue;
 }
 
 void ReferenceModel( Model* model )
@@ -331,21 +321,45 @@ void SetModelTexture( Model* model, int unit, Texture* texture )
         ReferenceTexture(model->textures[unit]);
 }
 
-void SetModelUniform( Model* model, const char* name, UniformValue* value )
+static LocalUniform* FindUniform( Model* model, const char* name )
 {
-    const int index = GetUniformIndex(model->program, name);
-    if(index != INVALID_UNIFORM_INDEX)
-    {
-        model->useLocalUniformValue[index] = true;
-        model->localUniformValues[index] = *value;
-    }
+    LocalUniform* uniforms = model->uniforms;
+    for(int i = 0; i < MAX_LOCAL_UNIFORMS; i++)
+        if(strncmp(name, uniforms[i].name, MAX_UNIFORM_NAME_LENGTH) == 0)
+            return &uniforms[i];
+    return NULL;
+}
+
+static LocalUniform* FindFreeUniform( Model* model )
+{
+    LocalUniform* uniforms = model->uniforms;
+    for(int i = 0; i < MAX_LOCAL_UNIFORMS; i++)
+        if(!uniforms[i].active)
+            return &uniforms[i];
+    return NULL;
+}
+
+void SetModelUniform( Model* model, const char* name, UniformType type, const UniformValue* value )
+{
+    LocalUniform* uniform = FindUniform(model, name);
+    if(!uniform)
+        uniform = FindFreeUniform(model);
+    if(!uniform)
+        FatalError("Too many local uniforms for model %p.", model);
+
+    memset(uniform, 0, sizeof(LocalUniform));
+
+    uniform->active = true;
+    strncpy(uniform->name, name, MAX_UNIFORM_NAME_LENGTH);
+    uniform->type = type;
+    memcpy(&uniform->value, value, GetUniformSize(type));
 }
 
 void UnsetModelUniform( Model* model, const char* name )
 {
-    const int index = GetUniformIndex(model->program, name);
-    if(index != INVALID_UNIFORM_INDEX)
-        model->useLocalUniformValue[index] = false;
+    LocalUniform* uniform = FindUniform(model, name);
+    if(uniform)
+        uniform->active = false;
 }
 
 static bool ModelIsComplete( const Model* model )

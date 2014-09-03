@@ -19,8 +19,7 @@ static int Lua_LoadShader( lua_State* l )
     }
     else
     {
-        luaL_error(l, "Can't load shader '%s'", fileName);
-        return 0;
+        return luaL_error(l, "Can't load shader '%s'", fileName);
     }
 }
 
@@ -58,8 +57,7 @@ static int Lua_LinkShaderProgram( lua_State* l )
         else
         {
             delete[] shaders;
-            luaL_argerror(l, i+1, "Can't retrieve shader.");
-            return 0;
+            return luaL_argerror(l, i+1, "Can't retrieve shader.");
         }
     }
 
@@ -73,8 +71,7 @@ static int Lua_LinkShaderProgram( lua_State* l )
     }
     else
     {
-        luaL_error(l, "Can't create shader program.");
-        return 0;
+        return luaL_error(l, "Can't create shader program.");
     }
 }
 
@@ -85,52 +82,66 @@ static int Lua_DestroyShaderProgram( lua_State* l )
     return 0;
 }
 
-static int Lua_SetFloatUniform( lua_State* l )
+static int Lua_SetGlobalUniform( lua_State* l )
 {
-    ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
-    const char* name = luaL_checkstring(l, 2);
-    UniformValue value;
-    value.f = luaL_checknumber(l, 3);
-    SetUniform(program, name, &value);
-    return 0;
-}
+    const char* name = luaL_checkstring(l, 1);
 
-static int Lua_SetVectorUniform( lua_State* l )
-{
-    ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
-    const char* name = luaL_checkstring(l, 2);
-
-    const int valueCount = lua_gettop(l)-2;
-    if(valueCount <= 0)
-        luaL_error(l, "Too few arguments!");
-    if(valueCount > 4)
-        luaL_error(l, "Too many arguments!");
-    UniformValue uniformValue;
-
-    for(int i = 0; i < valueCount; i++)
+    static const char* types[] =
     {
-        const int stackPosition = i+2+1;
-        if(lua_type(l, stackPosition) == LUA_TNUMBER)
-        {
-            uniformValue.data[i] = lua_tonumber(l, stackPosition);
-        }
-        else
-        {
-            luaL_argerror(l, stackPosition, "Not a number");
-            return 0;
-        }
+        "int",
+        "float",
+        "vec3",
+        "vec4",
+        "mat3",
+        "mat4",
+        NULL
+    };
+    const UniformType type = (UniformType)luaL_checkoption(l, 2, NULL, types);
+
+    UniformValue value;
+    switch(type)
+    {
+        case INT_UNIFORM:
+            value.i = (int)luaL_checknumber(l, 3);
+            SetGlobalUniform(name, type, &value);
+            break;
+
+        case FLOAT_UNIFORM:
+            value.f = luaL_checknumber(l, 3);
+            SetGlobalUniform(name, type, &value);
+            break;
+
+        case VEC3_UNIFORM:
+            value.data[0] = luaL_checknumber(l, 3);
+            value.data[1] = luaL_checknumber(l, 4);
+            value.data[2] = luaL_checknumber(l, 5);
+            SetGlobalUniform(name, type, &value);
+            break;
+
+        case VEC4_UNIFORM:
+            value.data[0] = luaL_checknumber(l, 3);
+            value.data[1] = luaL_checknumber(l, 4);
+            value.data[2] = luaL_checknumber(l, 5);
+            value.data[3] = luaL_checknumber(l, 6);
+            SetGlobalUniform(name, type, &value);
+            break;
+
+        case MAT3_UNIFORM:
+            return luaL_argerror(l, 2, "mat3 is not support by the Lua api.");
+
+        case MAT4_UNIFORM:
+            const glm::mat4* m = CheckMatrix4FromLua(l, 3);
+            SetGlobalUniform(name, type, (const UniformValue*)&m);
+            break;
     }
 
-    SetUniform(program, name, &uniformValue);
     return 0;
 }
 
-static int Lua_SetMatrix4Uniform( lua_State* l )
+static int Lua_UnsetGlobalUniform( lua_State* l )
 {
-    ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
-    const char* name = luaL_checkstring(l, 2);
-    const glm::mat4* value = CheckMatrix4FromLua(l, 3);
-    SetUniform(program, name, (const UniformValue*)value);
+    const char* name = luaL_checkstring(l, 1);
+    UnsetGlobalUniform(name);
     return 0;
 }
 
@@ -155,7 +166,7 @@ bool RegisterShaderInLua()
 
         RegisterFunctionInLua("LinkShaderProgram", Lua_LinkShaderProgram) &&
         RegisterFunctionInLua("DestroyShaderProgram", Lua_DestroyShaderProgram) &&
-        RegisterFunctionInLua("SetFloatUniform", Lua_SetFloatUniform) &&
-        RegisterFunctionInLua("SetVectorUniform", Lua_SetVectorUniform) &&
-        RegisterFunctionInLua("SetMatrix4Uniform", Lua_SetMatrix4Uniform);
+
+        RegisterFunctionInLua("SetGlobalUniform", Lua_SetGlobalUniform) &&
+        RegisterFunctionInLua("UnsetGlobalUniform", Lua_UnsetGlobalUniform);
 }

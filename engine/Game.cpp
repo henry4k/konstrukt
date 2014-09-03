@@ -12,6 +12,7 @@
 #include "PhysicsManager.h"
 #include "RenderManager.h"
 #include "ModelManager.h"
+#include "Shader.h"
 #include "Game.h"
 
 #include "LuaBindings/Audio.h"
@@ -58,6 +59,10 @@ bool InitGame( const int argc, char** argv )
 
     Log("--------- Physics Manager ----------");
     if(!InitPhysicsManager())
+        return false;
+
+    Log("--------- Shader ----------");
+    if(!InitShader())
         return false;
 
     Log("--------- Render Manager ----------");
@@ -109,6 +114,7 @@ void DestroyGame()
     DestroyPlayer();
     DestroyModelManager();
     DestroyRenderManager();
+    DestroyShader();
     DestroyPhysicsManager();
     DestroyControls();
     DestroyAudio();
