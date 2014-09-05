@@ -161,3 +161,17 @@ Brand Effekt:
 Antriebs Effekt:
 
     Timer:
+
+
+## GUI
+
+- So wenig GUI wie möglich, weil GUIs die Immersion kaputt machen.
+- Keine altbackenen 2D GUIs.
+- Sondern holographische 3D Interfaces, welche sich in die Spielwelt integrieren.
+
+- 2D Flächen, welche auf eine gedachte Kugel um den Spieler "projeziert" werden.
+- Elemente werden beim erzeugen in Blickrichtung positioniert. (Also quasi unter dem Mauszeiger)
+- Unterfenster erzeugen eine neue Kugelebene, welche die alte nach aussen schiebt und transparenter werden lässt.
+
+- Rendering v1: Jede GUI-Ebene wird auf eine Textur gerendert, welche dann auf die Kugel gemappt wird.
+- Rendering v2: GUI-Elemente erzeugen kugelförmige Meshes
