@@ -11,7 +11,6 @@
 #include "Lua.h"
 #include "PhysicsManager.h"
 #include "RenderManager.h"
-#include "ModelManager.h"
 #include "Shader.h"
 #include "Game.h"
 
@@ -23,7 +22,7 @@
 #include "LuaBindings/MeshBuffer.h"
 #include "LuaBindings/Player.h"
 #include "LuaBindings/RenderManager.h"
-#include "LuaBindings/ModelManager.h"
+#include "LuaBindings/ModelWorld.h"
 #include "LuaBindings/PhysicsManager.h"
 #include "LuaBindings/Shader.h"
 #include "LuaBindings/Texture.h"
@@ -69,10 +68,6 @@ bool InitGame( const int argc, char** argv )
     if(!InitRenderManager())
         return false;
 
-    Log("--------- Model Manager ----------");
-    if(!InitModelManager())
-        return false;
-
     Log("----------- Player ------------");
     if(!InitPlayer())
         return false;
@@ -102,7 +97,7 @@ static bool RegisterAllModulesInLua()
         RegisterMeshBufferInLua() &&
         RegisterPlayerInLua() &&
         RegisterRenderManagerInLua() &&
-        RegisterModelManagerInLua() &&
+        RegisterModelWorldInLua() &&
         RegisterPhysicsManagerInLua() &&
         RegisterShaderInLua() &&
         RegisterTextureInLua();
@@ -112,7 +107,6 @@ void DestroyGame()
 {
     DestroyLua();
     DestroyPlayer();
-    DestroyModelManager();
     DestroyRenderManager();
     DestroyShader();
     DestroyPhysicsManager();

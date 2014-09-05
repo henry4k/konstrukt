@@ -3,29 +3,56 @@
 #include "../Lua.h"
 #include "../Mesh.h"
 #include "../Shader.h"
-#include "../ModelManager.h"
+#include "../ModelWorld.h"
 #include "Math.h"
 #include "Mesh.h"
 #include "Texture.h"
 #include "Shader.h"
 #include "PhysicsManager.h"
-#include "ModelManager.h"
+#include "ModelWorld.h"
 
+
+// ---- ModelWorld ----
+
+static int Lua_CreateModelWorld( lua_State* l )
+{
+    ModelWorld* world = CreateModelWorld();
+    if(world)
+    {
+        PushPointerToLua(l, world);
+        ReferenceModelWorld(world);
+        return 1;
+    }
+    else
+    {
+        return luaL_error(l, "Can't create more model worlds.");
+    }
+}
+
+static int Lua_DestroyModelWorld( lua_State* l )
+{
+    ModelWorld* world = CheckModelWorldFromLua(l, 1);
+    ReleaseModelWorld(world);
+    return 0;
+}
+
+ModelWorld* GetModelWorldFromLua( lua_State* l, int stackPosition )
+{
+    return (ModelWorld*)GetPointerFromLua(l, stackPosition);
+}
+
+ModelWorld* CheckModelWorldFromLua( lua_State* l, int stackPosition )
+{
+    return (ModelWorld*)CheckPointerFromLua(l, stackPosition);
+}
+
+
+// ---- Model ----
 
 static int Lua_CreateModel( lua_State* l )
 {
-    static const char* stages[] =
-    {
-        "background",
-        "world",
-        "hud",
-        NULL
-    };
-
-    const ModelStage stage = (ModelStage)luaL_checkoption(l, 1, NULL, stages);
-    ShaderProgram* program = CheckShaderProgramFromLua(l, 2);
-
-    Model* model = CreateModel(stage, program);
+    ModelWorld* world = CheckModelWorldFromLua(l, 1);
+    Model* model = CreateModel(world);
     if(model)
     {
         PushPointerToLua(l, model);
@@ -78,7 +105,13 @@ static int Lua_SetModelTexture( lua_State* l )
     return 0;
 }
 
-void SetModelUniform( Model* model, const char* name, UniformValue* value );
+static int Lua_SetModelProgramFamilyList( lua_State* l )
+{
+    Model* model = CheckModelFromLua(l, 1);
+    const char* familyList = luaL_checkstring(l, 2);
+    SetModelProgramFamilyList(model, familyList);
+    return 0;
+}
 
 static int Lua_SetModelUniform( lua_State* l )
 {
@@ -158,12 +191,16 @@ Model* CheckModelFromLua( lua_State* l, int stackPosition )
 bool RegisterModelManagerInLua()
 {
     return
+        RegisterFunctionInLua("CreateModelWorld", Lua_CreateModelWorld) &&
+        RegisterFunctionInLua("DestroyModelWorld", Lua_DestroyModelWorld) &&
+
         RegisterFunctionInLua("CreateModel", Lua_CreateModel) &&
         RegisterFunctionInLua("DestroyModel", Lua_DestroyModel) &&
         RegisterFunctionInLua("SetModelAttachmentTarget", Lua_SetModelAttachmentTarget) &&
         RegisterFunctionInLua("SetModelTransformation", Lua_SetModelTransformation) &&
         RegisterFunctionInLua("SetModelMesh", Lua_SetModelMesh) &&
         RegisterFunctionInLua("SetModelTexture", Lua_SetModelTexture) &&
+        RegisterFunctionInLua("SetModelProgramFamilyList", Lua_SetModelProgramFamilyList) &&
         RegisterFunctionInLua("SetModelUniform", Lua_SetModelUniform) &&
         RegisterFunctionInLua("UnsetModelUniform", Lua_UnsetModelUniform);
 }

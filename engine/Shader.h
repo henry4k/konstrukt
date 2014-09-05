@@ -6,10 +6,13 @@
 
 static const int INVALID_UNIFORM_INDEX = -1;
 static const int MAX_UNIFORM_NAME_LENGTH = 31;
+static const int MAX_PROGRAM_FAMILY_NAME_LENGTH = 31;
+static const int MAX_PROGRAM_FAMILY_LIST_LENGTH = 127;
 
 struct Texture;
 struct Shader;
 struct ShaderProgram;
+struct ShaderProgramSet;
 
 enum UniformType
 {
@@ -85,5 +88,9 @@ void SetGlobalUniform( const char* name,
 void UnsetGlobalUniform( const char* name );
 
 void ApplyGlobalUniforms( ShaderProgram* program );
+
+ShaderProgram* GetShaderProgramByFamilyList( const ShaderProgramSet* set,
+                                             const char* familyList );
+
 
 #endif
