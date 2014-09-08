@@ -11,6 +11,7 @@ struct Model;
 struct ShaderProgram;
 struct ShaderProgramSet;
 struct Solid;
+struct Camera;
 
 
 struct ModelWorld;
@@ -22,9 +23,7 @@ void ReleaseModelWorld( ModelWorld* world );
 
 void DrawModelWorld( const ModelWorld* world,
                      const ShaderProgramSet* programSet,
-                     const glm::mat4* projectionTransformation,
-                     const glm::mat4* viewTransformation,
-                     const glm::mat4* modelTransformation );
+                     const Camera* camera );
 
 
 Model* CreateModel( ModelWorld* world );

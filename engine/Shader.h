@@ -76,6 +76,8 @@ void ReleaseShaderProgram( ShaderProgram* program );
 
 void BindShaderProgram( const ShaderProgram* program );
 
+bool HasUniform( ShaderProgram* program, const char* name );
+
 void SetUniform( ShaderProgram* program,
                  const char* name,
                  UniformType type,

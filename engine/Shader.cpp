@@ -475,6 +475,11 @@ static int GetUniformIndex( const ShaderProgram* program, const char* name )
     return INVALID_UNIFORM_INDEX;
 }
 
+bool HasUniform( ShaderProgram* program, const char* name )
+{
+    return GetUniformIndex(program, name) != INVALID_UNIFORM_INDEX;
+}
+
 static bool UniformValuesAreEqual( const UniformDefinition* definition,
                                    const UniformValue* a,
                                    const UniformValue* b )

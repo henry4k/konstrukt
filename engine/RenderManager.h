@@ -4,15 +4,11 @@
 #include "Math.h"
 
 
-struct Solid;
+struct Camera;
 
 
 bool InitRenderManager();
 void DestroyRenderManager();
 void RenderScene();
-
-void SetCameraAttachmentTarget( Solid* target );
-void SetCameraViewTransformation( glm::mat4 transformation );
-void SetCameraFieldOfView( float fov );
 
 #endif

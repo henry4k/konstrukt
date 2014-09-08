@@ -1,15 +1,13 @@
 #include <string.h> // memset, strcmp, strncpy
 #include <stdlib.h> // qsort
 
-#include "Math.h"
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/matrix_inverse.hpp>
 #include "Common.h"
 #include "Mesh.h"
 #include "Texture.h"
 #include "Shader.h"
 #include "Reference.h"
 #include "PhysicsManager.h"
+#include "Camera.h"
 #include "ModelWorld.h"
 
 using glm::mat4;
@@ -53,12 +51,9 @@ struct ModelWorld
 
 static void FreeModel( Model* model );
 static bool ModelIsComplete( const Model* model );
-static void SetCameraUniforms( const Model* model,
-                               ShaderProgram* program,
-                               const mat4* projectionTransformation,
-                               const mat4* viewTransformation,
-                               const mat4* modelTransformation );
-static void ApplyModelUniforms( const Model* model, ShaderProgram* program );
+static void SetModelUniforms( const Model* model,
+                              ShaderProgram* program,
+                              const Camera* camera );
 static int CompareModelDrawEntries( const void* a_, const void* b_ );
 
 ModelWorld* CreateModelWorld()
@@ -98,9 +93,7 @@ void ReleaseModelWorld( ModelWorld* world )
 
 void DrawModels( ModelWorld* world,
                  const ShaderProgramSet* programSet,
-                 const mat4* projectionTransformation,
-                 const mat4* viewTransformation,
-                 const mat4* modelTransformation )
+                 const Camera* camera )
 {
     Model* models = world->models;
     ModelDrawEntry drawList[MAX_MODELS] = {};
@@ -139,8 +132,9 @@ void DrawModels( ModelWorld* world,
 
         if(program != currentProgram)
         {
-            BindShaderProgram(program);
             currentProgram = program;
+            BindShaderProgram(program);
+            SetCameraUniforms(camera, program);
         }
 
         // Texture optimization is handled by the texture module already.
@@ -148,61 +142,30 @@ void DrawModels( ModelWorld* world,
             if(model->textures[i])
                 BindTexture(model->textures[i], i);
 
-        SetCameraUniforms(model,
-                          program,
-                          projectionTransformation,
-                          viewTransformation,
-                          modelTransformation);
-        ApplyModelUniforms(model, program);
+        SetModelUniforms(model, program, camera);
 
         // Mesh optimization is handled by the mesh module already.
         DrawMesh(model->mesh);
     }
 }
 
-static mat4 CalculateFinalModelTransformation( const Model* model,
-                                               const mat4* modelTransformation )
+static mat4 CalculateModelTransformation( const Model* model )
 {
     mat4 solidTransformation;
     if(model->attachmentTarget)
         GetSolidTransformation(model->attachmentTarget, &solidTransformation);
 
-    return *modelTransformation * solidTransformation * model->transformation;
+    return solidTransformation *
+           model->transformation;
 }
 
-static void SetCameraUniforms( const Model* model, // TODO: Move this in the Camera module.
-                               ShaderProgram* program,
-                               const mat4* projectionTransformation,
-                               const mat4* viewTransformation,
-                               const mat4* modelTransformation )
+static void SetModelUniforms( const Model* model,
+                              ShaderProgram* program,
+                              const Camera* camera )
 {
-    const mat4 finalModelTransformation =
-        CalculateFinalModelTransformation(model, modelTransformation);
+    const mat4 modelTransformation = CalculateModelTransformation(model);
+    SetCameraModelUniforms(camera, program, &modelTransformation);
 
-    const mat4 modelView = *viewTransformation * finalModelTransformation;
-    const mat4 mvp = *projectionTransformation * modelView;
-    const mat4 modelViewInverseTranspose = glm::inverseTranspose(modelView);
-
-    SetUniform(program,
-               "Model", // TODO: Is this actually used in shaders?
-               MAT4_UNIFORM,
-               (const UniformValue*)&finalModelTransformation);
-    SetUniform(program,
-               "ModelView",
-               MAT4_UNIFORM,
-               (const UniformValue*)&modelView);
-    SetUniform(program,
-               "MVP",
-               MAT4_UNIFORM,
-               (const UniformValue*)&mvp);
-    SetUniform(program,
-               "ModelViewInverseTranspose",
-               MAT4_UNIFORM,
-               (const UniformValue*)&modelViewInverseTranspose);
-}
-
-static void ApplyModelUniforms( const Model* model, ShaderProgram* program )
-{
     for(int i = 0; i < MAX_LOCAL_UNIFORMS; i++)
     {
         const LocalUniform* uniform = &model->uniforms[i];
