@@ -156,6 +156,52 @@ ShaderProgram* CheckShaderProgramFromLua( lua_State* l, int stackPosition )
 }
 
 
+// --- ShaderProgramSet ---
+
+static int Lua_CreateShaderProgramSet( lua_State* l )
+{
+    ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
+    ShaderProgramSet* set = CreateShaderProgramSet(program);
+
+    if(set)
+    {
+        PushPointerToLua(l, set);
+        ReferenceShaderProgramSet(set);
+        return 1;
+    }
+    else
+    {
+        return luaL_error(l, "Can't create shader program set.");
+    }
+}
+
+static int Lua_DestroyShaderProgramSet( lua_State* l )
+{
+    ShaderProgramSet* set = CheckShaderProgramSetFromLua(l, 1);
+    ReleaseShaderProgramSet(set);
+    return 0;
+}
+
+static int Lua_SetShaderProgramFamily( lua_State* l )
+{
+    ShaderProgramSet* set = CheckShaderProgramSetFromLua(l, 1);
+    const char* family = luaL_checkstring(l, 2);
+    ShaderProgram* program = CheckShaderProgramFromLua(l, 3);
+    SetShaderProgramFamily(set, family, program);
+    return 0;
+}
+
+ShaderProgramSet* GetShaderProgramSetFromLua( lua_State* l, int stackPosition )
+{
+    return (ShaderProgramSet*)GetPointerFromLua(l, stackPosition);
+}
+
+ShaderProgramSet* CheckShaderProgramSetFromLua( lua_State* l, int stackPosition )
+{
+    return (ShaderProgramSet*)CheckPointerFromLua(l, stackPosition);
+}
+
+
 // --- Register in Lua ---
 
 bool RegisterShaderInLua()
@@ -168,5 +214,9 @@ bool RegisterShaderInLua()
         RegisterFunctionInLua("DestroyShaderProgram", Lua_DestroyShaderProgram) &&
 
         RegisterFunctionInLua("SetGlobalUniform", Lua_SetGlobalUniform) &&
-        RegisterFunctionInLua("UnsetGlobalUniform", Lua_UnsetGlobalUniform);
+        RegisterFunctionInLua("UnsetGlobalUniform", Lua_UnsetGlobalUniform) &&
+
+        RegisterFunctionInLua("CreateShaderProgramSet", Lua_CreateShaderProgramSet) &&
+        RegisterFunctionInLua("DestroyShaderProgramSet", Lua_DestroyShaderProgramSet) &&
+        RegisterFunctionInLua("SetShaderProgramFamily", Lua_SetShaderProgramFamily);
 }

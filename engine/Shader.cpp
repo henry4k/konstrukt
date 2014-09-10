@@ -10,6 +10,7 @@
 
 static const GLuint INVALID_SHADER_HANDLE = 0;
 static const int MAX_GLOBAL_UNIFORMS = 8;
+static const int MAX_SHADER_PROGRAM_SET_ENTRIES = 8;
 
 
 struct Shader
@@ -37,6 +38,18 @@ struct ShaderProgram
     int uniformCount;
     UniformDefinition* uniformDefinitions;
     UniformValue* currentUniformValues;
+};
+
+struct ShaderProgramSetEntry
+{
+    char family[MAX_PROGRAM_FAMILY_LENGTH+1];
+    ShaderProgram* program;
+};
+
+struct ShaderProgramSet
+{
+    ReferenceCounter refCounter;
+    ShaderProgramSetEntry entries[MAX_SHADER_PROGRAM_SET_ENTRIES];
 };
 
 struct GlobalUniform
@@ -463,10 +476,6 @@ void BindShaderProgram( const ShaderProgram* program )
     }
 }
 
-/**
- * @return
- * The uniforms index or #INVALID_UNIFORM_INDEX.
- */
 static int GetUniformIndex( const ShaderProgram* program, const char* name )
 {
     for(int i = 0; i < program->uniformCount; i++)
@@ -551,10 +560,7 @@ static GlobalUniform* FindGlobalUniform( const char* name )
 
 static GlobalUniform* FindFreeGlobalUniform()
 {
-    for(int i = 0; i < MAX_GLOBAL_UNIFORMS; i++)
-        if(!GlobalUniforms[i].active)
-            return &GlobalUniforms[i];
-    return NULL;
+    return FindGlobalUniform("");
 }
 
 void SetGlobalUniform( const char* name,
@@ -567,9 +573,6 @@ void SetGlobalUniform( const char* name,
     if(!uniform)
         FatalError("Too many global uniforms.");
 
-    memset(uniform, 0, sizeof(GlobalUniform));
-
-    uniform->active = true;
     strncpy(uniform->name, name, MAX_UNIFORM_NAME_LENGTH);
     uniform->type = type;
     memcpy(&uniform->value, value, GetUniformSize(type));
@@ -579,7 +582,7 @@ void UnsetGlobalUniform( const char* name )
 {
     GlobalUniform* uniform = FindGlobalUniform(name);
     if(uniform)
-        uniform->active = false;
+        memset(uniform, 0, sizeof(GlobalUniform));
 }
 
 void ApplyGlobalUniforms( ShaderProgram* program )
@@ -590,4 +593,124 @@ void ApplyGlobalUniforms( ShaderProgram* program )
         if(uniform->active)
             SetUniform(program, uniform->name, uniform->type, &uniform->value);
     }
+}
+
+
+// ---- ShaderProgramSet ----
+
+ShaderProgramSet* CreateShaderProgramSet( ShaderProgram* defaultProgram )
+{
+    ShaderProgramSet* set = new ShaderProgramSet;
+    memset(set, 0, sizeof(ShaderProgramSet));
+    InitReferenceCounter(&set->refCounter);
+    SetShaderProgramFamily(set, "default", defaultProgram);
+    return set;
+}
+
+static void FreeShaderProgramSet( ShaderProgramSet* set )
+{
+    FreeReferenceCounter(&set->refCounter);
+
+    for(int i = 0; i < MAX_SHADER_PROGRAM_SET_ENTRIES; i++)
+    {
+        ShaderProgram* program = set->entries[i].program;
+        if(program)
+            ReleaseShaderProgram(program);
+    }
+
+    delete set;
+}
+
+void ReferenceShaderProgramSet( ShaderProgramSet* set )
+{
+    Reference(&set->refCounter);
+}
+
+void ReleaseShaderProgramSet( ShaderProgramSet* set )
+{
+    Release(&set->refCounter);
+    if(!HasReferences(&set->refCounter))
+        FreeShaderProgramSet(set);
+}
+
+static ShaderProgramSetEntry* FindShaderProgramSetEntry( ShaderProgramSet* set,
+                                                         const char* family )
+{
+    for(int i = 0; i < MAX_SHADER_PROGRAM_SET_ENTRIES; i++)
+    {
+        ShaderProgramSetEntry* entry = &set->entries[i];
+        if(strncmp(family, entry->family, MAX_PROGRAM_FAMILY_LENGTH) == 0)
+            return entry;
+    }
+    return NULL;
+}
+
+void SetShaderProgramFamily( ShaderProgramSet* set,
+                             const char* family,
+                             ShaderProgram* program )
+{
+    ShaderProgramSetEntry* entry = FindShaderProgramSetEntry(set, family);
+    if(!entry)
+        entry = FindShaderProgramSetEntry(set, "");
+
+    if(entry)
+    {
+        strncpy(entry->family, family, MAX_PROGRAM_FAMILY_LENGTH);
+
+        if(entry->program)
+            ReleaseShaderProgram(entry->program);
+        entry->program = program;
+        if(entry->program)
+            ReferenceShaderProgram(entry->program);
+    }
+    else
+    {
+        FatalError("Too many family entries for shader program set %p.", set);
+    }
+}
+
+ShaderProgram* GetShaderProgramByFamilyList( ShaderProgramSet* set,
+                                             const char* familyList )
+{
+    assert(strlen(familyList) <= MAX_PROGRAM_FAMILY_LENGTH);
+
+    char family[MAX_PROGRAM_FAMILY_LENGTH+1];
+    char* familyChar = family;
+    const char* c = familyList;
+    const ShaderProgramSetEntry* entry = NULL;
+
+    while(true)
+    {
+        bool stop = false;
+        switch(*c)
+        {
+            case '\0':
+                stop = true;
+
+            case ',':
+                *familyChar = '\0';
+
+                entry = FindShaderProgramSetEntry(set, family);
+                if(entry)
+                    return entry->program;
+
+                familyChar = family;
+                break;
+
+            default:
+                *familyChar = *c;
+        }
+
+        if(stop)
+            break;
+
+        familyChar++;
+        c++;
+    }
+
+    entry = FindShaderProgramSetEntry(set, "default");
+    if(entry)
+        return entry->program;
+    else
+        return NULL;
 }

@@ -18,7 +18,6 @@ static const int MAX_MODELS = 8;
 
 struct LocalUniform
 {
-    bool active;
     char name[MAX_UNIFORM_NAME_LENGTH+1];
     UniformType type;
     UniformValue value;
@@ -91,9 +90,9 @@ void ReleaseModelWorld( ModelWorld* world )
         FreeModelWorld(world);
 }
 
-void DrawModels( ModelWorld* world,
-                 const ShaderProgramSet* programSet,
-                 const Camera* camera )
+void DrawModelWorld( ModelWorld* world,
+                     const ShaderProgramSet* programSet,
+                     const Camera* camera )
 {
     Model* models = world->models;
     ModelDrawEntry drawList[MAX_MODELS] = {};
@@ -308,11 +307,7 @@ static LocalUniform* FindUniform( Model* model, const char* name )
 
 static LocalUniform* FindFreeUniform( Model* model )
 {
-    LocalUniform* uniforms = model->uniforms;
-    for(int i = 0; i < MAX_LOCAL_UNIFORMS; i++)
-        if(!uniforms[i].active)
-            return &uniforms[i];
-    return NULL;
+    return FindUniform(model, "");
 }
 
 void SetModelUniform( Model* model, const char* name, UniformType type, const UniformValue* value )
@@ -325,7 +320,6 @@ void SetModelUniform( Model* model, const char* name, UniformType type, const Un
 
     memset(uniform, 0, sizeof(LocalUniform));
 
-    uniform->active = true;
     strncpy(uniform->name, name, MAX_UNIFORM_NAME_LENGTH);
     uniform->type = type;
     memcpy(&uniform->value, value, GetUniformSize(type));
@@ -335,7 +329,7 @@ void UnsetModelUniform( Model* model, const char* name )
 {
     LocalUniform* uniform = FindUniform(model, name);
     if(uniform)
-        uniform->active = false;
+        uniform->name[0] = '\0';
 }
 
 static bool ModelIsComplete( const Model* model )

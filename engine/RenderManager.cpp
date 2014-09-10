@@ -5,7 +5,8 @@
 #include "Window.h"
 #include "Reference.h"
 #include "PhysicsManager.h"
-#include "ModelManager.h"
+#include "ModelWorld.h"
+#include "Camera.h"
 #include "RenderManager.h"
 
 
@@ -49,15 +50,8 @@ static void UpdateProjectionTransformation()
 
 void RenderScene()
 {
-    glm::mat4 cameraTargetTransformation;
-    if(CameraAttachmentTarget)
-    {
-        GetSolidTransformation(CameraAttachmentTarget, &cameraTargetTransformation);
-        cameraTargetTransformation = glm::inverse(cameraTargetTransformation);
-    }
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    DrawModels(MainModelWorld, NULL, MainCamera);
+    DrawModelWorld(MainModelWorld, NULL, MainCamera);
     SwapBuffers();
 
     /*
