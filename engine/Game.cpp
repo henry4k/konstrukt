@@ -10,8 +10,10 @@
 #include "Math.h"
 #include "Lua.h"
 #include "PhysicsManager.h"
+#include "RenderTarget.h"
 #include "RenderManager.h"
-#include "ModelManager.h"
+#include "Camera.h"
+#include "Shader.h"
 #include "Game.h"
 
 #include "LuaBindings/Audio.h"
@@ -22,7 +24,8 @@
 #include "LuaBindings/MeshBuffer.h"
 #include "LuaBindings/Player.h"
 #include "LuaBindings/RenderManager.h"
-#include "LuaBindings/ModelManager.h"
+#include "LuaBindings/RenderTarget.h"
+#include "LuaBindings/ModelWorld.h"
 #include "LuaBindings/PhysicsManager.h"
 #include "LuaBindings/Shader.h"
 #include "LuaBindings/Texture.h"
@@ -60,12 +63,16 @@ bool InitGame( const int argc, char** argv )
     if(!InitPhysicsManager())
         return false;
 
+    Log("--------- Shader ----------");
+    if(!InitShader())
+        return false;
+
     Log("--------- Render Manager ----------");
     if(!InitRenderManager())
         return false;
 
-    Log("--------- Model Manager ----------");
-    if(!InitModelManager())
+    Log("--------- Default Render Target ----------");
+    if(!InitDefaultRenderTarget())
         return false;
 
     Log("----------- Player ------------");
@@ -97,7 +104,8 @@ static bool RegisterAllModulesInLua()
         RegisterMeshBufferInLua() &&
         RegisterPlayerInLua() &&
         RegisterRenderManagerInLua() &&
-        RegisterModelManagerInLua() &&
+        RegisterRenderTargetInLua() &&
+        RegisterModelWorldInLua() &&
         RegisterPhysicsManagerInLua() &&
         RegisterShaderInLua() &&
         RegisterTextureInLua();
@@ -107,8 +115,9 @@ void DestroyGame()
 {
     DestroyLua();
     DestroyPlayer();
-    DestroyModelManager();
+    DestroyDefaultRenderTarget();
     DestroyRenderManager();
+    DestroyShader();
     DestroyPhysicsManager();
     DestroyControls();
     DestroyAudio();
@@ -133,7 +142,10 @@ void RunGame()
         UpdatePhysicsManager(timeDelta);
         lastTime = curTime;
 
-        SetCameraViewTransformation(GetPlayerViewMatrix());
+        RenderTarget* defaultRenderTarget = GetDefaultRenderTarget();
+        Camera* camera = GetRenderTargetCamera(defaultRenderTarget);
+        if(camera)
+            SetCameraViewTransformation(camera, GetPlayerViewMatrix());
         RenderScene();
     }
 }

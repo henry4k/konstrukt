@@ -32,13 +32,17 @@ function ShaderProgram:destroy()
     self.handle = nil
 end
 
-function ShaderProgram:setUniform( name, value )
-    if class.Object.isInstanceOf(value, Mat4) then
-        NATIVE.SetMatrix4Unifrom(self.handle, name, value.handle)
-    elseif class.Object.isInstanceOf(value, Vec) then
-        NATIVE.SetVectorUnifrom(self.handle, name, value:unpack())
+function ShaderProgram.static:setGlobalUniform( name, value, type )
+    if value == nil then
+        if class.Object.isInstanceOf(value, Mat4) then
+            NATIVE.SetGlobalUniform(name, 'mat4', value.handle)
+        elseif class.Object.isInstanceOf(value, Vec) then
+            NATIVE.SetGlobalUniform(name, 'vec'..#value, value:unpack())
+        else
+            NATIVE.SetGlobalUniform(name, type, value)
+        end
     else
-        NATIVE.SetFloatUnifrom(self.handle, name, value)
+        NATIVE.UnsetGlobalUniform(name)
     end
 end
 
