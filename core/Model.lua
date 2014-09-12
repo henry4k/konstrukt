@@ -5,8 +5,8 @@ local Mat4  = require 'core/Matrix4'
 
 local Model = class('core/Model')
 
-function Model:initialize( stage, shaderProgram )
-    self.handle = NATIVE.CreateModel(stage, shaderProgram.handle)
+function Model:initialize( handle )
+    self.handle = handle
 end
 
 function Model:destroy()
@@ -14,8 +14,8 @@ function Model:destroy()
     self.handle = nil
 end
 
-function Model:setAttachmentTarget( target )
-    NATIVE.SetModelAttachmentTarget(self.handle, target.handle)
+function Model:setAttachmentTarget( solid )
+    NATIVE.SetModelAttachmentTarget(self.handle, solid.handle)
 end
 
 function Model:setTransformation( transformation )
@@ -28,6 +28,10 @@ end
 
 function Model:setTexture( unit, texture )
     NATIVE.SetModelTexture(self.handle, unit, texture.handle)
+end
+
+function Model:setProgramFamilyList( familyList )
+    NATIVE.SetModelProgramFamilyList(self.handle, familyList)
 end
 
 function Model:setUniform( name, value, type )

@@ -645,6 +645,18 @@ static ShaderProgramSetEntry* FindShaderProgramSetEntry( ShaderProgramSet* set,
     return NULL;
 }
 
+static const ShaderProgramSetEntry* FindShaderProgramSetEntry( const ShaderProgramSet* set,
+                                                         const char* family )
+{
+    for(int i = 0; i < MAX_SHADER_PROGRAM_SET_ENTRIES; i++)
+    {
+        const ShaderProgramSetEntry* entry = &set->entries[i];
+        if(strncmp(family, entry->family, MAX_PROGRAM_FAMILY_LENGTH) == 0)
+            return entry;
+    }
+    return NULL;
+}
+
 void SetShaderProgramFamily( ShaderProgramSet* set,
                              const char* family,
                              ShaderProgram* program )
@@ -669,7 +681,7 @@ void SetShaderProgramFamily( ShaderProgramSet* set,
     }
 }
 
-ShaderProgram* GetShaderProgramByFamilyList( ShaderProgramSet* set,
+ShaderProgram* GetShaderProgramByFamilyList( const ShaderProgramSet* set,
                                              const char* familyList )
 {
     assert(strlen(familyList) <= MAX_PROGRAM_FAMILY_LENGTH);

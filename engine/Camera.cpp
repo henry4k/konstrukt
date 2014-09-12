@@ -163,3 +163,8 @@ void SetCameraModelUniforms( const Camera* camera,
         return glm::inverseTranspose(modelViewProjection);
     });
 }
+
+void DrawCameraView( const Camera* camera, ShaderProgramSet* set )
+{
+    DrawModelWorld(camera->world, set, camera);
+}

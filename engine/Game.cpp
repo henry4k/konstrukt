@@ -10,7 +10,9 @@
 #include "Math.h"
 #include "Lua.h"
 #include "PhysicsManager.h"
+#include "RenderTarget.h"
 #include "RenderManager.h"
+#include "Camera.h"
 #include "Shader.h"
 #include "Game.h"
 
@@ -22,6 +24,7 @@
 #include "LuaBindings/MeshBuffer.h"
 #include "LuaBindings/Player.h"
 #include "LuaBindings/RenderManager.h"
+#include "LuaBindings/RenderTarget.h"
 #include "LuaBindings/ModelWorld.h"
 #include "LuaBindings/PhysicsManager.h"
 #include "LuaBindings/Shader.h"
@@ -68,6 +71,10 @@ bool InitGame( const int argc, char** argv )
     if(!InitRenderManager())
         return false;
 
+    Log("--------- Default Render Target ----------");
+    if(!InitDefaultRenderTarget())
+        return false;
+
     Log("----------- Player ------------");
     if(!InitPlayer())
         return false;
@@ -97,6 +104,7 @@ static bool RegisterAllModulesInLua()
         RegisterMeshBufferInLua() &&
         RegisterPlayerInLua() &&
         RegisterRenderManagerInLua() &&
+        RegisterRenderTargetInLua() &&
         RegisterModelWorldInLua() &&
         RegisterPhysicsManagerInLua() &&
         RegisterShaderInLua() &&
@@ -107,6 +115,7 @@ void DestroyGame()
 {
     DestroyLua();
     DestroyPlayer();
+    DestroyDefaultRenderTarget();
     DestroyRenderManager();
     DestroyShader();
     DestroyPhysicsManager();
@@ -133,7 +142,10 @@ void RunGame()
         UpdatePhysicsManager(timeDelta);
         lastTime = curTime;
 
-        SetCameraViewTransformation(GetPlayerViewMatrix());
+        RenderTarget* defaultRenderTarget = GetDefaultRenderTarget();
+        Camera* camera = GetRenderTargetCamera(defaultRenderTarget);
+        if(camera)
+            SetCameraViewTransformation(camera, GetPlayerViewMatrix());
         RenderScene();
     }
 }

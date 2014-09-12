@@ -161,7 +161,7 @@ void SetShaderProgramFamily( ShaderProgramSet* set,
  * A list of family names, separated by commas.
  * E.g. `animated,static`
  */
-ShaderProgram* GetShaderProgramByFamilyList( ShaderProgramSet* set,
+ShaderProgram* GetShaderProgramByFamilyList( const ShaderProgramSet* set,
                                              const char* familyList );
 
 #endif

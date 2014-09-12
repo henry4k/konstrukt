@@ -37,7 +37,7 @@ struct Model
 
 struct ModelDrawEntry
 {
-    Model* model;
+    const Model* model;
     ShaderProgram* program;
 };
 
@@ -90,11 +90,11 @@ void ReleaseModelWorld( ModelWorld* world )
         FreeModelWorld(world);
 }
 
-void DrawModelWorld( ModelWorld* world,
+void DrawModelWorld( const ModelWorld* world,
                      const ShaderProgramSet* programSet,
                      const Camera* camera )
 {
-    Model* models = world->models;
+    const Model* models = world->models;
     ModelDrawEntry drawList[MAX_MODELS] = {};
     int drawListSize = 0;
 
@@ -168,7 +168,7 @@ static void SetModelUniforms( const Model* model,
     for(int i = 0; i < MAX_LOCAL_UNIFORMS; i++)
     {
         const LocalUniform* uniform = &model->uniforms[i];
-        if(uniform->active)
+        if(uniform->name[0] != '\0')
             SetUniform(program, uniform->name, uniform->type, &uniform->value);
     }
 }

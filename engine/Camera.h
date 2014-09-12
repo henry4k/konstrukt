@@ -8,6 +8,7 @@ struct ModelWorld;
 struct Solid;
 struct Camera;
 struct ShaderProgram;
+struct ShaderProgramSet;
 
 
 Camera* CreateCamera( ModelWorld* world );
@@ -45,5 +46,7 @@ void SetCameraUniforms( const Camera* camera, ShaderProgram* program );
 void SetCameraModelUniforms( const Camera* camera,
                              ShaderProgram* program,
                              const glm::mat4* modelTransformation );
+
+void DrawCameraView( const Camera* camera, ShaderProgramSet* set );
 
 #endif

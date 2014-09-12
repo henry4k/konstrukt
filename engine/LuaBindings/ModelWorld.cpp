@@ -188,7 +188,7 @@ Model* CheckModelFromLua( lua_State* l, int stackPosition )
     return (Model*)CheckPointerFromLua(l, stackPosition);
 }
 
-bool RegisterModelManagerInLua()
+bool RegisterModelWorldInLua()
 {
     return
         RegisterFunctionInLua("CreateModelWorld", Lua_CreateModelWorld) &&

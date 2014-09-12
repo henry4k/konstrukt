@@ -12,16 +12,27 @@ struct Texture;
 struct RenderTarget;
 
 
+bool InitDefaultRenderTarget();
+void DestroyDefaultRenderTarget();
+
 /**
  * Provides the window-system created render target.
  */
 RenderTarget* GetDefaultRenderTarget();
-
-RenderTarget* CreateTextureRenderTarget( Camera* camera,
-                                         ShaderProgramSet* shaderProgramSet,
-                                         Texture* texture );
+RenderTarget* CreateTextureRenderTarget( Texture* texture );
 
 void ReferenceRenderTarget( RenderTarget* target );
 void ReleaseRenderTarget( RenderTarget* target );
+
+void SetRenderTargetCamera( RenderTarget* target, Camera* camera );
+void SetRenderTargetShaderProgramSet( RenderTarget* target, ShaderProgramSet* set );
+
+Camera* GetRenderTargetCamera( RenderTarget* target );
+ShaderProgramSet* GetRenderTargetShaderProgramSet( RenderTarget* target );
+
+/**
+ * 
+ */
+void UpdateRenderTarget( RenderTarget* target );
 
 #endif
