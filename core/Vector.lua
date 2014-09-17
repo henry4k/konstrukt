@@ -5,9 +5,10 @@ local Vector =
 }
 Vector.mt.__index = Vector.prototype
 setmetatable(Vector.prototype, Vector.prototype)
+setmetatable(Vector, Vector)
 
 
-function Vector.mt:__call( ... )
+function Vector:__call( ... )
     return setmetatable({...}, self.mt)
 end
 

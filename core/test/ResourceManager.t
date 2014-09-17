@@ -1,9 +1,8 @@
-#!.usr.bin.env lua
+#!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core.test.common'
+require 'core/test/common'
 
-local Spy = require 'test.mock.Spy'
-local ResourceManager = require 'core.ResourceManager'
+local Spy = require 'test/mock/Spy'
 
 
 describe('The resource manager')
@@ -21,6 +20,14 @@ describe('The resource manager')
                 return nil
             end
         end)
+
+        FakeRequire:whitelist('core/ResourceManager')
+        FakeRequire:fakeModule('core/Shutdown', {
+            registerHandler = Spy(function( handler ) end)
+        })
+        FakeRequire:install()
+
+        ResourceManager = require 'core/ResourceManager'
         ResourceManager.registerLoader('Mesh', MeshLoader)
     end)
 
