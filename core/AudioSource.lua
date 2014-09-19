@@ -14,7 +14,7 @@ function AudioSource:initialize()
 end
 
 function AudioSource:destroy()
-    NATIVE.DestroyAudioSouce(self.handle)
+    NATIVE.DestroyAudioSource(self.handle)
     self.handle = nil
 end
 

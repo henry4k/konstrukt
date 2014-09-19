@@ -34,7 +34,7 @@ function Spy.prototype:reset()
     self.selectedCall = 1
 end
 
-function Spy.prototype:assertCallCount( count )
+function Spy.prototype:assertCallCount( count, level )
     if #self.calls ~= count then
         error('Should be called '..count..' times, but was called '..#self.calls..' times.', 2)
     end
