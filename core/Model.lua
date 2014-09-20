@@ -3,11 +3,13 @@ local Vec   = require 'core/Vector'
 local Mat4  = require 'core/Matrix4'
 
 
+--- Models are aggregations of meshes, textures, and shaders that can be used
+-- to render something on the screen.
 local Model = class('core/Model')
 
-function Model:initialize( handle )
+function Model:initialize( handle, renderLayerName )
     self.handle = handle
-    self.renderLayer = 0
+    self.renderLayerName = renderLayerName
     self.attachmentTarget = nil
 end
 
@@ -16,13 +18,8 @@ function Model:destroy()
     self.handle = nil
 end
 
-function Model:setRenderLayer( layer )
-    NATIVE.SetModelRenderLayer(self.handle, layer)
-    self.renderLayer = layer
-end
-
-function Model:getRenderLayer()
-    return self.renderLayer
+function Model:getRenderLayerName()
+    return self.renderLayerName
 end
 
 function Model:setAttachmentTarget( solid )

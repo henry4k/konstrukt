@@ -18,8 +18,12 @@ struct Camera
     ModelWorld* world;
     Solid* attachmentTarget;
     glm::mat4 viewTransformation;
-    glm::mat4 projectionTransformation;
+
     float fieldOfView;
+    float aspect;
+    float zNear, zFar;
+    bool projectionTransformationNeedsUpdate;
+    glm::mat4 projectionTransformation;
 };
 
 
@@ -31,9 +35,12 @@ Camera* CreateCamera( ModelWorld* world )
     InitReferenceCounter(&camera->refCounter);
     camera->world = world;
     ReferenceModelWorld(world);
+
     camera->viewTransformation = mat4();
-    camera->projectionTransformation = mat4();
-    camera->fieldOfView = 10;
+
+    camera->fieldOfView = 80;
+    camera->aspect = 1;
+    camera->projectionTransformationNeedsUpdate = true;
 
     return camera;
 }
@@ -74,15 +81,37 @@ void SetCameraViewTransformation( Camera* camera, mat4 transformation )
 
 void SetCameraFieldOfView( Camera* camera, float fov )
 {
+    assert(fov > 0);
     camera->fieldOfView = fov;
+    camera->projectionTransformationNeedsUpdate = true;
 }
 
-void UpdateCameraProjection( Camera* camera, glm::ivec2 framebufferSize )
+void SetCameraAspect( Camera* camera, float aspect )
 {
-    const float aspect = float(framebufferSize[0]) / float(framebufferSize[1]);
-    camera->projectionTransformation = glm::perspective(camera->fieldOfView,
-                                                        aspect,
-                                                        0.1f, 100.0f);
+    assert(aspect > 0);
+    camera->aspect = aspect;
+    camera->projectionTransformationNeedsUpdate = true;
+}
+
+void SetCameraNearAndFarPlanes( Camera* camera, float zNear, float zFar )
+{
+    assert(zNear > 0);
+    assert(zNear <= zFar);
+    camera->zNear = zNear;
+    camera->zFar = zFar;
+    camera->projectionTransformationNeedsUpdate = true;
+}
+
+static void UpdateCameraProjection( Camera* camera )
+{
+    if(camera->projectionTransformationNeedsUpdate)
+    {
+        camera->projectionTransformation = glm::perspective(camera->fieldOfView,
+                                                            camera->aspect,
+                                                            camera->zNear,
+                                                            camera->zFar);
+        camera->projectionTransformationNeedsUpdate = false;
+    }
 }
 
 static const mat4 GetCameraModelTransformation( const Camera* camera )
@@ -108,8 +137,9 @@ static void CalcUniform( ShaderProgram* program,
     }
 }
 
-void SetCameraUniforms( const Camera* camera, ShaderProgram* program )
+void SetCameraUniforms( Camera* camera, ShaderProgram* program )
 {
+    UpdateCameraProjection(camera);
     const mat4* projection = &camera->projectionTransformation;
 
     SetUniform(program,
@@ -126,10 +156,11 @@ void SetCameraUniforms( const Camera* camera, ShaderProgram* program )
     });
 }
 
-void SetCameraModelUniforms( const Camera* camera,
+void SetCameraModelUniforms( Camera* camera,
                              ShaderProgram* program,
                              const mat4* modelTransformation )
 {
+    UpdateCameraProjection(camera);
     const mat4* projection = &camera->projectionTransformation;
     const mat4* view = &camera->viewTransformation;
     const mat4  model = GetCameraModelTransformation(camera) *
@@ -165,7 +196,7 @@ void SetCameraModelUniforms( const Camera* camera,
     });
 }
 
-void DrawCameraView( const Camera* camera, ShaderProgramSet* set )
+void DrawCameraView( Camera* camera, ShaderProgramSet* set )
 {
     DrawModelWorld(camera->world, set, camera);
 }

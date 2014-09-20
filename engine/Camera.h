@@ -19,8 +19,8 @@ void ReleaseCamera( Camera* camera );
 void SetCameraAttachmentTarget( Camera* camera, Solid* target );
 void SetCameraViewTransformation( Camera* camera, glm::mat4 transformation );
 void SetCameraFieldOfView( Camera* camera, float fov );
-
-void UpdateCameraProjection( Camera* camera, glm::ivec2 framebufferSize );
+void SetCameraAspect( Camera* camera, float aspect );
+void SetCameraNearAndFarPlanes( Camera* camera, float zNear, float zFar );
 
 /**
  * Sets uniform values, that depend solely on the camera.
@@ -30,7 +30,7 @@ void UpdateCameraProjection( Camera* camera, glm::ivec2 framebufferSize );
  * - mat4 InverseProjection
  * - mat4 InverseTransposeProjection
  */
-void SetCameraUniforms( const Camera* camera, ShaderProgram* program );
+void SetCameraUniforms( Camera* camera, ShaderProgram* program );
 
 /**
  * Sets uniform values, that depend on camera and model transformation.
@@ -43,10 +43,10 @@ void SetCameraUniforms( const Camera* camera, ShaderProgram* program );
  * - mat4 InverseTransposeModelView
  * - mat4 InverseTransposeModelViewProjection
  */
-void SetCameraModelUniforms( const Camera* camera,
+void SetCameraModelUniforms( Camera* camera,
                              ShaderProgram* program,
                              const glm::mat4* modelTransformation );
 
-void DrawCameraView( const Camera* camera, ShaderProgramSet* set );
+void DrawCameraView( Camera* camera, ShaderProgramSet* set );
 
 #endif

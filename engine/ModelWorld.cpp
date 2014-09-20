@@ -1,4 +1,3 @@
-#include <cstdint> // INT32_MIN
 #include <string.h> // memset, strcmp, strncpy
 #include <stdlib.h> // qsort
 
@@ -16,6 +15,11 @@ using glm::mat4;
 
 static const int MAX_LOCAL_UNIFORMS = 8;
 static const int MAX_MODELS = 8;
+static const int MAX_RENDER_LAYERS = 4;
+
+static const float DEFAULT_ZNEAR =   0.1;
+static const float DEFAULT_ZFAR  = 100.0;
+
 
 struct LocalUniform
 {
@@ -28,7 +32,7 @@ struct Model
 {
     bool active;
     ReferenceCounter refCounter;
-    int renderLayer;
+    int renderLayerIndex;
     mat4 transformation;
     Mesh* mesh;
     Texture* textures[MAX_TEXTURE_UNITS];
@@ -37,16 +41,22 @@ struct Model
     Solid* attachmentTarget;
 };
 
-struct ModelDrawEntry
+struct RenderLayer
 {
-    const Model* model;
-    ShaderProgram* program;
+    float zNear, zFar;
 };
 
 struct ModelWorld
 {
     ReferenceCounter refCounter;
     Model models[MAX_MODELS];
+    RenderLayer renderLayers[MAX_RENDER_LAYERS];
+};
+
+struct ModelDrawEntry
+{
+    const Model* model;
+    ShaderProgram* program;
 };
 
 
@@ -54,7 +64,7 @@ static void FreeModel( Model* model );
 static bool ModelIsComplete( const Model* model );
 static void SetModelUniforms( const Model* model,
                               ShaderProgram* program,
-                              const Camera* camera );
+                              Camera* camera );
 static int CompareModelDrawEntries( const void* a_, const void* b_ );
 
 ModelWorld* CreateModelWorld()
@@ -62,6 +72,12 @@ ModelWorld* CreateModelWorld()
     ModelWorld* world = new ModelWorld;
     memset(world, 0, sizeof(ModelWorld));
     InitReferenceCounter(&world->refCounter);
+    for(int i = 0; i < MAX_RENDER_LAYERS; i++)
+    {
+        RenderLayer* layer = &world->renderLayers[i];
+        layer->zNear = DEFAULT_ZNEAR;
+        layer->zFar  = DEFAULT_ZFAR;
+    }
     return world;
 }
 
@@ -92,9 +108,23 @@ void ReleaseModelWorld( ModelWorld* world )
         FreeModelWorld(world);
 }
 
+void SetRenderLayerNearAndFarPlanes( ModelWorld* world,
+                                     int index,
+                                     float zNear,
+                                     float zFar )
+{
+    assert(index >= 0 &&
+           index < MAX_RENDER_LAYERS);
+
+    RenderLayer* layer = &world->renderLayers[index];
+
+    layer->zNear = zNear;
+    layer->zFar  = zFar;
+}
+
 void DrawModelWorld( const ModelWorld* world,
                      const ShaderProgramSet* programSet,
-                     const Camera* camera )
+                     Camera* camera )
 {
     const Model* models = world->models;
     ModelDrawEntry drawList[MAX_MODELS];
@@ -119,7 +149,7 @@ void DrawModelWorld( const ModelWorld* world,
     qsort(drawList, drawListSize, sizeof(ModelDrawEntry), CompareModelDrawEntries);
 
     // Render draw list:
-    int currentRenderLayer = INT32_MIN;
+    int currentRenderLayerIndex = -1;
     ShaderProgram* currentProgram = NULL;
     for(int i = 0; i < drawListSize; i++)
     {
@@ -132,10 +162,13 @@ void DrawModelWorld( const ModelWorld* world,
             continue;
         }
 
-        if(model->renderLayer != currentRenderLayer)
+        if(model->renderLayerIndex != currentRenderLayerIndex)
         {
-            currentRenderLayer = model->renderLayer;
+            currentRenderLayerIndex = model->renderLayerIndex;
+            const RenderLayer* layer = &world->renderLayers[currentRenderLayerIndex];
+
             glClear(GL_DEPTH_BUFFER_BIT);
+            SetCameraNearAndFarPlanes(camera, layer->zNear, layer->zFar);
         }
 
         if(program != currentProgram)
@@ -169,7 +202,7 @@ static mat4 CalculateModelTransformation( const Model* model )
 
 static void SetModelUniforms( const Model* model,
                               ShaderProgram* program,
-                              const Camera* camera )
+                              Camera* camera )
 {
     const mat4 modelTransformation = CalculateModelTransformation(model);
     SetCameraModelUniforms(camera, program, &modelTransformation);
@@ -199,8 +232,8 @@ static int CompareModelDrawEntries( const void* a_, const void* b_ )
 
     int r;
 
-    r = Compare(a->model->renderLayer,
-                b->model->renderLayer);
+    r = Compare(a->model->renderLayerIndex,
+                b->model->renderLayerIndex);
     if(r != 0)
         return r;
 
@@ -233,8 +266,11 @@ static Model* FindInactiveModel( ModelWorld* world )
     return NULL;
 }
 
-Model* CreateModel( ModelWorld* world )
+Model* CreateModel( ModelWorld* world, int renderLayerIndex )
 {
+    assert(renderLayerIndex >= 0 &&
+           renderLayerIndex < MAX_RENDER_LAYERS);
+
     Model* model = FindInactiveModel(world);
     if(model)
     {
@@ -242,6 +278,7 @@ Model* CreateModel( ModelWorld* world )
         model->active = true;
         InitReferenceCounter(&model->refCounter);
         model->transformation = mat4();
+        model->renderLayerIndex = renderLayerIndex;
         return model;
     }
     else
@@ -274,11 +311,6 @@ void ReleaseModel( Model* model )
     Release(&model->refCounter);
     if(!HasReferences(&model->refCounter))
         FreeModel(model);
-}
-
-void SetModelRenderLayer( Model* model, int layer )
-{
-    model->renderLayer = layer;
 }
 
 void SetModelAttachmentTarget( Model* model, Solid* target )

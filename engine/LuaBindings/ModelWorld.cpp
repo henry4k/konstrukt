@@ -36,6 +36,16 @@ static int Lua_DestroyModelWorld( lua_State* l )
     return 0;
 }
 
+static int Lua_SetRenderLayerNearAndFarPlanes( lua_State* l )
+{
+    ModelWorld* world = CheckModelWorldFromLua(l, 1);
+    const int index   = luaL_checkinteger(l, 2);
+    const float zNear = luaL_checknumber(l, 3);
+    const float zFar  = luaL_checknumber(l, 4);
+    SetRenderLayerNearAndFarPlanes(world, index, zNear, zFar);
+    return 0;
+}
+
 ModelWorld* GetModelWorldFromLua( lua_State* l, int stackPosition )
 {
     return (ModelWorld*)GetPointerFromLua(l, stackPosition);
@@ -52,7 +62,9 @@ ModelWorld* CheckModelWorldFromLua( lua_State* l, int stackPosition )
 static int Lua_CreateModel( lua_State* l )
 {
     ModelWorld* world = CheckModelWorldFromLua(l, 1);
-    Model* model = CreateModel(world);
+    int layerIndex = luaL_checkinteger(l, 2);
+
+    Model* model = CreateModel(world, layerIndex);
     if(model)
     {
         PushPointerToLua(l, model);
@@ -69,14 +81,6 @@ static int Lua_DestroyModel( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
     ReleaseModel(model);
-    return 0;
-}
-
-static int Lua_SetModelRenderLayer( lua_State* l )
-{
-    Model* model = CheckModelFromLua(l, 1);
-    int layer = luaL_checkinteger(l, 2);
-    SetModelRenderLayer(model, layer);
     return 0;
 }
 
@@ -200,11 +204,11 @@ bool RegisterModelWorldInLua()
 {
     return
         RegisterFunctionInLua("CreateModelWorld", Lua_CreateModelWorld) &&
+        RegisterFunctionInLua("SetRenderLayerNearAndFarPlanes", Lua_SetRenderLayerNearAndFarPlanes) &&
         RegisterFunctionInLua("DestroyModelWorld", Lua_DestroyModelWorld) &&
 
         RegisterFunctionInLua("CreateModel", Lua_CreateModel) &&
         RegisterFunctionInLua("DestroyModel", Lua_DestroyModel) &&
-        RegisterFunctionInLua("SetModelRenderLayer", Lua_SetModelRenderLayer) &&
         RegisterFunctionInLua("SetModelAttachmentTarget", Lua_SetModelAttachmentTarget) &&
         RegisterFunctionInLua("SetModelTransformation", Lua_SetModelTransformation) &&
         RegisterFunctionInLua("SetModelMesh", Lua_SetModelMesh) &&
