@@ -1,0 +1,30 @@
+Es geht um einen Überlebenden, welcher allein auf einer Raumstation
+lebt.  Weil er schon so lange allein ist, hat sich bei ihm eine
+gespaltene Persönlichkeit entwickelt um die Einsamkeit zu kompensieren.
+Er hat zwei Identitäten: Henry und Lou.  Für jede Identität hat er
+eine Tasche .. dort bewahrt er zum Beispiel auch die ID-Karten auf.
+Eine davon ist tatsächlich seine eigene, die andere muss er irgendwo
+gefunden haben.  Jedes mal wenn er sich zu Bett legt, wechselt er seine
+Identität.  Der Spieler bekommt die andere Identität mit, indem dieser
+Nachrichten auf den Terminals findet und manchmal Sachen anders vorfindet
+als er sie zurückgelassen hat.
+
+
+Zum Beispiel so:
+
+Du wachst in einem Sitz auf und blickst dich um.
+Du befindest dich auf einer Raumstation im All.
+Du richtest dich auf und schaust aus einem Bullauge ins All.
+Du kannst unter dir einen Planeten erkennen, die Erde.
+Bei dir findest du eine Tasche, welche eine ID-Karte enthält.
+Dein Name ist Henry.
+
+Du lebst in den Tag hinein, wanderst herum und erkundest die Raumstation.
+Du stellst fest, dass manche Teile der Station nicht erreichbar sind,
+da die Türen nicht auf deine ID-Karte reagieren.
+Irgendwann wirst du müde, schnallst dich am Sitz an und schläfst ein.
+
+Am nächsten Tag beschäftigst du dich mit den omnipräsenten Terminals.
+Nach dem einloggen siehst du, dass dir jemand eine Mail gesendet hat.
+
+[...]
