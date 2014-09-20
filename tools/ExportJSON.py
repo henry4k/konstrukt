@@ -20,4 +20,5 @@ bpy.ops.object.select_all(action='DESELECT')
 export_json.save(
     bpy.context.scene,
     filepath=out,
-    triangulate=True)
+    triangulate=True,
+    y_is_up=True)

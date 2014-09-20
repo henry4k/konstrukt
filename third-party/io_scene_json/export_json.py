@@ -6,6 +6,7 @@ import json
 
 TRIANGULATE = False
 SCENE = None
+Y_IS_UP = False
 
 
 
@@ -125,12 +126,20 @@ def build_mesh(obj):
             if face_out_vertex_index is None:
                 face_out_vertex_index = vdict_local[key] = vertex_count
 
-                vertex_out = dict(x=vertex.co[0],
-                                  y=vertex.co[1],
-                                  z=vertex.co[2],
-                                  nx=normal[0],
-                                  ny=normal[1],
-                                  nz=normal[2])
+                if Y_IS_UP:
+                    vertex_out = dict(x=vertex.co[0],
+                                      y=vertex.co[2],
+                                      z=vertex.co[1],
+                                      nx=normal[0],
+                                      ny=normal[2],
+                                      nz=normal[1])
+                else:
+                    vertex_out = dict(x=vertex.co[0],
+                                      y=vertex.co[1],
+                                      z=vertex.co[2],
+                                      nx=normal[0],
+                                      ny=normal[1],
+                                      nz=normal[2])
                 if uv_layer:
                     vertex_out.update(dict(tx=uv[0],
                                            ty=uv[1]))
@@ -187,23 +196,28 @@ def build_children(children):
 
 def save(scene,
          filepath=None,
-         triangulate=True):
+         triangulate=True,
+         y_is_up=False,
+         pretty_json=False):
 
     global TRIANGULATE
     TRIANGULATE = triangulate
 
-    objects = scene.objects
-
     global SCENE
     SCENE = scene
 
+    global Y_IS_UP
+    Y_IS_UP = y_is_up
+
     def filter_children(obj):
         return obj.parent == None
-    tree = build_children(filter(filter_children, objects))
+    tree = build_children(filter(filter_children, scene.objects))
 
     file = open(filepath, 'w', encoding='utf8', newline='\n')
-    #json.dump(tree, file, sort_keys=True, indent=4, separators=(',', ': '))
-    json.dump(tree, file, separators=(',',':'))
+    if pretty_json:
+        json.dump(tree, file, sort_keys=True, indent=4, separators=(',', ': '))
+    else:
+        json.dump(tree, file, separators=(',', ':'))
     file.close()
 
     return {'FINISHED'}
