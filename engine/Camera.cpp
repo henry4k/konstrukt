@@ -88,7 +88,8 @@ void UpdateCameraProjection( Camera* camera, glm::ivec2 framebufferSize )
 static const mat4 GetCameraModelTransformation( const Camera* camera )
 {
     mat4 solidTransformation;
-    GetSolidTransformation(camera->attachmentTarget, &solidTransformation);
+    if(camera->attachmentTarget)
+        GetSolidTransformation(camera->attachmentTarget, &solidTransformation);
     return solidTransformation;
 }
 

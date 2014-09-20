@@ -95,7 +95,8 @@ void DrawModelWorld( const ModelWorld* world,
                      const Camera* camera )
 {
     const Model* models = world->models;
-    ModelDrawEntry drawList[MAX_MODELS] = {};
+    ModelDrawEntry drawList[MAX_MODELS];
+    memset(drawList, 0, sizeof(drawList));
     int drawListSize = 0;
 
     // Fill draw list:
@@ -104,7 +105,7 @@ void DrawModelWorld( const ModelWorld* world,
         const Model* model = &models[i];
         if(model->active)
         {
-            drawList[i].model = &models[i];
+            drawList[i].model = model;
             drawList[i].program =
                 GetShaderProgramByFamilyList(programSet,
                                              model->programFamilyList);
@@ -113,7 +114,7 @@ void DrawModelWorld( const ModelWorld* world,
     }
 
     // Sort draw list:
-    qsort(drawList, drawListSize, sizeof(ModelDrawEntry*), CompareModelDrawEntries);
+    qsort(drawList, drawListSize, sizeof(ModelDrawEntry), CompareModelDrawEntries);
 
     // Render draw list:
     int currentStage = 0;
@@ -185,8 +186,8 @@ static int Compare( long a, long b )
 
 static int CompareModelDrawEntries( const void* a_, const void* b_ )
 {
-    const ModelDrawEntry* a = *(const ModelDrawEntry**)a_;
-    const ModelDrawEntry* b = *(const ModelDrawEntry**)b_;
+    const ModelDrawEntry* a = (const ModelDrawEntry*)a_;
+    const ModelDrawEntry* b = (const ModelDrawEntry*)b_;
 
     int r;
     r = Compare((long)a->program,

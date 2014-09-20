@@ -42,7 +42,7 @@ static int Lua_DestroyRenderTarget( lua_State* l )
 static int Lua_SetRenderTargetCamera( lua_State* l )
 {
     RenderTarget* target = CheckRenderTargetFromLua(l, 1);
-    Camera* camera = CheckCameraFromLua(l, 1);
+    Camera* camera = CheckCameraFromLua(l, 2);
     SetRenderTargetCamera(target, camera);
     return 0;
 }
@@ -50,7 +50,7 @@ static int Lua_SetRenderTargetCamera( lua_State* l )
 static int Lua_SetRenderTargetShaderProgramSet( lua_State* l )
 {
     RenderTarget* target = CheckRenderTargetFromLua(l, 1);
-    ShaderProgramSet* programSet = CheckShaderProgramSetFromLua(l, 1);
+    ShaderProgramSet* programSet = CheckShaderProgramSetFromLua(l, 2);
     SetRenderTargetShaderProgramSet(target, programSet);
     return 0;
 }

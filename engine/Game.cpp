@@ -17,6 +17,7 @@
 #include "Game.h"
 
 #include "LuaBindings/Audio.h"
+#include "LuaBindings/Camera.h"
 #include "LuaBindings/Config.h"
 #include "LuaBindings/Controls.h"
 #include "LuaBindings/Math.h"
@@ -97,6 +98,7 @@ static bool RegisterAllModulesInLua()
 {
     return
         RegisterAudioInLua() &&
+        RegisterCameraInLua() &&
         RegisterConfigInLua() &&
         RegisterControlsInLua() &&
         RegisterMathInLua() &&
