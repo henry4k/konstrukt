@@ -16,6 +16,11 @@ end
 
 function Model:setAttachmentTarget( solid )
     NATIVE.SetModelAttachmentTarget(self.handle, solid.handle)
+    self.attachmentTarget = solid
+end
+
+function Model:getAttachmentTarget()
+    return self.attachmentTarget
 end
 
 function Model:setTransformation( transformation )

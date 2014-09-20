@@ -5,6 +5,7 @@ local Camera = class('core/Camera')
 
 function Camera:initialize( modelWorld )
     self.handle = NATIVE.CreateCamera(modelWorld.handle)
+    self.modelWorld = modelWorld
 end
 
 function Camera:destroy()
@@ -12,8 +13,17 @@ function Camera:destroy()
     self.handle = nil
 end
 
+function Camera:getModelWorld()
+    return self.modelWorld
+end
+
 function Camera:setAttachmentTarget( solid )
     NATIVE.SetCameraAttachmentTarget(self.handle, solid.handle)
+    self.attachmentTarget = solid
+end
+
+function Camera:getAttachmentTarget()
+    return self.attachmentTarget
 end
 
 function Camera:setViewTransformation( transformation )
