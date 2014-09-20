@@ -1,3 +1,4 @@
+#include <cstdint> // INT32_MIN
 #include <string.h> // memset, strcmp, strncpy
 #include <stdlib.h> // qsort
 
@@ -27,6 +28,7 @@ struct Model
 {
     bool active;
     ReferenceCounter refCounter;
+    int renderLayer;
     mat4 transformation;
     Mesh* mesh;
     Texture* textures[MAX_TEXTURE_UNITS];
@@ -117,7 +119,7 @@ void DrawModelWorld( const ModelWorld* world,
     qsort(drawList, drawListSize, sizeof(ModelDrawEntry), CompareModelDrawEntries);
 
     // Render draw list:
-    int currentStage = 0;
+    int currentRenderLayer = INT32_MIN;
     ShaderProgram* currentProgram = NULL;
     for(int i = 0; i < drawListSize; i++)
     {
@@ -128,6 +130,12 @@ void DrawModelWorld( const ModelWorld* world,
         {
             Error("Trying to draw incomplete model %p.", model);
             continue;
+        }
+
+        if(model->renderLayer != currentRenderLayer)
+        {
+            currentRenderLayer = model->renderLayer;
+            glClear(GL_DEPTH_BUFFER_BIT);
         }
 
         if(program != currentProgram)
@@ -190,18 +198,27 @@ static int CompareModelDrawEntries( const void* a_, const void* b_ )
     const ModelDrawEntry* b = (const ModelDrawEntry*)b_;
 
     int r;
+
+    r = Compare(a->model->renderLayer,
+                b->model->renderLayer);
+    if(r != 0)
+        return r;
+
     r = Compare((long)a->program,
                 (long)b->program);
     if(r != 0)
         return r;
+
     r = Compare((long)a->model->mesh,
                 (long)b->model->mesh);
     if(r != 0)
         return r;
+
     r = Compare((long)a->model->textures[0],
                 (long)b->model->textures[0]);
     if(r != 0)
         return r;
+
     return 0;
 }
 
@@ -257,6 +274,11 @@ void ReleaseModel( Model* model )
     Release(&model->refCounter);
     if(!HasReferences(&model->refCounter))
         FreeModel(model);
+}
+
+void SetModelRenderLayer( Model* model, int layer )
+{
+    model->renderLayer = layer;
 }
 
 void SetModelAttachmentTarget( Model* model, Solid* target )

@@ -72,6 +72,14 @@ static int Lua_DestroyModel( lua_State* l )
     return 0;
 }
 
+static int Lua_SetModelRenderLayer( lua_State* l )
+{
+    Model* model = CheckModelFromLua(l, 1);
+    int layer = luaL_checkinteger(l, 2);
+    SetModelRenderLayer(model, layer);
+    return 0;
+}
+
 static int Lua_SetModelAttachmentTarget( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
@@ -196,6 +204,7 @@ bool RegisterModelWorldInLua()
 
         RegisterFunctionInLua("CreateModel", Lua_CreateModel) &&
         RegisterFunctionInLua("DestroyModel", Lua_DestroyModel) &&
+        RegisterFunctionInLua("SetModelRenderLayer", Lua_SetModelRenderLayer) &&
         RegisterFunctionInLua("SetModelAttachmentTarget", Lua_SetModelAttachmentTarget) &&
         RegisterFunctionInLua("SetModelTransformation", Lua_SetModelTransformation) &&
         RegisterFunctionInLua("SetModelMesh", Lua_SetModelMesh) &&

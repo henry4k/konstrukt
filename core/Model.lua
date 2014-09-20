@@ -7,11 +7,22 @@ local Model = class('core/Model')
 
 function Model:initialize( handle )
     self.handle = handle
+    self.renderLayer = 0
+    self.attachmentTarget = nil
 end
 
 function Model:destroy()
     NATIVE.DestroyModel(self.handle)
     self.handle = nil
+end
+
+function Model:setRenderLayer( layer )
+    NATIVE.SetModelRenderLayer(self.handle, layer)
+    self.renderLayer = layer
+end
+
+function Model:getRenderLayer()
+    return self.renderLayer
 end
 
 function Model:setAttachmentTarget( solid )
