@@ -9,13 +9,14 @@ local ShaderProgram = require 'core/ShaderProgram'
 
 local Skybox = class('example/Skybox')
 
-function Skybox:initialize()
+function Skybox:initialize( modelWorld )
     local shaderProgram = ShaderProgram:load('example/Skybox/shader.vert',
                                              'example/Skybox/shader.frag')
     local mesh = Mesh:load('example/Skybox/Scene.json', 'Skybox')
     local diffuseTexture = Texture:load('cube', 'example/Skybox/%s.png')
-    self.model = Model('background', shaderProgram)
+    self.model = modelWorld:createModel()
     self.model:setMesh(mesh)
+    self.model:setProgramFamilyList('skybox')
     self.model:setTexture(0, diffuseTexture)
     self.model:setUniform('DiffuseSampler', 0)
     self.model:setTransformation(Mat4():scale(Vec(10,10,10)))
