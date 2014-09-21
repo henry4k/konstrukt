@@ -1,18 +1,17 @@
 Apoapsis
 ========
 
-
 A game about the solitude and survival in a high-tech lump 20 million meters 
 above the earth.
 
-This is still very WIP!
+The project is still very WIP!
+
+This repository contains the engine and the core package.
+... which is pretty useless for itself.  Take a look at the example package
+at https://github.com/henry4k/apoapsis-example to see how it can be used.
 
 
 ## Dependencies
-
-Needed to export models and graphics:
-- blender
-- xcf2png or gimp
 
 Needed to compile the engine:
 - Lua 5.2

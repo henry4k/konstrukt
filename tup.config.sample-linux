@@ -9,7 +9,3 @@ CONFIG_LUA_LDFLAGS=`pkg-config lua5.2 --libs`
 
 CONFIG_INTERNAL_CFLAGS= `pkg-config gl glew glfw3 libpng openal alure bullet --cflags` -Werror -Wall -Wextra -pedantic -Wmissing-include-dirs -Wpointer-arith -Wcast-qual -Winit-self -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter -Wno-literal-suffix
 CONFIG_INTERNAL_LDFLAGS=`pkg-config gl glew glfw3 libpng openal alure bullet --libs`
-
-#CONFIG_BLENDER=blender
-#CONFIG_GIMP=gimp
-#CONFIG_XCF2PNG=xcf2png
