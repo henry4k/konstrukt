@@ -1,7 +1,7 @@
 Apoapsis
 ========
 
-A game about the solitude and survival in a high-tech lump 20 million meters 
+A game about the solitude and survival in a high-tech lump 400 thousand meters
 above the earth.
 
 The project is still very WIP!
