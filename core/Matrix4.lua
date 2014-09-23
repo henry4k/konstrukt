@@ -35,11 +35,14 @@ function Matrix4:translate( vec )
                                            vec[3]))
 end
 
-function Matrix4:scale( vec )
+function Matrix4:scale( v )
+    if type(v) == 'number' then
+        v = Vec(v,v,v)
+    end
     return Matrix4(NATIVE.ScaleMatrix4(self.handle,
-                                       vec[1],
-                                       vec[2],
-                                       vec[3]))
+                                       v[1],
+                                       v[2],
+                                       v[3]))
 end
 
 function Matrix4:rotate( angle, vec )
