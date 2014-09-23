@@ -63,9 +63,13 @@ function describe.prototype:_runTests()
     if self.teardownFn then self.teardownFn() end
 end
 
+local function messageHandler( originalMessage )
+    return debug.traceback(originalMessage, 2)
+end
+
 function describe.prototype:_verifyBehaviour( behaviour )
     if behaviour.beforeFn then behaviour.beforeFn() end
-    local success, message = pcall(behaviour.testFn)
+    local success, message = xpcall(behaviour.testFn, messageHandler)
     if behaviour.afterFn then behaviour.afterFn() end
 
     if success then
