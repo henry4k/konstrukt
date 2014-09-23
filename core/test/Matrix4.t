@@ -43,7 +43,7 @@ describe('A 4x4 matrix')
     end)
 
     :it('can be created.', function()
-        NATIVE.CreateMatrix4:whenCalledWith{returns={'the handle'}}
+        NATIVE.CreateMatrix4:canBeCalled{thenReturn={'the handle'}}
 
         local m = Mat4()
         assert(m.handle == 'the handle')
@@ -51,8 +51,8 @@ describe('A 4x4 matrix')
     end)
 
     :it('can be copied.', function()
-        NATIVE.CreateMatrix4:whenCalledWith{returns={'handle a'}}
-        NATIVE.CopyMatrix4:whenCalledWith{'handle a', returns={'handle b'}}
+        NATIVE.CreateMatrix4:canBeCalled{thenReturn={'handle a'}}
+        NATIVE.CopyMatrix4:canBeCalled{with={'handle a'}, thenReturn={'handle b'}}
 
         local a = Mat4()
         assert(a.handle == 'handle a')
@@ -66,17 +66,17 @@ describe('A 4x4 matrix')
 
     :beforeEach(function()
         ResetMocks()
-        NATIVE.CreateMatrix4:whenCalledWith{returns={'handle a'}}
-        NATIVE.CreateMatrix4:whenCalledWith{returns={'handle b'}}
+        NATIVE.CreateMatrix4:canBeCalled{thenReturn={'handle a'}}
+        NATIVE.CreateMatrix4:canBeCalled{thenReturn={'handle b'}}
         a = Mat4()
         b = Mat4()
     end)
 
     :it('can perform arithmetic operations on other matrices.', function()
-        NATIVE.Matrix4Op:whenCalledWith{'handle a', 'handle b', '+', returns={'handle +'}}
-        NATIVE.Matrix4Op:whenCalledWith{'handle a', 'handle b', '-', returns={'handle -'}}
-        NATIVE.Matrix4Op:whenCalledWith{'handle a', 'handle b', '*', returns={'handle *'}}
-        NATIVE.Matrix4Op:whenCalledWith{'handle a', 'handle b', '/', returns={'handle /'}}
+        NATIVE.Matrix4Op:canBeCalled{with={'handle a', 'handle b', '+'}, thenReturn={'handle +'}}
+        NATIVE.Matrix4Op:canBeCalled{with={'handle a', 'handle b', '-'}, thenReturn={'handle -'}}
+        NATIVE.Matrix4Op:canBeCalled{with={'handle a', 'handle b', '*'}, thenReturn={'handle *'}}
+        NATIVE.Matrix4Op:canBeCalled{with={'handle a', 'handle b', '/'}, thenReturn={'handle /'}}
 
         assert((a+b).handle == 'handle +')
         assert((a-b).handle == 'handle -')
@@ -88,40 +88,44 @@ describe('A 4x4 matrix')
 
     :beforeEach(function()
         ResetMocks()
-        NATIVE.CreateMatrix4:whenCalledWith{returns={'handle a'}}
+        NATIVE.CreateMatrix4:canBeCalled{thenReturn={'handle a'}}
         a = Mat4()
     end)
 
     :it('can be translated by a vector.', function()
-        NATIVE.TranslateMatrix4:whenCalledWith{'handle a', 10, 20, 30, returns={'handle b'}}
+        NATIVE.TranslateMatrix4:canBeCalled{with={'handle a', 10, 20, 30},
+                                            thenReturn={'handle b'}}
         local b = a:translate(Vec(10, 20, 30))
         assert(b.handle == 'handle b')
         NATIVE.TranslateMatrix4:assertCallCount(1)
     end)
 
     :it('can be scaled by a vector.', function()
-        NATIVE.ScaleMatrix4:whenCalledWith{'handle a', 10, 20, 30, returns={'handle b'}}
+        NATIVE.ScaleMatrix4:canBeCalled{with={'handle a', 10, 20, 30},
+                                        thenReturn={'handle b'}}
         local b = a:scale(Vec(10, 20, 30))
         assert(b.handle == 'handle b')
         NATIVE.ScaleMatrix4:assertCallCount(1)
     end)
 
     :it('can be rotated.', function()
-        NATIVE.RotateMatrix4:whenCalledWith{'handle a', 45, 10, 20, 30, returns={'handle b'}}
+        NATIVE.RotateMatrix4:canBeCalled{with={'handle a', 45, 10, 20, 30},
+                                         thenReturn={'handle b'}}
         local b = a:rotate(45, Vec(10, 20, 30))
         assert(b.handle == 'handle b')
         NATIVE.RotateMatrix4:assertCallCount(1)
     end)
 
     :it('can transform a vector.', function()
-        NATIVE.Matrix4TransformVector:whenCalledWith{'handle a', 1, 2, 3, 4, returns={10, 20, 30, 40}}
+        NATIVE.Matrix4TransformVector:canBeCalled{with={'handle a', 1, 2, 3, 4},
+                                                  thenReturn={10, 20, 30, 40}}
         local v = a:transform(Vec(1, 2, 3, 4))
         assert(v == Vec(10, 20, 30, 40))
         NATIVE.Matrix4TransformVector:assertCallCount(1)
     end)
 
     :it('can be trimmed to a rotation matrix.', function()
-        NATIVE.MakeRotationMatrix:whenCalledWith{'handle a', returns={'handle b'}}
+        NATIVE.MakeRotationMatrix:canBeCalled{with={'handle a'}, thenReturn={'handle b'}}
         local b = a:toRotationMatrix()
         assert(b.handle == 'handle b')
         NATIVE.MakeRotationMatrix:assertCallCount(1)

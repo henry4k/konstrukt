@@ -23,7 +23,7 @@ describe('A collision shape')
     end)
 
     :it('can be created and destroyed.', function()
-        NATIVE.DestroyCollisionShape:whenCalledWith{'collision shape handle'}
+        NATIVE.DestroyCollisionShape:canBeCalled{with={'collision shape handle'}}
 
         local cs = CollisionShape('collision shape handle')
         assert(cs.handle == 'collision shape handle')

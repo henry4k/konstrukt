@@ -63,7 +63,8 @@ describe('The resource manager')
         assert(sameMesh == mesh)
 
         MeshLoader:assertCallCount(1)
-        MeshLoader:assertCalledWith('AirLock.json', 'AirLock.Door')
+        MeshLoader:assertCallMatches{atIndex=1,
+                                     arguments={'AirLock.json', 'AirLock.Door'}}
     end)
 
     :it('calls "destroy" in resources that have it.', function()
@@ -71,7 +72,7 @@ describe('The resource manager')
         ResourceManager.clear()
         ResourceManager.clear()
         MeshDestructor:assertCallCount(1)
-        MeshDestructor:assertCalledWith(mesh)
+        MeshDestructor:assertCallMatches{atIndex=1, arguments={mesh}}
     end)
 
     :it('doesn\'t attempt to call "destroy" in resources that don\'t have it.', function()

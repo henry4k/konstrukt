@@ -19,7 +19,7 @@ describe('The configuration')
     end)
 
     :it('can be queried.', function()
-        NATIVE.GetConfigValue:whenCalledWith{'foo.bar', 'default value', returns={'config value'}}
+        NATIVE.GetConfigValue:canBeCalled{with={'foo.bar', 'default value'}, thenReturn={'config value'}}
         local value = Config.get('foo.bar', 'default value')
         assert(value == 'config value')
         NATIVE.GetConfigValue:assertCallCount(1)

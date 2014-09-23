@@ -29,8 +29,8 @@ describe('A force')
     end)
 
     :it('can be created and destroyed.', function()
-        NATIVE.CreateForce:whenCalledWith{'solid handle', returns={'force handle'}}
-        NATIVE.DestroyForce:whenCalledWith{'force handle'}
+        NATIVE.CreateForce:canBeCalled{with={'solid handle'}, thenReturn={'force handle'}}
+        NATIVE.DestroyForce:canBeCalled{with={'force handle'}}
 
         local force = Force('solid handle')
         assert(force.handle == 'force handle')
@@ -42,11 +42,11 @@ describe('A force')
     end)
 
     :it('can change its properties.', function()
-        NATIVE.CreateForce:whenCalledWith{'solid handle', returns={'force handle'}}
-        NATIVE.SetForce:whenCalledWith{'force handle',
-                                       1, 2, 3,
-                                       10, 20, 30,
-                                       true}
+        NATIVE.CreateForce:canBeCalled{with={'solid handle'}, thenReturn={'force handle'}}
+        NATIVE.SetForce:canBeCalled{with={'force handle',
+                                          1, 2, 3,
+                                          10, 20, 30,
+                                          true}}
 
         local force = Force('solid handle')
         force:set(Vec(1,2,3), Vec(10, 20, 30), true)

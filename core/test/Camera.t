@@ -30,11 +30,13 @@ describe('A camera')
         Camera = require 'core/Camera'
     end)
 
-    :beforeEach(ResetMocks)
+    :beforeEach(function()
+        ResetMocks()
+    end)
 
     :it('can be created and destroyed.', function()
-        NATIVE.CreateCamera:whenCalledWith{'model world handle', returns={'camera handle'}}
-        NATIVE.DestroyCamera:whenCalledWith{'camera handle'}
+        NATIVE.CreateCamera:canBeCalled{with={'model world handle'}, thenReturn={'camera handle'}}
+        NATIVE.DestroyCamera:canBeCalled{with={'camera handle'}}
 
         local modelWorld = { handle = 'model world handle' }
         local camera = Camera(modelWorld)
@@ -49,32 +51,27 @@ describe('A camera')
     :beforeEach(function()
         ResetMocks()
 
-        NATIVE.CreateCamera:whenCalledWith{'model world handle', returns={'camera handle'}}
+        NATIVE.CreateCamera:canBeCalled{with={'model world handle'}, thenReturn={'camera handle'}}
         local modelWorld = { handle = 'model world handle' }
         camera = Camera(modelWorld)
     end)
 
-    :afterEach(function()
-        NATIVE.DestroyCamera:whenCalledWith{'camera handle'}
-        camera:destroy()
-    end)
-
     :it('has an attachment target.', function()
-        NATIVE.SetCameraAttachmentTarget:whenCalledWith{'camera handle', 'solid handle'}
+        NATIVE.SetCameraAttachmentTarget:canBeCalled{with={'camera handle', 'solid handle'}}
         local solid = { handle = 'solid handle' }
         camera:setAttachmentTarget(solid)
         NATIVE.SetCameraAttachmentTarget:assertCallCount(1)
     end)
 
     :it('has a view transformation.', function()
-        NATIVE.SetCameraViewTransformation:whenCalledWith{'camera handle', 'matrix handle'}
+        NATIVE.SetCameraViewTransformation:canBeCalled{with={'camera handle', 'matrix handle'}}
         local matrix = { handle = 'matrix handle' }
         camera:setViewTransformation(matrix)
         NATIVE.SetCameraViewTransformation:assertCallCount(1)
     end)
 
     :it('has an field of view.', function()
-        NATIVE.SetCameraFieldOfView:whenCalledWith{'camera handle', 90}
+        NATIVE.SetCameraFieldOfView:canBeCalled{with={'camera handle', 90}}
         camera:setFieldOfView(90)
         NATIVE.SetCameraFieldOfView:assertCallCount(1)
     end)

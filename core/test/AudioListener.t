@@ -24,14 +24,14 @@ describe('The audio listener')
     end)
 
     :it('has an attachment target.', function()
-        NATIVE.SetAudioListenerAttachmentTarget:whenCalledWith{'solid handle'}
+        NATIVE.SetAudioListenerAttachmentTarget:canBeCalled{with={'solid handle'}}
         local solid = { handle = 'solid handle' }
         AudioListener.setAttachmentTarget(solid)
         NATIVE.SetAudioListenerAttachmentTarget:assertCallCount(1)
     end)
 
     :it('has a transformation.', function()
-        NATIVE.SetAudioListenerTransformation:whenCalledWith{'matrix handle'}
+        NATIVE.SetAudioListenerTransformation:canBeCalled{with={'matrix handle'}}
         local matrix = { handle = 'matrix handle' }
         AudioListener.setTransformation(matrix)
         NATIVE.SetAudioListenerTransformation:assertCallCount(1)

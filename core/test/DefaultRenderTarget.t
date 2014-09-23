@@ -26,7 +26,7 @@ describe('The default render target')
     end)
 
     :it('is a singleton.', function()
-        NATIVE.GetDefaultRenderTarget:whenCalledWith{returns={'the handle'}}
+        NATIVE.GetDefaultRenderTarget:canBeCalled{thenReturn={'the handle'}}
 
         local a = DefaultRenderTarget:get()
         assert(a.handle == 'the handle')
@@ -37,8 +37,8 @@ describe('The default render target')
     end)
 
     :it('can\'t be destroyed.', function()
-        NATIVE.GetDefaultRenderTarget:whenCalledWith{returns={'the handle'}}
-        NATIVE.DestroyRenderTarget:whenCalledWith{'the handle'}
+        NATIVE.GetDefaultRenderTarget:canBeCalled{thenReturn={'the handle'}}
+        NATIVE.DestroyRenderTarget:canBeCalled{with={'the handle'}}
 
         local renderTarget = DefaultRenderTarget:get()
         renderTarget:destroy()

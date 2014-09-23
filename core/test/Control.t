@@ -28,15 +28,15 @@ describe('Control')
     end)
 
     :it('can register key controls.', function()
-        NATIVE.RegisterKeyControl:whenCalledWith{'key control name'}
+        NATIVE.RegisterKeyControl:canBeCalled{with={'key control name'}}
         Control.registerKey('key control name', 'key control callback')
         NATIVE.RegisterKeyControl:assertCallCount(1)
     end)
 
     :it('reacts to key events.', function()
         local keyControlCallback = Mock()
-        keyControlCallback:whenCalledWith{true}
-        NATIVE.RegisterKeyControl:whenCalledWith{'key control name', keyControllCallback}
+        keyControlCallback:canBeCalled{with={true}}
+        NATIVE.RegisterKeyControl:canBeCalled{with={'key control name', keyControllCallback}}
 
         Control.registerKey('key control name', keyControlCallback)
         EventCallbacks['KeyControlAction']('key control name', true)
@@ -45,15 +45,15 @@ describe('Control')
     end)
 
     :it('can register axis controls.', function()
-        NATIVE.RegisterAxisControl:whenCalledWith{'axis control name'}
+        NATIVE.RegisterAxisControl:canBeCalled{with={'axis control name'}}
         Control.registerAxis('axis control name', 'axis control callback')
         NATIVE.RegisterAxisControl:assertCallCount(1)
     end)
 
     :it('can register axis controls.', function()
         local axisControlCallback = Mock()
-        axisControlCallback:whenCalledWith{1.0, 0.5}
-        NATIVE.RegisterAxisControl:whenCalledWith{'axis control name', axisControllCallback}
+        axisControlCallback:canBeCalled{with={1.0, 0.5}}
+        NATIVE.RegisterAxisControl:canBeCalled{with={'axis control name', axisControllCallback}}
 
         Control.registerAxis('axis control name', axisControlCallback)
         EventCallbacks['AxisControlAction']('axis control name', 1.0, 0.5)

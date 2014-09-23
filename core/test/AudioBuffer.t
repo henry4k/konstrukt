@@ -26,8 +26,8 @@ describe('An audio buffer')
     end)
 
     :it('can be created and destroyed.', function()
-        NATIVE.LoadAudioBuffer:whenCalledWith{'sound.wav', returns={'the handle'}}
-        NATIVE.DestroyAudioBuffer:whenCalledWith{'the handle'}
+        NATIVE.LoadAudioBuffer:canBeCalled{with={'sound.wav'}, thenReturn={'the handle'}}
+        NATIVE.DestroyAudioBuffer:canBeCalled{with={'the handle'}}
 
         local buffer = AudioBuffer('sound.wav')
         assert(buffer.handle == 'the handle')

@@ -50,7 +50,8 @@ describe('An effect')
         local effect = target:addEffect(FakeEffect, 'green')
 
         FakeEffect.initialize:assertCallCount(1)
-        FakeEffect.initialize:assertCalledWith(effect, target, 'green')
+        FakeEffect.initialize:assertCallMatches{atIndex=1,
+                                                arguments={effect, target, 'green'}}
     end)
 
     :it('destructor is called on removal.', function()
@@ -59,7 +60,8 @@ describe('An effect')
         target:removeEffect(effect)
 
         FakeEffect.destroy:assertCallCount(1)
-        FakeEffect.destroy:assertCalledWith(effect)
+        FakeEffect.destroy:assertCallMatches{atIndex=1,
+                                             arguments={effect}}
     end)
 
     :it('destructor is called only once.', function()
@@ -71,7 +73,8 @@ describe('An effect')
         target:removeEffect(effect)
 
         FakeEffect.destroy:assertCallCount(1)
-        FakeEffect.destroy:assertCalledWith(effect)
+        FakeEffect.destroy:assertCallMatches{atIndex=1,
+                                             arguments={effect}}
     end)
 
     :it('reacts to events.', function()
@@ -80,7 +83,8 @@ describe('An effect')
         target:tick(42)
 
         FakeEffect.onTick:assertCallCount(1)
-        FakeEffect.onTick:assertCalledWith(effect, 42)
+        FakeEffect.onTick:assertCallMatches{atIndex=1,
+                                            arguments={effect, 42}}
     end)
 
 

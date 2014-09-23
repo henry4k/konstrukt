@@ -42,11 +42,13 @@ describe('An audio source')
         AudioSource = require 'core/AudioSource'
     end)
 
-    :beforeEach(ResetMocks)
+    :beforeEach(function()
+        ResetMocks()
+    end)
 
     :it('can be created and destroyed.', function()
-        NATIVE.CreateAudioSource:whenCalledWith{returns={'source handle'}}
-        NATIVE.DestroyAudioSource:whenCalledWith{'source handle'}
+        NATIVE.CreateAudioSource:canBeCalled{thenReturn={'source handle'}}
+        NATIVE.DestroyAudioSource:canBeCalled{with={'source handle'}}
 
         local source = AudioSource()
         assert(source.handle == 'source handle')
@@ -60,7 +62,8 @@ describe('An audio source')
     :beforeEach(function()
         ResetMocks()
 
-        NATIVE.CreateAudioSource:whenCalledWith{returns={'source handle'}}
+        NATIVE.CreateAudioSource:canBeCalled{thenReturn={'source handle'} }
+        NATIVE.DestroyAudioSource:canBeCalled{with={'source handle'}}
         Source = AudioSource()
     end)
 
@@ -70,58 +73,58 @@ describe('An audio source')
     end)
 
     :it('can be relative to listener.', function()
-        NATIVE.SetAudioSourceRelative:whenCalledWith{'source handle', true}
+        NATIVE.SetAudioSourceRelative:canBeCalled{with={'source handle', true}}
         Source:setRelative(true)
         NATIVE.SetAudioSourceRelative:assertCallCount(1)
     end)
 
     :it('can loop.', function()
-        NATIVE.SetAudioSourceLooping:whenCalledWith{'source handle', true}
+        NATIVE.SetAudioSourceLooping:canBeCalled{with={'source handle', true}}
         Source:setLooping(true)
         NATIVE.SetAudioSourceLooping:assertCallCount(1)
     end)
 
     :it('has a pitch.', function()
-        NATIVE.SetAudioSourcePitch:whenCalledWith{'source handle', 1.2}
+        NATIVE.SetAudioSourcePitch:canBeCalled{with={'source handle', 1.2}}
         Source:setPitch(1.2)
         NATIVE.SetAudioSourcePitch:assertCallCount(1)
     end)
 
     :it('has a gain.', function()
-        NATIVE.SetAudioSourceGain:whenCalledWith{'source handle', 1.2}
+        NATIVE.SetAudioSourceGain:canBeCalled{with={'source handle', 1.2}}
         Source:setGain(1.2)
         NATIVE.SetAudioSourceGain:assertCallCount(1)
     end)
 
     :it('has an attachment target.', function()
-        NATIVE.SetAudioSourceAttachmentTarget:whenCalledWith{'source handle', 'solid handle'}
+        NATIVE.SetAudioSourceAttachmentTarget:canBeCalled{with={'source handle', 'solid handle'}}
         local solid = { handle = 'solid handle' }
         Source:setAttachmentTarget(solid)
         NATIVE.SetAudioSourceAttachmentTarget:assertCallCount(1)
     end)
 
     :it('has a transformation.', function()
-        NATIVE.SetAudioSourceTransformation:whenCalledWith{'source handle', 'matrix handle'}
+        NATIVE.SetAudioSourceTransformation:canBeCalled{with={'source handle', 'matrix handle'}}
         local matrix = { handle = 'matrix handle' }
         Source:setTransformation(matrix)
         NATIVE.SetAudioSourceTransformation:assertCallCount(1)
     end)
 
     :it('can enqueue buffers.', function()
-        NATIVE.EnqueueAudioBuffer:whenCalledWith{'source handle', 'buffer handle'}
+        NATIVE.EnqueueAudioBuffer:canBeCalled{with={'source handle', 'buffer handle'}}
         local buffer = { handle = 'buffer handle' }
         Source:enqueue(buffer)
         NATIVE.EnqueueAudioBuffer:assertCallCount(1)
     end)
 
     :it('can be played.', function()
-        NATIVE.PlayAudioSource:whenCalledWith{'source handle'}
+        NATIVE.PlayAudioSource:canBeCalled{with={'source handle'}}
         Source:play()
         NATIVE.PlayAudioSource:assertCallCount(1)
     end)
 
     :it('can be paused.', function()
-        NATIVE.PauseAudioSource:whenCalledWith{'source handle'}
+        NATIVE.PauseAudioSource:canBeCalled{with={'source handle'}}
         Source:pause()
         NATIVE.PauseAudioSource:assertCallCount(1)
     end)
