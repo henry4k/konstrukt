@@ -11,8 +11,6 @@ static const float MAX_MOVEMENT_SPEED = 100;
 static const float MOVEMENT_ACCELERATION = 30;
 //static const float MOVEMENT_ACCELERATION = 7;
 static const float MOVEMENT_FRICTION = 6;
-static const glm::vec3 PLAYER_HALF_WIDTH(0.3, 0.8, 0.3);
-static const float PLAYER_HEAD_OFFSET = 0.6;
 
 static bool g_ForwardKey;
 static bool g_BackwardKey;
@@ -59,7 +57,7 @@ void UpdatePlayerViewMatrix()
         g_PlayerViewMatrix,
         vec3(
             -g_PlayerPosition.x,
-            -(g_PlayerPosition.y + PLAYER_HEAD_OFFSET),
+            -g_PlayerPosition.y,
             -g_PlayerPosition.z
         )
      );
@@ -125,10 +123,7 @@ void UpdatePlayer( float timeFrame )
 
 
     // --- Final steps ---
-    g_PlayerVelocity.y = 0;
-    g_PlayerPosition.y = PLAYER_HALF_WIDTH.y;
-
-    //g_PlayerPosition += g_PlayerVelocity * timeFrame;
+    g_PlayerPosition += g_PlayerVelocity * timeFrame;
     g_PlayerVelocity *= 1.0f - timeFrame * MOVEMENT_FRICTION;
 
 

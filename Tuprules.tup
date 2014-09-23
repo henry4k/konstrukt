@@ -30,27 +30,3 @@ INTERNAL_LDFLAGS += @(INTERNAL_LDFLAGS)
 
 !cxx = |> ^o Compiling %f^ @(CXX) -x c++ -c %f -o %o --std=c++11 $(CFLAGS) $(CXXFLAGS) |> %B.o
 !ldcxx = |> ^o Linking %o^ @(CXX) %f -o %o $(LDFLAGS) |>
-
-
-# -- xcf2png --
-
-ifdef XCF2PNG
-    !xcf2png = |> ^o Exporting %f^ @(XCF2PNG) %f -o %o |> %B.png
-else
-ifdef GIMP
-    XCF2PNG_SCRIPT = $(TUP_CWD)/tools/xcf2png.sh
-    !xcf2png = |> ^o Exporting %f^ "$(XCF2PNG_SCRIPT)" @(GIMP) %f %o |> %B.png
-else
-    !xcf2png = |> ^o Exporting %f^ false |> %B.json
-endif
-endif
-
-
-# -- blender --
-
-ifdef BLENDER
-    EXPORT_JSON_SCRIPT = $(TUP_CWD)/tools/ExportJSON.py
-    !blender = |> ^o Exporting %f^ PYTHONDONTWRITEBYTECODE=1 @(BLENDER) %f --background --python "$(EXPORT_JSON_SCRIPT)" -- %o >/dev/null |> %B.json
-else
-    !blender = |> ^o Exporting %f^ false |> %B.json
-endif

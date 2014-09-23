@@ -119,7 +119,11 @@ static void UpdateDefaultRenderTargetCameraProjection()
     RenderTarget* renderTarget = GetDefaultRenderTarget();
     Camera* camera = GetRenderTargetCamera(renderTarget);
     if(camera)
-        UpdateCameraProjection(camera, framebufferSize);
+    {
+        const float aspect = float(framebufferSize[0]) /
+                             float(framebufferSize[1]);
+        SetCameraAspect(camera, aspect);
+    }
 }
 
 static void OnFramebufferResize( int width, int height )

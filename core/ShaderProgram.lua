@@ -2,6 +2,7 @@ local class = require 'core/middleclass'
 local Vec   = require 'core/Vector'
 local Mat4  = require 'core/Matrix4'
 local Resource = require 'core/Resource'
+local ResourceManager = require 'core/ResourceManager'
 
 
 local ShaderProgram = class('core/ShaderProgram')

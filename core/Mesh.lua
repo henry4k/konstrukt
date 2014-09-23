@@ -1,4 +1,6 @@
 local class = require 'core/middleclass'
+local Json = require 'core/Json'
+local Scene = require 'core/Scene'
 local Resource = require 'core/Resource'
 
 

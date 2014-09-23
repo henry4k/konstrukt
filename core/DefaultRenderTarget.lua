@@ -5,7 +5,11 @@ local RenderTarget = require 'core/RenderTarget'
 local DefaultRenderTarget = class('core/DefaultRenderTarget', RenderTarget)
 
 function DefaultRenderTarget.static:get()
-    return DefaultRenderTarget(NATIVE.GetDefaultRenderTarget())
+    if not self.instance then
+        local handle = NATIVE.GetDefaultRenderTarget()
+        self.instance = DefaultRenderTarget(handle)
+    end
+    return self.instance
 end
 
 function DefaultRenderTarget:initialize( handle )
