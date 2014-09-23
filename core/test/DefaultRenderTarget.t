@@ -43,7 +43,6 @@ describe('The default render target')
         local renderTarget = DefaultRenderTarget:get()
         renderTarget:destroy()
 
-        NATIVE.GetDefaultRenderTarget:assertCallCount(1)
         NATIVE.DestroyRenderTarget:assertCallCount(0)
     end)
 

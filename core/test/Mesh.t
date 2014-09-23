@@ -38,10 +38,12 @@ describe('A mesh')
     end)
 
     :it('can be created and destroyed.', function()
+        local meshBuffer = { handle='mesh buffer handle' }
+
         Json.decodeFromFile:canBeCalled{with={'scene file name'},
                                         thenReturn={'scene'}}
         Scene.createMeshBufferByPath:canBeCalled{with={'scene', 'object name'},
-                                                 thenReturn={'mesh buffer handle'}}
+                                                 thenReturn={meshBuffer}}
         NATIVE.CreateMesh:canBeCalled{with={'mesh buffer handle'},
                                       thenReturn={'mesh handle'}}
         NATIVE.DestroyMesh:canBeCalled{with={'mesh handle'}}
@@ -52,7 +54,6 @@ describe('A mesh')
         Json.decodeFromFile:assertCallCount(1)
         Scene.createMeshBufferByPath:assertCallCount(1)
         NATIVE.CreateMesh:assertCallCount(1)
-        NATIVE.DestroyMesh:assertCallCount(1)
 
         mesh:destroy()
 
