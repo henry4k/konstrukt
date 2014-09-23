@@ -2,6 +2,8 @@ local ProgrammableFn = require 'test/mock/ProgrammableFn'
 local Spy = require 'test/mock/Spy'
 
 
+--- Combination of Spy and ProgrammableFn.
+-- See #Spy and #ProgrammableFn for details.
 local Mock =
 {
     mt = {},
@@ -26,8 +28,9 @@ function Mock:new()
     return setmetatable(instance, self.mt)
 end
 
-function Mock.prototype:whenCalledWith( behaviour )
-    self.programmable:whenCalledWith(behaviour)
+function Mock.prototype:whenCalled( behaviour )
+    self.programmable:whenCalled(behaviour)
+    return self
 end
 
 function Mock.mt:__call( ... )
@@ -37,14 +40,22 @@ end
 function Mock.prototype:reset()
     self.spy:reset()
     self.programmable:reset()
+    return self
 end
 
 function Mock.prototype:assertCallCount( count )
     self.spy:assertCallCount(count)
+    return self
 end
 
-function Mock.prototype:assertCalledWith( ... )
-    self.spy.assertCalledWith(...)
+function Mock.prototype:assertCallMatches( query )
+    self.spy.assertCallMatches(query)
+    return self
+end
+
+function Mock.prototype:assertAnyCallMatches( query )
+    self.spy.assertAnyCallMatches(query)
+    return self
 end
 
 
