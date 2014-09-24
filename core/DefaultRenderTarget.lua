@@ -1,12 +1,14 @@
-local class = require 'core/middleclass'
-local RenderTarget = require 'core/RenderTarget'
+local class        = require 'middleclass'
+local RenderTarget = require 'apoapsis.core.RenderTarget'
+local engine       = require 'apoapsis.engine'
+local GetDefaultRenderTarget = engine.GetDefaultRenderTarget
 
 
-local DefaultRenderTarget = class('core/DefaultRenderTarget', RenderTarget)
+local DefaultRenderTarget = class('apoapsis/core/DefaultRenderTarget', RenderTarget)
 
 function DefaultRenderTarget.static:get()
     if not self.instance then
-        local handle = NATIVE.GetDefaultRenderTarget()
+        local handle = GetDefaultRenderTarget()
         self.instance = DefaultRenderTarget(handle)
     end
     return self.instance

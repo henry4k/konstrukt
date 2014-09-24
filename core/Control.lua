@@ -1,26 +1,32 @@
+local engine = require 'apoapsis.engine'
+local RegisterKeyControl  = engine.RegisterKeyControl
+local RegisterAxisControl = engine.RegisterAxisControl
+local SetEventCallback    = engine.SetEventCallback
+
+
 local Control = {}
 
 Control.keyCallbacks = {}
 Control.axisCallbacks = {}
 
 function Control.registerKey( name, callback )
-    NATIVE.RegisterKeyControl(name)
+    RegisterKeyControl(name)
     Control.keyCallbacks[name] = callback
 end
 
 function Control.registerAxis( name, callback )
-    NATIVE.RegisterAxisControl(name)
+    RegisterAxisControl(name)
     Control.axisCallbacks[name] = callback
 end
 
 local function onKeyAction( name, pressed )
     Control.keyCallbacks[name](pressed)
 end
-NATIVE.SetEventCallback('KeyControlAction', onKeyAction)
+SetEventCallback('KeyControlAction', onKeyAction)
 
 local function onAxisAction( name, absolute, delta )
     Control.axisCallbacks[name](absolute, delta)
 end
-NATIVE.SetEventCallback('AxisControlAction', onAxisAction)
+SetEventCallback('AxisControlAction', onAxisAction)
 
 return Control

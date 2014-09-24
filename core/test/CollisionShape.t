@@ -1,8 +1,8 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core/test/common'
+require 'apoapsis.core.test.common'
 
-local Mock = require 'test/mock/Mock'
+local Mock = require 'test.mock.Mock'
 
 
 describe('A collision shape')
@@ -11,11 +11,11 @@ describe('A collision shape')
             DestroyCollisionShape = Mock()
         }
 
-        FakeRequire:whitelist('core/CollisionShape')
-        FakeRequire:whitelist('core/middleclass')
+        FakeRequire:whitelist('apoapsis.core.CollisionShape')
+        FakeRequire:whitelist('apoapsis.core.middleclass')
         FakeRequire:install()
 
-        CollisionShape = require 'core/CollisionShape'
+        CollisionShape = require 'apoapsis.core.CollisionShape'
     end)
 
     :beforeEach(function()

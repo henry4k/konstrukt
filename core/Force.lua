@@ -1,5 +1,9 @@
-local class = require 'core/middleclass'
-local Vec   = require 'core/Vector'
+local class  = require 'middleclass'
+local Vec    = require 'apoapsis.core.Vector'
+local engine = require 'apoapsis.engine'
+local CreateForce  = engine.CreateForce
+local DestroyForce = engine.DestroyForce
+local SetForce     = engine.SetForce
 
 
 --- Changes the velocity of a solid over time.
@@ -7,15 +11,15 @@ local Vec   = require 'core/Vector'
 -- Forces that are at the center will only change the solids linear velocity,
 -- while forces that are applied off-center will also change the angular
 -- velocity. They are applied in each simulation step until you 'destroy' them.
-local Force = class('core/Force')
+local Force = class('apoapsis/core/Force')
 
 --- Initially all properties are zero, so that the force has no effect.
 function Force:initialize( solidHandle )
-    self.handle = NATIVE.CreateForce(solidHandle)
+    self.handle = CreateForce(solidHandle)
 end
 
 function Force:destroy()
-    NATIVE.DestroyForce(self.handle)
+    DestroyForce(self.handle)
     self.handle = nil
 end
 
@@ -31,14 +35,14 @@ end
 -- If set direction and position will be relative to the solids orientation.
 function Force:set( value, relativePosition, useLocalCoordinates )
     relativePosition = relativePosition or Vec(0,0,0)
-    NATIVE.SetForce(self.handle,
-                    value[1],
-                    value[2],
-                    value[3],
-                    relativePosition[1],
-                    relativePosition[2],
-                    relativePosition[3],
-                    useLocalCoordinates)
+    SetForce(self.handle,
+             value[1],
+             value[2],
+             value[3],
+             relativePosition[1],
+             relativePosition[2],
+             relativePosition[3],
+             useLocalCoordinates)
 end
 
 

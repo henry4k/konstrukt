@@ -1,7 +1,21 @@
-local class = require 'core/middleclass'
-local Vec   = require 'core/Vector'
-local Quat  = require 'core/Quaternion'
-local Force = require 'core/Force'
+local class  = require 'middleclass'
+local Vec    = require 'apoapsis.core.Vector'
+local Quat   = require 'apoapsis.core.Quaternion'
+local Force  = require 'apoapsis.core.Force'
+local engine = require 'apoapsis.engine'
+local CreateSolid                = engine.CreateSolid
+local DestroySolid               = engine.DestroySolid
+local GetSolidMass               = engine.GetSolidMass
+local SetSolidMass               = engine.SetSolidMass
+local SetSolidRestitution        = engine.SetSolidRestitution
+local SetSolidFriction           = engine.SetSolidFriction
+local SetSolidCollisionThreshold = engine.SetSolidCollisionThreshold
+local GetSolidPosition           = engine.GetSolidPosition
+local GetSolidRotation           = engine.GetSolidRotation
+local GetSolidLinearVelocity     = engine.GetSolidLinearVelocity
+local GetSolidAngularVelocity    = engine.GetSolidAngularVelocity
+local ApplySolidImpulse          = engine.ApplySolidImpulse
+local SetEventCallback           = engine.SetEventCallback
 
 
 --- A body that is simulated by the physics engine.
@@ -9,18 +23,18 @@ local Force = require 'core/Force'
 -- So it isn't affected by collisions with other solids or gravity. Also each
 -- solid needs a #CollisionShape, but try to reuse collision shapes to save
 -- memory.
-local Solid = class('core/Solid')
+local Solid = class('apoapsis/core/Solid')
 
 local SolidHandlesToSolids = {}
 setmetatable(SolidHandlesToSolids, {__mode='k'})
 
 function Solid:initialize( mass, position, rotation, collisionShape )
-    self.handle = NATIVE.CreateSolid(mass,
-                                     position[1],
-                                     position[2],
-                                     position[3],
-                                     rotation.handle,
-                                     collisionShape.handle)
+    self.handle = CreateSolid(mass,
+                              position[1],
+                              position[2],
+                              position[3],
+                              rotation.handle,
+                              collisionShape.handle)
     self.forces = {}
     setmetatable(self.forces, {__mode='v'})
 
@@ -31,49 +45,49 @@ function Solid:destroy()
     for force,_ in pairs(self.forces) do
         force:destroy()
     end
-    NATIVE.DestroySolid(self.handle)
+    DestroySolid(self.handle)
     self.handle = nil
 end
 
 function Solid:getMass()
-    return NATIVE.GetSolidMass(self.handle)
+    return GetSolidMass(self.handle)
 end
 
 function Solid:setMass( mass )
-    return NATIVE.SetSolidMass(self.handle, mass)
+    return SetSolidMass(self.handle, mass)
 end
 
 --- Changes a solids restitution factor, which defines its 'bouncyness'.
 function Solid:setRestitution( restitution )
-    return NATIVE.SetSolidRestitution(self.handle, restitution)
+    return SetSolidRestitution(self.handle, restitution)
 end
 
 function Solid:setFriction( friction )
-    return NATIVE.SetSolidFriction(self.handle, friction)
+    return SetSolidFriction(self.handle, friction)
 end
 
 --- Only collisions with an impulse greater than `thresholdImpulse` will trigger the collision event.
 -- The default threshold is `math.huge`.
 function Solid:setCollisionThreshold( threshold )
-    return NATIVE.SetSolidCollisionThreshold(self.handle, threshold)
+    return SetSolidCollisionThreshold(self.handle, threshold)
 end
 
 function Solid:getPosition()
-    return Vec(NATIVE.GetSolidPosition(self.handle))
+    return Vec(GetSolidPosition(self.handle))
 end
 
 function Solid:getRotation()
-    return Quat(NATIVE.GetSolidRotation(self.handle))
+    return Quat(GetSolidRotation(self.handle))
 end
 
 --- Velocity at which the solid moves through space.
 function Solid:getLinearVelocity()
-    return Vec(NATIVE.GetSolidLinearVelocity(self.handle))
+    return Vec(GetSolidLinearVelocity(self.handle))
 end
 
 --- Velocity at which the solid rotates around itself.
 function Solid:getAngularVelocity()
-    return Vec(NATIVE.GetSolidAngularVelocity(self.handle))
+    return Vec(GetSolidAngularVelocity(self.handle))
 end
 
 --- Instantly applies an impulse.
@@ -90,14 +104,14 @@ end
 -- If set direction and position will be relative to the solids orientation.
 function Solid:applyImpulse( impulseVector, relativePosition, useLocalCoordinates )
     relativePosition = relativePosition or Vec(0,0,0)
-    NATIVE.ApplySolidImpulse(self.handle,
-                             impulseVector[1],
-                             impulseVector[2],
-                             impulseVector[3],
-                             relativePosition[1],
-                             relativePosition[2],
-                             relativePosition[3],
-                             useLocalCoordinates)
+    ApplySolidImpulse(self.handle,
+                      impulseVector[1],
+                      impulseVector[2],
+                      impulseVector[3],
+                      relativePosition[1],
+                      relativePosition[2],
+                      relativePosition[3],
+                      useLocalCoordinates)
 end
 
 function Solid:createForce()
@@ -128,7 +142,7 @@ local function CollisionHandler( solidAHandle,
     --                    solidBHandle,
     --                    impulse))
 end
-NATIVE.SetEventCallback('Collision', CollisionHandler)
+SetEventCallback('Collision', CollisionHandler)
 
 
 return Solid

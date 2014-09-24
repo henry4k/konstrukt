@@ -1,10 +1,13 @@
-local class = require 'core/middleclass'
-local Json = require 'core/Json'
-local Scene = require 'core/Scene'
-local Resource = require 'core/Resource'
+local class    = require 'middleclass'
+local Json     = require 'apoapsis.core.Json'
+local Scene    = require 'apoapsis.core.Scene'
+local Resource = require 'apoapsis.core.Resource'
+local engine   = require 'apoapsis.engine'
+local CreateMesh  = engine.CreateMesh
+local DestroyMesh = engine.DestroyMesh
 
 
-local Mesh = class('core/Mesh')
+local Mesh = class('apoapsis/core/Mesh')
 Mesh:include(Resource)
 
 function Mesh.static:load( sceneFileName, objectName )
@@ -18,11 +21,11 @@ function Mesh.static:load( sceneFileName, objectName )
 end
 
 function Mesh:initialize( meshBuffer )
-    self.handle = NATIVE.CreateMesh(meshBuffer.handle)
+    self.handle = CreateMesh(meshBuffer.handle)
 end
 
 function Mesh:destroy()
-    NATIVE.DestroyMesh(self.handle)
+    DestroyMesh(self.handle)
     self.handle = nil
 end
 

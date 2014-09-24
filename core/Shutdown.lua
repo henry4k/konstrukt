@@ -1,3 +1,7 @@
+local engine = require 'apoapsis.engine'
+local SetEventCallback = engine.SetEventCallback
+
+
 local Shutdown = {
     handlers = {}
 }
@@ -13,6 +17,6 @@ function Shutdown.callHandlers_()
         handler()
     end
 end
-NATIVE.SetEventCallback('Shutdown', Shutdown.callHandlers_)
+SetEventCallback('Shutdown', Shutdown.callHandlers_)
 
 return Shutdown

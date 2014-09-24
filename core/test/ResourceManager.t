@@ -1,8 +1,8 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core/test/common'
+require 'apoapsis.core.test.common'
 
-local Spy = require 'test/mock/Spy'
+local Spy = require 'test.mock.Spy'
 
 
 describe('The resource manager')
@@ -21,13 +21,13 @@ describe('The resource manager')
             end
         end)
 
-        FakeRequire:whitelist('core/ResourceManager')
-        FakeRequire:fakeModule('core/Shutdown', {
+        FakeRequire:whitelist('apoapsis.core.ResourceManager')
+        FakeRequire:fakeModule('apoapsis.core.Shutdown', {
             registerHandler = Spy(function( handler ) end)
         })
         FakeRequire:install()
 
-        ResourceManager = require 'core/ResourceManager'
+        ResourceManager = require 'apoapsis.core.ResourceManager'
         ResourceManager.registerLoader('Mesh', MeshLoader)
     end)
 

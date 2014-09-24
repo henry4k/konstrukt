@@ -1,10 +1,13 @@
-local class = require 'core/middleclass'
-local Resource = require 'core/Resource'
+local class    = require 'middleclass'
+local Resource = require 'apoapsis.core.Resource'
+local engine   = require 'apoapsis.engine'
+local LoadShader    = engine.LoadShader
+local DestroyShader = engine.DestroyShader
 
 
 --- Creates a shader by reading the given `fileName`.
 -- The shader type is determined by the file extension automatically.
-local Shader = class('core/Shader')
+local Shader = class('apoapsis/core/Shader')
 Shader:include(Resource)
 
 function Shader.static:load( fileName )
@@ -12,11 +15,11 @@ function Shader.static:load( fileName )
 end
 
 function Shader:initialize( fileName )
-    self.handle = NATIVE.LoadShader(fileName)
+    self.handle = LoadShader(fileName)
 end
 
 function Shader:destroy()
-    NATIVE.DestroyShader(self.handle)
+    DestroyShader(self.handle)
     self.handle = nil
 end
 

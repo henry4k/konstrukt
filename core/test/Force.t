@@ -1,8 +1,8 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core/test/common'
+require 'apoapsis.core.test.common'
 
-local Mock = require 'test/mock/Mock'
+local Mock = require 'test.mock.Mock'
 
 
 describe('A force')
@@ -13,13 +13,13 @@ describe('A force')
             SetForce = Mock()
         }
 
-        FakeRequire:whitelist('core/Force')
-        FakeRequire:whitelist('core/middleclass')
-        FakeRequire:whitelist('core/Vector')
+        FakeRequire:whitelist('apoapsis.core.Force')
+        FakeRequire:whitelist('apoapsis.core.middleclass')
+        FakeRequire:whitelist('apoapsis.core.Vector')
         FakeRequire:install()
 
-        Vec = require 'core/Vector'
-        Force = require 'core/Force'
+        Vec = require 'apoapsis.core.Vector'
+        Force = require 'apoapsis.core.Force'
     end)
 
     :beforeEach(function()

@@ -1,8 +1,8 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core/test/common'
+require 'apoapsis.core.test.common'
 
-local Mock = require 'test/mock/Mock'
+local Mock = require 'test.mock.Mock'
 
 
 describe('An audio buffer')
@@ -12,12 +12,12 @@ describe('An audio buffer')
             DestroyAudioBuffer = Mock()
         }
 
-        FakeRequire:whitelist('core/AudioBuffer')
-        FakeRequire:whitelist('core/middleclass')
-        FakeRequire:fakeModule('core/Resource', {})
+        FakeRequire:whitelist('apoapsis.core.AudioBuffer')
+        FakeRequire:whitelist('apoapsis.core.middleclass')
+        FakeRequire:fakeModule('apoapsis.core.Resource', {})
         FakeRequire:install()
 
-        AudioBuffer = require 'core/AudioBuffer'
+        AudioBuffer = require 'apoapsis.core.AudioBuffer'
     end)
 
     :beforeEach(function()

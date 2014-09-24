@@ -1,36 +1,43 @@
-local class = require 'core/middleclass'
+local class  = require 'middleclass'
+local engine = require 'apoapsis.engine'
+local CreateMeshBuffer         = engine.CreateMeshBuffer
+local DestroyMeshBuffer        = engine.DestroyMeshBuffer
+local TransformMeshBuffer      = engine.TransformMeshBuffer
+local AppendMeshBuffer         = engine.AppendMeshBuffer
+local AppendIndexToMeshBuffer  = engine.AppendIndexToMeshBuffer
+local AppendVertexToMeshBuffer = engine.AppendVertexToMeshBuffer
 
 
-local MeshBuffer = class('core/MeshBuffer')
+local MeshBuffer = class('apoapsis/core/MeshBuffer')
 
 function MeshBuffer:initialize()
-    self.handle = NATIVE.CreateMeshBuffer()
+    self.handle = CreateMeshBuffer()
 end
 
 function MeshBuffer:destroy()
-    NATIVE.DestroyMeshBuffer(self.handle)
+    DestroyMeshBuffer(self.handle)
     self.handle = nil
 end
 
 function MeshBuffer:transform( transformation )
-    NATIVE.TransformMeshBuffer(self.handle, transformation.handle)
+    TransformMeshBuffer(self.handle, transformation.handle)
 end
 
 function MeshBuffer:appendMeshBuffer( other, transformation )
     if transformation then
-        NATIVE.AppendMeshBuffer(self.handle, other.handle, transformation.handle)
+        AppendMeshBuffer(self.handle, other.handle, transformation.handle)
     else
-        NATIVE.AppendMeshBuffer(self.handle, other.handle)
+        AppendMeshBuffer(self.handle, other.handle)
     end
 end
 
 function MeshBuffer:appendIndex( index )
-    NATIVE.AppendIndexToMeshBuffer(self.handle, index)
+    AppendIndexToMeshBuffer(self.handle, index)
 end
 
 function MeshBuffer:appendVertex( vertex )
     local v = vertex
-    NATIVE.AppendVertexToMeshBuffer(
+    AppendVertexToMeshBuffer(
         self.handle,
 
         -- position

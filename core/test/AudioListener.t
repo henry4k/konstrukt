@@ -1,8 +1,8 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core/test/common'
+require 'apoapsis.core.test.common'
 
-local Mock = require 'test/mock/Mock'
+local Mock = require 'test.mock.Mock'
 
 
 describe('The audio listener')
@@ -12,10 +12,10 @@ describe('The audio listener')
             SetAudioListenerTransformation = Mock()
         }
 
-        FakeRequire:whitelist('core/AudioListener')
+        FakeRequire:whitelist('apoapsis.core.AudioListener')
         FakeRequire:install()
 
-        AudioListener = require 'core/AudioListener'
+        AudioListener = require 'apoapsis.core.AudioListener'
     end)
 
     :beforeEach(function()

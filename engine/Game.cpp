@@ -160,7 +160,7 @@ static int Lua_StopGameLoop( lua_State* l )
     return 0;
 }
 
-EXPORT int luaopen_apoapsis( lua_State* l )
+EXPORT int luaopen_apoapsis_engine( lua_State* l )
 {
     if(InitGame(l))
     {

@@ -1,8 +1,8 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core/test/common'
+require 'apoapsis.core.test.common'
 
-local Mock = require 'test/mock/Mock'
+local Mock = require 'test.mock.Mock'
 
 
 describe('A mesh bufffer')
@@ -25,11 +25,11 @@ describe('A mesh bufffer')
             NATIVE.AppendVertexToMeshBuffer:reset()
         end
 
-        FakeRequire:whitelist('core/MeshBuffer')
-        FakeRequire:whitelist('core/middleclass')
+        FakeRequire:whitelist('apoapsis.core.MeshBuffer')
+        FakeRequire:whitelist('apoapsis.core.middleclass')
         FakeRequire:install()
 
-        MeshBuffer = require 'core/MeshBuffer'
+        MeshBuffer = require 'apoapsis.core.MeshBuffer'
     end)
 
     :beforeEach(function()

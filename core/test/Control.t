@@ -1,8 +1,8 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core/test/common'
+require 'apoapsis.core.test.common'
 
-local Mock = require 'test/mock/Mock'
+local Mock = require 'test.mock.Mock'
 
 describe('Control')
     :setup(function()
@@ -16,10 +16,10 @@ describe('Control')
             end
         }
 
-        FakeRequire:whitelist('core/Control')
+        FakeRequire:whitelist('apoapsis.core.Control')
         FakeRequire:install()
 
-        Control = require 'core/Control'
+        Control = require 'apoapsis.core.Control'
     end)
 
     :beforeEach(function()

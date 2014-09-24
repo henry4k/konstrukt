@@ -1,3 +1,6 @@
+local cjson = require 'cjson'
+
+
 local Json = {}
 
 function Json.encodeToString( value )

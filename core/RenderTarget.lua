@@ -1,7 +1,11 @@
-local class = require 'core/middleclass'
+local class  = require 'middleclass'
+local engine = require 'apoapsis.engine'
+local DestroyRenderTarget             = engine.DestroyRenderTarget
+local SetRenderTargetCamera           = engine.SetRenderTargetCamera
+local SetRenderTargetShaderProgramSet = engine.SetRenderTargetShaderProgramSet
 
 
-local RenderTarget = class('core/RenderTarget')
+local RenderTarget = class('apoapsis/core/RenderTarget')
 
 function RenderTarget:initialize( handle )
     self.handle = handle
@@ -10,12 +14,12 @@ function RenderTarget:initialize( handle )
 end
 
 function RenderTarget:destroy()
-    NATIVE.DestroyRenderTarget(self.handle)
+    DestroyRenderTarget(self.handle)
     self.handle = nil
 end
 
 function RenderTarget:setCamera( camera )
-    NATIVE.SetRenderTargetCamera(self.handle, camera.handle)
+    SetRenderTargetCamera(self.handle, camera.handle)
     self.camera = camera
 end
 
@@ -24,7 +28,7 @@ function RenderTarget:getCamera()
 end
 
 function RenderTarget:setShaderProgramSet( shaderProgramSet )
-    NATIVE.SetRenderTargetShaderProgramSet(self.handle, shaderProgramSet.handle)
+    SetRenderTargetShaderProgramSet(self.handle, shaderProgramSet.handle)
     self.shaderProgramSet = shaderProgramSet
 end
 
