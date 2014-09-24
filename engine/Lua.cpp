@@ -39,8 +39,6 @@ bool InitLua( lua_State* l )
     assert(g_LuaState == NULL);
     assert(g_LuaEvents.empty());
 
-    Log("Using " LUA_COPYRIGHT);
-
     g_LuaState = l;
     g_LuaEvents.clear();
 

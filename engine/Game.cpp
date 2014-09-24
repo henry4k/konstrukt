@@ -32,6 +32,8 @@
 
 
 static bool RegisterAllModulesInLua();
+static int Lua_RunGameLoop( lua_State* l );
+static int Lua_StopGameLoop( lua_State* l );
 
 static bool InitGame( lua_State* l )
 {
@@ -100,7 +102,9 @@ static bool RegisterAllModulesInLua()
         RegisterModelWorldInLua() &&
         RegisterPhysicsManagerInLua() &&
         RegisterShaderInLua() &&
-        RegisterTextureInLua();
+        RegisterTextureInLua() &&
+        RegisterFunctionInLua("RunGameLoop", Lua_RunGameLoop) &&
+        RegisterFunctionInLua("StopGameLoop", Lua_StopGameLoop);
 }
 
 static void DestroyGame()
@@ -150,7 +154,7 @@ static int Lua_RunGameLoop( lua_State* l )
     return 0;
 }
 
-static int Lua_Shutdown( lua_State* l )
+static int Lua_StopGameLoop( lua_State* l )
 {
     FlagWindowForClose();
     return 0;
@@ -158,9 +162,7 @@ static int Lua_Shutdown( lua_State* l )
 
 EXPORT int luaopen_apoapsis( lua_State* l )
 {
-    if(InitGame(l) &&
-       RegisterFunctionInLua("RunGameLoop", Lua_RunGameLoop) &&
-       RegisterFunctionInLua("Shutdown", Lua_Shutdown))
+    if(InitGame(l))
     {
         PushLuaModuleTable();
         return 1;
