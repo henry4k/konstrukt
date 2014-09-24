@@ -1,3 +1,1 @@
-REQUIRED_ARCHIVES = $(TUP_CWD)/TestTools.o $(ROOT)/third-party/dummy/dummy.a
-ORDER_DEPS = $(TUP_CWD)/../@(LIB_NAME)
-LDFLAGS = -L$(TUP_CWD)/.. -l:@(LIB_NAME) $(LDFLAGS)
+REQUIRED_ARCHIVES = $(TUP_CWD)/TestTools.o $(ROOT)/third-party/dummy/dummy.a $(TUP_CWD)/../@(LIB_NAME)

@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+#define EXPORT extern "C" __attribute__((visibility("default")))
+
 const char* Format( const char* format, ... );
 
 enum LogLevel

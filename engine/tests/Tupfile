@@ -1,8 +1,8 @@
 include_rules
 
 : foreach *.cpp |> !cxx |> %B.o
-: PhysicsManager.o $(REQUIRED_ARCHIVES) | $(ORDER_DEPS) |> !ldcxx |>  PhysicsManager.t
-: Lua.o $(REQUIRED_ARCHIVES) | $(ORDER_DEPS) |> !ldcxx |>  Lua.t
-: Common.o $(REQUIRED_ARCHIVES) | $(ORDER_DEPS) |> !ldcxx |>  Common.t
-: Config.o $(REQUIRED_ARCHIVES) | $(ORDER_DEPS) |> !ldcxx |>  Config.t
-: MeshBuffer.o $(REQUIRED_ARCHIVES) | $(ORDER_DEPS) |> !ldcxx |>  MeshBuffer.t
+: PhysicsManager.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  PhysicsManager.t
+: Lua.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  Lua.t
+: Common.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  Common.t
+: Config.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  Config.t
+: MeshBuffer.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  MeshBuffer.t
