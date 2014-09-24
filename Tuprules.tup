@@ -33,7 +33,7 @@ INTERNAL_LDFLAGS += @(INTERNAL_LDFLAGS)
 !cxx = |> ^o Compiling %f^ @(CXX) $(CFLAGS) $(CXXFLAGS) -c -x c++ --std=c++11 -o %o %f |> %B.o
 !ldcxx = |> ^o Linking %o^ @(CXX) -o %o %f $(LDFLAGS) |>
 ifeq (@(CXX),clang++)
-!ldcxxshared = |> ^o Linking %o^ @(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS) |>
-else
 !ldcxxshared = |> ^o Linking %o^ @(CXX) -shared -Wl,-install_name,%o -o %o %f $(LDFLAGS) |>
+else
+!ldcxxshared = |> ^o Linking %o^ @(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS) |>
 endif
