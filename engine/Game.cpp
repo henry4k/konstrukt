@@ -14,7 +14,6 @@
 #include "RenderManager.h"
 #include "Camera.h"
 #include "Shader.h"
-#include "Game.h"
 
 #include "LuaBindings/Audio.h"
 #include "LuaBindings/Camera.h"
@@ -35,14 +34,14 @@
 static void OnExitKey( const char* name, bool pressed, void* context );
 static bool RegisterAllModulesInLua();
 
-bool InitGame( const int argc, char** argv )
+static bool InitGame( lua_State* l )
 {
     Log("----------- Config ------------");
-    if(!InitConfig(argc, argv))
+    if(!InitConfig(0, NULL))
         return false;
 
     Log("------------- Lua -------------");
-    if(!InitLua())
+    if(!InitLua(l))
         return false;
 
     Log("----------- Window ------------");
@@ -86,11 +85,6 @@ bool InitGame( const int argc, char** argv )
 
     Log("-------------------------------");
 
-    if(!RunLuaScript(GetLuaState(), "core/init.lua"))
-        return false;
-    for(int i = 1; i < argc; i++)
-        if(!RunLuaScript(GetLuaState(), argv[i]))
-            return false;
     return true;
 }
 
@@ -113,7 +107,7 @@ static bool RegisterAllModulesInLua()
         RegisterTextureInLua();
 }
 
-void DestroyGame()
+static void DestroyGame()
 {
     DestroyLua();
     DestroyPlayer();
@@ -127,7 +121,7 @@ void DestroyGame()
     DestroyConfig();
 }
 
-void RunGame()
+static void RunGame()
 {
     using namespace glm;
 
@@ -149,6 +143,20 @@ void RunGame()
         if(camera)
             SetCameraViewTransformation(camera, GetPlayerViewMatrix());
         RenderScene();
+    }
+}
+
+EXPORT int luaopen_apoapsis( lua_State* l )
+{
+    if(InitGame(l))
+    {
+        PushLuaModuleTable();
+        return 1;
+    }
+    else
+    {
+        luaL_error(l, "Initialization failed.");
+        return 0;
     }
 }
 

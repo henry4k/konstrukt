@@ -17,12 +17,12 @@ static inline void LuaRequire_( lua_State* l, const char* expression, bool resul
 class LuaScope
 {
 private:
-    bool destroyed;
+    lua_State* state;
 
 public:
-    LuaScope() { InitLua(); destroyed = false; }
-    ~LuaScope() { if(!destroyed) DestroyLua(); }
-    void destroy() { DestroyLua(); destroyed = true; };
+    LuaScope() { state = luaL_newstate(); InitLua(state); }
+    ~LuaScope() { if(state) DestroyLua(); }
+    void destroy() { DestroyLua(); lua_close(state); state = NULL; };
 };
 
 
@@ -35,7 +35,7 @@ int main( int argc, char** argv )
 
         .it("can be initialized and destructed.", [](){
 
-            Require(InitLua() == true);
+            Require(InitLua(luaL_newstate()) == true);
             Require(GetLuaState() != NULL);
 
             // Test if lua works
@@ -45,6 +45,7 @@ int main( int argc, char** argv )
             lua_pop(l, 1);
 
             DestroyLua();
+            lua_close(l);
             Require(GetLuaState() == NULL);
         })
 
