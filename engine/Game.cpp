@@ -31,7 +31,6 @@
 #include "LuaBindings/Texture.h"
 
 
-static void OnExitKey( const char* name, bool pressed, void* context );
 static bool RegisterAllModulesInLua();
 
 static bool InitGame( lua_State* l )
@@ -54,9 +53,6 @@ static bool InitGame( lua_State* l )
 
     Log("---------- Controls -----------");
     if(!InitControls())
-        return false;
-
-    if(!RegisterKeyControl("exit", OnExitKey, NULL, NULL))
         return false;
 
     Log("--------- Physics Manager ----------");
@@ -144,11 +140,27 @@ static void RunGame()
             SetCameraViewTransformation(camera, GetPlayerViewMatrix());
         RenderScene();
     }
+
+    DestroyGame();
+}
+
+static int Lua_RunGameLoop( lua_State* l )
+{
+    RunGame();
+    return 0;
+}
+
+static int Lua_Shutdown( lua_State* l )
+{
+    FlagWindowForClose();
+    return 0;
 }
 
 EXPORT int luaopen_apoapsis( lua_State* l )
 {
-    if(InitGame(l))
+    if(InitGame(l) &&
+       RegisterFunctionInLua("RunGameLoop", Lua_RunGameLoop) &&
+       RegisterFunctionInLua("Shutdown", Lua_Shutdown))
     {
         PushLuaModuleTable();
         return 1;
@@ -159,10 +171,3 @@ EXPORT int luaopen_apoapsis( lua_State* l )
         return 0;
     }
 }
-
-static void OnExitKey( const char* name, bool pressed, void* context )
-{
-    if(pressed)
-        FlagWindowForClose();
-}
-
