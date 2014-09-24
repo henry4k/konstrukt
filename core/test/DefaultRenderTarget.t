@@ -1,8 +1,8 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core/test/common'
+require 'apoapsis.core.test.common'
 
-local Mock = require 'test/mock/Mock'
+local Mock = require 'test.mock.Mock'
 
 
 describe('The default render target')
@@ -12,12 +12,12 @@ describe('The default render target')
             DestroyRenderTarget = Mock()
         }
 
-        FakeRequire:whitelist('core/DefaultRenderTarget')
-        FakeRequire:whitelist('core/RenderTarget')
-        FakeRequire:whitelist('core/middleclass')
+        FakeRequire:whitelist('apoapsis.core.DefaultRenderTarget')
+        FakeRequire:whitelist('apoapsis.core.RenderTarget')
+        FakeRequire:whitelist('apoapsis.core.middleclass')
         FakeRequire:install()
 
-        DefaultRenderTarget = require 'core/DefaultRenderTarget'
+        DefaultRenderTarget = require 'apoapsis.core.DefaultRenderTarget'
     end)
 
     :beforeEach(function()

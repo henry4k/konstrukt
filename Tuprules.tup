@@ -7,6 +7,8 @@ export PKG_CONFIG_PATH
 # -- Flags --
 
 CFLAGS += @(CFLAGS)
+CFLAGS += -fPIC
+CLFAGS += -fvisibility=hidden
 CXXFLAGS +=
 LDFLAGS += @(LDFLAGS)
 
@@ -23,10 +25,15 @@ INTERNAL_LDFLAGS += @(INTERNAL_LDFLAGS)
 
 # -- Macros --
 
-!cc = |> ^o Compling %f^ @(CC) -c %f -o %o --std=c11 $(CFLAGS) |> %B.o
-!ld = |> ^o Linking %o^ ld %f -o %o $(LDFLAGS) |>
+!cc = |> ^o Compling %f^ @(CC) $(CFLAGS) -c --std=c11 -o %o %f |> %B.o
+!ld = |> ^o Linking %o^ ld -o %o %f $(LDFLAGS) |>
 !ar = |> ^o Archiving %o^ ar crs %o %f |>
 !cp = |> ^o Copying %f to %o^ cp %f %o |>
 
-!cxx = |> ^o Compiling %f^ @(CXX) -x c++ -c %f -o %o --std=c++11 $(CFLAGS) $(CXXFLAGS) |> %B.o
-!ldcxx = |> ^o Linking %o^ @(CXX) %f -o %o $(LDFLAGS) |>
+!cxx = |> ^o Compiling %f^ @(CXX) $(CFLAGS) $(CXXFLAGS) -c -x c++ --std=c++11 -o %o %f |> %B.o
+!ldcxx = |> ^o Linking %o^ @(CXX) -o %o %f $(LDFLAGS) |>
+ifeq (@(CXX),clang++)
+!ldcxxshared = |> ^o Linking %o^ @(CXX) -shared -Wl,-install_name,%o -o %o %f $(LDFLAGS) |>
+else
+!ldcxxshared = |> ^o Linking %o^ @(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS) |>
+endif

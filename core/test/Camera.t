@@ -1,8 +1,8 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core/test/common'
+require 'apoapsis.core.test.common'
 
-local Mock = require 'test/mock/Mock'
+local Mock = require 'test.mock.Mock'
 
 
 describe('A camera')
@@ -23,11 +23,11 @@ describe('A camera')
             NATIVE.SetCameraFieldOfView:reset()
         end
 
-        FakeRequire:whitelist('core/Camera')
-        FakeRequire:whitelist('core/middleclass')
+        FakeRequire:whitelist('apoapsis.core.Camera')
+        FakeRequire:whitelist('apoapsis.core.middleclass')
         FakeRequire:install()
 
-        Camera = require 'core/Camera'
+        Camera = require 'apoapsis.core.Camera'
     end)
 
     :beforeEach(function()

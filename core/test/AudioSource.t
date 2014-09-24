@@ -1,8 +1,8 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core/test/common'
+require 'apoapsis.core.test.common'
 
-local Mock = require 'test/mock/Mock'
+local Mock = require 'test.mock.Mock'
 
 
 describe('An audio source')
@@ -35,11 +35,11 @@ describe('An audio source')
             NATIVE.PauseAudioSource:reset()
         end
 
-        FakeRequire:whitelist('core/AudioSource')
-        FakeRequire:whitelist('core/middleclass')
+        FakeRequire:whitelist('apoapsis.core.AudioSource')
+        FakeRequire:whitelist('apoapsis.core.middleclass')
         FakeRequire:install()
 
-        AudioSource = require 'core/AudioSource'
+        AudioSource = require 'apoapsis.core.AudioSource'
     end)
 
     :beforeEach(function()

@@ -24,6 +24,7 @@ struct LuaEvent
 
 static lua_State* g_LuaState = NULL;
 static std::vector<LuaEvent> g_LuaEvents;
+static int g_LuaModuleTable = LUA_NOREF;
 static int g_LuaErrorFunction = LUA_NOREF;
 static int g_LuaShutdownEvent = INVALID_LUA_EVENT;
 
@@ -33,24 +34,21 @@ static int Lua_ErrorProxy( lua_State* l );
 static int Lua_Log( lua_State* l );
 
 
-bool InitLua()
+bool InitLua( lua_State* l )
 {
     assert(g_LuaState == NULL);
     assert(g_LuaEvents.empty());
 
-    Log("Using " LUA_COPYRIGHT);
-
-    g_LuaState = luaL_newstate();
+    g_LuaState = l;
     g_LuaEvents.clear();
 
-    lua_gc(g_LuaState, LUA_GCSTOP, 0); // only collect manually
-    luaL_openlibs(g_LuaState);
-
-    luaopen_cjson(g_LuaState);
-    lua_setglobal(g_LuaState, "cjson");
-
-    lua_createtable(g_LuaState, 0, 0);
-    lua_setglobal(g_LuaState, "NATIVE");
+    lua_createtable(l, 0, 0);
+    lua_pushstring(l, "apoapsis");
+    lua_setfield(l, -2, "_NAME");
+    lua_pushstring(l, "1.0-1");
+    lua_setfield(l, -2, "_VERSION");
+    g_LuaModuleTable = luaL_ref(l, LUA_REGISTRYINDEX);
+    lua_pop(l, 1);
 
     RegisterFunctionInLua("SetErrorFunction", Lua_SetErrorFunction);
     RegisterFunctionInLua("SetEventCallback", Lua_SetEventCallback);
@@ -67,7 +65,9 @@ void DestroyLua()
 
     FireLuaEvent(g_LuaState, g_LuaShutdownEvent, 0, false);
 
-    lua_close(g_LuaState);
+    luaL_unref(g_LuaState, LUA_REGISTRYINDEX, g_LuaModuleTable);
+    luaL_unref(g_LuaState, LUA_REGISTRYINDEX, g_LuaErrorFunction);
+
     g_LuaState = NULL;
 
     g_LuaEvents.clear();
@@ -97,9 +97,14 @@ void UpdateLua()
     );
 }
 
+void PushLuaModuleTable()
+{
+    lua_rawgeti(g_LuaState, LUA_REGISTRYINDEX, g_LuaModuleTable);
+}
+
 bool RegisterFunctionInLua( const char* name, lua_CFunction fn )
 {
-    lua_getglobal(g_LuaState, "NATIVE");
+    PushLuaModuleTable();
     lua_pushcfunction(g_LuaState, fn);
     lua_setfield(g_LuaState, -2, name);
     lua_pop(g_LuaState, 1);

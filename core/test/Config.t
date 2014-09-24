@@ -1,8 +1,8 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core/test/common'
+require 'apoapsis.core.test.common'
 
-local Mock = require 'test/mock/Mock'
+local Mock = require 'test.mock.Mock'
 
 
 describe('The configuration')
@@ -11,7 +11,7 @@ describe('The configuration')
             GetConfigValue = Mock()
         }
 
-        Config = require 'core/Config'
+        Config = require 'apoapsis.core.Config'
     end)
 
     :beforeEach(function()

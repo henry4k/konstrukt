@@ -1,4 +1,4 @@
-local Shutdown = require 'core/Shutdown'
+local Shutdown = require 'apoapsis.core.Shutdown'
 
 
 local ResourceManager = {

@@ -1,9 +1,14 @@
-local class = require 'core/middleclass'
-local Model = require 'core/Model'
+local class  = require 'middleclass'
+local Model  = require 'apoapsis.core.Model'
+local engine = require 'apoapsis.engine'
+local CreateModelWorld               = engine.CreateModelWorld
+local SetRenderLayerNearAndFarPlanes = engine.SetRenderLayerNearAndFarPlanes
+local DestroyModelWorld              = engine.DestroyModelWorld
+local CreateModel                    = engine.CreateModel
 
 
 --- A model world defines a possibly large set of models that can be rendered together.
-local ModelWorld = class('core/ModelWorld')
+local ModelWorld = class('apoapsis/core/ModelWorld')
 
 --- @class RenderLayer
 -- When rendering the model world, the models are grouped into layers.
@@ -17,13 +22,13 @@ local ModelWorld = class('core/ModelWorld')
 -- ModelWorld({{name=foo, zNear=1, zFar=2},
 --             {name=bar, zNear=1, zFar=2}})
 function ModelWorld:initialize( renderLayers )
-    self.handle = NATIVE.CreateModelWorld()
+    self.handle = CreateModelWorld()
 
     renderLayers = renderLayers or {{name='default'}}
     self.renderLayersByName = {}
     for i,definition in ipairs(renderLayers) do
         local layerIndex = i-1
-        NATIVE.SetRenderLayerNearAndFarPlanes(self.handle,
+        SetRenderLayerNearAndFarPlanes(self.handle,
                                               layerIndex,
                                               definition.zNear or   0.1,
                                               definition.zFar  or 100.0)
@@ -32,7 +37,7 @@ function ModelWorld:initialize( renderLayers )
 end
 
 function ModelWorld:destroy()
-    NATIVE.DestroyModelWorld(self.handle)
+    DestroyModelWorld(self.handle)
     self.handle = nil
 end
 
@@ -52,7 +57,7 @@ end
 function ModelWorld:createModel( renderLayerName )
     renderLayerName = renderLayerName or 'default'
     local renderLayerIndex = self:getRenderLayerIndex_(renderLayerName)
-    return Model(NATIVE.CreateModel(self.handle, renderLayerIndex),
+    return Model(CreateModel(self.handle, renderLayerIndex),
                                     renderLayerName)
 end
 

@@ -14,7 +14,6 @@
 #include "RenderManager.h"
 #include "Camera.h"
 #include "Shader.h"
-#include "Game.h"
 
 #include "LuaBindings/Audio.h"
 #include "LuaBindings/Camera.h"
@@ -32,17 +31,18 @@
 #include "LuaBindings/Texture.h"
 
 
-static void OnExitKey( const char* name, bool pressed, void* context );
 static bool RegisterAllModulesInLua();
+static int Lua_RunGameLoop( lua_State* l );
+static int Lua_StopGameLoop( lua_State* l );
 
-bool InitGame( const int argc, char** argv )
+static bool InitGame( lua_State* l )
 {
     Log("----------- Config ------------");
-    if(!InitConfig(argc, argv))
+    if(!InitConfig(0, NULL))
         return false;
 
     Log("------------- Lua -------------");
-    if(!InitLua())
+    if(!InitLua(l))
         return false;
 
     Log("----------- Window ------------");
@@ -55,9 +55,6 @@ bool InitGame( const int argc, char** argv )
 
     Log("---------- Controls -----------");
     if(!InitControls())
-        return false;
-
-    if(!RegisterKeyControl("exit", OnExitKey, NULL, NULL))
         return false;
 
     Log("--------- Physics Manager ----------");
@@ -86,11 +83,6 @@ bool InitGame( const int argc, char** argv )
 
     Log("-------------------------------");
 
-    if(!RunLuaScript(GetLuaState(), "core/init.lua"))
-        return false;
-    for(int i = 1; i < argc; i++)
-        if(!RunLuaScript(GetLuaState(), argv[i]))
-            return false;
     return true;
 }
 
@@ -110,10 +102,12 @@ static bool RegisterAllModulesInLua()
         RegisterModelWorldInLua() &&
         RegisterPhysicsManagerInLua() &&
         RegisterShaderInLua() &&
-        RegisterTextureInLua();
+        RegisterTextureInLua() &&
+        RegisterFunctionInLua("RunGameLoop", Lua_RunGameLoop) &&
+        RegisterFunctionInLua("StopGameLoop", Lua_StopGameLoop);
 }
 
-void DestroyGame()
+static void DestroyGame()
 {
     DestroyLua();
     DestroyPlayer();
@@ -127,7 +121,7 @@ void DestroyGame()
     DestroyConfig();
 }
 
-void RunGame()
+static void RunGame()
 {
     using namespace glm;
 
@@ -150,11 +144,32 @@ void RunGame()
             SetCameraViewTransformation(camera, GetPlayerViewMatrix());
         RenderScene();
     }
+
+    DestroyGame();
 }
 
-static void OnExitKey( const char* name, bool pressed, void* context )
+static int Lua_RunGameLoop( lua_State* l )
 {
-    if(pressed)
-        FlagWindowForClose();
+    RunGame();
+    return 0;
 }
 
+static int Lua_StopGameLoop( lua_State* l )
+{
+    FlagWindowForClose();
+    return 0;
+}
+
+EXPORT int luaopen_apoapsis_engine( lua_State* l )
+{
+    if(InitGame(l))
+    {
+        PushLuaModuleTable();
+        return 1;
+    }
+    else
+    {
+        luaL_error(l, "Initialization failed.");
+        return 0;
+    }
+}

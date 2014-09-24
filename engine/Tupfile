@@ -1,6 +1,4 @@
 include_rules
 
 : foreach *.cpp |> !cxx |> %B.o {objects}
-: {objects} ControlBindings/*.o LuaBindings/*.o |> !ar |> apoapsis.a
-
-: apoapsis.a $(REQUIRED_ARCHIVES) |> !ldcxx |> apoapsis
+: {objects} ControlBindings/*.o LuaBindings/*.o $(REQUIRED_ARCHIVES) |> !ldcxxshared |> @(LIB_NAME)

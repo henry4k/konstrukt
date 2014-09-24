@@ -1,11 +1,19 @@
-local class = require 'core/middleclass'
-local Vec   = require 'core/Vector'
-local Mat4  = require 'core/Matrix4'
+local class  = require 'middleclass'
+local Vec    = require 'apoapsis.core.Vector'
+local Mat4   = require 'apoapsis.core.Matrix4'
+local engine = require 'apoapsis.engine'
+local DestroyModel              = engine.DestroyModel
+local SetModelAttachmentTarget  = engine.SetModelAttachmentTarget
+local SetModelMesh              = engine.SetModelMesh
+local SetModelTexture           = engine.SetModelTexture
+local SetModelProgramFamilyList = engine.SetModelProgramFamilyList
+local SetModelUniform           = engine.SetModelUniform
+local UnsetModelUniform         = engine.UnsetModelUniform
 
 
 --- Models are aggregations of meshes, textures, and shaders that can be used
 -- to render something on the screen.
-local Model = class('core/Model')
+local Model = class('apoapsis/core/Model')
 
 function Model:initialize( handle, renderLayerName )
     self.handle = handle
@@ -14,7 +22,7 @@ function Model:initialize( handle, renderLayerName )
 end
 
 function Model:destroy()
-    NATIVE.DestroyModel(self.handle)
+    DestroyModel(self.handle)
     self.handle = nil
 end
 
@@ -23,7 +31,7 @@ function Model:getRenderLayerName()
 end
 
 function Model:setAttachmentTarget( solid )
-    NATIVE.SetModelAttachmentTarget(self.handle, solid.handle)
+    SetModelAttachmentTarget(self.handle, solid.handle)
     self.attachmentTarget = solid
 end
 
@@ -32,33 +40,33 @@ function Model:getAttachmentTarget()
 end
 
 function Model:setTransformation( transformation )
-    NATIVE.SetModelTransformation(self.handle, transformation.handle)
+    SetModelTransformation(self.handle, transformation.handle)
 end
 
 function Model:setMesh( mesh )
-    NATIVE.SetModelMesh(self.handle, mesh.handle)
+    SetModelMesh(self.handle, mesh.handle)
 end
 
 function Model:setTexture( unit, texture )
-    NATIVE.SetModelTexture(self.handle, unit, texture.handle)
+    SetModelTexture(self.handle, unit, texture.handle)
 end
 
 function Model:setProgramFamilyList( familyList )
-    NATIVE.SetModelProgramFamilyList(self.handle, familyList)
+    SetModelProgramFamilyList(self.handle, familyList)
 end
 
 function Model:setUniform( name, value, type )
-    if value == nil then
-        if class.Object.isInstanceOf(value, Mat4) then
-            NATIVE.SetModelUniform(self.handle, name, 'mat4', value.handle)
-        elseif class.Object.isInstanceOf(value, Vec) then
-            NATIVE.SetModelUniform(self.handle, name, 'vec'..#value, value:unpack())
-        else
-            NATIVE.SetModelUniform(self.handle, name, type, value)
-        end
+    if class.Object.isInstanceOf(value, Mat4) then
+        SetModelUniform(self.handle, name, 'mat4', value.handle)
+    elseif class.Object.isInstanceOf(value, Vec) then
+        SetModelUniform(self.handle, name, 'vec'..#value, value:unpack())
     else
-        NATIVE.UnsetModelUniform(self.handle, name)
+        SetModelUniform(self.handle, name, type, value)
     end
+end
+
+function Model:unsetUniform( name )
+    UnsetModelUniform(self.handle, name)
 end
 
 

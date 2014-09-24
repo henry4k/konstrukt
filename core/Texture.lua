@@ -1,8 +1,12 @@
-local class = require 'core/middleclass'
-local Resource = require 'core/Resource'
+local class    = require 'middleclass'
+local Resource = require 'apoapsis.core.Resource'
+local engine   = require 'apoapsis.engine'
+local Load2dTexture   = engine.Load2dTexture
+local LoadCubeTexture = engine.LoadCubeTexture
+local DestroyTexture  = engine.DestroyTexture
 
 
-local Texture = class('core/Texture')
+local Texture = class('apoapsis/core/Texture')
 Texture:include(Resource)
 
 function Texture.static:load( ... )
@@ -11,16 +15,16 @@ end
 
 function Texture:initialize( target, fileName, ... )
     if target == '2d' then
-        self.handle = NATIVE.Load2dTexture(fileName, ...)
+        self.handle = Load2dTexture(fileName, ...)
     elseif target == 'cube' then
-        self.handle = NATIVE.LoadCubeTexture(fileName, ...)
+        self.handle = LoadCubeTexture(fileName, ...)
     else
         error('Unknown type: '..target)
     end
 end
 
 function Texture:destroy()
-    NATIVE.DestroyTexture(self.handle)
+    DestroyTexture(self.handle)
     self.handle = nil
 end
 

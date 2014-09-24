@@ -1,6 +1,6 @@
-local class = require 'core/middleclass'
+local class  = require 'middleclass'
 local Object = class.Object
-local Effect = require 'core/effect/Effect'
+local Effect = require 'apoapsis.core.effect.Effect'
 
 
 local EffectTarget = {}

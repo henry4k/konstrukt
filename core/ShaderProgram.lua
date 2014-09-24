@@ -1,18 +1,23 @@
-local class = require 'core/middleclass'
-local Vec   = require 'core/Vector'
-local Mat4  = require 'core/Matrix4'
-local Resource = require 'core/Resource'
-local ResourceManager = require 'core/ResourceManager'
+local class           = require 'middleclass'
+local Vec             = require 'apoapsis.core.Vector'
+local Mat4            = require 'apoapsis.core.Matrix4'
+local Resource        = require 'apoapsis.core.Resource'
+local ResourceManager = require 'apoapsis.core.ResourceManager'
+local engine          = require 'apoapsis.engine'
+local LinkShaderProgram    = engine.LinkShaderProgram
+local DestroyShaderProgram = engine.DestroyShaderProgram
+local SetGlobalUniform     = engine.SetGlobalUniform
+local UnsetGlobalUniform   = engine.UnsetGlobalUniform
 
 
-local ShaderProgram = class('core/ShaderProgram')
+local ShaderProgram = class('apoapsis/core/ShaderProgram')
 ShaderProgram:include(Resource)
 
 function ShaderProgram.static:load( ... )
     local shaders = {...}
     for i,shader in ipairs(shaders) do
         if type(shader) == 'string' then
-            shaders[i] = ResourceManager.load('core/Shader', shader)
+            shaders[i] = ResourceManager.load('apoapsis/core/Shader', shader)
         end
     end
     return ShaderProgram(table.unpack(shaders))
@@ -25,26 +30,26 @@ function ShaderProgram:initialize( ... )
     for i,v in ipairs(shaders) do
         shaderHandles[i] = v.handle
     end
-    self.handle = NATIVE.LinkShaderProgram(table.unpack(shaderHandles))
+    self.handle = LinkShaderProgram(table.unpack(shaderHandles))
 end
 
 function ShaderProgram:destroy()
-    NATIVE.DestroyShaderProgram(self.handle)
+    DestroyShaderProgram(self.handle)
     self.handle = nil
 end
 
 function ShaderProgram.static:setGlobalUniform( name, value, type )
-    if value == nil then
-        if class.Object.isInstanceOf(value, Mat4) then
-            NATIVE.SetGlobalUniform(name, 'mat4', value.handle)
-        elseif class.Object.isInstanceOf(value, Vec) then
-            NATIVE.SetGlobalUniform(name, 'vec'..#value, value:unpack())
-        else
-            NATIVE.SetGlobalUniform(name, type, value)
-        end
+    if class.Object.isInstanceOf(value, Mat4) then
+        SetGlobalUniform(name, 'mat4', value.handle)
+    elseif class.Object.isInstanceOf(value, Vec) then
+        SetGlobalUniform(name, 'vec'..#value, value:unpack())
     else
-        NATIVE.UnsetGlobalUniform(name)
+        SetGlobalUniform(name, type, value)
     end
+end
+
+function ShaderProgram.static:unsetGlobalUniform( name )
+    UnsetGlobalUniform(name)
 end
 
 

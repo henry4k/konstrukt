@@ -1,8 +1,8 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core/test/common'
+require 'apoapsis.core.test.common'
 
-local Mock = require 'test/mock/Mock'
+local Mock = require 'test.mock.Mock'
 
 
 describe('A mesh')
@@ -20,14 +20,14 @@ describe('A mesh')
             createMeshBufferByPath = Mock()
         }
 
-        FakeRequire:whitelist('core/Mesh')
-        FakeRequire:whitelist('core/middleclass')
-        FakeRequire:fakeModule('core/Resource', {})
-        FakeRequire:fakeModule('core/Json', Json)
-        FakeRequire:fakeModule('core/Scene', Scene)
+        FakeRequire:whitelist('apoapsis.core.Mesh')
+        FakeRequire:whitelist('apoapsis.core.middleclass')
+        FakeRequire:fakeModule('apoapsis.core.Resource', {})
+        FakeRequire:fakeModule('apoapsis.core.Json', Json)
+        FakeRequire:fakeModule('apoapsis.core.Scene', Scene)
         FakeRequire:install()
 
-        Mesh = require 'core/Mesh'
+        Mesh = require 'apoapsis.core.Mesh'
     end)
 
     :beforeEach(function()

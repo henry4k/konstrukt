@@ -1,3 +1,8 @@
+local engine = require 'apoapsis.engine'
+local SetAudioListenerAttachmentTarget = engine.SetAudioListenerAttachmentTarget
+local SetAudioListenerTransformation   = engine.SetAudioListenerTransformation
+
+
 --- Describes the properties of your virtual ears.
 -- Like the #AudioSource the listener has a transformation and an attachment
 -- target. The attachment target provides information about position,
@@ -11,11 +16,11 @@ local AudioListener = {}
 
 
 function AudioListener.setAttachmentTarget( solid )
-    NATIVE.SetAudioListenerAttachmentTarget(solid.handle)
+    SetAudioListenerAttachmentTarget(solid.handle)
 end
 
 function AudioListener.setTransformation( matrix )
-    NATIVE.SetAudioListenerTransformation(matrix.handle)
+    SetAudioListenerTransformation(matrix.handle)
 end
 
 
