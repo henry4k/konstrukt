@@ -22,6 +22,7 @@ static KeyActionFn         g_KeyActionFn = NULL;
 /****** General *******/
 
 static void OnGLFWError( int code, const char* description );
+static void OnDebugEvent( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char* message, void* userParam );
 static void OnDebugEvent( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char* message, const void* userParam );
 static void OnWindowResize( GLFWwindow* window, int width, int height );
 static void OnFramebufferResize( GLFWwindow* window, int width, int height );
@@ -219,6 +220,11 @@ void SetKeyActionFn( KeyActionFn fn )
 static void OnGLFWError( int code, const char* description )
 {
     Error("GLFW error %d: %s", code, description);
+}
+
+static void OnDebugEvent( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char* message, void* userParam )
+{
+    OnDebugEvent(source, type, id, severity, length, message, (const void*)userParam);
 }
 
 static void OnDebugEvent( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char* message, const void* userParam )

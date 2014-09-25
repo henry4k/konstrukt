@@ -14,6 +14,7 @@
 #include "RenderManager.h"
 #include "Camera.h"
 #include "Shader.h"
+#include "Game.h"
 
 #include "LuaBindings/Audio.h"
 #include "LuaBindings/Camera.h"
@@ -31,18 +32,18 @@
 #include "LuaBindings/Texture.h"
 
 
-static bool RegisterAllModulesInLua();
-static int Lua_RunGameLoop( lua_State* l );
 static int Lua_StopGameLoop( lua_State* l );
 
-static bool InitGame( lua_State* l )
+static bool RegisterAllModulesInLua();
+
+bool InitGame( const int argc, char** argv )
 {
     Log("----------- Config ------------");
-    if(!InitConfig(0, NULL))
+    if(!InitConfig(argc, argv))
         return false;
 
     Log("------------- Lua -------------");
-    if(!InitLua(l))
+    if(!InitLua())
         return false;
 
     Log("----------- Window ------------");
@@ -83,6 +84,11 @@ static bool InitGame( lua_State* l )
 
     Log("-------------------------------");
 
+    if(!RunLuaScript(GetLuaState(), "apoapsis/core/init.lua"))
+        return false;
+    for(int i = 1; i < argc; i++)
+        if(!RunLuaScript(GetLuaState(), argv[i]))
+            return false;
     return true;
 }
 
@@ -103,7 +109,6 @@ static bool RegisterAllModulesInLua()
         RegisterPhysicsManagerInLua() &&
         RegisterShaderInLua() &&
         RegisterTextureInLua() &&
-        RegisterFunctionInLua("RunGameLoop", Lua_RunGameLoop) &&
         RegisterFunctionInLua("StopGameLoop", Lua_StopGameLoop);
 }
 
@@ -121,7 +126,7 @@ static void DestroyGame()
     DestroyConfig();
 }
 
-static void RunGame()
+void RunGame()
 {
     using namespace glm;
 
@@ -148,28 +153,9 @@ static void RunGame()
     DestroyGame();
 }
 
-static int Lua_RunGameLoop( lua_State* l )
-{
-    RunGame();
-    return 0;
-}
-
 static int Lua_StopGameLoop( lua_State* l )
 {
     FlagWindowForClose();
     return 0;
 }
 
-EXPORT int luaopen_apoapsis_engine( lua_State* l )
-{
-    if(InitGame(l))
-    {
-        PushLuaModuleTable();
-        return 1;
-    }
-    else
-    {
-        luaL_error(l, "Initialization failed.");
-        return 0;
-    }
-}

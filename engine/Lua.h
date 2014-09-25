@@ -22,14 +22,12 @@ enum LuaArrayType
 };
 
 
-bool InitLua( lua_State* l );
+bool InitLua();
 void DestroyLua();
 
 lua_State* GetLuaState();
 
 void UpdateLua();
-
-void PushLuaModuleTable();
 
 /**
  * Registers a native function in Lua.
