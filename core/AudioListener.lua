@@ -1,6 +1,5 @@
-local engine = require 'apoapsis.engine'
-local SetAudioListenerAttachmentTarget = engine.SetAudioListenerAttachmentTarget
-local SetAudioListenerTransformation   = engine.SetAudioListenerTransformation
+local SetAudioListenerAttachmentTarget = ENGINE.SetAudioListenerAttachmentTarget
+local SetAudioListenerTransformation   = ENGINE.SetAudioListenerTransformation
 
 
 --- Describes the properties of your virtual ears.

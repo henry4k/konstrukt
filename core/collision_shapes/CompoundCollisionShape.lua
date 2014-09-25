@@ -1,10 +1,9 @@
 local class          = require 'middleclass'
-local CollisionShape = require 'apoapsis.core.CollisionShape'
-local engine         = require 'apoapsis.engine'
-local CreateCompoundCollisionShape = engine.CreateCompoundCollisionShape
+local CollisionShape = require 'core/CollisionShape'
+local CreateCompoundCollisionShape = ENGINE.CreateCompoundCollisionShape
 
 
-local CompoundCollisionShape = class('apoapsis/core/collision_shapes/CompoundCollisionShape', CollisionShape)
+local CompoundCollisionShape = class('core/collision_shapes/CompoundCollisionShape', CollisionShape)
 
 function CompoundCollisionShape:initialize( ... )
     -- TODO TODO TODO

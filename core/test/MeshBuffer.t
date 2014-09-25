@@ -1,13 +1,13 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'apoapsis.core.test.common'
+require 'core/test/common'
 
 local Mock = require 'test.mock.Mock'
 
 
 describe('A mesh bufffer')
     :setup(function()
-        NATIVE = {
+        ENGINE = {
             CreateMeshBuffer = Mock(),
             DestroyMeshBuffer = Mock(),
             TransformMeshBuffer = Mock(),
@@ -17,19 +17,19 @@ describe('A mesh bufffer')
         }
 
         ResetMocks = function()
-            NATIVE.CreateMeshBuffer:reset()
-            NATIVE.DestroyMeshBuffer:reset()
-            NATIVE.TransformMeshBuffer:reset()
-            NATIVE.AppendMeshBuffer:reset()
-            NATIVE.AppendIndexToMeshBuffer:reset()
-            NATIVE.AppendVertexToMeshBuffer:reset()
+            ENGINE.CreateMeshBuffer:reset()
+            ENGINE.DestroyMeshBuffer:reset()
+            ENGINE.TransformMeshBuffer:reset()
+            ENGINE.AppendMeshBuffer:reset()
+            ENGINE.AppendIndexToMeshBuffer:reset()
+            ENGINE.AppendVertexToMeshBuffer:reset()
         end
 
-        FakeRequire:whitelist('apoapsis.core.MeshBuffer')
-        FakeRequire:whitelist('apoapsis.core.middleclass')
+        FakeRequire:whitelist('core/MeshBuffer')
+        FakeRequire:whitelist('core/middleclass')
         FakeRequire:install()
 
-        MeshBuffer = require 'apoapsis.core.MeshBuffer'
+        MeshBuffer = require 'core/MeshBuffer'
     end)
 
     :beforeEach(function()
@@ -37,36 +37,36 @@ describe('A mesh bufffer')
     end)
 
     :it('can be created and destroyed.', function()
-        NATIVE.CreateMeshBuffer:canBeCalled{thenReturn={'the handle'}}
-        NATIVE.DestroyMeshBuffer:canBeCalled{with={'the handle'}}
+        ENGINE.CreateMeshBuffer:canBeCalled{thenReturn={'the handle'}}
+        ENGINE.DestroyMeshBuffer:canBeCalled{with={'the handle'}}
 
         local buffer = MeshBuffer()
         assert(buffer.handle == 'the handle')
-        NATIVE.CreateMeshBuffer:assertCallCount(1)
+        ENGINE.CreateMeshBuffer:assertCallCount(1)
 
         buffer:destroy()
         assert(buffer.handle == nil)
-        NATIVE.DestroyMeshBuffer:assertCallCount(1)
+        ENGINE.DestroyMeshBuffer:assertCallCount(1)
     end)
 
     :it('can transform its vertices.', function()
-        NATIVE.CreateMeshBuffer:canBeCalled{thenReturn={'mesh buffer handle'}}
+        ENGINE.CreateMeshBuffer:canBeCalled{thenReturn={'mesh buffer handle'}}
         local buffer = MeshBuffer()
 
-        NATIVE.TransformMeshBuffer:canBeCalled{with={'mesh buffer handle', 'matrix handle'}}
+        ENGINE.TransformMeshBuffer:canBeCalled{with={'mesh buffer handle', 'matrix handle'}}
 
         local transformation = { handle='matrix handle' }
         buffer:transform(transformation)
 
-        NATIVE.TransformMeshBuffer:assertCallCount(1)
+        ENGINE.TransformMeshBuffer:assertCallCount(1)
     end)
 
     :it('can append other mesh buffers.', function()
-        NATIVE.CreateMeshBuffer:canBeCalled{thenReturn={'mesh buffer handle a'}}
-        NATIVE.CreateMeshBuffer:canBeCalled{thenReturn={'mesh buffer handle b'}}
-        NATIVE.AppendMeshBuffer:canBeCalled{with={'mesh buffer handle a',
+        ENGINE.CreateMeshBuffer:canBeCalled{thenReturn={'mesh buffer handle a'}}
+        ENGINE.CreateMeshBuffer:canBeCalled{thenReturn={'mesh buffer handle b'}}
+        ENGINE.AppendMeshBuffer:canBeCalled{with={'mesh buffer handle a',
                                                   'mesh buffer handle b'} }
-        NATIVE.AppendMeshBuffer:canBeCalled{with={'mesh buffer handle a',
+        ENGINE.AppendMeshBuffer:canBeCalled{with={'mesh buffer handle a',
                                                   'mesh buffer handle b',
                                                   'matrix handle'} }
 
@@ -78,32 +78,32 @@ describe('A mesh bufffer')
         local transformation = { handle='matrix handle' }
         bufferA:appendMeshBuffer(bufferB, transformation)
 
-        NATIVE.AppendMeshBuffer:assertCallCount(2)
+        ENGINE.AppendMeshBuffer:assertCallCount(2)
     end)
 
     :it('can append indices.', function()
-        NATIVE.CreateMeshBuffer:canBeCalled{thenReturn={'mesh buffer handle'}}
+        ENGINE.CreateMeshBuffer:canBeCalled{thenReturn={'mesh buffer handle'}}
         local buffer = MeshBuffer()
 
-        NATIVE.AppendIndexToMeshBuffer:canBeCalled{with={'mesh buffer handle', 42}}
+        ENGINE.AppendIndexToMeshBuffer:canBeCalled{with={'mesh buffer handle', 42}}
 
         buffer:appendIndex(42)
 
-        NATIVE.AppendIndexToMeshBuffer:assertCallCount(1)
+        ENGINE.AppendIndexToMeshBuffer:assertCallCount(1)
     end)
 
     :it('can append vertices.', function()
-        NATIVE.CreateMeshBuffer:canBeCalled{thenReturn={'mesh buffer handle'}}
+        ENGINE.CreateMeshBuffer:canBeCalled{thenReturn={'mesh buffer handle'}}
         local buffer = MeshBuffer()
 
-        NATIVE.AppendVertexToMeshBuffer:canBeCalled{with={'mesh buffer handle',
+        ENGINE.AppendVertexToMeshBuffer:canBeCalled{with={'mesh buffer handle',
                                                           1, 2, 3,
                                                           4, 5, 6,
                                                           7, 8,
                                                           9, 10, 11,
                                                           12, 13, 14, 15} }
 
-        NATIVE.AppendVertexToMeshBuffer:canBeCalled{with={'mesh buffer handle',
+        ENGINE.AppendVertexToMeshBuffer:canBeCalled{with={'mesh buffer handle',
                                                           10, 20, 30,
                                                           1, 1, 1,
                                                           0, 0,
@@ -118,7 +118,7 @@ describe('A mesh bufffer')
 
         buffer:appendVertex({x=10, y=20, z=30})
 
-        NATIVE.AppendVertexToMeshBuffer:assertCallCount(2)
+        ENGINE.AppendVertexToMeshBuffer:assertCallCount(2)
     end)
 
 

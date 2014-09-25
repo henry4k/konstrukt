@@ -1,5 +1,4 @@
-local engine = require 'apoapsis.engine'
-local GetConfigValue = engine.GetConfigValue
+local GetConfigValue = ENGINE.GetConfigValue
 
 
 local Config = {}

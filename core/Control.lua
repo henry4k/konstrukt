@@ -1,7 +1,6 @@
-local engine = require 'apoapsis.engine'
-local RegisterKeyControl  = engine.RegisterKeyControl
-local RegisterAxisControl = engine.RegisterAxisControl
-local SetEventCallback    = engine.SetEventCallback
+local RegisterKeyControl  = ENGINE.RegisterKeyControl
+local RegisterAxisControl = ENGINE.RegisterAxisControl
+local SetEventCallback    = ENGINE.SetEventCallback
 
 
 local Control = {}

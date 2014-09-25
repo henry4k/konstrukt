@@ -1,17 +1,16 @@
 local class  = require 'middleclass'
-local Vec    = require 'apoapsis.core.Vector'
-local engine = require 'apoapsis.engine'
-local CreateMatrix4          = engine.CreateMatrix4
-local CopyMatrix4            = engine.CopyMatrix4
-local Matrix4Op              = engine.Matrix4Op
-local TranslateMatrix4       = engine.TranslateMatrix4
-local ScaleMatrix4           = engine.ScaleMatrix4
-local RotateMatrix4          = engine.RotateMatrix4
-local Matrix4TransformVector = engine.Matrix4TransformVector
-local MakeRotationMatrix     = engine.MakeRotationMatrix
+local Vec    = require 'core/Vector'
+local CreateMatrix4          = ENGINE.CreateMatrix4
+local CopyMatrix4            = ENGINE.CopyMatrix4
+local Matrix4Op              = ENGINE.Matrix4Op
+local TranslateMatrix4       = ENGINE.TranslateMatrix4
+local ScaleMatrix4           = ENGINE.ScaleMatrix4
+local RotateMatrix4          = ENGINE.RotateMatrix4
+local Matrix4TransformVector = ENGINE.Matrix4TransformVector
+local MakeRotationMatrix     = ENGINE.MakeRotationMatrix
 
 
-local Matrix4 = class('apoapsis/core/Matrix4')
+local Matrix4 = class('core/Matrix4')
 
 function Matrix4:initialize( handle )
     self.handle = handle or CreateMatrix4()

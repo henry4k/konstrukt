@@ -1,11 +1,10 @@
 local class  = require 'middleclass'
-local engine = require 'apoapsis.engine'
-local DestroyRenderTarget             = engine.DestroyRenderTarget
-local SetRenderTargetCamera           = engine.SetRenderTargetCamera
-local SetRenderTargetShaderProgramSet = engine.SetRenderTargetShaderProgramSet
+local DestroyRenderTarget             = ENGINE.DestroyRenderTarget
+local SetRenderTargetCamera           = ENGINE.SetRenderTargetCamera
+local SetRenderTargetShaderProgramSet = ENGINE.SetRenderTargetShaderProgramSet
 
 
-local RenderTarget = class('apoapsis/core/RenderTarget')
+local RenderTarget = class('core/RenderTarget')
 
 function RenderTarget:initialize( handle )
     self.handle = handle

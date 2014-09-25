@@ -1,10 +1,9 @@
 local class          = require 'middleclass'
-local CollisionShape = require 'apoapsis.core.CollisionShape'
-local engine         = require 'apoapsis.engine'
-local CreateCapsuleCollisionShape = engine.CreateCapsuleCollisionShape
+local CollisionShape = require 'core/CollisionShape'
+local CreateCapsuleCollisionShape = ENGINE.CreateCapsuleCollisionShape
 
 
-local CapsuleCollisionShape = class('apoapsis/core/collision_shapes/CapsuleCollisionShape', CollisionShape)
+local CapsuleCollisionShape = class('core/collision_shapes/CapsuleCollisionShape', CollisionShape)
 
 function CapsuleCollisionShape:initialize( radius, height )
     CollisionShape.initialize(self, CreateCapsuleCollisionShape(radius, height))

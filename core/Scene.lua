@@ -1,4 +1,4 @@
-local MeshBuffer = require 'apoapsis.core.MeshBuffer'
+local MeshBuffer = require 'core/MeshBuffer'
 
 
 local GetEntryByPath = function( table, path, delimiters )

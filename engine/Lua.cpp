@@ -24,7 +24,6 @@ struct LuaEvent
 
 static lua_State* g_LuaState = NULL;
 static std::vector<LuaEvent> g_LuaEvents;
-static int g_LuaEngineTable = LUA_NOREF;
 static int g_LuaErrorFunction = LUA_NOREF;
 static int g_LuaShutdownEvent = INVALID_LUA_EVENT;
 
@@ -32,7 +31,6 @@ static int Lua_SetErrorFunction( lua_State* l );
 static int Lua_SetEventCallback( lua_State* l );
 static int Lua_ErrorProxy( lua_State* l );
 static int Lua_Log( lua_State* l );
-static int Lua_GetApoapsisEngine( lua_State* l );
 
 
 bool InitLua()
@@ -45,17 +43,18 @@ bool InitLua()
     lua_State* l = g_LuaState = luaL_newstate();
     g_LuaEvents.clear();
 
-    lua_createtable(l, 0, 0);
-    g_LuaEngineTable = luaL_ref(l, LUA_REGISTRYINDEX);
-    lua_pop(l, 1);
+    lua_gc(g_LuaState, LUA_GCSTOP, 0); // only collect manually
+    luaL_openlibs(g_LuaState);
 
     luaopen_cjson(l);
     lua_setglobal(l, "cjson");
 
+    lua_createtable(l, 0, 0);
+    lua_setglobal(g_LuaState, "ENGINE");
+
     RegisterFunctionInLua("SetErrorFunction", Lua_SetErrorFunction);
     RegisterFunctionInLua("SetEventCallback", Lua_SetEventCallback);
     RegisterFunctionInLua("Log", Lua_Log);
-    RegisterFunctionInLua("GetApoapsisEngine", Lua_GetApoapsisEngine);
 
     g_LuaShutdownEvent = RegisterLuaEvent("Shutdown");
 
@@ -68,9 +67,9 @@ void DestroyLua()
 
     FireLuaEvent(g_LuaState, g_LuaShutdownEvent, 0, false);
 
-    luaL_unref(g_LuaState, LUA_REGISTRYINDEX, g_LuaEngineTable);
     luaL_unref(g_LuaState, LUA_REGISTRYINDEX, g_LuaErrorFunction);
 
+    lua_close(g_LuaState);
     g_LuaState = NULL;
 
     g_LuaEvents.clear();
@@ -100,14 +99,9 @@ void UpdateLua()
     );
 }
 
-static void PushLuaEngineTable( lua_State* l )
-{
-    lua_rawgeti(l, LUA_REGISTRYINDEX, g_LuaEngineTable);
-}
-
 bool RegisterFunctionInLua( const char* name, lua_CFunction fn )
 {
-    PushLuaEngineTable(g_LuaState);
+    lua_getglobal(g_LuaState, "ENGINE");
     lua_pushcfunction(g_LuaState, fn);
     lua_setfield(g_LuaState, -2, name);
     lua_pop(g_LuaState, 1);
@@ -476,10 +470,4 @@ static int Lua_Log( lua_State* l )
     const char* message = luaL_checkstring(l, 1);
     Log("%s", message);
     return 0;
-}
-
-static int Lua_GetApoapsisEngine( lua_State* l )
-{
-    PushLuaEngineTable(l);
-    return 1;
 }

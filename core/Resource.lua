@@ -1,4 +1,4 @@
-local ResourceManager = require 'apoapsis.core.ResourceManager'
+local ResourceManager = require 'core/ResourceManager'
 
 
 --- Provides a more convenient middleclass integration of the resource loaders.

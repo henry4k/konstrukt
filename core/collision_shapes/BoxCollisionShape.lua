@@ -1,11 +1,10 @@
 local class          = require 'middleclass'
-local Vec            = require 'apoapsis.core.Vector'
-local CollisionShape = require 'apoapsis.core.CollisionShape'
-local engine         = require 'apoapsis.engine'
+local Vec            = require 'core/Vector'
+local CollisionShape = require 'core/CollisionShape'
 local CreateBoxCollisionShape = CreateBoxCollisionShape
 
 
-local BoxCollisionShape = class('apoapsis/core/collision_shapes/BoxCollisionShape', CollisionShape)
+local BoxCollisionShape = class('core/collision_shapes/BoxCollisionShape', CollisionShape)
 
 function BoxCollisionShape:initialize( halfWidths )
     CollisionShape.initialize(self, CreateBoxCollisionShape(halfWidths:unpack(3)))

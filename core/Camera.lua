@@ -1,13 +1,12 @@
 local class  = require 'middleclass'
-local engine = require 'apoapsis.engine'
-local CreateCamera                = engine.CreateCamera
-local DestroyCamera               = engine.DestroyCamera
-local SetCameraAttachmentTarget   = engine.SetCameraAttachmentTarget
-local SetCameraViewTransformation = engine.SetCameraViewTransformation
-local SetCameraFieldOfView        = engine.SetCameraFieldOfView
+local CreateCamera                = ENGINE.CreateCamera
+local DestroyCamera               = ENGINE.DestroyCamera
+local SetCameraAttachmentTarget   = ENGINE.SetCameraAttachmentTarget
+local SetCameraViewTransformation = ENGINE.SetCameraViewTransformation
+local SetCameraFieldOfView        = ENGINE.SetCameraFieldOfView
 
 
-local Camera = class('apoapsis/core/Camera')
+local Camera = class('core/Camera')
 
 function Camera:initialize( modelWorld )
     self.handle = CreateCamera(modelWorld.handle)

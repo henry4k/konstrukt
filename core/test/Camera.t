@@ -1,13 +1,13 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'apoapsis.core.test.common'
+require 'core/test/common'
 
 local Mock = require 'test.mock.Mock'
 
 
 describe('A camera')
     :setup(function()
-        NATIVE = {
+        ENGINE = {
             CreateCamera = Mock(),
             DestroyCamera = Mock(),
             SetCameraAttachmentTarget = Mock(),
@@ -16,18 +16,18 @@ describe('A camera')
         }
 
         ResetMocks = function()
-            NATIVE.CreateCamera:reset()
-            NATIVE.DestroyCamera:reset()
-            NATIVE.SetCameraAttachmentTarget:reset()
-            NATIVE.SetCameraViewTransformation:reset()
-            NATIVE.SetCameraFieldOfView:reset()
+            ENGINE.CreateCamera:reset()
+            ENGINE.DestroyCamera:reset()
+            ENGINE.SetCameraAttachmentTarget:reset()
+            ENGINE.SetCameraViewTransformation:reset()
+            ENGINE.SetCameraFieldOfView:reset()
         end
 
-        FakeRequire:whitelist('apoapsis.core.Camera')
-        FakeRequire:whitelist('apoapsis.core.middleclass')
+        FakeRequire:whitelist('core/Camera')
+        FakeRequire:whitelist('core/middleclass')
         FakeRequire:install()
 
-        Camera = require 'apoapsis.core.Camera'
+        Camera = require 'core/Camera'
     end)
 
     :beforeEach(function()
@@ -35,45 +35,45 @@ describe('A camera')
     end)
 
     :it('can be created and destroyed.', function()
-        NATIVE.CreateCamera:canBeCalled{with={'model world handle'}, thenReturn={'camera handle'}}
-        NATIVE.DestroyCamera:canBeCalled{with={'camera handle'}}
+        ENGINE.CreateCamera:canBeCalled{with={'model world handle'}, thenReturn={'camera handle'}}
+        ENGINE.DestroyCamera:canBeCalled{with={'camera handle'}}
 
         local modelWorld = { handle = 'model world handle' }
         local camera = Camera(modelWorld)
         assert(camera.handle == 'camera handle')
-        NATIVE.CreateCamera:assertCallCount(1)
+        ENGINE.CreateCamera:assertCallCount(1)
 
         camera:destroy()
         assert(camera.handle == nil)
-        NATIVE.DestroyCamera:assertCallCount(1)
+        ENGINE.DestroyCamera:assertCallCount(1)
     end)
 
     :beforeEach(function()
         ResetMocks()
 
-        NATIVE.CreateCamera:canBeCalled{with={'model world handle'}, thenReturn={'camera handle'}}
+        ENGINE.CreateCamera:canBeCalled{with={'model world handle'}, thenReturn={'camera handle'}}
         local modelWorld = { handle = 'model world handle' }
         camera = Camera(modelWorld)
     end)
 
     :it('has an attachment target.', function()
-        NATIVE.SetCameraAttachmentTarget:canBeCalled{with={'camera handle', 'solid handle'}}
+        ENGINE.SetCameraAttachmentTarget:canBeCalled{with={'camera handle', 'solid handle'}}
         local solid = { handle = 'solid handle' }
         camera:setAttachmentTarget(solid)
-        NATIVE.SetCameraAttachmentTarget:assertCallCount(1)
+        ENGINE.SetCameraAttachmentTarget:assertCallCount(1)
     end)
 
     :it('has a view transformation.', function()
-        NATIVE.SetCameraViewTransformation:canBeCalled{with={'camera handle', 'matrix handle'}}
+        ENGINE.SetCameraViewTransformation:canBeCalled{with={'camera handle', 'matrix handle'}}
         local matrix = { handle = 'matrix handle' }
         camera:setViewTransformation(matrix)
-        NATIVE.SetCameraViewTransformation:assertCallCount(1)
+        ENGINE.SetCameraViewTransformation:assertCallCount(1)
     end)
 
     :it('has an field of view.', function()
-        NATIVE.SetCameraFieldOfView:canBeCalled{with={'camera handle', 90}}
+        ENGINE.SetCameraFieldOfView:canBeCalled{with={'camera handle', 90}}
         camera:setFieldOfView(90)
-        NATIVE.SetCameraFieldOfView:assertCallCount(1)
+        ENGINE.SetCameraFieldOfView:assertCallCount(1)
     end)
 
 

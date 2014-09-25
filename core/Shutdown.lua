@@ -1,5 +1,4 @@
-local engine = require 'apoapsis.engine'
-local SetEventCallback = engine.SetEventCallback
+local SetEventCallback = ENGINE.SetEventCallback
 
 
 local Shutdown = {

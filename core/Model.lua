@@ -1,19 +1,18 @@
 local class  = require 'middleclass'
-local Vec    = require 'apoapsis.core.Vector'
-local Mat4   = require 'apoapsis.core.Matrix4'
-local engine = require 'apoapsis.engine'
-local DestroyModel              = engine.DestroyModel
-local SetModelAttachmentTarget  = engine.SetModelAttachmentTarget
-local SetModelMesh              = engine.SetModelMesh
-local SetModelTexture           = engine.SetModelTexture
-local SetModelProgramFamilyList = engine.SetModelProgramFamilyList
-local SetModelUniform           = engine.SetModelUniform
-local UnsetModelUniform         = engine.UnsetModelUniform
+local Vec    = require 'core/Vector'
+local Mat4   = require 'core/Matrix4'
+local DestroyModel              = ENGINE.DestroyModel
+local SetModelAttachmentTarget  = ENGINE.SetModelAttachmentTarget
+local SetModelMesh              = ENGINE.SetModelMesh
+local SetModelTexture           = ENGINE.SetModelTexture
+local SetModelProgramFamilyList = ENGINE.SetModelProgramFamilyList
+local SetModelUniform           = ENGINE.SetModelUniform
+local UnsetModelUniform         = ENGINE.UnsetModelUniform
 
 
 --- Models are aggregations of meshes, textures, and shaders that can be used
 -- to render something on the screen.
-local Model = class('apoapsis/core/Model')
+local Model = class('core/Model')
 
 function Model:initialize( handle, renderLayerName )
     self.handle = handle

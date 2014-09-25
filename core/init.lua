@@ -1,37 +1,41 @@
-local engine = require 'apoapsis.engine'
+-- Setup package path
+
+package.path = './?.lua;./third-party/?.lua'
+package.cpath = ''
+
 
 -- Setup error handling
 
-engine.SetErrorFunction(function( message )
+ENGINE.SetErrorFunction(function( message )
     return debug.traceback(message, 2)
 end)
 
 
 -- Register exit key
 
-local Control = require 'apoapsis.core.Control'
+local Control = require 'core/Control'
 Control.registerKey('exit', function( pressed )
     if pressed then
-        engine.Shutdown()
+        ENGINE.StopGameLoop()
     end
 end)
 
 
 -- Register resources
 
-require 'apoapsis.core.Texture':registerResource()
-require 'apoapsis.core.AudioBuffer':registerResource()
-require 'apoapsis.core.Mesh':registerResource()
-require 'apoapsis.core.Shader':registerResource()
-require 'apoapsis.core.ShaderProgram':registerResource()
+require 'core/Texture':registerResource()
+require 'core/AudioBuffer':registerResource()
+require 'core/Mesh':registerResource()
+require 'core/Shader':registerResource()
+require 'core/ShaderProgram':registerResource()
 
 
 -- Setup default render target
 
-local Camera           = require 'apoapsis.core.Camera'
-local ShaderProgram    = require 'apoapsis.core.ShaderProgram'
-local ShaderProgramSet = require 'apoapsis.core.ShaderProgramSet'
-local ModelWorld       = require 'apoapsis.core.ModelWorld'
+local Camera           = require 'core/Camera'
+local ShaderProgram    = require 'core/ShaderProgram'
+local ShaderProgramSet = require 'core/ShaderProgramSet'
+local ModelWorld       = require 'core/ModelWorld'
 
 local astronomicalUnit = 149597870700
 local au = astronomicalUnit
@@ -45,10 +49,10 @@ local defaultModelWorld = ModelWorld(defaultRenderLayers)
 local defaultCamera = Camera(defaultModelWorld)
 defaultCamera:setFieldOfView(math.rad(80))
 
-local defaultShaderProgram = ShaderProgram:load('apoapsis/core/Shaders/Test.vert',
-                                                'apoapsis/core/Shaders/Test.frag')
+local defaultShaderProgram = ShaderProgram:load('core/Shaders/Test.vert',
+                                                'core/Shaders/Test.frag')
 local defaultShaderProgramSet = ShaderProgramSet(defaultShaderProgram)
 
-local defaultRT = require 'apoapsis.core.DefaultRenderTarget':get()
+local defaultRT = require 'core/DefaultRenderTarget':get()
 defaultRT:setCamera(defaultCamera)
 defaultRT:setShaderProgramSet(defaultShaderProgramSet)

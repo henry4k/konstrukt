@@ -1,23 +1,22 @@
 local class           = require 'middleclass'
-local Vec             = require 'apoapsis.core.Vector'
-local Mat4            = require 'apoapsis.core.Matrix4'
-local Resource        = require 'apoapsis.core.Resource'
-local ResourceManager = require 'apoapsis.core.ResourceManager'
-local engine          = require 'apoapsis.engine'
-local LinkShaderProgram    = engine.LinkShaderProgram
-local DestroyShaderProgram = engine.DestroyShaderProgram
-local SetGlobalUniform     = engine.SetGlobalUniform
-local UnsetGlobalUniform   = engine.UnsetGlobalUniform
+local Vec             = require 'core/Vector'
+local Mat4            = require 'core/Matrix4'
+local Resource        = require 'core/Resource'
+local ResourceManager = require 'core/ResourceManager'
+local LinkShaderProgram    = ENGINE.LinkShaderProgram
+local DestroyShaderProgram = ENGINE.DestroyShaderProgram
+local SetGlobalUniform     = ENGINE.SetGlobalUniform
+local UnsetGlobalUniform   = ENGINE.UnsetGlobalUniform
 
 
-local ShaderProgram = class('apoapsis/core/ShaderProgram')
+local ShaderProgram = class('core/ShaderProgram')
 ShaderProgram:include(Resource)
 
 function ShaderProgram.static:load( ... )
     local shaders = {...}
     for i,shader in ipairs(shaders) do
         if type(shader) == 'string' then
-            shaders[i] = ResourceManager.load('apoapsis/core/Shader', shader)
+            shaders[i] = ResourceManager.load('core/Shader', shader)
         end
     end
     return ShaderProgram(table.unpack(shaders))

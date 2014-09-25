@@ -1,29 +1,28 @@
 local class  = require 'middleclass'
-local Vec    = require 'apoapsis.core.Vector'
-local Quat   = require 'apoapsis.core.Quaternion'
-local Force  = require 'apoapsis.core.Force'
-local engine = require 'apoapsis.engine'
-local CreateSolid                = engine.CreateSolid
-local DestroySolid               = engine.DestroySolid
-local GetSolidMass               = engine.GetSolidMass
-local SetSolidMass               = engine.SetSolidMass
-local SetSolidRestitution        = engine.SetSolidRestitution
-local SetSolidFriction           = engine.SetSolidFriction
-local SetSolidCollisionThreshold = engine.SetSolidCollisionThreshold
-local GetSolidPosition           = engine.GetSolidPosition
-local GetSolidRotation           = engine.GetSolidRotation
-local GetSolidLinearVelocity     = engine.GetSolidLinearVelocity
-local GetSolidAngularVelocity    = engine.GetSolidAngularVelocity
-local ApplySolidImpulse          = engine.ApplySolidImpulse
-local SetEventCallback           = engine.SetEventCallback
+local Vec    = require 'core/Vector'
+local Quat   = require 'core/Quaternion'
+local Force  = require 'core/Force'
+local CreateSolid                = ENGINE.CreateSolid
+local DestroySolid               = ENGINE.DestroySolid
+local GetSolidMass               = ENGINE.GetSolidMass
+local SetSolidMass               = ENGINE.SetSolidMass
+local SetSolidRestitution        = ENGINE.SetSolidRestitution
+local SetSolidFriction           = ENGINE.SetSolidFriction
+local SetSolidCollisionThreshold = ENGINE.SetSolidCollisionThreshold
+local GetSolidPosition           = ENGINE.GetSolidPosition
+local GetSolidRotation           = ENGINE.GetSolidRotation
+local GetSolidLinearVelocity     = ENGINE.GetSolidLinearVelocity
+local GetSolidAngularVelocity    = ENGINE.GetSolidAngularVelocity
+local ApplySolidImpulse          = ENGINE.ApplySolidImpulse
+local SetEventCallback           = ENGINE.SetEventCallback
 
 
---- A body that is simulated by the physics engine.
+--- A body that is simulated by the physics ENGINE.
 -- If a solid has no mass (i.e. it equals zero), it is concidered to be static.
 -- So it isn't affected by collisions with other solids or gravity. Also each
 -- solid needs a #CollisionShape, but try to reuse collision shapes to save
 -- memory.
-local Solid = class('apoapsis/core/Solid')
+local Solid = class('core/Solid')
 
 local SolidHandlesToSolids = {}
 setmetatable(SolidHandlesToSolids, {__mode='k'})

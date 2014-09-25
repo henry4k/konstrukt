@@ -1,11 +1,11 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'apoapsis.core.test.common'
+require 'core/test/common'
 
 local Spy = require 'test.mock.Spy'
-local class = require 'apoapsis.core.middleclass'
-local Effect = require 'apoapsis.core.effect.Effect'
-local EffectTarget = require 'apoapsis.core.effect.EffectTarget'
+local class = require 'core/middleclass'
+local Effect = require 'core/effect/Effect'
+local EffectTarget = require 'core/effect/EffectTarget'
 
 
 describe('An effect')

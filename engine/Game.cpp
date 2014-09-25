@@ -84,7 +84,7 @@ bool InitGame( const int argc, char** argv )
 
     Log("-------------------------------");
 
-    if(!RunLuaScript(GetLuaState(), "apoapsis/core/init.lua"))
+    if(!RunLuaScript(GetLuaState(), "core/init.lua"))
         return false;
     for(int i = 1; i < argc; i++)
         if(!RunLuaScript(GetLuaState(), argv[i]))

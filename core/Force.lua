@@ -1,9 +1,8 @@
 local class  = require 'middleclass'
-local Vec    = require 'apoapsis.core.Vector'
-local engine = require 'apoapsis.engine'
-local CreateForce  = engine.CreateForce
-local DestroyForce = engine.DestroyForce
-local SetForce     = engine.SetForce
+local Vec    = require 'core/Vector'
+local CreateForce  = ENGINE.CreateForce
+local DestroyForce = ENGINE.DestroyForce
+local SetForce     = ENGINE.SetForce
 
 
 --- Changes the velocity of a solid over time.
@@ -11,7 +10,7 @@ local SetForce     = engine.SetForce
 -- Forces that are at the center will only change the solids linear velocity,
 -- while forces that are applied off-center will also change the angular
 -- velocity. They are applied in each simulation step until you 'destroy' them.
-local Force = class('apoapsis/core/Force')
+local Force = class('core/Force')
 
 --- Initially all properties are zero, so that the force has no effect.
 function Force:initialize( solidHandle )

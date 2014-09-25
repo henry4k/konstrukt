@@ -1,17 +1,16 @@
 local class  = require 'middleclass'
 local Object = class.Object
-local Mat4   = require 'apoapsis.core.Matrix4'
-local engine = require 'apoapsis.engine'
-local CreateQuaternion                = engine.CreateQuaternion
-local CopyQuaternion                  = engine.CopyQuaternion
-local CreateQuaternionFromEulerAngles = engine.CreateQuaternionFromEulerAngles
-local CreateQuaternionFromMatrix      = engine.CreateQuaternionFromMatrix
-local QuaternionOp                    = engine.QuaternionOp
-local LerpQuaternion                  = engine.LerpQuaternion
-local LerpQuaternion                  = engine.LerpQuaternion
+local Mat4   = require 'core/Matrix4'
+local CreateQuaternion                = ENGINE.CreateQuaternion
+local CopyQuaternion                  = ENGINE.CopyQuaternion
+local CreateQuaternionFromEulerAngles = ENGINE.CreateQuaternionFromEulerAngles
+local CreateQuaternionFromMatrix      = ENGINE.CreateQuaternionFromMatrix
+local QuaternionOp                    = ENGINE.QuaternionOp
+local LerpQuaternion                  = ENGINE.LerpQuaternion
+local LerpQuaternion                  = ENGINE.LerpQuaternion
 
 
-local Quat = class('apoapsis/core/Quaternion')
+local Quat = class('core/Quaternion')
 
 function Quat:initialize( ... )
     local argCount = select('#', ...)

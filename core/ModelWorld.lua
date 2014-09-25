@@ -1,14 +1,13 @@
 local class  = require 'middleclass'
-local Model  = require 'apoapsis.core.Model'
-local engine = require 'apoapsis.engine'
-local CreateModelWorld               = engine.CreateModelWorld
-local SetRenderLayerNearAndFarPlanes = engine.SetRenderLayerNearAndFarPlanes
-local DestroyModelWorld              = engine.DestroyModelWorld
-local CreateModel                    = engine.CreateModel
+local Model  = require 'core/Model'
+local CreateModelWorld               = ENGINE.CreateModelWorld
+local SetRenderLayerNearAndFarPlanes = ENGINE.SetRenderLayerNearAndFarPlanes
+local DestroyModelWorld              = ENGINE.DestroyModelWorld
+local CreateModel                    = ENGINE.CreateModel
 
 
 --- A model world defines a possibly large set of models that can be rendered together.
-local ModelWorld = class('apoapsis/core/ModelWorld')
+local ModelWorld = class('core/ModelWorld')
 
 --- @class RenderLayer
 -- When rendering the model world, the models are grouped into layers.

@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'apoapsis.core.test.common'
+require 'core/test/common'
 
 local Mock = require 'test.mock.Mock'
 
@@ -8,7 +8,7 @@ describe('Control')
     :setup(function()
         EventCallbacks = {}
 
-        NATIVE = {
+        ENGINE = {
             RegisterKeyControl = Mock(),
             RegisterAxisControl = Mock(),
             SetEventCallback = function( name, fn )
@@ -16,27 +16,27 @@ describe('Control')
             end
         }
 
-        FakeRequire:whitelist('apoapsis.core.Control')
+        FakeRequire:whitelist('core/Control')
         FakeRequire:install()
 
-        Control = require 'apoapsis.core.Control'
+        Control = require 'core/Control'
     end)
 
     :beforeEach(function()
-        NATIVE.RegisterKeyControl:reset()
-        NATIVE.RegisterAxisControl:reset()
+        ENGINE.RegisterKeyControl:reset()
+        ENGINE.RegisterAxisControl:reset()
     end)
 
     :it('can register key controls.', function()
-        NATIVE.RegisterKeyControl:canBeCalled{with={'key control name'}}
+        ENGINE.RegisterKeyControl:canBeCalled{with={'key control name'}}
         Control.registerKey('key control name', 'key control callback')
-        NATIVE.RegisterKeyControl:assertCallCount(1)
+        ENGINE.RegisterKeyControl:assertCallCount(1)
     end)
 
     :it('reacts to key events.', function()
         local keyControlCallback = Mock()
         keyControlCallback:canBeCalled{with={true}}
-        NATIVE.RegisterKeyControl:canBeCalled{with={'key control name', keyControllCallback}}
+        ENGINE.RegisterKeyControl:canBeCalled{with={'key control name', keyControllCallback}}
 
         Control.registerKey('key control name', keyControlCallback)
         EventCallbacks['KeyControlAction']('key control name', true)
@@ -45,15 +45,15 @@ describe('Control')
     end)
 
     :it('can register axis controls.', function()
-        NATIVE.RegisterAxisControl:canBeCalled{with={'axis control name'}}
+        ENGINE.RegisterAxisControl:canBeCalled{with={'axis control name'}}
         Control.registerAxis('axis control name', 'axis control callback')
-        NATIVE.RegisterAxisControl:assertCallCount(1)
+        ENGINE.RegisterAxisControl:assertCallCount(1)
     end)
 
     :it('can register axis controls.', function()
         local axisControlCallback = Mock()
         axisControlCallback:canBeCalled{with={1.0, 0.5}}
-        NATIVE.RegisterAxisControl:canBeCalled{with={'axis control name', axisControllCallback}}
+        ENGINE.RegisterAxisControl:canBeCalled{with={'axis control name', axisControllCallback}}
 
         Control.registerAxis('axis control name', axisControlCallback)
         EventCallbacks['AxisControlAction']('axis control name', 1.0, 0.5)

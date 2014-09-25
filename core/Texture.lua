@@ -1,12 +1,11 @@
 local class    = require 'middleclass'
-local Resource = require 'apoapsis.core.Resource'
-local engine   = require 'apoapsis.engine'
-local Load2dTexture   = engine.Load2dTexture
-local LoadCubeTexture = engine.LoadCubeTexture
-local DestroyTexture  = engine.DestroyTexture
+local Resource = require 'core/Resource'
+local Load2dTexture   = ENGINE.Load2dTexture
+local LoadCubeTexture = ENGINE.LoadCubeTexture
+local DestroyTexture  = ENGINE.DestroyTexture
 
 
-local Texture = class('apoapsis/core/Texture')
+local Texture = class('core/Texture')
 Texture:include(Resource)
 
 function Texture.static:load( ... )

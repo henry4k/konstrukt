@@ -1,16 +1,15 @@
 local class  = require 'middleclass'
-local engine = require 'apoapsis.engine'
-local CreateAudioSource              = engine.CreateAudioSource
-local DestroyAudioSource             = engine.DestroyAudioSource
-local SetAudioSourceRelative         = engine.SetAudioSourceRelative
-local SetAudioSourceLooping          = engine.SetAudioSourceLooping
-local SetAudioSourcePitch            = engine.SetAudioSourcePitch
-local SetAudioSourceGain             = engine.SetAudioSourceGain
-local SetAudioSourceAttachmentTarget = engine.SetAudioSourceAttachmentTarget
-local SetAudioSourceTransformation   = engine.SetAudioSourceTransformation
-local EnqueueAudioBuffer             = engine.EnqueueAudioBuffer
-local PlayAudioSource                = engine.PlayAudioSource
-local PauseAudioSource               = engine.PauseAudioSource
+local CreateAudioSource              = ENGINE.CreateAudioSource
+local DestroyAudioSource             = ENGINE.DestroyAudioSource
+local SetAudioSourceRelative         = ENGINE.SetAudioSourceRelative
+local SetAudioSourceLooping          = ENGINE.SetAudioSourceLooping
+local SetAudioSourcePitch            = ENGINE.SetAudioSourcePitch
+local SetAudioSourceGain             = ENGINE.SetAudioSourceGain
+local SetAudioSourceAttachmentTarget = ENGINE.SetAudioSourceAttachmentTarget
+local SetAudioSourceTransformation   = ENGINE.SetAudioSourceTransformation
+local EnqueueAudioBuffer             = ENGINE.EnqueueAudioBuffer
+local PlayAudioSource                = ENGINE.PlayAudioSource
+local PauseAudioSource               = ENGINE.PauseAudioSource
 
 
 --- Can play positional audio in an 3D environment.
@@ -19,7 +18,7 @@ local PauseAudioSource               = engine.PauseAudioSource
 -- direction and velocity. If the audio source has no attachment target, those
 -- properties are zero. The transformation matrix is applied additionaly after
 -- the attachment targets position has been applied.
-local AudioSource = class('apoapsis/core/AudioSource')
+local AudioSource = class('core/AudioSource')
 
 function AudioSource:initialize()
     self.handle = CreateAudioSource()

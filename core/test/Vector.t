@@ -1,8 +1,8 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'apoapsis.core.test.common'
+require 'core/test/common'
 
-local Vector = require 'apoapsis.core.Vector'
+local Vector = require 'core/Vector'
 
 
 describe('A vector')

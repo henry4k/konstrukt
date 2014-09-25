@@ -1,13 +1,13 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'apoapsis.core.test.common'
+require 'core/test/common'
 
 local Mock = require 'test.mock.Mock'
 
 
 describe('A 4x4 matrix')
     :setup(function()
-        NATIVE = {
+        ENGINE = {
             CreateMatrix4 = Mock(),
             CopyMatrix4 = Mock(),
             Matrix4Op = Mock(),
@@ -19,23 +19,23 @@ describe('A 4x4 matrix')
         }
 
         ResetMocks = function()
-            NATIVE.CreateMatrix4:reset()
-            NATIVE.CopyMatrix4:reset()
-            NATIVE.Matrix4Op:reset()
-            NATIVE.TranslateMatrix4:reset()
-            NATIVE.ScaleMatrix4:reset()
-            NATIVE.RotateMatrix4:reset()
-            NATIVE.Matrix4TransformVector:reset()
-            NATIVE.MakeRotationMatrix:reset()
+            ENGINE.CreateMatrix4:reset()
+            ENGINE.CopyMatrix4:reset()
+            ENGINE.Matrix4Op:reset()
+            ENGINE.TranslateMatrix4:reset()
+            ENGINE.ScaleMatrix4:reset()
+            ENGINE.RotateMatrix4:reset()
+            ENGINE.Matrix4TransformVector:reset()
+            ENGINE.MakeRotationMatrix:reset()
         end
 
-        FakeRequire:whitelist('apoapsis.core.Matrix4')
-        FakeRequire:whitelist('apoapsis.core.middleclass')
-        FakeRequire:whitelist('apoapsis.core.Vector')
+        FakeRequire:whitelist('core/Matrix4')
+        FakeRequire:whitelist('core/middleclass')
+        FakeRequire:whitelist('core/Vector')
         FakeRequire:install()
 
-        Vec  = require 'apoapsis.core.Vector'
-        Mat4 = require 'apoapsis.core.Matrix4'
+        Vec  = require 'core/Vector'
+        Mat4 = require 'core/Matrix4'
     end)
 
     :beforeEach(function()
@@ -43,16 +43,16 @@ describe('A 4x4 matrix')
     end)
 
     :it('can be created.', function()
-        NATIVE.CreateMatrix4:canBeCalled{thenReturn={'the handle'}}
+        ENGINE.CreateMatrix4:canBeCalled{thenReturn={'the handle'}}
 
         local m = Mat4()
         assert(m.handle == 'the handle')
-        NATIVE.CreateMatrix4:assertCallCount(1)
+        ENGINE.CreateMatrix4:assertCallCount(1)
     end)
 
     :it('can be copied.', function()
-        NATIVE.CreateMatrix4:canBeCalled{thenReturn={'handle a'}}
-        NATIVE.CopyMatrix4:canBeCalled{with={'handle a'}, thenReturn={'handle b'}}
+        ENGINE.CreateMatrix4:canBeCalled{thenReturn={'handle a'}}
+        ENGINE.CopyMatrix4:canBeCalled{with={'handle a'}, thenReturn={'handle b'}}
 
         local a = Mat4()
         assert(a.handle == 'handle a')
@@ -60,75 +60,75 @@ describe('A 4x4 matrix')
         local b = a:copy()
         assert(b.handle == 'handle b')
 
-        NATIVE.CreateMatrix4:assertCallCount(1)
-        NATIVE.CopyMatrix4:assertCallCount(1)
+        ENGINE.CreateMatrix4:assertCallCount(1)
+        ENGINE.CopyMatrix4:assertCallCount(1)
     end)
 
     :beforeEach(function()
         ResetMocks()
-        NATIVE.CreateMatrix4:canBeCalled{thenReturn={'handle a'}}
-        NATIVE.CreateMatrix4:canBeCalled{thenReturn={'handle b'}}
+        ENGINE.CreateMatrix4:canBeCalled{thenReturn={'handle a'}}
+        ENGINE.CreateMatrix4:canBeCalled{thenReturn={'handle b'}}
         a = Mat4()
         b = Mat4()
     end)
 
     :it('can perform arithmetic operations on other matrices.', function()
-        NATIVE.Matrix4Op:canBeCalled{with={'handle a', 'handle b', '+'}, thenReturn={'handle +'}}
-        NATIVE.Matrix4Op:canBeCalled{with={'handle a', 'handle b', '-'}, thenReturn={'handle -'}}
-        NATIVE.Matrix4Op:canBeCalled{with={'handle a', 'handle b', '*'}, thenReturn={'handle *'}}
-        NATIVE.Matrix4Op:canBeCalled{with={'handle a', 'handle b', '/'}, thenReturn={'handle /'}}
+        ENGINE.Matrix4Op:canBeCalled{with={'handle a', 'handle b', '+'}, thenReturn={'handle +'}}
+        ENGINE.Matrix4Op:canBeCalled{with={'handle a', 'handle b', '-'}, thenReturn={'handle -'}}
+        ENGINE.Matrix4Op:canBeCalled{with={'handle a', 'handle b', '*'}, thenReturn={'handle *'}}
+        ENGINE.Matrix4Op:canBeCalled{with={'handle a', 'handle b', '/'}, thenReturn={'handle /'}}
 
         assert((a+b).handle == 'handle +')
         assert((a-b).handle == 'handle -')
         assert((a*b).handle == 'handle *')
         assert((a/b).handle == 'handle /')
 
-        NATIVE.Matrix4Op:assertCallCount(4)
+        ENGINE.Matrix4Op:assertCallCount(4)
     end)
 
     :beforeEach(function()
         ResetMocks()
-        NATIVE.CreateMatrix4:canBeCalled{thenReturn={'handle a'}}
+        ENGINE.CreateMatrix4:canBeCalled{thenReturn={'handle a'}}
         a = Mat4()
     end)
 
     :it('can be translated by a vector.', function()
-        NATIVE.TranslateMatrix4:canBeCalled{with={'handle a', 10, 20, 30},
+        ENGINE.TranslateMatrix4:canBeCalled{with={'handle a', 10, 20, 30},
                                             thenReturn={'handle b'}}
         local b = a:translate(Vec(10, 20, 30))
         assert(b.handle == 'handle b')
-        NATIVE.TranslateMatrix4:assertCallCount(1)
+        ENGINE.TranslateMatrix4:assertCallCount(1)
     end)
 
     :it('can be scaled by a vector.', function()
-        NATIVE.ScaleMatrix4:canBeCalled{with={'handle a', 10, 20, 30},
+        ENGINE.ScaleMatrix4:canBeCalled{with={'handle a', 10, 20, 30},
                                         thenReturn={'handle b'}}
         local b = a:scale(Vec(10, 20, 30))
         assert(b.handle == 'handle b')
-        NATIVE.ScaleMatrix4:assertCallCount(1)
+        ENGINE.ScaleMatrix4:assertCallCount(1)
     end)
 
     :it('can be rotated.', function()
-        NATIVE.RotateMatrix4:canBeCalled{with={'handle a', 45, 10, 20, 30},
+        ENGINE.RotateMatrix4:canBeCalled{with={'handle a', 45, 10, 20, 30},
                                          thenReturn={'handle b'}}
         local b = a:rotate(45, Vec(10, 20, 30))
         assert(b.handle == 'handle b')
-        NATIVE.RotateMatrix4:assertCallCount(1)
+        ENGINE.RotateMatrix4:assertCallCount(1)
     end)
 
     :it('can transform a vector.', function()
-        NATIVE.Matrix4TransformVector:canBeCalled{with={'handle a', 1, 2, 3, 4},
+        ENGINE.Matrix4TransformVector:canBeCalled{with={'handle a', 1, 2, 3, 4},
                                                   thenReturn={10, 20, 30, 40}}
         local v = a:transform(Vec(1, 2, 3, 4))
         assert(v == Vec(10, 20, 30, 40))
-        NATIVE.Matrix4TransformVector:assertCallCount(1)
+        ENGINE.Matrix4TransformVector:assertCallCount(1)
     end)
 
     :it('can be trimmed to a rotation matrix.', function()
-        NATIVE.MakeRotationMatrix:canBeCalled{with={'handle a'}, thenReturn={'handle b'}}
+        ENGINE.MakeRotationMatrix:canBeCalled{with={'handle a'}, thenReturn={'handle b'}}
         local b = a:toRotationMatrix()
         assert(b.handle == 'handle b')
-        NATIVE.MakeRotationMatrix:assertCallCount(1)
+        ENGINE.MakeRotationMatrix:assertCallCount(1)
     end)
 
 

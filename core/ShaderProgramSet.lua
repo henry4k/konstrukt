@@ -1,8 +1,7 @@
 local class  = require 'middleclass'
-local engine = require 'apoapsis.engine'
-local CreateShaderProgramSet  = engine.CreateShaderProgramSet
-local DestroyShaderProgramSet = engine.DestroyShaderProgramSet
-local SetShaderProgramFamily  = engine.SetShaderProgramFamily
+local CreateShaderProgramSet  = ENGINE.CreateShaderProgramSet
+local DestroyShaderProgramSet = ENGINE.DestroyShaderProgramSet
+local SetShaderProgramFamily  = ENGINE.SetShaderProgramFamily
 
 
 
@@ -13,7 +12,7 @@ local SetShaderProgramFamily  = engine.SetShaderProgramFamily
 -- A model just needs to save the family name, which is then resolved by
 -- the used shader program set.
 -- E.g. there can be a family for static and one for animated models.
-local ShaderProgramSet = class('apoapsis/core/ShaderProgramSet')
+local ShaderProgramSet = class('core/ShaderProgramSet')
 
 function ShaderProgramSet:initialize( defaultShaderProgram )
     self.handle = CreateShaderProgramSet(defaultShaderProgram.handle)

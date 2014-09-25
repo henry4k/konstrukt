@@ -1,28 +1,28 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'apoapsis.core.test.common'
+require 'core/test/common'
 
 local Mock = require 'test.mock.Mock'
 
 
 describe('The configuration')
     :setup(function()
-        NATIVE = {
+        ENGINE = {
             GetConfigValue = Mock()
         }
 
-        Config = require 'apoapsis.core.Config'
+        Config = require 'core/Config'
     end)
 
     :beforeEach(function()
-        NATIVE.GetConfigValue:reset()
+        ENGINE.GetConfigValue:reset()
     end)
 
     :it('can be queried.', function()
-        NATIVE.GetConfigValue:canBeCalled{with={'foo.bar', 'default value'}, thenReturn={'config value'}}
+        ENGINE.GetConfigValue:canBeCalled{with={'foo.bar', 'default value'}, thenReturn={'config value'}}
         local value = Config.get('foo.bar', 'default value')
         assert(value == 'config value')
-        NATIVE.GetConfigValue:assertCallCount(1)
+        ENGINE.GetConfigValue:assertCallCount(1)
     end)
 
 

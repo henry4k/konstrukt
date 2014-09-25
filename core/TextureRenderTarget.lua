@@ -1,10 +1,9 @@
 local class        = require 'middleclass'
-local RenderTarget = require 'apoapsis.core.RenderTarget'
-local engine       = require 'apoapsis.engine'
-local CreateTextureRenderTarget = engine.CreateTextureRenderTarget
+local RenderTarget = require 'core/RenderTarget'
+local CreateTextureRenderTarget = ENGINE.CreateTextureRenderTarget
 
 
-local TextureRenderTarget = class('apoapsis/core/TextureRenderTarget', RenderTarget)
+local TextureRenderTarget = class('core/TextureRenderTarget', RenderTarget)
 
 function TextureRenderTarget:initialize( texture )
     local handle = CreateTextureRenderTarget(texture.handle)

@@ -1,14 +1,13 @@
 local class  = require 'middleclass'
-local engine = require 'apoapsis.engine'
-local CreateMeshBuffer         = engine.CreateMeshBuffer
-local DestroyMeshBuffer        = engine.DestroyMeshBuffer
-local TransformMeshBuffer      = engine.TransformMeshBuffer
-local AppendMeshBuffer         = engine.AppendMeshBuffer
-local AppendIndexToMeshBuffer  = engine.AppendIndexToMeshBuffer
-local AppendVertexToMeshBuffer = engine.AppendVertexToMeshBuffer
+local CreateMeshBuffer         = ENGINE.CreateMeshBuffer
+local DestroyMeshBuffer        = ENGINE.DestroyMeshBuffer
+local TransformMeshBuffer      = ENGINE.TransformMeshBuffer
+local AppendMeshBuffer         = ENGINE.AppendMeshBuffer
+local AppendIndexToMeshBuffer  = ENGINE.AppendIndexToMeshBuffer
+local AppendVertexToMeshBuffer = ENGINE.AppendVertexToMeshBuffer
 
 
-local MeshBuffer = class('apoapsis/core/MeshBuffer')
+local MeshBuffer = class('core/MeshBuffer')
 
 function MeshBuffer:initialize()
     self.handle = CreateMeshBuffer()

@@ -2,7 +2,7 @@ local class  = require 'middleclass'
 local Object = class.Object
 
 
-local Effect = class('apoapsis/core/effect/Effect')
+local Effect = class('core/effect/Effect')
 
 -- Long lasting effects should have a low priority
 -- Short lasting effects should have a high priority
