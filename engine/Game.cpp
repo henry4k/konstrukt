@@ -1,5 +1,6 @@
 #include "Common.h"
 #include "Math.h"
+#include "FileSystem.h"
 #include "Config.h"
 #include "Window.h"
 #include "Controls.h"
@@ -38,6 +39,10 @@ static bool RegisterAllModulesInLua();
 
 bool InitGame( const int argc, char** argv )
 {
+    Log("------------- FileSystem -------------");
+    if(!InitFileSystem(argc, argv))
+        return false;
+
     Log("----------- Config ------------");
     if(!InitConfig(argc, argv))
         return false;
@@ -124,6 +129,7 @@ static void DestroyGame()
     DestroyAudio();
     DestroyWindow();
     DestroyConfig();
+    DestroyFileSystem();
 }
 
 void RunGame()
