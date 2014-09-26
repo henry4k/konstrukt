@@ -11,25 +11,32 @@ using namespace std;
 
 static map<string,string> g_ConfigValues;
 
+
+static void SetConfigValue( const char* key, const char* value )
+{
+    Log("%s = %s", key, value);
+    g_ConfigValues[key] = value;
+}
+
 static int IniEntryCallback( void* user, const char* section, const char* name, const char* value );
 
-bool InitConfig( const int argc, char const * const * argv )
+static void ParseIniFile( const char* fileName )
 {
-    // Try to load config.ini in working directory ...
-    ini_parse("config.ini", IniEntryCallback, NULL);
+    Log("Reading config file %s ..", fileName);
+    ini_parse(fileName, IniEntryCallback, NULL);
+}
 
-
+static void ParseArguments( const int argc, char const * const * argv )
+{
     // Parse command line arguments ...
     for(int i = 1; i < argc; ++i)
     {
         const string arg = argv[i];
         // --key=value
 
-        if(
-            arg.size() < 2 ||
-            arg[0] != '-' ||
-            arg[1] != '-'
-        )
+        if(arg.size() < 2 ||
+           arg[0] != '-'  ||
+           arg[1] != '-')
         {
             Log("Bad argument '%s'", arg.c_str());
             break;
@@ -47,17 +54,16 @@ bool InitConfig( const int argc, char const * const * argv )
         string value = arg.substr(equalsPos+1);
 
         if(key == "config")
-        {
-            Log("Reading config file %s ..", value.c_str());
-            ini_parse(value.c_str(), IniEntryCallback, NULL);
-        }
+            ParseIniFile(value.c_str());
         else
-        {
-            Log("%s = %s", key.c_str(), value.c_str());
-            g_ConfigValues[key] = value;
-        }
+            SetConfigValue(key.c_str(), value.c_str());
     }
+}
 
+bool InitConfig( const int argc, char const * const * argv )
+{
+    ParseIniFile("config.ini");
+    ParseArguments(argc, argv);
     return true;
 }
 
@@ -128,7 +134,6 @@ static int IniEntryCallback( void* user, const char* section, const char* name, 
     else
         key = string(section) + string(".") + string(name);
 
-    Log("%s = %s", key.c_str(), value);
-    g_ConfigValues[key] = value;
+    SetConfigValue(key.c_str(), value);
     return 1;
 }
