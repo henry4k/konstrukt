@@ -43,6 +43,8 @@ bool InitLua()
     lua_State* l = g_LuaState = luaL_newstate();
     g_LuaEvents.clear();
 
+    Log("Linked against Lua %f", lua_version(l));
+
     lua_gc(g_LuaState, LUA_GCSTOP, 0); // only collect manually
     luaL_openlibs(g_LuaState);
 
