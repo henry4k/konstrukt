@@ -11,7 +11,7 @@
 #include "ControlBindings/Joystick.h"
 
 
-static const int MAX_CONTROL_NAME_LENGTH = 31;
+static const int MAX_CONTROL_NAME_LENGTH = 32;
 
 static bool CreateKeyBindingFromString( const char* str, int keyControl );
 static bool CreateAxisBindingFromString( const char* str, int axisControl );
@@ -24,7 +24,7 @@ enum AxisInterpretation
 
 struct KeyControl
 {
-    char name[MAX_CONTROL_NAME_LENGTH+1];
+    char name[MAX_CONTROL_NAME_LENGTH];
     KeyControlActionFn callback;
     void* context;
     bool* value;
@@ -32,7 +32,7 @@ struct KeyControl
 
 struct AxisControl
 {
-    char name[MAX_CONTROL_NAME_LENGTH+1];
+    char name[MAX_CONTROL_NAME_LENGTH];
     AxisControlActionFn callback;
     void* context;
     float* value;
@@ -121,7 +121,6 @@ bool RegisterKeyControl( const char* name, KeyControlActionFn callback, void* co
 
     KeyControl keyControl;
     strncpy(keyControl.name, name, MAX_CONTROL_NAME_LENGTH);
-    keyControl.name[MAX_CONTROL_NAME_LENGTH] = '\0';
     keyControl.callback = callback;
     keyControl.context = context;
     keyControl.value = value;
@@ -158,7 +157,6 @@ bool RegisterAxisControl( const char* name, AxisControlActionFn callback, void* 
 
     AxisControl axisControl;
     strncpy(axisControl.name, name, MAX_CONTROL_NAME_LENGTH);
-    axisControl.name[MAX_CONTROL_NAME_LENGTH] = '\0';
     axisControl.callback = callback;
     axisControl.context = context;
     axisControl.value = value;

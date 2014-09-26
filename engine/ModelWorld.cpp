@@ -23,7 +23,7 @@ static const float DEFAULT_ZFAR  = 100.0;
 
 struct LocalUniform
 {
-    char name[MAX_UNIFORM_NAME_LENGTH+1];
+    char name[MAX_UNIFORM_NAME_LENGTH];
     UniformType type;
     UniformValue value;
 };
@@ -36,7 +36,7 @@ struct Model
     mat4 transformation;
     Mesh* mesh;
     Texture* textures[MAX_TEXTURE_UNITS];
-    char programFamilyList[MAX_PROGRAM_FAMILY_LIST_LENGTH+1];
+    char programFamilyList[MAX_PROGRAM_FAMILY_LIST_LENGTH];
     LocalUniform uniforms[MAX_LOCAL_UNIFORMS];
     Solid* attachmentTarget;
 };
@@ -348,7 +348,6 @@ void SetModelTexture( Model* model, int unit, Texture* texture )
 void SetModelProgramFamilyList( Model* model, const char* familyList )
 {
     strncpy(model->programFamilyList, familyList, MAX_PROGRAM_FAMILY_LIST_LENGTH);
-    model->programFamilyList[MAX_PROGRAM_FAMILY_LIST_LENGTH] = '\0';
 }
 
 static LocalUniform* FindUniform( Model* model, const char* name )
