@@ -1,7 +1,7 @@
 #include <string.h> // strncpy
 #include <physfs.h>
 #include "Common.h"
-#include "FileSystem.h"
+#include "PhysFS.h"
 
 
 static void LogPhysFSVersion()
@@ -16,7 +16,7 @@ static void LogPhysFSVersion()
     Log("Linked against PhysFS %d.%d.%d", linked.major, linked.minor, linked.patch);
 }
 
-bool InitFileSystem( const int argc, char const * const * argv )
+bool InitPhysFS( const int argc, char const * const * argv )
 {
     LogPhysFSVersion();
     if(PHYSFS_init(argv[0]))
@@ -37,7 +37,7 @@ bool InitFileSystem( const int argc, char const * const * argv )
     }
 }
 
-void DestroyFileSystem()
+void DestroyPhysFS()
 {
     if(!PHYSFS_deinit())
         Error("%s", PHYSFS_getLastError());
