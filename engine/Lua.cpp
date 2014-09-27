@@ -39,11 +39,15 @@ bool InitLua()
     assert(g_LuaEvents.empty());
 
     Log("Using " LUA_COPYRIGHT);
+    const int version = (int)*lua_version(NULL);
+    const int major = version/100;
+    const int minor = (version-major*100)/10;
+    const int patch = version-(major*100 + minor*10);
+    Log("Linked against Lua %d.%d.%d", major, minor, patch);
 
     lua_State* l = g_LuaState = luaL_newstate();
     g_LuaEvents.clear();
 
-    Log("Linked against Lua %f", lua_version(l));
 
     lua_gc(g_LuaState, LUA_GCSTOP, 0); // only collect manually
     luaL_openlibs(g_LuaState);
