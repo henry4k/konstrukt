@@ -1,5 +1,4 @@
 #include <stdlib.h> // NULL
-#include <string.h> // strlen, strncpy
 
 #include "Common.h"
 #include "OpenGL.h"
@@ -129,9 +128,6 @@ Texture* LoadCubeTexture( int options, const char* path )
     // Load cube sides:
     Image images[6];
     static const char* names[6] = { "px","nx","ny","py","pz","nz" };
-    char buffer[512];
-    strncpy(buffer, path, 512);
-    int pos = strlen(path);
     for(int i = 0; i < 6; i++)
     {
         if(!LoadImage(&images[i], Format(path, names[i])))

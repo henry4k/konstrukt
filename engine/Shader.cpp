@@ -1,5 +1,5 @@
 #include <assert.h>
-#include <string.h> // strncmp, strlen, memcmp, memset, strncpy
+#include <string.h> // strncmp, strlen, memcmp, memset
 
 #include "Common.h"
 #include "OpenGL.h"
@@ -573,7 +573,7 @@ void SetGlobalUniform( const char* name,
     if(!uniform)
         FatalError("Too many global uniforms.");
 
-    strncpy(uniform->name, name, MAX_UNIFORM_NAME_LENGTH);
+    CopyString(name, uniform->name, sizeof(uniform->name));
     uniform->type = type;
     memcpy(&uniform->value, value, GetUniformSize(type));
 }
@@ -667,7 +667,7 @@ void SetShaderProgramFamily( ShaderProgramSet* set,
 
     if(entry)
     {
-        strncpy(entry->family, family, MAX_PROGRAM_FAMILY_LENGTH);
+        CopyString(family, entry->family, sizeof(entry->family));
 
         if(entry->program)
             ReleaseShaderProgram(entry->program);

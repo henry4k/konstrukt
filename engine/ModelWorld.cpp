@@ -1,4 +1,4 @@
-#include <string.h> // memset, strcmp, strncpy
+#include <string.h> // memset, strcmp
 #include <stdlib.h> // qsort
 
 #include "Common.h"
@@ -347,8 +347,9 @@ void SetModelTexture( Model* model, int unit, Texture* texture )
 
 void SetModelProgramFamilyList( Model* model, const char* familyList )
 {
-    strncpy(model->programFamilyList, familyList, MAX_PROGRAM_FAMILY_LIST_LENGTH);
-    model->programFamilyList[MAX_PROGRAM_FAMILY_LIST_LENGTH] = '\0';
+    CopyString(familyList,
+               model->programFamilyList,
+               sizeof(model->programFamilyList));
 }
 
 static LocalUniform* FindUniform( Model* model, const char* name )
@@ -375,7 +376,7 @@ void SetModelUniform( Model* model, const char* name, UniformType type, const Un
 
     memset(uniform, 0, sizeof(LocalUniform));
 
-    strncpy(uniform->name, name, MAX_UNIFORM_NAME_LENGTH);
+    CopyString(name, uniform->name, sizeof(uniform->name));
     uniform->type = type;
     memcpy(&uniform->value, value, GetUniformSize(type));
 }
