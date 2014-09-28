@@ -92,8 +92,12 @@ bool InitGame( const int argc, char** argv )
     if(!RunLuaScript(GetLuaState(), "core/init.lua"))
         return false;
     for(int i = 1; i < argc; i++)
-        if(!RunLuaScript(GetLuaState(), argv[i]))
-            return false;
+    {
+        const char* argument = argv[i];
+        if(argument[0] != '-')
+            if(!RunLuaScript(GetLuaState(), argument))
+                return false;
+    }
     return true;
 }
 

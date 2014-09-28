@@ -1,4 +1,9 @@
-#if !defined(__WIN32__)
+#if defined(__WINDOWS__)
+    #define WIN32_LEAN_AND_MEAN
+    #define NOGDI
+    #include <windows.h>
+#else
+    #include <sys/stat.h>
     #include <signal.h>
 #endif
 #include <string.h> // strncpy
@@ -121,3 +126,30 @@ bool CopyString( const char* source, char* destination, int destinationSize )
         return false;
     }
 }
+
+#if defined(__WINDOWS__)
+FileType GetFileType( const char* path )
+{
+    DWORD type = GetFileAttributesA(path);
+    if(type == INVALID_FILE_ATTRIBUTES)
+        return FILE_TYPE_INVALID;
+
+    if(type & FILE_ATTRIBUTE_DIRECTORY)
+        return FILE_TYPE_DIRECTORY;
+    else
+        return FILE_TYPE_REGULAR;
+}
+#else
+FileType GetFileType( const char* path )
+{
+    struct stat info;
+    if(stat(path, &info) == -1)
+        return FILE_TYPE_INVALID;
+    if(info.st_mode & S_IFREG)
+        return FILE_TYPE_REGULAR;
+    else if(info.st_mode & S_IFDIR)
+        return FILE_TYPE_DIRECTORY;
+    else
+        return FILE_TYPE_UNKNOWN;
+}
+#endif

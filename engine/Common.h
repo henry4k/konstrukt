@@ -6,8 +6,6 @@
 #include <stdio.h>
 #include <assert.h>
 
-#define EXPORT extern "C" __attribute__((visibility("default")))
-
 const char* Format( const char* format, ... );
 
 enum LogLevel
@@ -38,5 +36,15 @@ void FatalError( const char* format, ... );
  * bytes could be copied from `source`.
  */
 bool CopyString( const char* source, char* destination, int destinationSize );
+
+enum FileType
+{
+    FILE_TYPE_INVALID,
+    FILE_TYPE_UNKNOWN,
+    FILE_TYPE_REGULAR,
+    FILE_TYPE_DIRECTORY
+};
+
+FileType GetFileType( const char* path );
 
 #endif

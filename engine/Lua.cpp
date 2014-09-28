@@ -17,7 +17,7 @@ static const int MAX_LUA_EVENT_NAME_LENGTH = 31;
 
 struct LuaEvent
 {
-    char name[MAX_LUA_EVENT_NAME_LENGTH];
+    char name[MAX_LUA_EVENT_NAME_LENGTH+1];
     int callbackReference;
 };
 

@@ -24,7 +24,8 @@ void UpdateControls( float timeFrame );
  *      Optional value pointer that always holds the state of the key.
  *
  * @return
- *      `false` if there is already a control with the same name.
+ *      `false` if there is already a control with the same name or if no
+ *      binding was configured for the control.
  */
 bool RegisterKeyControl( const char* name, KeyControlActionFn callback, void* context, bool* value );
 
@@ -44,7 +45,8 @@ bool RegisterKeyControl( const char* name, KeyControlActionFn callback, void* co
  *      Optional value pointer that always holds the value of the axis.
  *
  * @return
- *      `false` if there is already a control with the same name.
+ *      `false` if there is already a control with the same name or if no
+ *      binding was configured for the control.
  */
 bool RegisterAxisControl( const char* name, AxisControlActionFn callback, void* context, float* value );
 

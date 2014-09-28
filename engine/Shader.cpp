@@ -21,7 +21,7 @@ struct Shader
 
 struct UniformDefinition
 {
-    char name[MAX_UNIFORM_NAME_LENGTH];
+    char name[MAX_UNIFORM_NAME_LENGTH+1];
     int location;
     UniformType type;
 };
@@ -42,7 +42,7 @@ struct ShaderProgram
 
 struct ShaderProgramSetEntry
 {
-    char family[MAX_PROGRAM_FAMILY_LENGTH];
+    char family[MAX_PROGRAM_FAMILY_LENGTH+1];
     ShaderProgram* program;
 };
 
@@ -55,7 +55,7 @@ struct ShaderProgramSet
 struct GlobalUniform
 {
     bool active;
-    char name[MAX_UNIFORM_NAME_LENGTH];
+    char name[MAX_UNIFORM_NAME_LENGTH+1];
     UniformType type;
     UniformValue value;
 };
@@ -686,7 +686,7 @@ ShaderProgram* GetShaderProgramByFamilyList( const ShaderProgramSet* set,
 {
     assert(strlen(familyList) <= MAX_PROGRAM_FAMILY_LENGTH);
 
-    char family[MAX_PROGRAM_FAMILY_LENGTH];
+    char family[MAX_PROGRAM_FAMILY_LENGTH+1];
     char* familyChar = family;
     const char* c = familyList;
     const ShaderProgramSetEntry* entry = NULL;

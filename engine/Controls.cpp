@@ -24,7 +24,7 @@ enum AxisInterpretation
 
 struct KeyControl
 {
-    char name[MAX_CONTROL_NAME_LENGTH];
+    char name[MAX_CONTROL_NAME_LENGTH+1];
     KeyControlActionFn callback;
     void* context;
     bool* value;
@@ -32,7 +32,7 @@ struct KeyControl
 
 struct AxisControl
 {
-    char name[MAX_CONTROL_NAME_LENGTH];
+    char name[MAX_CONTROL_NAME_LENGTH+1];
     AxisControlActionFn callback;
     void* context;
     float* value;
@@ -143,7 +143,7 @@ bool RegisterKeyControl( const char* name, KeyControlActionFn callback, void* co
     }
     else
     {
-        Log("Key control '%s' is unused.", name);
+        Error("Key control '%s' is unused.", name);
         return false;
     }
 
@@ -201,7 +201,7 @@ bool RegisterAxisControl( const char* name, AxisControlActionFn callback, void* 
     }
     else
     {
-        Log("Axis control '%s' is unused.", name);
+        Error("Axis control '%s' is unused.", name);
         return false;
     }
 

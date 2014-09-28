@@ -23,7 +23,7 @@ static const float DEFAULT_ZFAR  = 100.0;
 
 struct LocalUniform
 {
-    char name[MAX_UNIFORM_NAME_LENGTH];
+    char name[MAX_UNIFORM_NAME_LENGTH+1];
     UniformType type;
     UniformValue value;
 };
@@ -36,7 +36,7 @@ struct Model
     mat4 transformation;
     Mesh* mesh;
     Texture* textures[MAX_TEXTURE_UNITS];
-    char programFamilyList[MAX_PROGRAM_FAMILY_LIST_LENGTH];
+    char programFamilyList[MAX_PROGRAM_FAMILY_LIST_LENGTH+1];
     LocalUniform uniforms[MAX_LOCAL_UNIFORMS];
     Solid* attachmentTarget;
 };

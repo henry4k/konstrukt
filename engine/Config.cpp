@@ -3,6 +3,7 @@
 #include <ini.h>
 
 #include "Common.h"
+#include "PhysFS.h"
 #include "Config.h"
 
 
@@ -62,8 +63,11 @@ static void ParseArguments( const int argc, char const * const * argv )
 
 bool InitConfig( const int argc, char const * const * argv )
 {
-    ParseIniFile("config.ini");
+    const char* userConfig = Format("%s/config.ini", GetUserDataDirectory());
+    ParseIniFile(userConfig);
+
     ParseArguments(argc, argv);
+
     return true;
 }
 
