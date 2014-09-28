@@ -11,7 +11,7 @@
 #include "ControlBindings/Joystick.h"
 
 
-static const int MAX_CONTROL_NAME_LENGTH = 32;
+static const int MAX_CONTROL_NAME_LENGTH = 31;
 
 static bool CreateKeyBindingFromString( const char* str, int keyControl );
 static bool CreateAxisBindingFromString( const char* str, int axisControl );
@@ -120,7 +120,7 @@ bool RegisterKeyControl( const char* name, KeyControlActionFn callback, void* co
         return false;
 
     KeyControl keyControl;
-    strncpy(keyControl.name, name, MAX_CONTROL_NAME_LENGTH);
+    CopyString(name, keyControl.name, sizeof(keyControl.name));
     keyControl.callback = callback;
     keyControl.context = context;
     keyControl.value = value;
@@ -156,7 +156,7 @@ bool RegisterAxisControl( const char* name, AxisControlActionFn callback, void* 
         return false;
 
     AxisControl axisControl;
-    strncpy(axisControl.name, name, MAX_CONTROL_NAME_LENGTH);
+    CopyString(name, axisControl.name, sizeof(axisControl.name));
     axisControl.callback = callback;
     axisControl.context = context;
     axisControl.value = value;

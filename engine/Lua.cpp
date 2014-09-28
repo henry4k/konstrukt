@@ -12,7 +12,7 @@ extern "C"
 }
 
 
-static const int MAX_LUA_EVENT_NAME_LENGTH = 32;
+static const int MAX_LUA_EVENT_NAME_LENGTH = 31;
 
 
 struct LuaEvent
@@ -331,7 +331,7 @@ int RegisterLuaEvent( const char* name )
 
     LuaEvent event;
     memset(&event, 0, sizeof(event));
-    strncpy(event.name, name, MAX_LUA_EVENT_NAME_LENGTH);
+    CopyString(name, event.name, sizeof(event.name));
     event.callbackReference = LUA_NOREF;
 
     g_LuaEvents.push_back(event);

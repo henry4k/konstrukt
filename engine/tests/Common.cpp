@@ -77,6 +77,27 @@ InlineTest("Log handler can handle log lines.", dummySignalSandbox)
 }
 
 
+InlineTest("CopyString() is correct.", dummySignalSandbox)
+{
+    static const int maxLength = 7;
+    char destination[maxLength+1];
+
+    static const char* source = "0123456";
+    Require(CopyString(source, destination, sizeof(destination)) == true);
+    Require(memcmp(source, destination, sizeof(destination)) == 0);
+
+    static const char* smallSource = "0123";
+    static const char* smallSourceDestination = "0123\0\0\0";
+    Require(CopyString(smallSource, destination, sizeof(destination)) == true);
+    Require(memcmp(smallSourceDestination, destination, sizeof(destination)) == 0);
+
+    static const char* largeSource = "012345678";
+    static const char* largeSourceDestination = "0123456";
+    Require(CopyString(largeSource, destination, sizeof(destination)) == false);
+    Require(memcmp(largeSourceDestination, destination, sizeof(destination)) == 0);
+}
+
+
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);

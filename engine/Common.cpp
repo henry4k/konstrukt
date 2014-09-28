@@ -1,7 +1,7 @@
 #if !defined(__WIN32__)
     #include <signal.h>
 #endif
-#include <string.h>
+#include <string.h> // strncpy
 #include "Common.h"
 
 const char* Format( const char* format, ... )
@@ -104,4 +104,20 @@ void FatalError( const char* format, ... )
     va_end(vl);
     // abort();
     raise(SIGTRAP);
+}
+
+bool CopyString( const char* source, char* destination, int destinationSize )
+{
+    assert(source && destination && destinationSize > 0);
+
+    strncpy(destination, source, destinationSize);
+    if(destination[destinationSize-1] == '\0')
+    {
+        return true;
+    }
+    else
+    {
+        destination[destinationSize-1] = '\0';
+        return false;
+    }
 }

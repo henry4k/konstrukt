@@ -32,4 +32,11 @@ void Error( const char* format, ... );
  */
 void FatalError( const char* format, ... );
 
+/**
+ * Copies at most `destinationSize-1` bytes from `source` to `destination`
+ * and ensures that the next byte is a `\0` byte.  Returns `false` if not all
+ * bytes could be copied from `source`.
+ */
+bool CopyString( const char* source, char* destination, int destinationSize );
+
 #endif
