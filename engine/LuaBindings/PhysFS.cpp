@@ -17,9 +17,19 @@ int Lua_UnmountPackage( lua_State* l )
     return 0;
 }
 
+int Lua_LoadFile( lua_State* l )
+{
+    const char* vfsPath = luaL_checkstring(l, 1);
+    FileBuffer* buffer = LoadFile(vfsPath);
+    lua_pushlstring(l, buffer->data, buffer->size);
+    FreeFile(buffer);
+    return 1;
+}
+
 bool RegisterPhysFSInLua()
 {
     return
         RegisterFunctionInLua("MountPackage", Lua_MountPackage) &&
-        RegisterFunctionInLua("UnmountPackage", Lua_UnmountPackage);
+        RegisterFunctionInLua("UnmountPackage", Lua_UnmountPackage) &&
+        RegisterFunctionInLua("LoadFile", Lua_LoadFile);
 }

@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "Common.h"
+#include "PhysFS.h"
 #include "Lua.h"
 
 extern "C"
@@ -48,15 +49,24 @@ bool InitLua()
     lua_State* l = g_LuaState = luaL_newstate();
     g_LuaEvents.clear();
 
+    lua_gc(l, LUA_GCSTOP, 0); // only collect manually
 
-    lua_gc(g_LuaState, LUA_GCSTOP, 0); // only collect manually
-    luaL_openlibs(g_LuaState);
+    // Load standart modules (except io module)
+    luaopen_base(l);
+    luaL_requiref(l, LUA_COLIBNAME,   luaopen_coroutine, true);
+    luaL_requiref(l, LUA_TABLIBNAME,  luaopen_table,     true);
+    luaL_requiref(l, LUA_STRLIBNAME,  luaopen_string,    true);
+    luaL_requiref(l, LUA_BITLIBNAME,  luaopen_bit32,     true);
+    luaL_requiref(l, LUA_MATHLIBNAME, luaopen_math,      true);
+    luaL_requiref(l, LUA_DBLIBNAME,   luaopen_debug,     true);
+    luaL_requiref(l, LUA_LOADLIBNAME, luaopen_package,   true);
+    luaL_requiref(l, "cjson",         luaopen_cjson,     true);
 
-    luaopen_cjson(l);
-    lua_setglobal(l, "cjson");
+    lua_pushnil(l);
+    lua_setglobal(l, "loadfile");
 
     lua_createtable(l, 0, 0);
-    lua_setglobal(g_LuaState, "ENGINE");
+    lua_setglobal(l, "ENGINE");
 
     RegisterFunctionInLua("SetErrorFunction", Lua_SetErrorFunction);
     RegisterFunctionInLua("SetEventCallback", Lua_SetEventCallback);
@@ -297,22 +307,58 @@ static bool HandleLuaCallResult( lua_State* l, int result )
     }
 }
 
-bool RunLuaScript( lua_State* l, const char* filePath )
+struct LoadInfo
 {
-    Log("Running %s ...", filePath);
+    FileBuffer* buffer;
+    bool done;
+};
+
+static const char* ReadLuaChunk( lua_State* l, void* userData, size_t* bytesRead )
+{
+    LoadInfo* loadInfo = (LoadInfo*)userData;
+    if(loadInfo->done)
+    {
+        *bytesRead = 0;
+        return NULL;
+    }
+    else
+    {
+        loadInfo->done = true;
+        FileBuffer* buffer = loadInfo->buffer;
+        *bytesRead = buffer->size;
+        return buffer->data;
+    }
+}
+
+bool RunLuaScript( lua_State* l, const char* vfsPath )
+{
+    Log("Running %s ...", vfsPath);
 
     lua_pushcfunction(l, Lua_ErrorProxy);
 
-    const int loadResult = luaL_loadfile(l, filePath);
-    if(loadResult != 0)
+    FileBuffer* buffer = LoadFile(vfsPath);
+    if(buffer)
     {
-        Error("%s", lua_tostring(l, -1));
-        lua_pop(l, 2); // pop error function and error message
+        LoadInfo loadInfo { buffer, false };
+        const int loadResult = lua_load(l, ReadLuaChunk, &loadInfo, vfsPath, "t"); // Only allow text chunks
+        FreeFile(buffer);
+
+        if(loadResult == LUA_OK)
+        {
+            const int callResult = lua_pcall(l, 0, 0, -2);
+            return HandleLuaCallResult(l, callResult);
+        }
+        else
+        {
+            Error("%s", lua_tostring(l, -1));
+            lua_pop(l, 2); // pop error function and error message
+            return false;
+        }
+    }
+    else
+    {
         return false;
     }
-
-    const int callResult = lua_pcall(l, 0, 0, -2);
-    return HandleLuaCallResult(l, callResult);
 }
 
 static int FindLuaEventByName( const char* name )

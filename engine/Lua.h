@@ -139,9 +139,9 @@ void* GetPointerFromLua( lua_State* l, int stackPosition );
 void* CheckPointerFromLua( lua_State* l, int stackPosition );
 
 /**
- * Loads a script from `filePath` and executes it.
+ * Loads a script from `vfsPath` and executes it.
  */
-bool RunLuaScript( lua_State* l, const char* filePath );
+bool RunLuaScript( lua_State* l, const char* vfsPath );
 
 /**
  * Registers a new event and returns its id.
