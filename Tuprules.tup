@@ -16,6 +16,7 @@ INTERNAL_CFLAGS += -I$(ROOT)
 INTERNAL_CFLAGS += -I$(ROOT)/third-party
 INTERNAL_CFLAGS += -I$(ROOT)/third-party/inih
 INTERNAL_CFLAGS += -I$(ROOT)/third-party/lua-cjson
+INTERNAL_CFLAGS += -I$(ROOT)/third-party/stb_image
 
 INTERNAL_LDFLAGS += @(LUA_LDFLAGS)
 INTERNAL_LDFLAGS += @(INTERNAL_LDFLAGS)

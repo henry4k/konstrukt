@@ -1,10 +1,7 @@
 #include <stdlib.h> // malloc, free
 #include <string.h> // memset
 
-#define STBI_NO_STDIO
-#define STBI_NO_HDR
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include <apoapsis_stb_image.h>
 
 #include "Common.h"
 #include "PhysFS.h"

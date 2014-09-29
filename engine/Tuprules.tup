@@ -1,5 +1,6 @@
 REQUIRED_ARCHIVES += $(ROOT)/third-party/inih/ini.a
 REQUIRED_ARCHIVES += $(ROOT)/third-party/lua-cjson/lua-cjson.a
+REQUIRED_ARCHIVES += $(ROOT)/third-party/stb_image/stb_image.a
 
 CFLAGS += $(INTERNAL_CFLAGS)
 LDFLAGS += $(INTERNAL_LDFLAGS)

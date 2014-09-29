@@ -1,0 +1,4 @@
+include_rules
+
+: foreach *.c |> !cc |> %B.o {objects}
+: {objects} |> !ar |> stb_image.a
