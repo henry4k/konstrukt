@@ -28,6 +28,7 @@
 #include "LuaBindings/RenderManager.h"
 #include "LuaBindings/RenderTarget.h"
 #include "LuaBindings/ModelWorld.h"
+#include "LuaBindings/PhysFS.h"
 #include "LuaBindings/PhysicsManager.h"
 #include "LuaBindings/Shader.h"
 #include "LuaBindings/Texture.h"
@@ -45,6 +46,9 @@ bool InitGame( const int argc, char** argv )
 
     Log("----------- Config ------------");
     if(!InitConfig(argc, argv))
+        return false;
+
+    if(!PostConfigInitPhysFS())
         return false;
 
     Log("------------- Lua -------------");
@@ -115,6 +119,7 @@ static bool RegisterAllModulesInLua()
         RegisterRenderManagerInLua() &&
         RegisterRenderTargetInLua() &&
         RegisterModelWorldInLua() &&
+        RegisterPhysFSInLua() &&
         RegisterPhysicsManagerInLua() &&
         RegisterShaderInLua() &&
         RegisterTextureInLua() &&

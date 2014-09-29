@@ -2,6 +2,7 @@
 #include <physfs.h>
 #include "Common.h" // CopyString
 #include "Game.h" // DEFAULT_PACKAGE_SEARCH_PATHS
+#include "Config.h"
 #include "PhysFS.h"
 
 
@@ -47,11 +48,6 @@ bool InitPhysFS( const int argc, char const * const * argv )
         UserDataDirectory[pathLength-1] = '\0'; // Clip the trailing directory separator.
     }
 
-    SetPackageSearchPaths("/home/henry/apoapsis;batman");
-    MountPackage("core");
-    Log("------------");
-    UnmountPackage("core");
-
     const char* error = PHYSFS_getLastError();
     if(!error)
     {
@@ -62,6 +58,13 @@ bool InitPhysFS( const int argc, char const * const * argv )
         Error("%s", error);
         return false;
     }
+}
+
+bool PostConfigInitPhysFS()
+{
+    PHYSFS_permitSymbolicLinks(GetConfigBool("package.permit-symbolic-links", false));
+    SetPackageSearchPaths(GetConfigString("package.search-path", ""));
+    return true;
 }
 
 void DestroyPhysFS()
@@ -91,13 +94,19 @@ static const char* ResolvePackageNameWithBasePath( const char* name,
     const char* separator = PHYSFS_getDirSeparator();
     const char* path = NULL;
 
-    path = Format("%s%s%s", basePath, separator, name);
-    if(GetFileType(path) != FILE_TYPE_DIRECTORY)
-        path = NULL;
+    if(!path)
+    {
+        path = Format("%s%s%s", basePath, separator, name);
+        if(GetFileType(path) != FILE_TYPE_DIRECTORY)
+            path = NULL;
+    }
 
-    path = Format("%s%s%s.zip", basePath, separator, name);
-    if(GetFileType(path) != FILE_TYPE_REGULAR)
-        path = NULL;
+    if(!path)
+    {
+        path = Format("%s%s%s.zip", basePath, separator, name);
+        if(GetFileType(path) != FILE_TYPE_REGULAR)
+            path = NULL;
+    }
 
     if(path)
     {
@@ -138,14 +147,24 @@ static const char* ResolvePackageNameWithSearchPath( const char* name,
     return ResolvePackageNameWithBasePath(name, &searchPath[pathStart]);
 }
 
+static const char* ResolvePackageName( const char* name )
+{
+    const char* packagePath;
+
+    packagePath = ResolvePackageNameWithSearchPath(name, SearchPaths);
+    if(packagePath)
+        return packagePath;
+
+    packagePath = ResolvePackageNameWithSearchPath(name, DEFAULT_PACKAGE_SEARCH_PATHS);
+    if(packagePath)
+        return packagePath;
+
+    return NULL;
+}
+
 bool MountPackage( const char* name )
 {
-    const char* packagePath = ResolvePackageNameWithSearchPath(name, SearchPaths);
-
-    if(!packagePath)
-        packagePath =
-            ResolvePackageNameWithSearchPath(name, DEFAULT_PACKAGE_SEARCH_PATHS);
-
+    const char* packagePath = ResolvePackageName(name);
     if(packagePath)
     {
         const char* mountPath = Format("/%s", name);
@@ -170,8 +189,8 @@ bool MountPackage( const char* name )
 
 void UnmountPackage( const char* name )
 {
-    const char* mountPath = Format("/%s", name);
-    const char* packagePath = PHYSFS_getRealDir(mountPath);
+    const char* packagePath = ResolvePackageName(name);
+    // TODO: This is an error prone solution.  It can break when you change the search path.
     if(packagePath)
     {
         if(PHYSFS_unmount(packagePath))

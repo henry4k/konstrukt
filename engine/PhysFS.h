@@ -2,6 +2,7 @@
 #define __APOAPSIS_PHYSFS__
 
 bool InitPhysFS( const int argc, char const * const * argv );
+bool PostConfigInitPhysFS();
 void DestroyPhysFS();
 
 /**
