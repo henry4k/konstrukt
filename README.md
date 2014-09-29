@@ -19,7 +19,6 @@ Needed to compile the engine:
 - Open GL
 - GLEW
 - GLFW 3
-- libPNG
 - Open AL
 - ALURE
 - Bullet
