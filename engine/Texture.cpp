@@ -61,7 +61,7 @@ static Texture* CreateTexture( GLenum target, int options )
     return texture;
 }
 
-Texture* Create2dTexture( int options, const Image* image )
+static Texture* Create2dTexture( int options, const Image* image )
 {
     Texture* texture = CreateTexture(GL_TEXTURE_2D, options);
     if(!texture)
@@ -83,19 +83,24 @@ Texture* Create2dTexture( int options, const Image* image )
 
 Texture* Load2dTexture( int options, const char* file )
 {
+    Texture* texture = NULL;
+
     Image image;
-    if(!LoadImage(&image, file))
-        return NULL;
-    Texture* texture = Create2dTexture(options, &image);
-    FreeImage(&image);
+    if(LoadImage(&image, file))
+    {
+        texture = Create2dTexture(options, &image);
+        FreeImage(&image);
+    }
+
     if(texture)
         Log("Loaded %s", file);
     else
         Error("Failed to load %s", file);
+
     return texture;
 }
 
-Texture* CreateCubeTexture( int options, const Image* images )
+static Texture* CreateCubeTexture( int options, const Image* images )
 {
     // Always uses clamp to edge since its the only option that makes sense here.
     options |= TEX_CLAMP;
