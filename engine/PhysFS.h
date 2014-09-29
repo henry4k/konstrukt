@@ -4,6 +4,13 @@
 #include <physfs.h>
 
 
+struct FileBuffer
+{
+    const int size;
+    const char* data;
+};
+
+
 bool InitPhysFS( const int argc, char const * const * argv );
 bool PostConfigInitPhysFS();
 void DestroyPhysFS();
@@ -48,5 +55,18 @@ bool MountPackage( const char* name );
  * Nothing will happen, if no package with this name has been mounted.
  */
 void UnmountPackage( const char* name );
+
+/**
+ * Helper function that loads a complete vfs file into memory.
+ *
+ * @return
+ * A #FileBuffer object or `NULL` if something went wrong.
+ */
+FileBuffer* LoadFile( const char* vfsPath );
+
+/**
+ * Use to free a file buffer.
+ */
+void FreeFile( FileBuffer* buffer );
 
 #endif

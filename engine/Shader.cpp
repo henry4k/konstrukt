@@ -76,38 +76,6 @@ void DestroyShader()
 
 // ----- Tools ------
 
-static char* LoadFile( const char* vfsPath, int* sizeOut )
-{
-    PHYSFS_File* f = PHYSFS_openRead(vfsPath);
-    if(!f)
-    {
-        Error("Can't open file %s: %s", vfsPath, PHYSFS_getLastError());
-        return 0;
-    }
-
-    const int size = (int)PHYSFS_fileLength(f);
-
-    char* b = new char[size];
-    if(PHYSFS_readBytes(f, b, size) == size)
-    {
-        *sizeOut = size;
-    }
-    else
-    {
-        Error("Can't read file %s: %s", vfsPath, PHYSFS_getLastError());
-        delete[] b;
-        b = NULL;
-    }
-
-    PHYSFS_close(f);
-    return b;
-}
-
-static void FreeFile( const char* fileData )
-{
-    delete[] fileData;
-}
-
 static bool StringEndsWith( const char* target, const char* end )
 {
     const int targetLength = strlen(target);
@@ -188,9 +156,8 @@ static void ShowShaderLog( Shader* shader )
 
 static Shader* CreateShader( const char* vfsPath, int type )
 {
-    int size;
-    const char* source = LoadFile(vfsPath, &size);
-    if(!source)
+    FileBuffer* buffer = LoadFile(vfsPath);
+    if(!buffer)
     {
         Error("Failed to read shader source %s", vfsPath);
         return NULL;
@@ -200,8 +167,8 @@ static Shader* CreateShader( const char* vfsPath, int type )
     InitReferenceCounter(&shader->refCounter);
     shader->handle = glCreateShader(type);
 
-    glShaderSource(shader->handle, 1, &source, &size);
-    FreeFile(source);
+    glShaderSource(shader->handle, 1, &buffer->data, &buffer->size);
+    FreeFile(buffer);
 
     glCompileShader(shader->handle);
 

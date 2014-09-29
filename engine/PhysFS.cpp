@@ -207,3 +207,36 @@ void UnmountPackage( const char* name )
         Error("Can't unmount package '%s' since it's not loaded.", name);
     }
 }
+
+FileBuffer* LoadFile( const char* vfsPath )
+{
+    PHYSFS_File* file = PHYSFS_openRead(vfsPath);
+    if(!file)
+    {
+        Error("Can't open file '%s': %s", vfsPath, PHYSFS_getLastError());
+        return 0;
+    }
+
+    const int size = (int)PHYSFS_fileLength(file);
+
+    char* buffer = new char[size];
+    const int bytesRead = PHYSFS_readBytes(file, buffer, size);
+    PHYSFS_close(file);
+
+    if(bytesRead == size)
+    {
+        return new FileBuffer { size, buffer };
+    }
+    else
+    {
+        Error("Can't read file '%s': %s", vfsPath, PHYSFS_getLastError());
+        delete[] buffer;
+        return NULL;
+    }
+}
+
+void FreeFile( FileBuffer* buffer )
+{
+    delete[] buffer->data;
+    delete buffer;
+}
