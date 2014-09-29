@@ -1,10 +1,13 @@
+#include <stdlib.h> // malloc, free
 #include <string.h> // memset
 
+#define STBI_NO_STDIO
 #define STBI_NO_HDR
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 #include "Common.h"
+#include "PhysFS.h"
 #include "OpenGL.h"
 #include "Image.h"
 
@@ -42,61 +45,95 @@ bool CreateImage( Image* image, int width, int height, int bpp )
 
     image->type = GL_UNSIGNED_BYTE;
 
-    image->data = new char[width*height*bpp];
+    image->data = (char*)malloc(width*height*bpp);
 
     return true;
 }
 
-bool LoadImage( Image* image, const char* file )
+static int PhysFSRead( void* user, char* data, int size )
+{
+    PHYSFS_File* file = (PHYSFS_File*)user;
+    return (int)PHYSFS_readBytes(file, data, size);
+}
+
+static void PhysFSSkip( void* user, int offset )
+{
+    PHYSFS_File* file = (PHYSFS_File*)user;
+    const int currentPosition = PHYSFS_tell(file);
+    assert(currentPosition >= 0);
+    const int newPosition = currentPosition + offset;
+    const int success = PHYSFS_seek(file, newPosition);
+    assert(success);
+}
+
+static int PhysFSEOF( void* user )
+{
+    PHYSFS_File* file = (PHYSFS_File*)user;
+    return PHYSFS_eof(file);
+}
+
+static const stbi_io_callbacks PhysFSCallbacks =
+{
+   PhysFSRead,
+   PhysFSSkip,
+   PhysFSEOF
+};
+
+bool LoadImage( Image* image, const char* vfsPath )
 {
     memset(image, 0, sizeof(Image));
 
-    image->data = (char*)stbi_load(file,
-                                   &image->width,
-                                   &image->height,
-                                   &image->bpp,
-                                   STBI_default);
-
-    if(image->data)
+    PHYSFS_File* file = PHYSFS_openRead(vfsPath);
+    if(!file)
     {
-        switch(image->bpp)
-        {
-            case 1:
-                image->format = GL_LUMINANCE;
-                break;
-
-            case 2:
-                image->format = GL_LUMINANCE_ALPHA;
-                break;
-
-            case 3:
-                image->format = GL_RGB;
-                break;
-
-            case 4:
-                image->format = GL_RGBA;
-                break;
-
-            default:
-                Error("Can't load '%s': Unknown BPP -> %d", file, image->bpp);
-                delete[] image->data;
-                return false;
-        }
-
-        image->type = GL_UNSIGNED_BYTE;
-
-        return true;
-    }
-    else
-    {
-        Error("Can't load '%s': %s", file, stbi_failure_reason());
+        Error("Can't load '%s': %s", vfsPath, PHYSFS_getLastError());
         return false;
     }
-}
 
+    image->data = (char*)stbi_load_from_callbacks(&PhysFSCallbacks,
+                                                  file,
+                                                  &image->width,
+                                                  &image->height,
+                                                  &image->bpp,
+                                                  STBI_default);
+    PHYSFS_close(file);
+    if(!image->data)
+    {
+        Error("Can't load '%s': %s", vfsPath, stbi_failure_reason());
+        return false;
+    }
+
+    switch(image->bpp)
+    {
+        case 1:
+            image->format = GL_LUMINANCE;
+            break;
+
+        case 2:
+            image->format = GL_LUMINANCE_ALPHA;
+            break;
+
+        case 3:
+            image->format = GL_RGB;
+            break;
+
+        case 4:
+            image->format = GL_RGBA;
+            break;
+
+        default:
+            Error("Can't load '%s': Unknown BPP -> %d", vfsPath, image->bpp);
+            free(image->data);
+            return false;
+    }
+
+    image->type = GL_UNSIGNED_BYTE;
+
+    return true;
+}
 
 void FreeImage( const Image* image )
 {
     if(image->data)
-        delete[] image->data;
+        free(image->data);
 }

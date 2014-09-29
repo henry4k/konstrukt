@@ -1,5 +1,4 @@
 #include <string.h> // strlen, memset, memcpy
-#include <physfs.h>
 #include "Common.h" // CopyString
 #include "Game.h" // DEFAULT_PACKAGE_SEARCH_PATHS
 #include "Config.h"

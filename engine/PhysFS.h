@@ -1,6 +1,9 @@
 #ifndef __APOAPSIS_PHYSFS__
 #define __APOAPSIS_PHYSFS__
 
+#include <physfs.h>
+
+
 bool InitPhysFS( const int argc, char const * const * argv );
 bool PostConfigInitPhysFS();
 void DestroyPhysFS();

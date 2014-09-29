@@ -81,21 +81,21 @@ static Texture* Create2dTexture( int options, const Image* image )
     return texture;
 }
 
-Texture* Load2dTexture( int options, const char* file )
+Texture* Load2dTexture( int options, const char* vfsPath )
 {
     Texture* texture = NULL;
 
     Image image;
-    if(LoadImage(&image, file))
+    if(LoadImage(&image, vfsPath))
     {
         texture = Create2dTexture(options, &image);
         FreeImage(&image);
     }
 
     if(texture)
-        Log("Loaded %s", file);
+        Log("Loaded %s", vfsPath);
     else
-        Error("Failed to load %s", file);
+        Error("Failed to load %s", vfsPath);
 
     return texture;
 }
@@ -128,16 +128,17 @@ static Texture* CreateCubeTexture( int options, const Image* images )
     return texture;
 }
 
-Texture* LoadCubeTexture( int options, const char* path )
+Texture* LoadCubeTexture( int options, const char* vfsPathTemplate )
 {
     // Load cube sides:
     Image images[6];
     static const char* names[6] = { "px","nx","ny","py","pz","nz" };
     for(int i = 0; i < 6; i++)
     {
-        if(!LoadImage(&images[i], Format(path, names[i])))
+        const char* vfsPath = Format(vfsPathTemplate, names[i]);
+        if(!LoadImage(&images[i], vfsPath))
         {
-            Error("Failed to load %s", Format(path, names[i]));
+            Error("Failed to load %s", vfsPath);
             return NULL;
         }
     }
@@ -148,9 +149,9 @@ Texture* LoadCubeTexture( int options, const char* path )
         FreeImage(&images[i]);
 
     if(texture)
-        Log("Loaded %s", Format(path, "*"));
+        Log("Loaded %s", Format(vfsPathTemplate, "*"));
     else
-        Error("Failed to load %s", Format(path, "*"));
+        Error("Failed to load %s", Format(vfsPathTemplate, "*"));
     return texture;
 }
 

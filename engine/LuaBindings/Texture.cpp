@@ -35,10 +35,10 @@ static int ReadTextureOptions( lua_State* l, int startArgument )
 
 static int Lua_Load2dTexture( lua_State* l )
 {
-    const char* fileName = luaL_checkstring(l, 1);
+    const char* vfsPath = luaL_checkstring(l, 1);
     const int options = ReadTextureOptions(l, 2);
 
-    Texture* texture = Load2dTexture(options, fileName);
+    Texture* texture = Load2dTexture(options, vfsPath);
     if(texture)
     {
         PushPointerToLua(l, texture);
@@ -54,10 +54,10 @@ static int Lua_Load2dTexture( lua_State* l )
 
 static int Lua_LoadCubeTexture( lua_State* l )
 {
-    const char* filePrefix = luaL_checkstring(l, 1);
+    const char* vfsPathTemplate = luaL_checkstring(l, 1);
     const int options = ReadTextureOptions(l, 2);
 
-    Texture* texture = LoadCubeTexture(options, filePrefix);
+    Texture* texture = LoadCubeTexture(options, vfsPathTemplate);
     if(texture)
     {
         PushPointerToLua(l, texture);
