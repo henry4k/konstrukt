@@ -1,3 +1,7 @@
+local LoadFile  = ENGINE.LoadFile
+local WriteFile = function() error('Function not implemented yet.') end
+
+
 local Json = {}
 
 function Json.encodeToString( value )
@@ -12,29 +16,17 @@ end
 -- @return
 -- Whether the operation succeeded.
 function Json.encodeToFile( fileName, value )
-    local file = io.open(fileName, 'w')
-    if file then
-        local json = Json.encodeToString(value)
-        file:write(json)
-        file:close()
-        return true
-    else
-        return false
-    end
+    local json = Json.encodeToString(value)
+    WriteFile(fileName, json)
+    return true
 end
 
 --- Try to read a json file.
 -- @return
 -- The decoded json object or nil it failed.
 function Json.decodeFromFile( fileName )
-    local file = io.open(fileName, 'r')
-    if file then
-        local json = file:read('*a')
-        file:close()
-        return Json.decodeFromString(json)
-    else
-        return nil
-    end
+    local fileData = LoadFile(fileName)
+    return Json.decodeFromString(fileData)
 end
 
 return Json

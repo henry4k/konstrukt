@@ -1,7 +1,38 @@
+-- Reimplement some functions
+
+function print( ... )
+    local args = {...}
+    for i, arg in ipairs(args) do
+        args[i] = tostring(arg)
+    end
+    ENGINE.Log(table.concat(args, '\t'))
+end
+
+function loadfile( fileName, mode, env )
+    local data = ENGINE.ReadFile(fileName)
+    return load(data, fileName, mode, env)
+end
+
+function dofile( fileName )
+    return loadfile(fileName)()
+end
+
+
 -- Setup package path
 
-package.path = './?.lua;./third-party/?.lua'
+package.path = '/?.lua;/third-party/?.lua'
 package.cpath = ''
+
+local preloadSearcher = package.searchers[1]
+package.searchers = {
+    preloadSearcher,
+    function( module )
+        -- TODO
+    end
+}
+
+package.loadlib = nil
+package.searchpath = nil
 
 
 -- Setup error handling
