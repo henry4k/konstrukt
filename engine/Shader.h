@@ -83,14 +83,14 @@ void DestroyShader();
 int GetUniformSize( UniformType type );
 
 /**
- * Creates a shader by reading the given `fileName`.
+ * Creates a shader by reading the given `vfsPath`.
  * The shader type is determined by the file extension automatically.
  *
  * @return
  * May return `NULL` if the type could not be determined or
  * if the shader source was erroneous.
  */
-Shader* LoadShader( const char* fileName );
+Shader* LoadShader( const char* vfsPath );
 
 void ReferenceShader( Shader* shader );
 void ReleaseShader( Shader* shader );

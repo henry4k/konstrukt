@@ -2,6 +2,7 @@
 #include <string.h> // strncmp, strlen, memcmp, memset
 
 #include "Common.h"
+#include "PhysFS.h"
 #include "OpenGL.h"
 #include "Vertex.h"
 #include "Reference.h"
@@ -75,30 +76,30 @@ void DestroyShader()
 
 // ----- Tools ------
 
-static char* LoadFile( const char* path, int* sizeOut )
+static char* LoadFile( const char* vfsPath, int* sizeOut )
 {
-    FILE* f = fopen(path, "r");
+    PHYSFS_File* f = PHYSFS_openRead(vfsPath);
     if(!f)
     {
-        Error("Can't open file %s", path);
+        Error("Can't open file %s: %s", vfsPath, PHYSFS_getLastError());
         return 0;
     }
 
-    fseek(f, 0, SEEK_END);
-    int size = ftell(f);
-    fseek(f, 0, SEEK_SET);
+    const int size = (int)PHYSFS_fileLength(f);
 
     char* b = new char[size];
-    if(fread(b, 1, size, f) != size)
+    if(PHYSFS_readBytes(f, b, size) == size)
     {
-        Error("Can't read file %s", path);
-        delete[] b;
-        fclose(f);
-        return 0;
+        *sizeOut = size;
     }
-    fclose(f);
+    else
+    {
+        Error("Can't read file %s: %s", vfsPath, PHYSFS_getLastError());
+        delete[] b;
+        b = NULL;
+    }
 
-    *sizeOut = size;
+    PHYSFS_close(f);
     return b;
 }
 
@@ -185,13 +186,13 @@ static void ShowShaderLog( Shader* shader )
     }
 }
 
-static Shader* CreateShader( const char* fileName, int type )
+static Shader* CreateShader( const char* vfsPath, int type )
 {
     int size;
-    const char* source = LoadFile(fileName, &size);
+    const char* source = LoadFile(vfsPath, &size);
     if(!source)
     {
-        Error("Failed to read shader source %s", fileName);
+        Error("Failed to read shader source %s", vfsPath);
         return NULL;
     }
 
@@ -210,30 +211,30 @@ static Shader* CreateShader( const char* fileName, int type )
 
     if(state)
     {
-        Log("Compiled shader successfully: %s", fileName);
+        Log("Compiled shader successfully: %s", vfsPath);
         return shader;
     }
     else
     {
-        Error("Error compiling shader %s", fileName);
+        Error("Error compiling shader %s", vfsPath);
         FreeShader(shader);
         return NULL;
     }
 }
 
-Shader* LoadShader( const char* fileName )
+Shader* LoadShader( const char* vfsPath )
 {
-    if(StringEndsWith(fileName, ".vert"))
+    if(StringEndsWith(vfsPath, ".vert"))
     {
-        return CreateShader(fileName, GL_VERTEX_SHADER);
+        return CreateShader(vfsPath, GL_VERTEX_SHADER);
     }
-    else if(StringEndsWith(fileName, ".frag"))
+    else if(StringEndsWith(vfsPath, ".frag"))
     {
-        return CreateShader(fileName, GL_FRAGMENT_SHADER);
+        return CreateShader(vfsPath, GL_FRAGMENT_SHADER);
     }
     else
     {
-        Error("Can't determine shader type of file %s", fileName);
+        Error("Can't determine shader type of file %s", vfsPath);
         return NULL;
     }
 }

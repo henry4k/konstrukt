@@ -8,8 +8,8 @@
 
 static int Lua_LoadShader( lua_State* l )
 {
-    const char* fileName = luaL_checkstring(l, 1);
-    Shader* shader = LoadShader(fileName);
+    const char* vfsPath = luaL_checkstring(l, 1);
+    Shader* shader = LoadShader(vfsPath);
 
     if(shader)
     {
@@ -19,7 +19,7 @@ static int Lua_LoadShader( lua_State* l )
     }
     else
     {
-        return luaL_error(l, "Can't load shader '%s'", fileName);
+        return luaL_error(l, "Can't load shader '%s'", vfsPath);
     }
 }
 
