@@ -1,7 +1,7 @@
 local class          = require 'middleclass'
 local Vec            = require 'core/Vector'
 local CollisionShape = require 'core/CollisionShape'
-local CreateBoxCollisionShape = CreateBoxCollisionShape
+local CreateBoxCollisionShape = ENGINE.CreateBoxCollisionShape
 
 
 local BoxCollisionShape = class('core/collision_shapes/BoxCollisionShape', CollisionShape)

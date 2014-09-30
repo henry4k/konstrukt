@@ -3,6 +3,7 @@ local Vec    = require 'core/Vector'
 local Mat4   = require 'core/Matrix4'
 local DestroyModel              = ENGINE.DestroyModel
 local SetModelAttachmentTarget  = ENGINE.SetModelAttachmentTarget
+local SetModelTransformation    = ENGINE.SetModelTransformation
 local SetModelMesh              = ENGINE.SetModelMesh
 local SetModelTexture           = ENGINE.SetModelTexture
 local SetModelProgramFamilyList = ENGINE.SetModelProgramFamilyList
