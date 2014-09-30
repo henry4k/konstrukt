@@ -1,5 +1,4 @@
-local ReadFile  = ENGINE.ReadFile
-local WriteFile = function() error('Function not implemented yet.') end
+local fs = require 'core/FileSystem'
 
 
 local Json = {}
@@ -17,7 +16,7 @@ end
 -- Whether the operation succeeded.
 function Json.encodeToFile( fileName, value )
     local json = Json.encodeToString(value)
-    WriteFile(fileName, json)
+    fs.writeFile(fileName, json)
     return true
 end
 
@@ -25,7 +24,7 @@ end
 -- @return
 -- The decoded json object or nil it failed.
 function Json.decodeFromFile( fileName )
-    local fileData = ReadFile(fileName)
+    local fileData = fs.readFile(fileName)
     return Json.decodeFromString(fileData)
 end
 
