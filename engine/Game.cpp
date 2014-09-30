@@ -48,6 +48,7 @@ bool InitGame( const int argc, char** argv )
     if(!InitConfig(argc, argv))
         return false;
 
+    Log("----------- PhysFS post config init ------------");
     if(!PostConfigInitPhysFS())
         return false;
 
@@ -93,8 +94,9 @@ bool InitGame( const int argc, char** argv )
 
     Log("-------------------------------");
 
-    if(!RunLuaScript(GetLuaState(), "core/init.lua"))
+    if(MountPackage("core") || !RunLuaScript(GetLuaState(), "/core/init.lua"))
         return false;
+
     for(int i = 1; i < argc; i++)
     {
         const char* argument = argv[i];

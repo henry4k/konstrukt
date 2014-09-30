@@ -1,4 +1,4 @@
-local LoadFile  = ENGINE.LoadFile
+local ReadFile  = ENGINE.ReadFile
 local WriteFile = function() error('Function not implemented yet.') end
 
 
@@ -25,7 +25,7 @@ end
 -- @return
 -- The decoded json object or nil it failed.
 function Json.decodeFromFile( fileName )
-    local fileData = LoadFile(fileName)
+    local fileData = ReadFile(fileName)
     return Json.decodeFromString(fileData)
 end
 

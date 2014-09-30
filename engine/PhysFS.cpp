@@ -26,8 +26,6 @@ static void LogPhysFSVersion()
     Log("Linked against PhysFS %d.%d.%d", linked.major, linked.minor, linked.patch);
 }
 
-static const char* ResolvePackageNameWithSearchPath( const char* name, const char* searchPath );
-
 bool InitPhysFS( const int argc, char const * const * argv )
 {
     memset(&UserDataDirectory, 0, sizeof(UserDataDirectory));
@@ -62,7 +60,7 @@ bool InitPhysFS( const int argc, char const * const * argv )
 bool PostConfigInitPhysFS()
 {
     PHYSFS_permitSymbolicLinks(GetConfigBool("package.permit-symbolic-links", false));
-    SetPackageSearchPaths(GetConfigString("package.search-path", ""));
+    SetPackageSearchPaths(GetConfigString("package.search-paths", ""));
     return true;
 }
 
@@ -79,7 +77,9 @@ const char* GetUserDataDirectory()
 
 void SetPackageSearchPaths( const char* paths )
 {
-    CopyString(paths, SearchPaths, sizeof(SearchPaths));
+    const char* finalPaths = Format("%s;%s", paths, DEFAULT_PACKAGE_SEARCH_PATHS);
+    CopyString(finalPaths, SearchPaths, sizeof(SearchPaths));
+    Log("Package search paths: %s", SearchPaths);
 }
 
 static const char* ResolvePackageNameWithBasePath( const char* name,
@@ -148,17 +148,7 @@ static const char* ResolvePackageNameWithSearchPath( const char* name,
 
 static const char* ResolvePackageName( const char* name )
 {
-    const char* packagePath;
-
-    packagePath = ResolvePackageNameWithSearchPath(name, SearchPaths);
-    if(packagePath)
-        return packagePath;
-
-    packagePath = ResolvePackageNameWithSearchPath(name, DEFAULT_PACKAGE_SEARCH_PATHS);
-    if(packagePath)
-        return packagePath;
-
-    return NULL;
+    return ResolvePackageNameWithSearchPath(name, SearchPaths);
 }
 
 bool MountPackage( const char* name )

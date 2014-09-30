@@ -51,7 +51,7 @@ bool InitLua()
 
     lua_gc(l, LUA_GCSTOP, 0); // only collect manually
 
-    // Load standart modules (except io module)
+    // Load standart modules (except package and io module)
     luaopen_base(l);
     luaL_requiref(l, LUA_COLIBNAME,   luaopen_coroutine, true);
     luaL_requiref(l, LUA_TABLIBNAME,  luaopen_table,     true);
@@ -59,7 +59,6 @@ bool InitLua()
     luaL_requiref(l, LUA_BITLIBNAME,  luaopen_bit32,     true);
     luaL_requiref(l, LUA_MATHLIBNAME, luaopen_math,      true);
     luaL_requiref(l, LUA_DBLIBNAME,   luaopen_debug,     true);
-    luaL_requiref(l, LUA_LOADLIBNAME, luaopen_package,   true);
     luaL_requiref(l, "cjson",         luaopen_cjson,     true);
 
     lua_pushnil(l);

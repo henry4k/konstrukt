@@ -17,22 +17,30 @@ function dofile( fileName )
     return loadfile(fileName)()
 end
 
-
--- Setup package path
-
-package.path = '/?.lua;/third-party/?.lua'
-package.cpath = ''
-
-local preloadSearcher = package.searchers[1]
-package.searchers = {
-    preloadSearcher,
-    function( module )
-        -- TODO
-    end
+modules = {
+    loaded = {},
+    searchPaths = {
+        '/%s.lua',
+        '/core/third-party/%s.lua',
+    }
 }
 
-package.loadlib = nil
-package.searchpath = nil
+function require( moduleName )
+    local loadedModule = modules.loaded[moduleName]
+    if loadedModule then
+        return loadedModule
+    else
+        for _,searchPath in ipairs(modules.searchPaths) do
+            local path = string.format(searchPath, moduleName)
+            if ENGINE.FileExists(path) then
+                local module = dofile(path)
+                modules.loaded[moduleName] = module
+                return module
+            end
+        end
+        error('Can\'t find module '..moduleName..'!')
+    end
+end
 
 
 -- Setup error handling
