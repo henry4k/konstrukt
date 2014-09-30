@@ -73,3 +73,30 @@ local defaultRT = require 'core/DefaultRenderTarget':get()
 defaultRT:setCamera(defaultCamera)
 defaultRT:setShaderProgramSet(defaultShaderProgramSet)
 
+
+-- Process command line arguments
+
+local function LoadPackage( module )
+    ENGINE.MountPackage(module)
+end
+
+local interactive = false
+
+for i, argument in ipairs(ARGS) do
+    if argument:match('-.*') then
+        if argument == '-i' then
+            interactive = true
+        end
+    else
+        if argument:match('.+%.lua') then
+            dofile(argument)
+        else
+            LoadPackage(argument)
+        end
+    end
+end
+
+if interactive then
+    debug.debug()
+    ENGINE.StopGameLoop()
+end

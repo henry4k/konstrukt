@@ -38,6 +38,8 @@ static int Lua_StopGameLoop( lua_State* l );
 
 static bool RegisterAllModulesInLua();
 
+static void CreateArgumentTable( const int argc, char** argv );
+
 bool InitGame( const int argc, char** argv )
 {
     Log("------------- PhysFS -------------");
@@ -94,17 +96,8 @@ bool InitGame( const int argc, char** argv )
 
     Log("-------------------------------");
 
-    if(!MountPackage("core") || !RunLuaScript(GetLuaState(), "/core/init.lua"))
-        return false;
-
-    for(int i = 1; i < argc; i++)
-    {
-        const char* argument = argv[i];
-        if(argument[0] != '-')
-            if(!RunLuaScript(GetLuaState(), argument))
-                return false;
-    }
-    return true;
+    CreateArgumentTable(argc, argv);
+    return MountPackage("core") && RunLuaScript(GetLuaState(), "/core/init.lua");
 }
 
 static bool RegisterAllModulesInLua()
@@ -174,5 +167,18 @@ static int Lua_StopGameLoop( lua_State* l )
 {
     FlagWindowForClose();
     return 0;
+}
+
+static void CreateArgumentTable( const int argc, char** argv )
+{
+    lua_State* l = GetLuaState();
+    lua_createtable(l, argc-1, 0);
+    for(int i = 1; i < argc; i++)
+    {
+        const char* argument = argv[i];
+        lua_pushstring(l, argument);
+        lua_rawseti(l, -2, i);
+    }
+    lua_setglobal(l, "ARGS");
 }
 
