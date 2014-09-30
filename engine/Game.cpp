@@ -94,7 +94,7 @@ bool InitGame( const int argc, char** argv )
 
     Log("-------------------------------");
 
-    if(MountPackage("core") || !RunLuaScript(GetLuaState(), "/core/init.lua"))
+    if(!MountPackage("core") || !RunLuaScript(GetLuaState(), "/core/init.lua"))
         return false;
 
     for(int i = 1; i < argc; i++)
