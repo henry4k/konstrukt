@@ -1,6 +1,15 @@
+[package]
+permit-symbolic-links=false
+search-paths=.
+
+[debug]
+opengl=true
+squirrel=false
+collision=false
+
 [window]
-width=640
-height=480
+width=800
+height=600
 title=Apoapsis
 
 [opengl]
@@ -8,21 +17,41 @@ major=2
 minor=1
 vsync=true
 experimental-drivers=false
-debug=false
 
 [audio]
-print-devices=true
+print-devices=false
 
 [control]
 exit=escape
+zoom=z
 forward=w
 backward=s
 left=a
 right=d
-grab-cursor=mouse-button:1
+grab-cursor=mouse-button:2
 look-x=mouse:0
 look-y=mouse:1
 look-x-interpretation=absolute
 look-y-interpretation=absolute
 look-x-sensitivity=0.1
 look-y-sensitivity=0.1
+
+# Editor
+place-tile=mouse-button:0
+copy-tile=mouse-button:1
+cycle-tile=mouse-scroll:1
+rotate-tile=e
+cycle-tile-variations=q
+
+testkey=space
+#testkey=mouse-button:0
+
+# XPad Joystick stuff
+#forward=joystick0-button:4
+#look-x=joystick0-axis:3
+#look-y=joystick0-axis:4
+#look-x-interpretation=acceleration
+#look-y-interpretation=acceleration
+#look-x-sensitivity=-100.0
+#look-y-sensitivity=100.0
+
