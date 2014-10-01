@@ -17,7 +17,7 @@ function dofile( fileName )
     return loadfile(fileName)()
 end
 
-require = dofile '/core/require.lua'
+require = dofile 'core/require.lua'
 
 
 -- Setup error handling

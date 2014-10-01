@@ -1,8 +1,8 @@
 local modules = {
     loaded = {},
     searchPaths = {
-        '/%s.lua',
-        '/core/third-party/%s.lua',
+        '%s.lua',
+        'core/third-party/%s.lua',
     }
 }
 

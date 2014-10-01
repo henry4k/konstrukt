@@ -156,7 +156,7 @@ bool MountPackage( const char* name )
     const char* packagePath = ResolvePackageName(name);
     if(packagePath)
     {
-        const char* mountPath = Format("/%s", name);
+        const char* mountPath = name;
         if(PHYSFS_mount(packagePath, mountPath, true))
         {
             Log("Mounted package '%s' (%s).", name, packagePath);
