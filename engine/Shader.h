@@ -7,9 +7,9 @@ struct Texture;
 
 
 static const int INVALID_UNIFORM_INDEX = -1;
-static const int MAX_UNIFORM_NAME_LENGTH = 31;
-static const int MAX_PROGRAM_FAMILY_LENGTH = 31;
-static const int MAX_PROGRAM_FAMILY_LIST_LENGTH = 127;
+static const int MAX_UNIFORM_NAME_SIZE = 32;
+static const int MAX_PROGRAM_FAMILY_SIZE = 32;
+static const int MAX_PROGRAM_FAMILY_LIST_SIZE = 128;
 
 
 /**

@@ -11,7 +11,7 @@
 #include "ControlBindings/Joystick.h"
 
 
-static const int MAX_CONTROL_NAME_LENGTH = 31;
+static const int MAX_CONTROL_NAME_SIZE = 32;
 
 static bool CreateKeyBindingFromString( const char* str, int keyControl );
 static bool CreateAxisBindingFromString( const char* str, int axisControl );
@@ -24,7 +24,7 @@ enum AxisInterpretation
 
 struct KeyControl
 {
-    char name[MAX_CONTROL_NAME_LENGTH+1];
+    char name[MAX_CONTROL_NAME_SIZE];
     KeyControlActionFn callback;
     void* context;
     bool* value;
@@ -32,7 +32,7 @@ struct KeyControl
 
 struct AxisControl
 {
-    char name[MAX_CONTROL_NAME_LENGTH+1];
+    char name[MAX_CONTROL_NAME_SIZE];
     AxisControlActionFn callback;
     void* context;
     float* value;
@@ -87,7 +87,7 @@ void UpdateControls( float timeFrame )
 
 static bool ControlNameIsOkay( const char* name )
 {
-    if(strlen(name) > MAX_CONTROL_NAME_LENGTH)
+    if(strlen(name) > MAX_CONTROL_NAME_SIZE-1)
     {
         Error("Name of control '%s' is too long.", name);
         return false;

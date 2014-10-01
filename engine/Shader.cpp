@@ -22,7 +22,7 @@ struct Shader
 
 struct UniformDefinition
 {
-    char name[MAX_UNIFORM_NAME_LENGTH+1];
+    char name[MAX_UNIFORM_NAME_SIZE];
     int location;
     UniformType type;
 };
@@ -43,7 +43,7 @@ struct ShaderProgram
 
 struct ShaderProgramSetEntry
 {
-    char family[MAX_PROGRAM_FAMILY_LENGTH+1];
+    char family[MAX_PROGRAM_FAMILY_SIZE];
     ShaderProgram* program;
 };
 
@@ -56,7 +56,7 @@ struct ShaderProgramSet
 struct GlobalUniform
 {
     bool active;
-    char name[MAX_UNIFORM_NAME_LENGTH+1];
+    char name[MAX_UNIFORM_NAME_SIZE];
     UniformType type;
     UniformValue value;
 };
@@ -318,13 +318,13 @@ static void ReadUniformDefinitions( ShaderProgram* program )
         glGetActiveUniform(
             program->handle,
             i,
-            MAX_UNIFORM_NAME_LENGTH,
+            MAX_UNIFORM_NAME_SIZE-1,
             &nameLength,
             &size,
             &glType,
             def->name
         );
-        def->name[MAX_UNIFORM_NAME_LENGTH] = '\0';
+        def->name[MAX_UNIFORM_NAME_SIZE-1] = '\0';
         assert(nameLength > 0);
 
         def->location = glGetUniformLocation(program->handle, def->name);
@@ -447,7 +447,7 @@ void BindShaderProgram( const ShaderProgram* program )
 static int GetUniformIndex( const ShaderProgram* program, const char* name )
 {
     for(int i = 0; i < program->uniformCount; i++)
-        if(strncmp(name, program->uniformDefinitions[i].name, MAX_UNIFORM_NAME_LENGTH) == 0)
+        if(strncmp(name, program->uniformDefinitions[i].name, MAX_UNIFORM_NAME_SIZE-1) == 0)
             return i;
     return INVALID_UNIFORM_INDEX;
 }
@@ -521,7 +521,7 @@ void SetUniform( ShaderProgram* program,
 static GlobalUniform* FindGlobalUniform( const char* name )
 {
     for(int i = 0; i < MAX_GLOBAL_UNIFORMS; i++)
-        if(strncmp(name, GlobalUniforms[i].name, MAX_UNIFORM_NAME_LENGTH) == 0)
+        if(strncmp(name, GlobalUniforms[i].name, MAX_UNIFORM_NAME_SIZE-1) == 0)
             return &GlobalUniforms[i];
     return NULL;
 }
@@ -607,7 +607,7 @@ static ShaderProgramSetEntry* FindShaderProgramSetEntry( ShaderProgramSet* set,
     for(int i = 0; i < MAX_SHADER_PROGRAM_SET_ENTRIES; i++)
     {
         ShaderProgramSetEntry* entry = &set->entries[i];
-        if(strncmp(family, entry->family, MAX_PROGRAM_FAMILY_LENGTH) == 0)
+        if(strncmp(family, entry->family, MAX_PROGRAM_FAMILY_SIZE-1) == 0)
             return entry;
     }
     return NULL;
@@ -619,7 +619,7 @@ static const ShaderProgramSetEntry* FindShaderProgramSetEntry( const ShaderProgr
     for(int i = 0; i < MAX_SHADER_PROGRAM_SET_ENTRIES; i++)
     {
         const ShaderProgramSetEntry* entry = &set->entries[i];
-        if(strncmp(family, entry->family, MAX_PROGRAM_FAMILY_LENGTH) == 0)
+        if(strncmp(family, entry->family, MAX_PROGRAM_FAMILY_SIZE-1) == 0)
             return entry;
     }
     return NULL;
@@ -652,9 +652,9 @@ void SetShaderProgramFamily( ShaderProgramSet* set,
 ShaderProgram* GetShaderProgramByFamilyList( const ShaderProgramSet* set,
                                              const char* familyList )
 {
-    assert(strlen(familyList) <= MAX_PROGRAM_FAMILY_LENGTH);
+    assert(strlen(familyList) <= MAX_PROGRAM_FAMILY_SIZE-1);
 
-    char family[MAX_PROGRAM_FAMILY_LENGTH+1];
+    char family[MAX_PROGRAM_FAMILY_SIZE];
     char* familyChar = family;
     const char* c = familyList;
     const ShaderProgramSetEntry* entry = NULL;

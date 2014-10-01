@@ -13,12 +13,12 @@ extern "C"
 }
 
 
-static const int MAX_LUA_EVENT_NAME_LENGTH = 31;
+static const int MAX_LUA_EVENT_NAME_SIZE = 32;
 
 
 struct LuaEvent
 {
-    char name[MAX_LUA_EVENT_NAME_LENGTH+1];
+    char name[MAX_LUA_EVENT_NAME_SIZE];
     int callbackReference;
 };
 
@@ -364,7 +364,7 @@ static int FindLuaEventByName( const char* name )
 {
     assert(name != NULL);
     for(int i = 0; i < g_LuaEvents.size(); i++)
-        if(strncmp(name, g_LuaEvents[i].name, MAX_LUA_EVENT_NAME_LENGTH) == 0)
+        if(strncmp(name, g_LuaEvents[i].name, MAX_LUA_EVENT_NAME_SIZE-1) == 0)
             return i;
     return -1;
 }
@@ -372,7 +372,7 @@ static int FindLuaEventByName( const char* name )
 int RegisterLuaEvent( const char* name )
 {
     assert(FindLuaEventByName(name) == -1);
-    assert(strlen(name) < MAX_LUA_EVENT_NAME_LENGTH);
+    assert(strlen(name) < MAX_LUA_EVENT_NAME_SIZE-1);
 
     LuaEvent event;
     memset(&event, 0, sizeof(event));

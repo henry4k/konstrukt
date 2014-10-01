@@ -5,13 +5,13 @@
 #include "PhysFS.h"
 
 
-static const int MAX_PATH_LENGTH = 255;
-static const int MAX_PATH_LIST_LENGTH = 511;
+static const int MAX_PATH_SIZE = 256;
+static const int MAX_PATH_LIST_SIZE = 512;
 static const char PATH_SEPARATOR = ';';
 
 
-static char UserDataDirectory[MAX_PATH_LENGTH+1];
-static char SearchPaths[MAX_PATH_LIST_LENGTH+1];
+static char UserDataDirectory[MAX_PATH_SIZE];
+static char SearchPaths[MAX_PATH_LIST_SIZE];
 
 
 static void LogPhysFSVersion()
@@ -85,7 +85,7 @@ void SetPackageSearchPaths( const char* paths )
 static const char* ResolvePackageNameWithBasePath( const char* name,
                                                    const char* basePath )
 {
-    static char buffer[MAX_PATH_LENGTH+1];
+    static char buffer[MAX_PATH_SIZE];
 
     if(strlen(basePath) == 0)
         return NULL;
@@ -130,9 +130,9 @@ static const char* ResolvePackageNameWithSearchPath( const char* name,
             const int pathEnd = (i-1);
             const int pathLength = (i-pathStart);
             assert(pathLength >= 0);
-            assert(pathLength < MAX_PATH_LENGTH);
+            assert(pathLength < MAX_PATH_SIZE-1);
 
-            char buffer[MAX_PATH_LENGTH+1];
+            char buffer[MAX_PATH_SIZE];
             memcpy(buffer, &searchPath[pathStart], pathLength);
             buffer[pathLength] = '\0';
 
