@@ -9,14 +9,32 @@ local MakeDirectory       = ENGINE.MakeDirectory
 local GetDirectoryEntries = ENGINE.GetDirectoryEntries
 
 
-local FileSystem = {}
+local FileSystem = {
+    mountedPackages = {}
+}
+
+function FileSystem.loadPackageMetadata_( packageName )
+    local Json = require 'core/Json'
+    return Json.decodeFromFile(packageName..'/meta.json')
+end
 
 function FileSystem.mountPackage( packageName )
-    return MountPackage(packageName)
+    if MountPackage(packageName) then
+        local meta = FileSystem.loadPackageMetadata_(packageName) or {}
+        FileSystem.mountedPackages[packageName] = meta
+        return meta
+    else
+        return nil
+    end
 end
 
 function FileSystem.unmountPackage( packageName )
+    FileSystem.mountedPackages[packageName] = nil
     return UnmountPackage(packageName)
+end
+
+function FileSystem.getPackageMetadata( packageName )
+    return FileSystem.mountedPackages[packageName]
 end
 
 function FileSystem.readFile( filePath )
