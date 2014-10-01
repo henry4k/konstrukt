@@ -18,6 +18,7 @@ function dofile( fileName )
 end
 
 require = dofile 'core/require.lua'
+dofile 'core/table.lua'
 
 
 -- Setup error handling
