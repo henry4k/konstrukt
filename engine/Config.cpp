@@ -38,18 +38,12 @@ static void ParseArguments( const int argc, char const * const * argv )
         if(arg.size() < 2 ||
            arg[0] != '-'  ||
            arg[1] != '-')
-        {
-            Log("Bad argument '%s'", arg.c_str());
             break;
-        }
 
         const size_t equalsPos = arg.find('=');
 
         if(equalsPos == string::npos)
-        {
-            Log("Bad argument '%s'", arg.c_str());
             break;
-        }
 
         string key   = arg.substr(2, equalsPos-2);
         string value = arg.substr(equalsPos+1);
