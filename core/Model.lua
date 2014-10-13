@@ -15,19 +15,14 @@ local UnsetModelUniform         = ENGINE.UnsetModelUniform
 -- to render something on the screen.
 local Model = class('core/Model')
 
-function Model:initialize( handle, renderLayerName )
+function Model:initialize( handle )
     self.handle = handle
-    self.renderLayerName = renderLayerName
     self.attachmentTarget = nil
 end
 
 function Model:destroy()
     DestroyModel(self.handle)
     self.handle = nil
-end
-
-function Model:getRenderLayerName()
-    return self.renderLayerName
 end
 
 function Model:setAttachmentTarget( solid )

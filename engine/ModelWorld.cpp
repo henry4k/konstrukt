@@ -15,7 +15,6 @@ using glm::mat4;
 
 static const int MAX_LOCAL_UNIFORMS = 8;
 static const int MAX_MODELS = 8;
-static const int MAX_RENDER_LAYERS = 4;
 
 static const float DEFAULT_ZNEAR =   0.1;
 static const float DEFAULT_ZFAR  = 100.0;
@@ -32,7 +31,6 @@ struct Model
 {
     bool active;
     ReferenceCounter refCounter;
-    int renderLayerIndex;
     mat4 transformation;
     Mesh* mesh;
     Texture* textures[MAX_TEXTURE_UNITS];
@@ -41,16 +39,10 @@ struct Model
     Solid* attachmentTarget;
 };
 
-struct RenderLayer
-{
-    float zNear, zFar;
-};
-
 struct ModelWorld
 {
     ReferenceCounter refCounter;
     Model models[MAX_MODELS];
-    RenderLayer renderLayers[MAX_RENDER_LAYERS];
 };
 
 struct ModelDrawEntry
@@ -72,12 +64,6 @@ ModelWorld* CreateModelWorld()
     ModelWorld* world = new ModelWorld;
     memset(world, 0, sizeof(ModelWorld));
     InitReferenceCounter(&world->refCounter);
-    for(int i = 0; i < MAX_RENDER_LAYERS; i++)
-    {
-        RenderLayer* layer = &world->renderLayers[i];
-        layer->zNear = DEFAULT_ZNEAR;
-        layer->zFar  = DEFAULT_ZFAR;
-    }
     return world;
 }
 
@@ -108,20 +94,6 @@ void ReleaseModelWorld( ModelWorld* world )
         FreeModelWorld(world);
 }
 
-void SetRenderLayerNearAndFarPlanes( ModelWorld* world,
-                                     int index,
-                                     float zNear,
-                                     float zFar )
-{
-    assert(index >= 0 &&
-           index < MAX_RENDER_LAYERS);
-
-    RenderLayer* layer = &world->renderLayers[index];
-
-    layer->zNear = zNear;
-    layer->zFar  = zFar;
-}
-
 void DrawModelWorld( const ModelWorld* world,
                      const ShaderProgramSet* programSet,
                      Camera* camera )
@@ -149,7 +121,6 @@ void DrawModelWorld( const ModelWorld* world,
     qsort(drawList, drawListSize, sizeof(ModelDrawEntry), CompareModelDrawEntries);
 
     // Render draw list:
-    int currentRenderLayerIndex = -1;
     ShaderProgram* currentProgram = NULL;
     for(int i = 0; i < drawListSize; i++)
     {
@@ -160,15 +131,6 @@ void DrawModelWorld( const ModelWorld* world,
         {
             Error("Trying to draw incomplete model %p.", model);
             continue;
-        }
-
-        if(model->renderLayerIndex != currentRenderLayerIndex)
-        {
-            currentRenderLayerIndex = model->renderLayerIndex;
-            const RenderLayer* layer = &world->renderLayers[currentRenderLayerIndex];
-
-            glClear(GL_DEPTH_BUFFER_BIT);
-            SetCameraNearAndFarPlanes(camera, layer->zNear, layer->zFar);
         }
 
         if(program != currentProgram)
@@ -232,11 +194,6 @@ static int CompareModelDrawEntries( const void* a_, const void* b_ )
 
     int r;
 
-    r = Compare(a->model->renderLayerIndex,
-                b->model->renderLayerIndex);
-    if(r != 0)
-        return r;
-
     r = Compare((long)a->program,
                 (long)b->program);
     if(r != 0)
@@ -266,11 +223,8 @@ static Model* FindInactiveModel( ModelWorld* world )
     return NULL;
 }
 
-Model* CreateModel( ModelWorld* world, int renderLayerIndex )
+Model* CreateModel( ModelWorld* world )
 {
-    assert(renderLayerIndex >= 0 &&
-           renderLayerIndex < MAX_RENDER_LAYERS);
-
     Model* model = FindInactiveModel(world);
     if(model)
     {
@@ -278,7 +232,6 @@ Model* CreateModel( ModelWorld* world, int renderLayerIndex )
         model->active = true;
         InitReferenceCounter(&model->refCounter);
         model->transformation = mat4();
-        model->renderLayerIndex = renderLayerIndex;
         return model;
     }
     else
@@ -366,7 +319,10 @@ static LocalUniform* FindFreeUniform( Model* model )
     return FindUniform(model, "");
 }
 
-void SetModelUniform( Model* model, const char* name, UniformType type, const UniformValue* value )
+void SetModelUniform( Model* model,
+                      const char* name,
+                      UniformType type,
+                      const UniformValue* value )
 {
     LocalUniform* uniform = FindUniform(model, name);
     if(!uniform)

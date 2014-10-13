@@ -36,16 +36,6 @@ static int Lua_DestroyModelWorld( lua_State* l )
     return 0;
 }
 
-static int Lua_SetRenderLayerNearAndFarPlanes( lua_State* l )
-{
-    ModelWorld* world = CheckModelWorldFromLua(l, 1);
-    const int index   = luaL_checkinteger(l, 2);
-    const float zNear = luaL_checknumber(l, 3);
-    const float zFar  = luaL_checknumber(l, 4);
-    SetRenderLayerNearAndFarPlanes(world, index, zNear, zFar);
-    return 0;
-}
-
 ModelWorld* GetModelWorldFromLua( lua_State* l, int stackPosition )
 {
     return (ModelWorld*)GetPointerFromLua(l, stackPosition);
@@ -62,9 +52,8 @@ ModelWorld* CheckModelWorldFromLua( lua_State* l, int stackPosition )
 static int Lua_CreateModel( lua_State* l )
 {
     ModelWorld* world = CheckModelWorldFromLua(l, 1);
-    int layerIndex = luaL_checkinteger(l, 2);
 
-    Model* model = CreateModel(world, layerIndex);
+    Model* model = CreateModel(world);
     if(model)
     {
         PushPointerToLua(l, model);
@@ -204,7 +193,6 @@ bool RegisterModelWorldInLua()
 {
     return
         RegisterFunctionInLua("CreateModelWorld", Lua_CreateModelWorld) &&
-        RegisterFunctionInLua("SetRenderLayerNearAndFarPlanes", Lua_SetRenderLayerNearAndFarPlanes) &&
         RegisterFunctionInLua("DestroyModelWorld", Lua_DestroyModelWorld) &&
 
         RegisterFunctionInLua("CreateModel", Lua_CreateModel) &&
