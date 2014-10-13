@@ -7,7 +7,6 @@
 #include "OpenGL.h"
 #include "Vertex.h"
 #include "Audio.h"
-#include "Player.h"
 #include "Math.h"
 #include "Lua.h"
 #include "PhysicsManager.h"
@@ -24,7 +23,6 @@
 #include "LuaBindings/Math.h"
 #include "LuaBindings/Mesh.h"
 #include "LuaBindings/MeshBuffer.h"
-#include "LuaBindings/Player.h"
 #include "LuaBindings/RenderManager.h"
 #include "LuaBindings/RenderTarget.h"
 #include "LuaBindings/ModelWorld.h"
@@ -86,10 +84,6 @@ bool InitGame( const int argc, char** argv )
     if(!InitDefaultRenderTarget())
         return false;
 
-    Log("----------- Player ------------");
-    if(!InitPlayer())
-        return false;
-
     Log("--- Registering Lua modules ----");
     if(!RegisterAllModulesInLua())
         return false;
@@ -110,7 +104,6 @@ static bool RegisterAllModulesInLua()
         RegisterMathInLua() &&
         RegisterMeshInLua() &&
         RegisterMeshBufferInLua() &&
-        RegisterPlayerInLua() &&
         RegisterRenderManagerInLua() &&
         RegisterRenderTargetInLua() &&
         RegisterModelWorldInLua() &&
@@ -124,7 +117,6 @@ static bool RegisterAllModulesInLua()
 static void DestroyGame()
 {
     DestroyLua();
-    DestroyPlayer();
     DestroyDefaultRenderTarget();
     DestroyRenderManager();
     DestroyShader();
@@ -149,7 +141,6 @@ void RunGame()
         //UpdateLua();
         UpdateAudio();
         UpdateControls(timeDelta);
-        UpdatePlayer(timeDelta);
         UpdatePhysicsManager(timeDelta);
         lastTime = curTime;
         RenderScene();
