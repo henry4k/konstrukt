@@ -4,6 +4,7 @@ local DestroyCamera               = ENGINE.DestroyCamera
 local SetCameraAttachmentTarget   = ENGINE.SetCameraAttachmentTarget
 local SetCameraViewTransformation = ENGINE.SetCameraViewTransformation
 local SetCameraFieldOfView        = ENGINE.SetCameraFieldOfView
+local SetCameraNearAndFarPlanes   = ENGINE.SetCameraNearAndFarPlanes
 
 
 local Camera = class('core/Camera')
@@ -37,6 +38,10 @@ end
 
 function Camera:setFieldOfView( fov )
     SetCameraFieldOfView(self.handle, fov)
+end
+
+function Camera:setNearAndFarPlanes( zNear, zFar )
+    SetCameraNearAndFarPlanes(self.handle, zNear, zFar)
 end
 
 

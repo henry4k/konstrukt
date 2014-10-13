@@ -53,6 +53,15 @@ static int Lua_SetCameraFieldOfView( lua_State* l )
     return 0;
 }
 
+static int Lua_SetCameraNearAndFarPlanes( lua_State* l )
+{
+    Camera* camera = CheckCameraFromLua(l, 1);
+    const float zNear = luaL_checknumber(l, 2);
+    const float zFar  = luaL_checknumber(l, 3);
+    SetCameraNearAndFarPlanes(camera, zNear, zFar);
+    return 0;
+}
+
 Camera* GetCameraFromLua( lua_State* l, int stackPosition )
 {
     return (Camera*)GetPointerFromLua(l, stackPosition);
@@ -70,5 +79,6 @@ bool RegisterCameraInLua()
         RegisterFunctionInLua("DestroyCamera", Lua_DestroyCamera) &&
         RegisterFunctionInLua("SetCameraAttachmentTarget", Lua_SetCameraAttachmentTarget) &&
         RegisterFunctionInLua("SetCameraViewTransformation", Lua_SetCameraViewTransformation) &&
-        RegisterFunctionInLua("SetCameraFieldOfView", Lua_SetCameraFieldOfView);
+        RegisterFunctionInLua("SetCameraFieldOfView", Lua_SetCameraFieldOfView) &&
+        RegisterFunctionInLua("SetCameraNearAndFarPlanes", Lua_SetCameraNearAndFarPlanes);
 }

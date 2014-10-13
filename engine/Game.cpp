@@ -152,11 +152,6 @@ void RunGame()
         UpdatePlayer(timeDelta);
         UpdatePhysicsManager(timeDelta);
         lastTime = curTime;
-
-        RenderTarget* defaultRenderTarget = GetDefaultRenderTarget();
-        Camera* camera = GetRenderTargetCamera(defaultRenderTarget);
-        if(camera)
-            SetCameraViewTransformation(camera, GetPlayerViewMatrix());
         RenderScene();
     }
 

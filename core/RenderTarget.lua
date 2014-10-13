@@ -8,7 +8,7 @@ local RenderTarget = class('core/RenderTarget')
 
 function RenderTarget:initialize( handle )
     self.handle = handle
-    self.camera = nil
+    self.cameras = {}
     self.shaderProgramSet = nil
 end
 
@@ -17,13 +17,17 @@ function RenderTarget:destroy()
     self.handle = nil
 end
 
-function RenderTarget:setCamera( camera )
-    SetRenderTargetCamera(self.handle, camera.handle)
-    self.camera = camera
+--- A render target can use multiple cameras.
+-- Geometry of cameras with a lower layer can't occlude geometry from higher
+-- layers.  This can be used to separate HUD and background from the regular
+-- scene.
+function RenderTarget:setCamera( camera, layer )
+    SetRenderTargetCamera(self.handle, camera.handle, layer-1)
+    self.cameras[layer] = camera
 end
 
-function RenderTarget:getCamera()
-    return self.camera
+function RenderTarget:getCamera( layer )
+    return self.cameras[layer]
 end
 
 function RenderTarget:setShaderProgramSet( shaderProgramSet )

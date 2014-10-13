@@ -53,19 +53,26 @@ local ShaderProgram    = require 'core/ShaderProgram'
 local ShaderProgramSet = require 'core/ShaderProgramSet'
 local ModelWorld       = require 'core/ModelWorld'
 
-local astronomicalUnit = 149597870700
-local au = astronomicalUnit
+local foregroundModelWorld = ModelWorld()
+local defaultModelWorld    = ModelWorld()
+local backgroundModelWorld = ModelWorld()
 
-local defaultModelWorld = ModelWorld()
-local defaultCamera = Camera(defaultModelWorld)
+local foregroundCamera = Camera(foregroundModelWorld)
+local defaultCamera    = Camera(defaultModelWorld)
+local backgroundCamera = Camera(backgroundModelWorld)
+
+foregroundCamera:setFieldOfView(math.rad(80))
 defaultCamera:setFieldOfView(math.rad(80))
+backgroundCamera:setFieldOfView(math.rad(80))
 
 local defaultShaderProgram = ShaderProgram:load('core/Shaders/Test.vert',
                                                 'core/Shaders/Test.frag')
 local defaultShaderProgramSet = ShaderProgramSet(defaultShaderProgram)
 
 local defaultRT = require 'core/DefaultRenderTarget':get()
-defaultRT:setCamera(defaultCamera)
+defaultRT:setCamera(foregroundCamera, 1)
+defaultRT:setCamera(defaultCamera, 2)
+defaultRT:setCamera(backgroundCamera, 3)
 defaultRT:setShaderProgramSet(defaultShaderProgramSet)
 
 
