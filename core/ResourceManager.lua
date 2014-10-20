@@ -3,7 +3,8 @@ local Shutdown = require 'core/Shutdown'
 
 local ResourceManager = {
     loaders = {},
-    resources = {}
+    resources = {},
+    loadingEnabled = false
 }
 
 --- Registers a resource loader.
@@ -20,6 +21,12 @@ function ResourceManager.registerLoader( type, loader )
     end
 end
 
+--- Enables/disables resource loading.  (Disabled by default.)
+-- Attempting to load a resource, while loading is locked, will raise an error.
+function ResourceManager.enableLoading( enabled )
+    ResourceManager.loadingEnabled = enabled
+end
+
 --- Return a loaded resource.
 -- @return
 -- The resource or nil if the requested resource has not been loaded yet.
@@ -32,23 +39,27 @@ end
 -- @return
 -- The resource or nil if the requested resource doesn't exist.
 function ResourceManager.load( type, ... )
-    local resource = ResourceManager.get(type, ...)
-    if not resource then
-        local loader = ResourceManager.loaders[type]
-        if loader then
-            resource = loader(...)
-            local id = ResourceManager.createResourceIdentifier_(type, ...)
-            if resource then
-                ResourceManager.resources[id] = resource
-                print('Loaded resource "'..id..'".')
+    local id = ResourceManager.createResourceIdentifier_(type, ...)
+    if ResourceManager.loadingEnabled then
+        local resource = ResourceManager.get(type, ...)
+        if not resource then
+            local loader = ResourceManager.loaders[type]
+            if loader then
+                resource = loader(...)
+                if resource then
+                    ResourceManager.resources[id] = resource
+                    print('Loaded resource "'..id..'".')
+                else
+                    print('Resource "'..id..'" doesn\'t exist.')
+                end
             else
-                print('Resource "'..id..'" doesn\'t exist.')
+                error('No loader for resources of type "'..type..'".')
             end
-        else
-            error('No loader for resources of type "'..type..'".')
         end
+        return resource
+    else
+        error('Cant load resource "'..id..'", since resource loading is disabled.')
     end
-    return resource
 end
 
 --- Drops all loaded resources.

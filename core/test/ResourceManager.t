@@ -33,6 +33,7 @@ describe('The resource manager')
 
     :beforeEach(function()
         ResourceManager.clear()
+        ResourceManager.enableLoading(true)
         MeshDestructor:reset()
         MeshLoader:reset()
     end)
@@ -49,6 +50,11 @@ describe('The resource manager')
 
     :it('can\'t get existing resources, which are not loaded yet.', function()
         assert(ResourceManager.get('Mesh', 'AirLock.json', 'AirLock.Door') == nil)
+    end)
+
+    :it('can\'t load resources, when loading is disabled.', function()
+        ResourceManager.enableLoading(false)
+        assert(ResourceManager.load('Mesh', 'AirLock.json', 'AirLock.Door') == nil)
     end)
 
     :it('loads existing resources only once.', function()

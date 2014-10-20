@@ -7,8 +7,12 @@ function DSL:initialize()
     self.entryMap = {}
 end
 
+function DSL:has( name )
+    return self.entryMap[name] ~= nil
+end
+
 function DSL:add( name, dependencies )
-    assert(not self.entryMap[name])
+    assert(not self.entryMap[name], 'Entry '..name..' already exists.')
     self.entryMap[name] = dependencies
 end
 
@@ -56,11 +60,11 @@ function DSL:sort()
         if aDependsOnB and bDependsOnA then
             error('Detected cross reference: '..a.name..' and '..b.name..' depend on each other.')
         elseif aDependsOnB then
-            return false
-        elseif bDependsOnA then
             return true
+        elseif bDependsOnA then
+            return false
         else
-            return true -- dont care
+            return false -- dont care
         end
     end)
 

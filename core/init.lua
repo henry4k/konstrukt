@@ -46,6 +46,9 @@ require 'core/Mesh':registerResource()
 require 'core/Shader':registerResource()
 require 'core/ShaderProgram':registerResource()
 
+local ResourceManager = require 'core/ResourceManager'
+ResourceManager.enableLoading(true)
+
 
 -- Setup default render target
 
@@ -74,14 +77,15 @@ local defaultRT = require 'core/DefaultRenderTarget':get()
 defaultRT:setCamera(defaultCamera)
 defaultRT:setShaderProgramSet(defaultShaderProgramSet)
 
+ResourceManager.enableLoading(false)
+
 
 -- Process command line arguments
 
-local function LoadPackage( module )
-    ENGINE.MountPackage(module)
-end
+local Scenario = require 'core/Scenario'
 
 local interactive = false
+local packages = {}
 
 for i, argument in ipairs(ARGS) do
     if argument:match('-.*') then
@@ -92,10 +96,12 @@ for i, argument in ipairs(ARGS) do
         if argument:match('.+%.lua') then
             dofile(argument)
         else
-            LoadPackage(argument)
+            table.insert(packages, argument)
         end
     end
 end
+
+Scenario.load(packages[1], packages)
 
 if interactive then
     debug.debug()
