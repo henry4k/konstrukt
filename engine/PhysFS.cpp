@@ -45,7 +45,8 @@ bool InitPhysFS( const int argc, char const * const * argv )
         assert(PHYSFS_getWriteDir() != NULL);
         CopyString(PHYSFS_getWriteDir(), UserDataDirectory, sizeof(UserDataDirectory));
         const int pathLength = strlen(UserDataDirectory);
-        UserDataDirectory[pathLength-1] = '\0'; // Clip the trailing directory separator.
+        if(UserDataDirectory[pathLength-1] == '/' || UserDataDirectory[pathLength-1] == '\\')
+            UserDataDirectory[pathLength-1] = '\0'; // Clip the trailing directory separator.
     }
 
     const char* error = PHYSFS_getLastError();

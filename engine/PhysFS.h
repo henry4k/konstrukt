@@ -3,6 +3,14 @@
 
 #include <physfs.h>
 
+// PhysFS backwards compatibility:
+#if PHYSFS_VER_MAJOR < 2 || (PHYSFS_VER_MAJOR == 2 && PHYSFS_VER_MINOR == 0)
+#define PHYSFS_NO_STAT
+#define PHYSFS_readBytes( handle, buffer, size ) PHYSFS_read((handle), (buffer), 1, (size))
+#define PHYSFS_writeBytes( handle, buffer, size ) PHYSFS_write((handle), (buffer), 1, (size))
+#define PHYSFS_unmount PHYSFS_removeFromSearchPath
+#endif
+
 
 struct FileBuffer
 {

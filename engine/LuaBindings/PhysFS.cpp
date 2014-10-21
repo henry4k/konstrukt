@@ -90,22 +90,60 @@ static int Lua_FileExists( lua_State* l )
 static int Lua_GetFileInfo( lua_State* l )
 {
     const char* vfsPath = luaL_checkstring(l, 1);
+
+#if defined(PHYSFS_NO_STAT)
+    if(PHYSFS_exists(vfsPath))
+    {
+        lua_createtable(l, 0, 3); // 3 entries
+
+        PHYSFS_File* file = PHYSFS_openRead(vfsPath);
+        lua_pushinteger(l, PHYSFS_fileLength(file));
+        lua_setfield(l, -2, "size");
+        PHYSFS_close(file);
+
+        const PHYSFS_sint64 mtime = PHYSFS_getLastModTime(vfsPath);
+        if(mtime >= 0)
+        {
+            lua_pushinteger(l, mtime);
+            lua_setfield(l, -2, "mtime");
+        }
+
+        if(PHYSFS_isDirectory(vfsPath))
+            lua_pushstring(l, "directory");
+        else
+            lua_pushstring(l, "regular");
+        lua_setfield(l, -2, "type");
+
+        return 1;
+    }
+    else
+    {
+        luaL_error(l, "Can't stat '%s'.", vfsPath);
+        return 0;
+    }
+#else
     PHYSFS_Stat statResult;
     if(PHYSFS_stat(vfsPath, &statResult))
     {
         lua_createtable(l, 0, 5); // 5 entries
 
         lua_pushinteger(l, statResult.filesize);
-        lua_setfield(l, -2, "filesize");
+        lua_setfield(l, -2, "size");
 
-        lua_pushinteger(l, statResult.modtime);
-        lua_setfield(l, -2, "modtime");
+        if(statResult.modtime >= 0)
+        {
+            lua_pushinteger(l, statResult.modtime);
+            lua_setfield(l, -2, "mtime");
+        }
 
-        lua_pushinteger(l, statResult.createtime);
-        lua_setfield(l, -2, "createtime");
+        if(statResult.createtime >= 0)
+        {
+            lua_pushinteger(l, statResult.createtime);
+            lua_setfield(l, -2, "ctime");
+        }
 
-        lua_pushinteger(l, statResult.accesstime);
-        lua_setfield(l, -2, "accesstime");
+        // atime is intentially not provided, since not all file systems
+        // support it and archives won't provide correct values anyway.
 
         switch(statResult.filetype)
         {
@@ -125,7 +163,7 @@ static int Lua_GetFileInfo( lua_State* l )
                 lua_pushstring(l, "other");
                 break;
         }
-        lua_setfield(l, -2, "filetype");
+        lua_setfield(l, -2, "type");
 
         return 1;
     }
@@ -134,6 +172,7 @@ static int Lua_GetFileInfo( lua_State* l )
         luaL_error(l, "Can't stat '%s': %s", vfsPath, PHYSFS_getLastError());
         return 0;
     }
+#endif
 }
 
 static int Lua_MakeDirectory( lua_State* l )
