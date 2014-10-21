@@ -39,6 +39,9 @@ bool InitPhysFS( const int argc, char const * const * argv )
                             0, // Include CD-ROMs
                             0)) // Prepend automatically found archives
     {
+        // Base path is mounted by PHYSFS_setSaneConfig, but we don't use it.
+        PHYSFS_unmount(PHYSFS_getBaseDir());
+
         assert(PHYSFS_getWriteDir() != NULL);
         CopyString(PHYSFS_getWriteDir(), UserDataDirectory, sizeof(UserDataDirectory));
         const int pathLength = strlen(UserDataDirectory);
