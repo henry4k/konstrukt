@@ -10,7 +10,8 @@
 static int Lua_SetAudioListenerAttachmentTarget( lua_State* l )
 {
     Solid* target = CheckSolidFromLua(l, 1);
-    SetAudioListenerAttachmentTarget(target);
+    const int flags = CheckTransformationFlagsFromLua(l, 2);
+    SetAudioListenerAttachmentTarget(target, flags);
     return 0;
 }
 
@@ -127,7 +128,8 @@ static int Lua_SetAudioSourceAttachmentTarget( lua_State* l )
 {
     AudioSource* source = CheckAudioSourceFromLua(l, 1);
     Solid* target = CheckSolidFromLua(l, 2);
-    SetAudioSourceAttachmentTarget(source, target);
+    const int flags = CheckTransformationFlagsFromLua(l, 3);
+    SetAudioSourceAttachmentTarget(source, target, flags);
     return 0;
 }
 

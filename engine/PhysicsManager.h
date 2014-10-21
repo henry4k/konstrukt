@@ -99,8 +99,11 @@ glm::quat GetSolidRotation( const Solid* solid );
  *
  * This can be used as model transformation in the render system to draw
  * graphics objects at the correct position.
+ *
+ * @param copyFlags
+ * Any flag combination, that is valid for #GetTransformation.
  */
-void GetSolidTransformation( const Solid* solid, glm::mat4* target );
+void GetSolidTransformation( const Solid* solid, int copyFlags, glm::mat4* target );
 
 /**
  * Velocity at which the solid moves through space.

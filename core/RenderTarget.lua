@@ -1,4 +1,4 @@
-local class  = require 'middleclass'
+local class = require 'middleclass'
 local DestroyRenderTarget             = ENGINE.DestroyRenderTarget
 local SetRenderTargetCamera           = ENGINE.SetRenderTargetCamera
 local SetRenderTargetShaderProgramSet = ENGINE.SetRenderTargetShaderProgramSet
@@ -8,7 +8,8 @@ local RenderTarget = class('core/RenderTarget')
 
 function RenderTarget:initialize( handle )
     self.handle = handle
-    self.cameras = {}
+    self.camerasByLayer = {}
+    self.camerasByName = {}
     self.shaderProgramSet = nil
 end
 
@@ -21,13 +22,18 @@ end
 -- Geometry of cameras with a lower layer can't occlude geometry from higher
 -- layers.  This can be used to separate HUD and background from the regular
 -- scene.
-function RenderTarget:setCamera( camera, layer )
-    SetRenderTargetCamera(self.handle, camera.handle, layer-1)
-    self.cameras[layer] = camera
+function RenderTarget:setCamera( layer, name, camera )
+    SetRenderTargetCamera(self.handle, camera.handle, layer)
+    self.camerasByLayer[layer] = camera
+    self.camerasByName[name] = camera
 end
 
-function RenderTarget:getCamera( layer )
-    return self.cameras[layer]
+function RenderTarget:getCameraByLayer( layer )
+    return self.camerasByLayer[layer]
+end
+
+function RenderTarget:getCameraByName( name )
+    return self.camerasByName[name]
 end
 
 function RenderTarget:setShaderProgramSet( shaderProgramSet )

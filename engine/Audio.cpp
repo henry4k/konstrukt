@@ -30,6 +30,7 @@ struct AudioSource
     ALuint handle;
     bool active;
     Solid* attachmentTarget;
+    int attachmentFlags;
     glm::mat4 transformation;
 };
 
@@ -47,6 +48,7 @@ static int AudioSourceCount = 0;
 static float MaxAudioSourceDistance = 0;
 static float AudioSourceReferenceDistance = 0;
 static Solid* ListenerAttachmentTarget = NULL;
+static int ListenerAttachmentFlags = 0;
 static glm::mat4 ListenerTransformation;
 
 
@@ -106,7 +108,7 @@ bool InitAudio()
 
 void DestroyAudio()
 {
-    SetAudioListenerAttachmentTarget(NULL);
+    SetAudioListenerAttachmentTarget(NULL, 0);
 
     for(int i = 0; i < AudioSourceCount; ++i)
         if(IsActiveAudioSource(&AudioSources[i]))
@@ -133,11 +135,12 @@ void SetAudioGain( float gain )
     alListenerf(AL_GAIN, gain);
 }
 
-void SetAudioListenerAttachmentTarget( Solid* target )
+void SetAudioListenerAttachmentTarget( Solid* target, int flags )
 {
     if(ListenerAttachmentTarget)
         ReleaseSolid(ListenerAttachmentTarget);
     ListenerAttachmentTarget = target;
+    ListenerAttachmentFlags = flags;
     if(ListenerAttachmentTarget)
         ReferenceSolid(ListenerAttachmentTarget);
 }
@@ -153,7 +156,9 @@ static void UpdateAudioListener()
 
     mat4 targetTransformation;
     if(ListenerAttachmentTarget)
-        GetSolidTransformation(ListenerAttachmentTarget, &targetTransformation);
+        GetSolidTransformation(ListenerAttachmentTarget,
+                               ListenerAttachmentFlags,
+                               &targetTransformation);
     const mat4 finalTransformation = targetTransformation *
                                      ListenerTransformation;
 
@@ -294,11 +299,12 @@ void SetAudioSourceGain( AudioSource* source, float gain )
     PrintALError("SetAudioSourceGain");
 }
 
-void SetAudioSourceAttachmentTarget( AudioSource* source, Solid* target )
+void SetAudioSourceAttachmentTarget( AudioSource* source, Solid* target, int flags )
 {
     if(source->attachmentTarget)
         ReleaseSolid(source->attachmentTarget);
     source->attachmentTarget = target;
+    source->attachmentFlags = flags;
     if(source->attachmentTarget)
         ReferenceSolid(source->attachmentTarget);
 }
@@ -318,7 +324,9 @@ static void UpdateAudioSource( AudioSource* source )
 
         mat4 targetTransformation;
         if(source->attachmentTarget)
-            GetSolidTransformation(source->attachmentTarget, &targetTransformation);
+            GetSolidTransformation(source->attachmentTarget,
+                                   source->attachmentFlags,
+                                   &targetTransformation);
         const mat4 finalTransformation = targetTransformation *
                                          source->transformation;
 

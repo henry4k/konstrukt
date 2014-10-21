@@ -11,7 +11,15 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+enum TransformationCopyFlags
+{
+    COPY_ROTATION = (1 << 0),
+    COPY_TRANSLATION = (1 << 1)
+};
+
 
 glm::mat4 MakeRotationMatrix( glm::mat4 m );
+
+glm::mat4 GetTransformation( glm::mat4 transformation, int flags );
 
 #endif

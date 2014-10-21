@@ -16,7 +16,8 @@ Camera* CreateCamera( ModelWorld* world );
 void ReferenceCamera( Camera* camera );
 void ReleaseCamera( Camera* camera );
 
-void SetCameraAttachmentTarget( Camera* camera, Solid* target );
+void SetCameraAttachmentTarget( Camera* camera, Solid* target, int flags);
+void SetCameraModelTransformation( Camera* camera, glm::mat4 transformation );
 void SetCameraViewTransformation( Camera* camera, glm::mat4 transformation );
 void SetCameraFieldOfView( Camera* camera, float fov );
 void SetCameraAspect( Camera* camera, float aspect );

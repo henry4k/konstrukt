@@ -25,8 +25,9 @@ function Model:destroy()
     self.handle = nil
 end
 
-function Model:setAttachmentTarget( solid )
-    SetModelAttachmentTarget(self.handle, solid.handle)
+function Model:setAttachmentTarget( solid, flags )
+    flags = flags or 'rt'
+    SetModelAttachmentTarget(self.handle, solid.handle, flags)
     self.attachmentTarget = solid
 end
 

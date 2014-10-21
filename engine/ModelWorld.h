@@ -43,7 +43,7 @@ Model* CreateModel( ModelWorld* world );
 void ReferenceModel( Model* model );
 void ReleaseModel( Model* model );
 
-void SetModelAttachmentTarget( Model* model, Solid* target );
+void SetModelAttachmentTarget( Model* model, Solid* target, int flags );
 void SetModelTransformation( Model* model, glm::mat4 transformation );
 void SetModelMesh( Model* model, Mesh* mesh );
 void SetModelTexture( Model* model, int unit, Texture* texture );

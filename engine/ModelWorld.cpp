@@ -37,6 +37,7 @@ struct Model
     char programFamilyList[MAX_PROGRAM_FAMILY_LIST_SIZE];
     LocalUniform uniforms[MAX_LOCAL_UNIFORMS];
     Solid* attachmentTarget;
+    int attachmentFlags;
 };
 
 struct ModelWorld
@@ -156,7 +157,9 @@ static mat4 CalculateModelTransformation( const Model* model )
 {
     mat4 solidTransformation;
     if(model->attachmentTarget)
-        GetSolidTransformation(model->attachmentTarget, &solidTransformation);
+        GetSolidTransformation(model->attachmentTarget,
+                               model->attachmentFlags,
+                               &solidTransformation);
 
     return solidTransformation *
            model->transformation;
@@ -266,11 +269,12 @@ void ReleaseModel( Model* model )
         FreeModel(model);
 }
 
-void SetModelAttachmentTarget( Model* model, Solid* target )
+void SetModelAttachmentTarget( Model* model, Solid* target, int flags )
 {
     if(model->attachmentTarget)
         ReleaseSolid(model->attachmentTarget);
     model->attachmentTarget = target;
+    model->attachmentFlags = flags;
     if(model->attachmentTarget)
         ReferenceSolid(model->attachmentTarget);
 }

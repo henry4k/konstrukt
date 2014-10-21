@@ -23,8 +23,9 @@ function Camera:getModelWorld()
     return self.modelWorld
 end
 
-function Camera:setAttachmentTarget( solid )
-    SetCameraAttachmentTarget(self.handle, solid.handle)
+function Camera:setAttachmentTarget( solid, flags )
+    flags = flags or 'rt'
+    SetCameraAttachmentTarget(self.handle, solid.handle, flags )
     self.attachmentTarget = solid
 end
 
