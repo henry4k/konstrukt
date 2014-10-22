@@ -19,6 +19,7 @@ end
 
 dofile 'core/require.lua'
 dofile 'core/table.lua'
+dofile 'core/logic.lua'
 
 
 -- Setup error handling

@@ -45,10 +45,13 @@ function Camera:setViewTransformation( matrix )
 end
 
 function Camera:setFieldOfView( fov )
+    assert(fov > 0, 'FoV must be greater than zero.')
     SetCameraFieldOfView(self.handle, fov)
 end
 
 function Camera:setNearAndFarPlanes( zNear, zFar )
+    assert(zNear > 0 and zFar > 0, 'z near and z far must be greater than zero.')
+    assert(zFar > zNear, 'z far must be larger than z near.')
     SetCameraNearAndFarPlanes(self.handle, zNear, zFar)
 end
 

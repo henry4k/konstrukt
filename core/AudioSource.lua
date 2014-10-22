@@ -38,19 +38,23 @@ end
 -- I.e. if you position it at (1,0,0) the sound will always be on the listeners
 -- right side. No matter how the listener is positioned.
 function AudioSource:setRelative( relative )
+    assert(type(looping) == 'boolean')
     SetAudioSourceRelative(self.handle, relative)
 end
 
 --- If set, the audio source will start from the beginning when the last enqueued buffer has been played.
 function AudioSource:setLooping( looping )
+    assert(type(looping) == 'boolean')
     SetAudioSourceLooping(self.handle, looping)
 end
 
 function AudioSource:setPitch( pitch )
+    assert(pitch >= 0, 'Pitch must be positive.')
     SetAudioSourcePitch(self.handle, pitch)
 end
 
 function AudioSource:setGain( gain )
+    assert(gain >= 0, 'Gain should be positive.')
     SetAudioSourceGain(self.handle, gain)
 end
 

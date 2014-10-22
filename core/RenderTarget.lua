@@ -1,4 +1,5 @@
 local assert = assert
+local isInteger = math.isInteger
 local class  = require 'middleclass'
 local Object = class.Object
 local Camera = require 'core/Camera'
@@ -29,6 +30,8 @@ end
 -- layers.  This can be used to separate HUD and background from the regular
 -- scene.
 function RenderTarget:setCamera( layer, name, camera )
+    assert(isInteger(layer), 'Layer must be an integer.')
+    assert(layer >= 0, 'Layer must be positive.')
     assert(type(name) == 'string', 'Name must be a string.')
     assert(Object.isInstanceOf(camera, Camera), 'Must be called with a camera.')
     SetRenderTargetCamera(self.handle, camera.handle, layer)

@@ -1,4 +1,5 @@
 local assert = assert
+local isBetween = math.isBetween
 local class  = require 'middleclass'
 local Object = class.Object
 local Vec    = require 'core/Vector'
@@ -32,6 +33,7 @@ local SolidHandlesToSolids = {}
 setmetatable(SolidHandlesToSolids, {__mode='k'})
 
 function Solid:initialize( mass, position, rotation, collisionShape )
+    assert(mass >= 0, 'Mass must be positive.')
     assert(Vec:isInstance(position), 'Position must be a vector.')
     assert(Object.isInstanceOf(rotation, Quat), 'Rotation must be a quaternion.')
     assert(Object.isInstanceOf(collisionShape, CollisionShape), 'Invalid collision shape.')
@@ -60,23 +62,30 @@ function Solid:getMass()
 end
 
 function Solid:setMass( mass )
-    return SetSolidMass(self.handle, mass)
+    assert(mass >= 0, 'Mass must be positive.')
+    SetSolidMass(self.handle, mass)
 end
 
 --- Changes a solids restitution factor, which defines its 'bouncyness'.
 function Solid:setRestitution( restitution )
-    return SetSolidRestitution(self.handle, restitution)
+    assert(isBetween(restitution, 0, 1), 'Restitution must be between 0 and 1.')
+    SetSolidRestitution(self.handle, restitution)
 end
 
 function Solid:setFriction( friction )
-    return SetSolidFriction(self.handle, friction)
+    assert(friction >= 0, 'Friction must be positive.')
+    SetSolidFriction(self.handle, friction)
 end
 
 --- Only collisions with an impulse greater than `thresholdImpulse` will trigger the collision event.
--- The default threshold is `math.huge`.
+-- Collision events are disabled by default.
 function Solid:setCollisionThreshold( threshold )
-    assert(threshold < 0, 'Threshold must be positive.')
-    return SetSolidCollisionThreshold(self.handle, threshold)
+    assert(threshold >= 0, 'Threshold must be positive.')
+    SetSolidCollisionThreshold(self.handle, threshold)
+end
+
+function Solid:disableCollisionEvents()
+    SetSolidCollisionThreshold(self.handle, -1)
 end
 
 function Solid:getPosition()

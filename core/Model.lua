@@ -1,4 +1,5 @@
 local assert = assert
+local isInteger = math.isInteger
 local class  = require 'middleclass'
 local Object = class.Object
 local Vec    = require 'core/Vector'
@@ -53,6 +54,8 @@ function Model:setMesh( mesh )
 end
 
 function Model:setTexture( unit, texture )
+    assert(isInteger(unit), 'Unit must be an integer.')
+    assert(unit >= 0, 'Unit must be positive.')
     assert(Object.isInstanceOf(texture, Texture), 'Must be called with a texture.')
     SetModelTexture(self.handle, unit, texture.handle)
 end
