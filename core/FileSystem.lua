@@ -21,21 +21,31 @@ local function assertIsFilePath( filePath )
     end
 end
 
+-- See documentation/Packages.md
+local packageMetadataMetatable = {
+    __index = {
+        type = 'regular',
+        dependencies = {}
+    }
+}
+
 
 local FileSystem = {
     mountedPackages = {}
 }
 
-function FileSystem.loadPackageMetadata_( packageName )
+function FileSystem._loadPackageMetadata( packageName )
     assertIsPackageName(packageName)
     local Json = require 'core/Json'
-    return Json.decodeFromFile(packageName..'/meta.json')
+    local metadata = Json.decodeFromFile(packageName..'/meta.json')
+    return setmetatable(metadata, packageMetadataMetatable)
 end
 
+--- Mounts the package and returns its metadata on success.
 function FileSystem.mountPackage( packageName )
     assertIsPackageName(packageName)
     if MountPackage(packageName) then
-        local meta = FileSystem.loadPackageMetadata_(packageName) or {}
+        local meta = FileSystem._loadPackageMetadata(packageName) or {}
         FileSystem.mountedPackages[packageName] = meta
         return meta
     else
