@@ -38,8 +38,11 @@ function Scenario.load( scenarioPackage, additionalPackages )
     -- 3. Load resources and scripts of each packages using $MECHANISM
     ResourceManager.enableLoading(true)
     for _, package in ipairs(orderedPackages) do
-        print('Loading resources of package '..package..' ..')
-        -- TODO
+        print('Initializing package '..package..':')
+        for path in FS.matchingFiles(package..'/.*init%.lua') do
+            print('Running '..path)
+            dofile(path)
+        end
     end
     ResourceManager.enableLoading(false)
     print('Finished resource loading.')

@@ -22,7 +22,6 @@ local function assertIsFilePath( filePath )
 end
 
 
-
 local FileSystem = {
     mountedPackages = {}
 }
@@ -157,7 +156,7 @@ end
 --- Iterates recursivley over all files that match the given pattern.
 -- for path, info in FS:matchingFiles('example/.+%.png') do ... end
 function FileSystem.matchingFiles( filePattern )
-    assert(type(content) == 'string', 'File pattern must be a string.')
+    assert(type(filePattern) == 'string', 'File pattern must be a string.')
     local staticPath = SeparateStaticAndPatternPathElements(filePattern)
     staticPath = staticPath or ''
     filePattern = '^'..filePattern..'$'
