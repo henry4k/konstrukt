@@ -12,6 +12,7 @@ struct Texture;
 struct RenderTarget;
 
 
+
 bool InitDefaultRenderTarget();
 void DestroyDefaultRenderTarget();
 
@@ -24,10 +25,17 @@ RenderTarget* CreateTextureRenderTarget( Texture* texture );
 void ReferenceRenderTarget( RenderTarget* target );
 void ReleaseRenderTarget( RenderTarget* target );
 
-void SetRenderTargetCamera( RenderTarget* target, Camera* camera );
+/**
+ * A render target can use multiple cameras.
+ *
+ * Geometry of cameras with a lower layer can't occlude geometry from higher
+ * layers.  This can be used to separate HUD and background from the regular
+ * scene.
+ */
+void SetRenderTargetCamera( RenderTarget* target, Camera* camera, int layer );
 void SetRenderTargetShaderProgramSet( RenderTarget* target, ShaderProgramSet* set );
 
-Camera* GetRenderTargetCamera( RenderTarget* target );
+Camera* GetRenderTargetCamera( RenderTarget* target, int layer );
 ShaderProgramSet* GetRenderTargetShaderProgramSet( RenderTarget* target );
 
 /**

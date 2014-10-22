@@ -13,6 +13,8 @@ glm::quat* CreateQuaternionInLua( lua_State* l );
 glm::quat* GetQuaternionFromLua( lua_State* l, int stackPosition );
 glm::quat* CheckQuaternionFromLua( lua_State* l, int stackPosition );
 
+int CheckTransformationFlagsFromLua( lua_State* l, int stackPosition );
+
 bool RegisterMathInLua();
 
 #endif

@@ -4,6 +4,7 @@ local DestroyCamera               = ENGINE.DestroyCamera
 local SetCameraAttachmentTarget   = ENGINE.SetCameraAttachmentTarget
 local SetCameraViewTransformation = ENGINE.SetCameraViewTransformation
 local SetCameraFieldOfView        = ENGINE.SetCameraFieldOfView
+local SetCameraNearAndFarPlanes   = ENGINE.SetCameraNearAndFarPlanes
 
 
 local Camera = class('core/Camera')
@@ -22,8 +23,9 @@ function Camera:getModelWorld()
     return self.modelWorld
 end
 
-function Camera:setAttachmentTarget( solid )
-    SetCameraAttachmentTarget(self.handle, solid.handle)
+function Camera:setAttachmentTarget( solid, flags )
+    flags = flags or 'rt'
+    SetCameraAttachmentTarget(self.handle, solid.handle, flags )
     self.attachmentTarget = solid
 end
 
@@ -37,6 +39,10 @@ end
 
 function Camera:setFieldOfView( fov )
     SetCameraFieldOfView(self.handle, fov)
+end
+
+function Camera:setNearAndFarPlanes( zNear, zFar )
+    SetCameraNearAndFarPlanes(self.handle, zNear, zFar)
 end
 
 

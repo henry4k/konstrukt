@@ -49,8 +49,9 @@ function AudioSource:setGain( gain )
     SetAudioSourceGain(self.handle, gain)
 end
 
-function AudioSource:setAttachmentTarget( solid )
-    SetAudioSourceAttachmentTarget(self.handle, solid.handle)
+function AudioSource:setAttachmentTarget( solid, flags )
+    flags = flags or 'rt'
+    SetAudioSourceAttachmentTarget(self.handle, solid.handle, flags)
 end
 
 function AudioSource:setTransformation( matrix )

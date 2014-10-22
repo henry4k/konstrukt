@@ -65,7 +65,7 @@ void SetAudioGain( float gain );
  * Passing `NULL` detaches the listener; this has the same effect as if it the
  * solid has been positioned at 0,0,0.
  */
-void SetAudioListenerAttachmentTarget( Solid* target );
+void SetAudioListenerAttachmentTarget( Solid* target, int flags );
 
 void SetAudioListenerTransformation( glm::mat4 transformation );
 
@@ -107,7 +107,7 @@ void SetAudioSourcePitch( AudioSource* source, float pitch );
 
 void SetAudioSourceGain( AudioSource* source, float gain );
 
-void SetAudioSourceAttachmentTarget( AudioSource* source, Solid* target );
+void SetAudioSourceAttachmentTarget( AudioSource* source, Solid* target, int flags );
 
 void SetAudioSourceTransformation( AudioSource* source, glm::mat4 transformation );
 

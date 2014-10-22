@@ -11,6 +11,7 @@
 
 
 static const GLuint INVALID_FBO = 0;
+static const int MAX_CAMERAS = 4;
 
 enum RenderTargetType
 {
@@ -21,7 +22,7 @@ enum RenderTargetType
 struct RenderTarget
 {
     ReferenceCounter refCounter;
-    Camera* camera;
+    Camera* cameras[MAX_CAMERAS];
     ShaderProgramSet* shaderProgramSet;
 
     RenderTargetType type;
@@ -82,7 +83,12 @@ RenderTarget* CreateTextureRenderTarget( Texture* texture )
 
 static void FreeRenderTarget( RenderTarget* target )
 {
-    ReleaseCamera(target->camera);
+    for(int i = 0; i < MAX_CAMERAS; i++)
+    {
+        Camera* camera = target->cameras[i];
+        if(camera)
+            ReleaseCamera(camera);
+    }
     ReleaseShaderProgramSet(target->shaderProgramSet);
 
     switch(target->type)
@@ -113,16 +119,16 @@ void ReleaseRenderTarget( RenderTarget* target )
 
 static void UpdateDefaultRenderTargetCameraProjection()
 {
-    using namespace glm;
-    const ivec2 framebufferSize = GetFramebufferSize();
+    const glm::ivec2 framebufferSize = GetFramebufferSize();
+    const float aspect = float(framebufferSize[0]) /
+                         float(framebufferSize[1]);
 
     RenderTarget* renderTarget = GetDefaultRenderTarget();
-    Camera* camera = GetRenderTargetCamera(renderTarget);
-    if(camera)
+    for(int i = 0; i < MAX_CAMERAS; i++)
     {
-        const float aspect = float(framebufferSize[0]) /
-                             float(framebufferSize[1]);
-        SetCameraAspect(camera, aspect);
+        Camera* camera = renderTarget->cameras[i];
+        if(camera)
+            SetCameraAspect(camera, aspect);
     }
 }
 
@@ -132,14 +138,17 @@ static void OnFramebufferResize( int width, int height )
     UpdateDefaultRenderTargetCameraProjection();
 }
 
-void SetRenderTargetCamera( RenderTarget* target, Camera* camera )
+void SetRenderTargetCamera( RenderTarget* target, Camera* camera, int layer )
 {
-    if(target->camera)
-        ReleaseCamera(target->camera);
-    target->camera = camera;
-    if(target->camera)
+    assert(layer >= 0 && layer < MAX_CAMERAS);
+
+    Camera* oldCamera = target->cameras[layer];
+    if(oldCamera)
+        ReleaseCamera(oldCamera);
+    target->cameras[layer] = camera;
+    if(camera)
     {
-        ReferenceCamera(target->camera);
+        ReferenceCamera(camera);
         if(target == DefaultRenderTarget)
             UpdateDefaultRenderTargetCameraProjection();
     }
@@ -154,9 +163,10 @@ void SetRenderTargetShaderProgramSet( RenderTarget* target, ShaderProgramSet* se
         ReferenceShaderProgramSet(target->shaderProgramSet);
 }
 
-Camera* GetRenderTargetCamera( RenderTarget* target )
+Camera* GetRenderTargetCamera( RenderTarget* target, int layer )
 {
-    return target->camera;
+    assert(layer >= 0 && layer < MAX_CAMERAS);
+    return target->cameras[layer];
 }
 
 ShaderProgramSet* GetRenderTargetShaderProgramSet( RenderTarget* target )
@@ -166,7 +176,7 @@ ShaderProgramSet* GetRenderTargetShaderProgramSet( RenderTarget* target )
 
 static bool RenderTargetIsComplete( const RenderTarget* target )
 {
-    if(!target->camera || !target->shaderProgramSet)
+    if(!target->shaderProgramSet)
         return false;
 
     switch(target->type)
@@ -201,5 +211,13 @@ void UpdateRenderTarget( RenderTarget* target )
             break;
     }
 
-    DrawCameraView(target->camera, target->shaderProgramSet);
+    for(int i = 0; i < MAX_CAMERAS; i++)
+    {
+        Camera* camera = target->cameras[i];
+        if(camera)
+        {
+            DrawCameraView(camera, target->shaderProgramSet);
+            glClear(GL_DEPTH_BUFFER_BIT);
+        }
+    }
 }

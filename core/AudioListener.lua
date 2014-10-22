@@ -14,8 +14,9 @@ local SetAudioListenerTransformation   = ENGINE.SetAudioListenerTransformation
 local AudioListener = {}
 
 
-function AudioListener.setAttachmentTarget( solid )
-    SetAudioListenerAttachmentTarget(solid.handle)
+function AudioListener.setAttachmentTarget( solid, flags )
+    flags = flags or 'rt'
+    SetAudioListenerAttachmentTarget(solid.handle, flags)
 end
 
 function AudioListener.setTransformation( matrix )

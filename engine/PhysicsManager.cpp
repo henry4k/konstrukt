@@ -298,11 +298,12 @@ glm::quat GetSolidRotation( const Solid* solid )
                      rotation.getW());
 }
 
-void GetSolidTransformation( const Solid* solid, glm::mat4* target )
+void GetSolidTransformation( const Solid* solid, int copyFlags, glm::mat4* target )
 {
     btTransform transform;
     solid->rigidBody->getMotionState()->getWorldTransform(transform);
     transform.getOpenGLMatrix((float*)target);
+    *target = GetTransformation(*target, copyFlags);
 }
 
 glm::vec3 GetSolidLinearVelocity( const Solid* solid )
@@ -327,7 +328,9 @@ void ApplySolidImpulse( const Solid* solid,
         using namespace glm;
 
         mat4 transformation;
-        GetSolidTransformation(solid, &transformation);
+        GetSolidTransformation(solid,
+                               COPY_ROTATION | COPY_TRANSLATION,
+                               &transformation);
 
         impulse          = vec3(transformation * vec4(impulse, 1));
         relativePosition = vec3(transformation * vec4(relativePosition, 1));
@@ -405,7 +408,9 @@ static void ApplyForces( float timeDelta )
             if(force->useLocalCoordinates)
             {
                 mat4 transformation;
-                GetSolidTransformation(force->solid, &transformation);
+                GetSolidTransformation(force->solid,
+                                       COPY_ROTATION | COPY_TRANSLATION,
+                                       &transformation);
 
                 value            = vec3(transformation * vec4(value, 1));
                 relativePosition = vec3(transformation * vec4(relativePosition, 1));

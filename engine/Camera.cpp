@@ -17,6 +17,8 @@ struct Camera
     ReferenceCounter refCounter;
     ModelWorld* world;
     Solid* attachmentTarget;
+    int attachmentFlags;
+    glm::mat4 modelTransformation;
     glm::mat4 viewTransformation;
 
     float fieldOfView;
@@ -65,13 +67,19 @@ void ReleaseCamera( Camera* camera )
         FreeCamera(camera);
 }
 
-void SetCameraAttachmentTarget( Camera* camera, Solid* target )
+void SetCameraAttachmentTarget( Camera* camera, Solid* target, int flags )
 {
     if(camera->attachmentTarget)
         ReleaseSolid(camera->attachmentTarget);
     camera->attachmentTarget = target;
+    camera->attachmentFlags = flags;
     if(camera->attachmentTarget)
         ReferenceSolid(camera->attachmentTarget);
+}
+
+void SetCameraModelTransformation( Camera* camera, glm::mat4 transformation )
+{
+    camera->modelTransformation = transformation;
 }
 
 void SetCameraViewTransformation( Camera* camera, mat4 transformation )
@@ -118,8 +126,10 @@ static const mat4 GetCameraModelTransformation( const Camera* camera )
 {
     mat4 solidTransformation;
     if(camera->attachmentTarget)
-        GetSolidTransformation(camera->attachmentTarget, &solidTransformation);
-    return solidTransformation;
+        GetSolidTransformation(camera->attachmentTarget,
+                               camera->attachmentFlags,
+                               &solidTransformation);
+    return solidTransformation * camera->modelTransformation;
 }
 
 template<class CalcFn>

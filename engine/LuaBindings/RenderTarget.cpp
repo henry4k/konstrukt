@@ -43,7 +43,8 @@ static int Lua_SetRenderTargetCamera( lua_State* l )
 {
     RenderTarget* target = CheckRenderTargetFromLua(l, 1);
     Camera* camera = CheckCameraFromLua(l, 2);
-    SetRenderTargetCamera(target, camera);
+    int layer = luaL_checkinteger(l, 3);
+    SetRenderTargetCamera(target, camera, layer);
     return 0;
 }
 

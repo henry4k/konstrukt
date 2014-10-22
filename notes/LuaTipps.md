@@ -2,7 +2,7 @@
   Das liegt daran, dass globale Variablen immer in einer Hashmap nachgeschaut werden müssen.
   Lokale Variablen sind dagegen in VM Registern, welche ledeglich über einen Index angesprochen werden.
 
-- Speicherallokalisierung ist langsam.
+- Speicherallokation ist langsam.
   Das ist aber überall so.
   Also nach Möglichkeit vorher allokalisieren.
 

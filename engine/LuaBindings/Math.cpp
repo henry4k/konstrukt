@@ -1,3 +1,4 @@
+#include "../Common.h"
 #include "../Lua.h"
 #include "Math.h"
 #include <glm/gtc/matrix_transform.hpp>
@@ -220,6 +221,29 @@ mat4* GetMatrix4FromLua( lua_State* l, int stackPosition )
 mat4* CheckMatrix4FromLua( lua_State* l, int stackPosition )
 {
     return (mat4*)CheckUserDataFromLua(l, stackPosition, MATRIX4_TYPE);
+}
+
+int CheckTransformationFlagsFromLua( lua_State* l, int stackPosition )
+{
+    const char* flagString = luaL_checkstring(l, stackPosition);
+    int flags = 0;
+    for(const char* c = flagString; *c != '\0'; c++)
+    {
+        switch(*c)
+        {
+            case 'r':
+                flags |= COPY_ROTATION;
+                break;
+
+            case 't':
+                flags |= COPY_TRANSLATION;
+                break;
+
+            default:
+                FatalError("Unknown flag: %c in '%s'", *c, flagString);
+        }
+    }
+    return flags;
 }
 
 
