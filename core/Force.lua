@@ -1,6 +1,7 @@
+local assert = assert
 local class  = require 'middleclass'
+local Object = class.Object
 local Vec    = require 'core/Vector'
-local CreateForce  = ENGINE.CreateForce
 local DestroyForce = ENGINE.DestroyForce
 local SetForce     = ENGINE.SetForce
 
@@ -13,8 +14,9 @@ local SetForce     = ENGINE.SetForce
 local Force = class('core/Force')
 
 --- Initially all properties are zero, so that the force has no effect.
-function Force:initialize( solidHandle )
-    self.handle = CreateForce(solidHandle)
+-- DON'T CALL THIS DIRECTLY!  Use Solid:createForce() instead.
+function Force:initialize( handle )
+    self.handle = handle
 end
 
 function Force:destroy()
@@ -33,7 +35,10 @@ end
 -- @param useLocalCoordinates
 -- If set direction and position will be relative to the solids orientation.
 function Force:set( value, relativePosition, useLocalCoordinates )
-    relativePosition = relativePosition or Vec(0,0,0)
+    assert(Vec:isInstance(value), 'Value must be vector.')
+    assert(Vec:isInstance(relativePosition) or nil, 'Relative position must be vector.')
+    relativePosition    = relativePosition or Vec(0,0,0)
+    useLocalCoordinates = useLocalCoordinates or false
     SetForce(self.handle,
              value[1],
              value[2],

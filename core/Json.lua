@@ -1,14 +1,16 @@
-local fs = require 'core/FileSystem'
+local FS = require 'core/FileSystem'
+local _Encode = cjson.encode
+local _Decode = cjson.decode
 
 
 local Json = {}
 
 function Json.encodeToString( value )
-    return cjson.encode(value)
+    return _Encode(value)
 end
 
 function Json.decodeFromString( jsonString )
-    return cjson.decode(jsonString)
+    return _Decode(jsonString)
 end
 
 --- Try to write a json file.
@@ -16,7 +18,7 @@ end
 -- Whether the operation succeeded.
 function Json.encodeToFile( fileName, value )
     local json = Json.encodeToString(value)
-    fs.writeFile(fileName, json)
+    FS.writeFile(fileName, json)
     return true
 end
 
@@ -24,7 +26,7 @@ end
 -- @return
 -- The decoded json object or nil it failed.
 function Json.decodeFromFile( fileName )
-    local fileData = fs.readFile(fileName)
+    local fileData = FS.readFile(fileName)
     return Json.decodeFromString(fileData)
 end
 

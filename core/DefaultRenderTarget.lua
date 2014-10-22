@@ -7,14 +7,13 @@ local DefaultRenderTarget = class('core/DefaultRenderTarget', RenderTarget)
 
 function DefaultRenderTarget.static:get()
     if not self.instance then
-        local handle = GetDefaultRenderTarget()
-        self.instance = DefaultRenderTarget(handle)
+        self.instance = DefaultRenderTarget()
     end
     return self.instance
 end
 
-function DefaultRenderTarget:initialize( handle )
-    RenderTarget.initialize(self, handle)
+function DefaultRenderTarget:initialize()
+    RenderTarget.initialize(self, GetDefaultRenderTarget())
 end
 
 function DefaultRenderTarget:destroy()

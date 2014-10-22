@@ -6,7 +6,7 @@ local modules = {
     }
 }
 
-local function require( moduleName )
+function require( moduleName )
     local loadedModule = modules.loaded[moduleName]
     if loadedModule then
         return loadedModule
@@ -22,6 +22,3 @@ local function require( moduleName )
         error('Can\'t find module '..moduleName..'!')
     end
 end
-
-return require
-

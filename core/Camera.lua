@@ -1,4 +1,8 @@
+local assert = assert
 local class  = require 'middleclass'
+local Object = class.Object
+local Solid  = require 'core/Solid'
+local ModelWorld = require 'core/ModelWorld'
 local CreateCamera                = ENGINE.CreateCamera
 local DestroyCamera               = ENGINE.DestroyCamera
 local SetCameraAttachmentTarget   = ENGINE.SetCameraAttachmentTarget
@@ -10,6 +14,7 @@ local SetCameraNearAndFarPlanes   = ENGINE.SetCameraNearAndFarPlanes
 local Camera = class('core/Camera')
 
 function Camera:initialize( modelWorld )
+    assert(Object.isInstanceOf(modelWorld, ModelWorld), 'Must be initialized with a model world.')
     self.handle = CreateCamera(modelWorld.handle)
     self.modelWorld = modelWorld
 end
@@ -24,8 +29,9 @@ function Camera:getModelWorld()
 end
 
 function Camera:setAttachmentTarget( solid, flags )
+    assert(Object.isInstanceOf(solid, Solid), 'Attachment target must be a solid.')
     flags = flags or 'rt'
-    SetCameraAttachmentTarget(self.handle, solid.handle, flags )
+    SetCameraAttachmentTarget(self.handle, solid.handle, flags)
     self.attachmentTarget = solid
 end
 
@@ -33,8 +39,9 @@ function Camera:getAttachmentTarget()
     return self.attachmentTarget
 end
 
-function Camera:setViewTransformation( transformation )
-    SetCameraViewTransformation(self.handle, transformation.handle)
+function Camera:setViewTransformation( matrix )
+    assert(Object.isInstanceOf(matrix, Mat4), 'Transformation must be an matrix.')
+    SetCameraViewTransformation(self.handle, matrix.handle)
 end
 
 function Camera:setFieldOfView( fov )

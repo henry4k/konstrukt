@@ -1,7 +1,10 @@
-local class    = require 'middleclass'
+local assert = assert
+local class  = require 'middleclass'
+local Object = class.Object
 local Json     = require 'core/Json'
 local Scene    = require 'core/Scene'
 local Resource = require 'core/Resource'
+local MeshBuffer  = require 'core/MeshBuffer'
 local CreateMesh  = ENGINE.CreateMesh
 local DestroyMesh = ENGINE.DestroyMesh
 
@@ -20,6 +23,8 @@ function Mesh.static:load( sceneFileName, objectName )
 end
 
 function Mesh:initialize( meshBuffer )
+    assert(Object.isInstanceOf(meshBuffer, MeshBuffer),
+           'Must be initialized with a mesh buffer.')
     self.handle = CreateMesh(meshBuffer.handle)
 end
 

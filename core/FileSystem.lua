@@ -9,16 +9,32 @@ local MakeDirectory       = ENGINE.MakeDirectory
 local GetDirectoryEntries = ENGINE.GetDirectoryEntries
 
 
+local function assertIsPackageName( packageName )
+    if not type(packageName) == 'string' then
+        error('Is not a valid package name.')
+    end
+end
+
+local function assertIsFilePath( filePath )
+    if not type(filePath) == 'string' then
+        error('Is not a valid file path.')
+    end
+end
+
+
+
 local FileSystem = {
     mountedPackages = {}
 }
 
 function FileSystem.loadPackageMetadata_( packageName )
+    assertIsPackageName(packageName)
     local Json = require 'core/Json'
     return Json.decodeFromFile(packageName..'/meta.json')
 end
 
 function FileSystem.mountPackage( packageName )
+    assertIsPackageName(packageName)
     if MountPackage(packageName) then
         local meta = FileSystem.loadPackageMetadata_(packageName) or {}
         FileSystem.mountedPackages[packageName] = meta
@@ -29,28 +45,36 @@ function FileSystem.mountPackage( packageName )
 end
 
 function FileSystem.unmountPackage( packageName )
+    assertIsPackageName(packageName)
     FileSystem.mountedPackages[packageName] = nil
     return UnmountPackage(packageName)
 end
 
 function FileSystem.getPackageMetadata( packageName )
+    assertIsPackageName(packageName)
     return FileSystem.mountedPackages[packageName]
 end
 
 function FileSystem.readFile( filePath )
+    assertIsFilePath(filePath)
     return ReadFile(filePath)
 end
 
 function FileSystem.writeFile( filePath, content )
+    assertIsFilePath(filePath)
+    assert(type(content) == 'string', 'File content must be a string.')
     WriteFile(filePath, content)
 end
 
 function FileSystem.deleteFile( filePath, recursive )
+    assertIsFilePath(filePath)
+    assert(not recursive, 'Recursive deleting is not supported yet.')
     -- TODO: Implement recursive delete
     DeleteFile(filePath)
 end
 
 function FileSystem.fileExists( filePath )
+    assertIsFilePath(filePath)
     return FileExists(filePath)
 end
 
@@ -63,14 +87,17 @@ end
 -- - type: `regular`, `directory`, `symlink` or `other`.
 -- Keep in mind that the timestamps may or may not be available.
 function FileSystem.getFileInfo( filePath )
+    assertIsFilePath(filePath)
     return GetFileInfo(filePath)
 end
 
 function FileSystem.makeDirectory( filePath )
+    assertIsFilePath(filePath)
     MakeDirectory(filePath)
 end
 
 function FileSystem.getDirectoryEntries( filePath )
+    assertIsFilePath(filePath)
     return GetDirectoryEntries(filePath)
 end
 
@@ -130,6 +157,7 @@ end
 --- Iterates recursivley over all files that match the given pattern.
 -- for path, info in FS:matchingFiles('example/.+%.png') do ... end
 function FileSystem.matchingFiles( filePattern )
+    assert(type(content) == 'string', 'File pattern must be a string.')
     local staticPath = SeparateStaticAndPatternPathElements(filePattern)
     staticPath = staticPath or ''
     filePattern = '^'..filePattern..'$'

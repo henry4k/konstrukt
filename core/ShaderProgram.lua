@@ -1,6 +1,9 @@
+local assert          = assert
 local class           = require 'middleclass'
+local Object          = class.Object
 local Vec             = require 'core/Vector'
 local Mat4            = require 'core/Matrix4'
+local Shader          = require 'core/Shader'
 local Resource        = require 'core/Resource'
 local ResourceManager = require 'core/ResourceManager'
 local LinkShaderProgram    = ENGINE.LinkShaderProgram
@@ -17,6 +20,8 @@ function ShaderProgram.static:load( ... )
     for i,shader in ipairs(shaders) do
         if type(shader) == 'string' then
             shaders[i] = ResourceManager.load('core/Shader', shader)
+        else
+            assert(Object.isInstanceOf(shader, Shader))
         end
     end
     return ShaderProgram(table.unpack(shaders))
@@ -39,10 +44,13 @@ end
 
 function ShaderProgram.static:setGlobalUniform( name, value, type )
     if class.Object.isInstanceOf(value, Mat4) then
+        assert(not type, 'Type argument is ignored, when called with a matrix.')
         SetGlobalUniform(name, 'mat4', value.handle)
     elseif class.Object.isInstanceOf(value, Vec) then
+        assert(not type, 'Type argument is ignored, when called with a vector.')
         SetGlobalUniform(name, 'vec'..#value, value:unpack())
     else
+        assert(type, 'Type is missing.')
         SetGlobalUniform(name, type, value)
     end
 end

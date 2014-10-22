@@ -1,4 +1,9 @@
+local assert = assert
 local class  = require 'middleclass'
+local Object = class.Object
+local Solid  = require 'core/Solid'
+local Mat4   = require 'core/Matrix4'
+local AudioBuffer = require 'core/AudioBuffer'
 local CreateAudioSource              = ENGINE.CreateAudioSource
 local DestroyAudioSource             = ENGINE.DestroyAudioSource
 local SetAudioSourceRelative         = ENGINE.SetAudioSourceRelative
@@ -50,15 +55,18 @@ function AudioSource:setGain( gain )
 end
 
 function AudioSource:setAttachmentTarget( solid, flags )
+    assert(Object.isInstanceOf(solid, Solid), 'Attachment target must be a solid.')
     flags = flags or 'rt'
     SetAudioSourceAttachmentTarget(self.handle, solid.handle, flags)
 end
 
 function AudioSource:setTransformation( matrix )
+    assert(Object.isInstanceOf(matrix, Mat4), 'Transformation must be an matrix.')
     SetAudioSourceTransformation(self.handle, matrix.handle)
 end
 
 function AudioSource:enqueue( buffer )
+    assert(Object.isInstanceOf(buffer, AudioBuffer), 'Wasn\'t called with an audio buffer.')
     EnqueueAudioBuffer(self.handle, buffer.handle)
 end
 

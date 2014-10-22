@@ -5,14 +5,14 @@ local ResourceManager = require 'core/ResourceManager'
 
 local Scenario = {}
 
-function Scenario.mountPackageAndDependencies_( packageName, dsl )
+function Scenario._mountPackageAndDependencies( packageName, dsl )
     local packageInfo = FS.mountPackage(packageName)
     if packageInfo then
         local dependencies = packageInfo.dependencies or {}
         dsl:add(packageName, dependencies)
         for _, dependency in ipairs(dependencies) do
             if not dsl:has(dependency) then
-                Scenario.mountPackageAndDependencies_(dependency, dsl)
+                Scenario._mountPackageAndDependencies(dependency, dsl)
             end
         end
     else
@@ -21,13 +21,15 @@ function Scenario.mountPackageAndDependencies_( packageName, dsl )
 end
 
 function Scenario.load( scenarioPackage, additionalPackages )
+    assert(type(scenarioPackage) == 'string', 'Scenario package must be a string')
+    additionalPackages = additionalPackages or {}
 
     local packages = table.merge({scenarioPackage}, additionalPackages)
 
     -- 1. Mount initially passed packages and collect dependecy information
     local dsl = DSL()
     for _, package in ipairs(packages) do
-        Scenario.mountPackageAndDependencies_(package, dsl)
+        Scenario._mountPackageAndDependencies(package, dsl)
     end
 
     -- 2. Work out correct load order using the dependency list

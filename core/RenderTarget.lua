@@ -1,4 +1,8 @@
-local class = require 'middleclass'
+local assert = assert
+local class  = require 'middleclass'
+local Object = class.Object
+local Camera = require 'core/Camera'
+local ShaderProgramSet = require 'core/ShaderProgramSet'
 local DestroyRenderTarget             = ENGINE.DestroyRenderTarget
 local SetRenderTargetCamera           = ENGINE.SetRenderTargetCamera
 local SetRenderTargetShaderProgramSet = ENGINE.SetRenderTargetShaderProgramSet
@@ -7,6 +11,8 @@ local SetRenderTargetShaderProgramSet = ENGINE.SetRenderTargetShaderProgramSet
 local RenderTarget = class('core/RenderTarget')
 
 function RenderTarget:initialize( handle )
+    assert(type(handle) == 'userdata',
+           'Must be initialized with a render target handle.')
     self.handle = handle
     self.camerasByLayer = {}
     self.camerasByName = {}
@@ -23,6 +29,8 @@ end
 -- layers.  This can be used to separate HUD and background from the regular
 -- scene.
 function RenderTarget:setCamera( layer, name, camera )
+    assert(type(name) == 'string', 'Name must be a string.')
+    assert(Object.isInstanceOf(camera, Camera), 'Must be called with a camera.')
     SetRenderTargetCamera(self.handle, camera.handle, layer)
     self.camerasByLayer[layer] = camera
     self.camerasByName[name] = camera
@@ -37,6 +45,8 @@ function RenderTarget:getCameraByName( name )
 end
 
 function RenderTarget:setShaderProgramSet( shaderProgramSet )
+    assert(Object.isInstanceOf(shaderProgramSet, ShaderProgramSet),
+           'Must be called with a shader program set.')
     SetRenderTargetShaderProgramSet(self.handle, shaderProgramSet.handle)
     self.shaderProgramSet = shaderProgramSet
 end

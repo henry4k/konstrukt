@@ -17,7 +17,7 @@ function dofile( fileName )
     return loadfile(fileName)()
 end
 
-require = dofile 'core/require.lua'
+dofile 'core/require.lua'
 dofile 'core/table.lua'
 
 
@@ -74,9 +74,9 @@ local defaultShaderProgram = ShaderProgram:load('core/Shaders/Test.vert',
 local defaultShaderProgramSet = ShaderProgramSet(defaultShaderProgram)
 
 local defaultRT = require 'core/DefaultRenderTarget':get()
-defaultRT:setCamera(foregroundCamera, 1)
-defaultRT:setCamera(defaultCamera, 2)
-defaultRT:setCamera(backgroundCamera, 3)
+defaultRT:setCamera(1, 'foreground', foregroundCamera)
+defaultRT:setCamera(2,    'default',    defaultCamera)
+defaultRT:setCamera(3, 'background', backgroundCamera)
 defaultRT:setShaderProgramSet(defaultShaderProgramSet)
 
 ResourceManager.enableLoading(false)
@@ -103,7 +103,9 @@ for i, argument in ipairs(ARGS) do
     end
 end
 
-Scenario.load(packages[1], packages)
+if #packages > 0 then
+    Scenario.load(packages[1], packages)
+end
 
 if interactive then
     debug.debug()

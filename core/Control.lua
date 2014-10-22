@@ -1,3 +1,4 @@
+local assert = assert
 local RegisterKeyControl  = ENGINE.RegisterKeyControl
 local RegisterAxisControl = ENGINE.RegisterAxisControl
 local SetEventCallback    = ENGINE.SetEventCallback
@@ -9,11 +10,13 @@ Control.keyCallbacks = {}
 Control.axisCallbacks = {}
 
 function Control.registerKey( name, callback )
+    assert(type(callback) == 'function', 'Callback must be a function.')
     RegisterKeyControl(name)
     Control.keyCallbacks[name] = callback
 end
 
 function Control.registerAxis( name, callback )
+    assert(type(callback) == 'function', 'Callback must be a function.')
     RegisterAxisControl(name)
     Control.axisCallbacks[name] = callback
 end

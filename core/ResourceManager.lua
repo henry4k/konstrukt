@@ -31,7 +31,7 @@ end
 -- @return
 -- The resource or nil if the requested resource has not been loaded yet.
 function ResourceManager.get( type, ... )
-    local id = ResourceManager.createResourceIdentifier_(type, ...)
+    local id = ResourceManager._createResourceIdentifier(type, ...)
     return ResourceManager.resources[id]
 end
 
@@ -39,7 +39,7 @@ end
 -- @return
 -- The resource or nil if the requested resource doesn't exist.
 function ResourceManager.load( type, ... )
-    local id = ResourceManager.createResourceIdentifier_(type, ...)
+    local id = ResourceManager._createResourceIdentifier(type, ...)
     if ResourceManager.loadingEnabled then
         local resource = ResourceManager.get(type, ...)
         if not resource then
@@ -77,7 +77,7 @@ Shutdown.registerHandler(ResourceManager.clear)
 --- Use the given parameters to create an unique identifier.
 -- Each parameter set creates a unique identifier that equals only other
 -- identifiers if they're created using the same set of parameters.
-function ResourceManager.createResourceIdentifier_( ... )
+function ResourceManager._createResourceIdentifier( ... )
     local args = {...}
     local strings = {}
     for _,arg in ipairs(args) do
@@ -87,7 +87,7 @@ function ResourceManager.createResourceIdentifier_( ... )
                 table.insert(subargs, k)
                 table.insert(subargs, v)
             end
-            local str = ResourceManager.createResourceIdentifier_(table.unpack(subargs))
+            local str = ResourceManager._createResourceIdentifier(table.unpack(subargs))
             table.insert(strings, str)
         else
             table.insert(strings, tostring(arg))

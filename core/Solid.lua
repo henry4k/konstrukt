@@ -1,7 +1,10 @@
+local assert = assert
 local class  = require 'middleclass'
+local Object = class.Object
 local Vec    = require 'core/Vector'
 local Quat   = require 'core/Quaternion'
 local Force  = require 'core/Force'
+local CollisionShape = require 'core/CollisionShape'
 local CreateSolid                = ENGINE.CreateSolid
 local DestroySolid               = ENGINE.DestroySolid
 local GetSolidMass               = ENGINE.GetSolidMass
@@ -14,6 +17,7 @@ local GetSolidRotation           = ENGINE.GetSolidRotation
 local GetSolidLinearVelocity     = ENGINE.GetSolidLinearVelocity
 local GetSolidAngularVelocity    = ENGINE.GetSolidAngularVelocity
 local ApplySolidImpulse          = ENGINE.ApplySolidImpulse
+local CreateForce                = ENGINE.CreateForce
 local SetEventCallback           = ENGINE.SetEventCallback
 
 
@@ -28,6 +32,9 @@ local SolidHandlesToSolids = {}
 setmetatable(SolidHandlesToSolids, {__mode='k'})
 
 function Solid:initialize( mass, position, rotation, collisionShape )
+    assert(Vec:isInstance(position), 'Position must be a vector.')
+    assert(Object.isInstanceOf(rotation, Quat), 'Rotation must be a quaternion.')
+    assert(Object.isInstanceOf(collisionShape, CollisionShape), 'Invalid collision shape.')
     self.handle = CreateSolid(mass,
                               position[1],
                               position[2],
@@ -68,6 +75,7 @@ end
 --- Only collisions with an impulse greater than `thresholdImpulse` will trigger the collision event.
 -- The default threshold is `math.huge`.
 function Solid:setCollisionThreshold( threshold )
+    assert(threshold < 0, 'Threshold must be positive.')
     return SetSolidCollisionThreshold(self.handle, threshold)
 end
 
@@ -101,12 +109,15 @@ end
 --
 -- @param useLocalCoordinates
 -- If set direction and position will be relative to the solids orientation.
-function Solid:applyImpulse( impulseVector, relativePosition, useLocalCoordinates )
-    relativePosition = relativePosition or Vec(0,0,0)
+function Solid:applyImpulse( value, relativePosition, useLocalCoordinates )
+    assert(Vec:isInstance(value), 'Value must be a vector.')
+    assert(Vec:isInstance(relativePosition) or nil, 'Relative position must be a vector.')
+    relativePosition    = relativePosition or Vec(0,0,0)
+    useLocalCoordinates = useLocalCoordinates or false
     ApplySolidImpulse(self.handle,
-                      impulseVector[1],
-                      impulseVector[2],
-                      impulseVector[3],
+                      value[1],
+                      value[2],
+                      value[3],
                       relativePosition[1],
                       relativePosition[2],
                       relativePosition[3],
@@ -114,7 +125,7 @@ function Solid:applyImpulse( impulseVector, relativePosition, useLocalCoordinate
 end
 
 function Solid:createForce()
-    local force = Force(self.handle)
+    local force = Force(CreateForce(self.handle))
     self.forces[force] = force.handle
     return force
 end

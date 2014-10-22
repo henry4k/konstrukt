@@ -127,3 +127,7 @@ Lua
 Don't use `__gc` in Lua scripts, because some Lua implementations don't support
 it. Create `:destroy()` methods instead and declare an authority that is in
 charge of the object and calls `:destroy()` at some point.
+
+From http://www.lua.org/pil/8.3.html:
+> An exception that is easily avoided should raise an error;
+> otherwise, it should return an error code.

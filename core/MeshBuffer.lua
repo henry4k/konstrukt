@@ -1,4 +1,7 @@
+local assert = assert
 local class  = require 'middleclass'
+local Object = class.Object
+local Mat4   = require 'core/Matrix4'
 local CreateMeshBuffer         = ENGINE.CreateMeshBuffer
 local DestroyMeshBuffer        = ENGINE.DestroyMeshBuffer
 local TransformMeshBuffer      = ENGINE.TransformMeshBuffer
@@ -19,10 +22,13 @@ function MeshBuffer:destroy()
 end
 
 function MeshBuffer:transform( transformation )
+    assert(Object.isInstanceOf(transformation, Mat4), 'Transformation must be an matrix.')
     TransformMeshBuffer(self.handle, transformation.handle)
 end
 
 function MeshBuffer:appendMeshBuffer( other, transformation )
+    assert(Object.isInstanceOf(other, MeshBuffer), 'Must be called with another mesh buffer.')
+    assert(Object.isInstanceOf(transformation, Mat4), 'Transformation must be an matrix.')
     if transformation then
         AppendMeshBuffer(self.handle, other.handle, transformation.handle)
     else
@@ -31,6 +37,7 @@ function MeshBuffer:appendMeshBuffer( other, transformation )
 end
 
 function MeshBuffer:appendIndex( index )
+    assert(index >= 0, 'Index must be positive.')
     AppendIndexToMeshBuffer(self.handle, index)
 end
 

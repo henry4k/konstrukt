@@ -1,4 +1,7 @@
+local assert = assert
 local class  = require 'middleclass'
+local Object = class.Object
+local ShaderProgram           = require 'core/ShaderProgram'
 local CreateShaderProgramSet  = ENGINE.CreateShaderProgramSet
 local DestroyShaderProgramSet = ENGINE.DestroyShaderProgramSet
 local SetShaderProgramFamily  = ENGINE.SetShaderProgramFamily
@@ -15,6 +18,8 @@ local SetShaderProgramFamily  = ENGINE.SetShaderProgramFamily
 local ShaderProgramSet = class('core/ShaderProgramSet')
 
 function ShaderProgramSet:initialize( defaultShaderProgram )
+    assert(Object.isInstanceOf(defaultShaderProgram, ShaderProgram),
+           'Must be initialized with a default shader program.')
     self.handle = CreateShaderProgramSet(defaultShaderProgram.handle)
 end
 
@@ -24,6 +29,8 @@ function ShaderProgramSet:destroy()
 end
 
 function ShaderProgramSet:setFamily( name, shaderProgram )
+    assert(Object.isInstanceOf(shaderProgram, ShaderProgram),
+           'Must be called with a shader program.')
     SetShaderProgramFamily(self.handle, name, shaderProgram.handle)
 end
 

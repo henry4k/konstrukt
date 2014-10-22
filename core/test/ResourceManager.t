@@ -90,20 +90,20 @@ describe('The resource manager')
     end)
 
     :it('can create unique identifiers for resources.', function()
-        local a = ResourceManager.createResourceIdentifier_(1,2,3)
-        local b = ResourceManager.createResourceIdentifier_(1,2,3)
+        local a = ResourceManager._createResourceIdentifier(1,2,3)
+        local b = ResourceManager._createResourceIdentifier(1,2,3)
         assert(a == b)
 
-        local a = ResourceManager.createResourceIdentifier_(1,2,3)
-        local b = ResourceManager.createResourceIdentifier_(1,2,4)
+        local a = ResourceManager._createResourceIdentifier(1,2,3)
+        local b = ResourceManager._createResourceIdentifier(1,2,4)
         assert(a ~= b)
 
-        local a = ResourceManager.createResourceIdentifier_('foo',true,{1,2,3})
-        local b = ResourceManager.createResourceIdentifier_('foo',true,{1,2,3})
+        local a = ResourceManager._createResourceIdentifier('foo',true,{1,2,3})
+        local b = ResourceManager._createResourceIdentifier('foo',true,{1,2,3})
         assert(a == b)
 
-        local a = ResourceManager.createResourceIdentifier_('foo',true,{1,2,3})
-        local b = ResourceManager.createResourceIdentifier_('foo',true,{1,2,4})
+        local a = ResourceManager._createResourceIdentifier('foo',true,{1,2,3})
+        local b = ResourceManager._createResourceIdentifier('foo',true,{1,2,4})
         assert(a ~= b)
     end)
 

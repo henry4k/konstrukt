@@ -1,4 +1,6 @@
+local assert = assert
 local class  = require 'middleclass'
+local Object = class.Object
 local Vec    = require 'core/Vector'
 local CreateMatrix4          = ENGINE.CreateMatrix4
 local CopyMatrix4            = ENGINE.CopyMatrix4
@@ -13,6 +15,7 @@ local MakeRotationMatrix     = ENGINE.MakeRotationMatrix
 local Matrix4 = class('core/Matrix4')
 
 function Matrix4:initialize( handle )
+    assert(not handle or type(handle) == 'userdata')
     self.handle = handle or CreateMatrix4()
 end
 
@@ -21,29 +24,36 @@ function Matrix4:copy()
 end
 
 function Matrix4:__add( other )
+    assert(Object.isInstanceOf(other, Matrix4), 'Must be called with a matrix.')
     return Matrix4(Matrix4Op(self.handle, other.handle, '+'))
 end
 
 function Matrix4:__sub( other )
+    assert(Object.isInstanceOf(other, Matrix4), 'Must be called with a matrix.')
     return Matrix4(Matrix4Op(self.handle, other.handle, '-'))
 end
 
 function Matrix4:__mul( other )
+    assert(Object.isInstanceOf(other, Matrix4), 'Must be called with a matrix.')
     return Matrix4(Matrix4Op(self.handle, other.handle, '*'))
 end
 
 function Matrix4:__div( other )
+    assert(Object.isInstanceOf(other, Matrix4), 'Must be called with a matrix.')
     return Matrix4(Matrix4Op(self.handle, other.handle, '/'))
 end
 
-function Matrix4:translate( vec )
+function Matrix4:translate( v )
+    assert(Vec:isInstance(v), 'Must be called with a vector.')
     return Matrix4(TranslateMatrix4(self.handle,
-                                    vec[1],
-                                    vec[2],
-                                    vec[3]))
+                                    v[1],
+                                    v[2],
+                                    v[3]))
 end
 
 function Matrix4:scale( v )
+    assert(Vec:isInstance(v) or type(v) == 'number',
+           'Must be called with a vector or a number.')
     if type(v) == 'number' then
         v = Vec(v,v,v)
     end
@@ -54,6 +64,7 @@ function Matrix4:scale( v )
 end
 
 function Matrix4:rotate( angle, vec )
+    assert(Vec:isInstance(vec), 'Must be called with a vector.')
     return Matrix4(RotateMatrix4(self.handle,
                                  angle,
                                  vec[1],
@@ -62,6 +73,7 @@ function Matrix4:rotate( angle, vec )
 end
 
 function Matrix4:transform( vec )
+    assert(Vec:isInstance(vec), 'Must be called with a vector.')
     return Vec(Matrix4TransformVector(self.handle,
                                       vec[1],
                                       vec[2],

@@ -1,3 +1,6 @@
+local assert = assert
+
+
 local Vector =
 {
     mt = {},
@@ -29,6 +32,7 @@ function Vector.prototype:unpack( componentCount )
 end
 
 function Vector.prototype:operate( other, operationFn )
+    assert(Vector:isInstance(other), 'Must be used with another vector.')
     local r = Vector()
     if Vector:isInstance(other) then
         for i = 1, math.max(#self, #other) do

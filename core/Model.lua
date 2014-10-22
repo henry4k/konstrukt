@@ -1,6 +1,11 @@
+local assert = assert
 local class  = require 'middleclass'
+local Object = class.Object
 local Vec    = require 'core/Vector'
 local Mat4   = require 'core/Matrix4'
+local Solid  = require 'core/Solid'
+local Mesh   = require 'core/Mesh'
+local Texture    = require 'core/Texture'
 local DestroyModel              = ENGINE.DestroyModel
 local SetModelAttachmentTarget  = ENGINE.SetModelAttachmentTarget
 local SetModelTransformation    = ENGINE.SetModelTransformation
@@ -15,6 +20,7 @@ local UnsetModelUniform         = ENGINE.UnsetModelUniform
 -- to render something on the screen.
 local Model = class('core/Model')
 
+-- DON'T CALL THIS DIRECTLY!  Use ModelWorld:createModel() instead.
 function Model:initialize( handle )
     self.handle = handle
     self.attachmentTarget = nil
@@ -26,6 +32,7 @@ function Model:destroy()
 end
 
 function Model:setAttachmentTarget( solid, flags )
+    assert(Object.isInstanceOf(solid, Solid), 'Attachment target must be a solid.')
     flags = flags or 'rt'
     SetModelAttachmentTarget(self.handle, solid.handle, flags)
     self.attachmentTarget = solid
@@ -35,15 +42,18 @@ function Model:getAttachmentTarget()
     return self.attachmentTarget
 end
 
-function Model:setTransformation( transformation )
-    SetModelTransformation(self.handle, transformation.handle)
+function Model:setTransformation( matrix )
+    assert(Object.isInstanceOf(matrix, Mat4), 'Transformation must be an matrix.')
+    SetModelTransformation(self.handle, matrix.handle)
 end
 
 function Model:setMesh( mesh )
+    assert(Object.isInstanceOf(mesh, Mesh), 'Must be called with a mesh.')
     SetModelMesh(self.handle, mesh.handle)
 end
 
 function Model:setTexture( unit, texture )
+    assert(Object.isInstanceOf(texture, Texture), 'Must be called with a texture.')
     SetModelTexture(self.handle, unit, texture.handle)
 end
 
@@ -52,11 +62,14 @@ function Model:setProgramFamilyList( familyList )
 end
 
 function Model:setUniform( name, value, type )
-    if class.Object.isInstanceOf(value, Mat4) then
+    if Object.isInstanceOf(value, Mat4) then
+        assert(not type, 'Type argument is ignored, when called with a matrix.')
         SetModelUniform(self.handle, name, 'mat4', value.handle)
-    elseif class.Object.isInstanceOf(value, Vec) then
+    elseif Vec:isInstance(value) then
+        assert(not type, 'Type argument is ignored, when called with a vector.')
         SetModelUniform(self.handle, name, 'vec'..#value, value:unpack())
     else
+        assert(type, 'Type is missing.')
         SetModelUniform(self.handle, name, type, value)
     end
 end
