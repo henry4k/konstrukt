@@ -57,27 +57,49 @@ local Camera           = require 'core/Camera'
 local ShaderProgram    = require 'core/ShaderProgram'
 local ShaderProgramSet = require 'core/ShaderProgramSet'
 local ModelWorld       = require 'core/ModelWorld'
+local Vec              = require 'core/Vector'
+local Quat             = require 'core/Quaternion'
+local Mat4             = require 'core/Matrix4'
 
 local foregroundModelWorld = ModelWorld()
-local defaultModelWorld    = ModelWorld()
+local worldModelWorld      = ModelWorld()
 local backgroundModelWorld = ModelWorld()
 
 local foregroundCamera = Camera(foregroundModelWorld)
-local defaultCamera    = Camera(defaultModelWorld)
+local worldCamera      = Camera(worldModelWorld)
 local backgroundCamera = Camera(backgroundModelWorld)
 
 foregroundCamera:setFieldOfView(math.rad(80))
-defaultCamera:setFieldOfView(math.rad(80))
+worldCamera:setFieldOfView(math.rad(80))
 backgroundCamera:setFieldOfView(math.rad(80))
+
+local function UpdateCameras( lookX, lookY )
+    local m = Mat4()
+
+    worldCamera:setViewTransformation(m)
+end
+
+LookX = 0
+LookY = 0
+
+Control.registerAxis('look-x', function( absolute, delta )
+    LookX = absolute
+    UpdateCameras(LookX, LookY)
+end)
+
+Control.registerAxis('look-y', function( absolute, delta )
+    LookY = absolute
+    UpdateCameras(LookX, LookY)
+end)
 
 local defaultShaderProgram = ShaderProgram:load('core/Shaders/Test.vert',
                                                 'core/Shaders/Test.frag')
 local defaultShaderProgramSet = ShaderProgramSet(defaultShaderProgram)
 
 local defaultRT = require 'core/DefaultRenderTarget':get()
-defaultRT:setCamera(1, 'foreground', foregroundCamera)
-defaultRT:setCamera(2,    'default',    defaultCamera)
-defaultRT:setCamera(3, 'background', backgroundCamera)
+defaultRT:setCamera(0, 'foreground', foregroundCamera)
+defaultRT:setCamera(1,      'world',      worldCamera)
+defaultRT:setCamera(2, 'background', backgroundCamera)
 defaultRT:setShaderProgramSet(defaultShaderProgramSet)
 
 ResourceManager.enableLoading(false)

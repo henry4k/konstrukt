@@ -9,6 +9,7 @@ local TranslateMatrix4       = ENGINE.TranslateMatrix4
 local ScaleMatrix4           = ENGINE.ScaleMatrix4
 local RotateMatrix4          = ENGINE.RotateMatrix4
 local Matrix4TransformVector = ENGINE.Matrix4TransformVector
+local CreateLookAtMatrix     = ENGINE.CreateLookAtMatrix
 local MakeRotationMatrix     = ENGINE.MakeRotationMatrix
 
 
@@ -21,6 +22,18 @@ end
 
 function Matrix4:copy()
     return Matrix4(CopyMatrix4(self.handle))
+end
+
+function Matrix4.static:lookAt( eye, center, up )
+    return self(CreateLookAtMatrix(eye[1],
+                                   eye[2],
+                                   eye[3],
+                                   center[1],
+                                   center[2],
+                                   center[3],
+                                   up[1],
+                                   up[2],
+                                   up[3]))
 end
 
 function Matrix4:__add( other )

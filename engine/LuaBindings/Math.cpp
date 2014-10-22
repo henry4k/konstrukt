@@ -42,6 +42,14 @@ static int Lua_CopyQuaternion( lua_State* l )
     return 1;
 }
 
+static int Lua_NormalizeQuaternion( lua_State* l )
+{
+    const quat* source = CheckQuaternionFromLua(l, 1);
+    quat* r = (quat*)PushUserDataToLua(l, QUATERNION_TYPE, sizeof(quat));
+    *r = normalize(*source);
+    return 1;
+}
+
 static int Lua_InvertQuaternion( lua_State* l )
 {
     const quat* source = CheckQuaternionFromLua(l, 1);
@@ -63,6 +71,34 @@ static int Lua_QuaternionOp( lua_State* l )
         default: return luaL_error(l, "Unknown operation '%s'", op);
     }
     return 1;
+}
+
+static int Lua_QuaternionXVector3( lua_State* l )
+{
+    const quat* a = CheckQuaternionFromLua(l, 1);
+    const vec3 b(luaL_checknumber(l, 2),
+                 luaL_checknumber(l, 3),
+                 luaL_checknumber(l, 4));
+    const vec3 r = *a * b;
+    lua_pushnumber(l, r[0]);
+    lua_pushnumber(l, r[1]);
+    lua_pushnumber(l, r[2]);
+    return 3;
+}
+
+static int Lua_QuaternionXVector4( lua_State* l )
+{
+    const quat* a = CheckQuaternionFromLua(l, 1);
+    const vec4 b(luaL_checknumber(l, 2),
+                 luaL_checknumber(l, 3),
+                 luaL_checknumber(l, 4),
+                 luaL_checknumber(l, 5));
+    const vec4 r = *a * b;
+    lua_pushnumber(l, r[0]);
+    lua_pushnumber(l, r[1]);
+    lua_pushnumber(l, r[2]);
+    lua_pushnumber(l, r[3]);
+    return 4;
 }
 
 static int Lua_LerpQuaternion( lua_State* l )
@@ -199,6 +235,25 @@ static int Lua_Matrix4TransformVector( lua_State* l )
     return 4;
 }
 
+static int Lua_CreateLookAtMatrix( lua_State* l )
+{
+    const vec3 eye(luaL_checknumber(l, 1),
+                   luaL_checknumber(l, 2),
+                   luaL_checknumber(l, 3));
+
+    const vec3 center(luaL_checknumber(l, 4),
+                      luaL_checknumber(l, 5),
+                      luaL_checknumber(l, 6));
+
+    const vec3 up(luaL_checknumber(l, 7),
+                  luaL_checknumber(l, 8),
+                  luaL_checknumber(l, 9));
+
+    mat4* destination = (mat4*)PushUserDataToLua(l, MATRIX4_TYPE, sizeof(mat4));
+    *destination = lookAt(eye, center, up);
+    return 1;
+}
+
 static int Lua_MakeRotationMatrix( lua_State* l )
 {
     const mat4* a = CheckMatrix4FromLua(l, 1);
@@ -257,9 +312,12 @@ bool RegisterMathInLua()
         RegisterFunctionInLua("CreateQuaternionFromEulerAngles", Lua_CreateQuaternionFromEulerAngles) &&
         RegisterFunctionInLua("CreateQuaternionFromMatrix", Lua_CreateQuaternionFromMatrix) &&
         RegisterFunctionInLua("CopyQuaternion", Lua_CopyQuaternion) &&
+        RegisterFunctionInLua("NormalizeQuaternion", Lua_NormalizeQuaternion) &&
         RegisterFunctionInLua("InvertQuaternion", Lua_InvertQuaternion) &&
         RegisterFunctionInLua("QuaternionOp", Lua_QuaternionOp) &&
         RegisterFunctionInLua("LerpQuaternion", Lua_LerpQuaternion) &&
+        RegisterFunctionInLua("QuaternionXVector3", Lua_QuaternionXVector3) &&
+        RegisterFunctionInLua("QuaternionXVector4", Lua_QuaternionXVector4) &&
 
         RegisterUserDataTypeInLua(MATRIX4_TYPE, NULL) &&
         RegisterFunctionInLua("CreateMatrix4", Lua_CreateMatrix4) &&
@@ -269,5 +327,6 @@ bool RegisterMathInLua()
         RegisterFunctionInLua("ScaleMatrix4", Lua_ScaleMatrix4) &&
         RegisterFunctionInLua("RotateMatrix4", Lua_RotateMatrix4) &&
         RegisterFunctionInLua("Matrix4TransformVector", Lua_Matrix4TransformVector) &&
+        RegisterFunctionInLua("CreateLookAtMatrix", Lua_CreateLookAtMatrix) &&
         RegisterFunctionInLua("MakeRotationMatrix", Lua_MakeRotationMatrix);
 }
