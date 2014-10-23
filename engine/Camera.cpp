@@ -21,11 +21,14 @@ struct Camera
     glm::mat4 modelTransformation;
     glm::mat4 viewTransformation;
 
-    float fieldOfView;
     float aspect;
     float zNear, zFar;
     bool projectionTransformationNeedsUpdate;
     glm::mat4 projectionTransformation;
+
+    CameraProjectionType projectionType;
+    float fieldOfView; // perspective projection
+    float scale; // orthographic projection
 };
 
 
@@ -40,8 +43,11 @@ Camera* CreateCamera( ModelWorld* world )
 
     camera->viewTransformation = mat4();
 
-    camera->fieldOfView = 80;
     camera->aspect = 1;
+
+    camera->projectionType = CAMERA_PERSPECTIVE_PROJECTION;
+    camera->fieldOfView = 80;
+    camera->scale = 1;
     camera->projectionTransformationNeedsUpdate = true;
 
     return camera;
@@ -87,13 +93,6 @@ void SetCameraViewTransformation( Camera* camera, mat4 transformation )
     camera->viewTransformation = transformation;
 }
 
-void SetCameraFieldOfView( Camera* camera, float fov )
-{
-    assert(fov > 0);
-    camera->fieldOfView = fov;
-    camera->projectionTransformationNeedsUpdate = true;
-}
-
 void SetCameraAspect( Camera* camera, float aspect )
 {
     assert(aspect > 0);
@@ -110,14 +109,54 @@ void SetCameraNearAndFarPlanes( Camera* camera, float zNear, float zFar )
     camera->projectionTransformationNeedsUpdate = true;
 }
 
+void SetCameraProjectionType( Camera* camera, CameraProjectionType type )
+{
+    camera->projectionType = type;
+    camera->projectionTransformationNeedsUpdate = true;
+}
+
+void SetCameraFieldOfView( Camera* camera, float fov )
+{
+    assert(fov > 0);
+    camera->fieldOfView = fov;
+    camera->projectionTransformationNeedsUpdate = true;
+}
+
+void SetCameraScale( Camera* camera, float scale )
+{
+    assert(scale > 0);
+    camera->scale = scale;
+    camera->projectionTransformationNeedsUpdate = true;
+}
+
 static void UpdateCameraProjection( Camera* camera )
 {
     if(camera->projectionTransformationNeedsUpdate)
     {
-        camera->projectionTransformation = glm::perspective(camera->fieldOfView,
-                                                            camera->aspect,
-                                                            camera->zNear,
-                                                            camera->zFar);
+        switch(camera->projectionType)
+        {
+            case CAMERA_PERSPECTIVE_PROJECTION:
+                camera->projectionTransformation =
+                    glm::perspective(camera->fieldOfView,
+                                     camera->aspect,
+                                     camera->zNear,
+                                     camera->zFar);
+                break;
+
+            case CAMERA_ORTHOGRAPHIC_PROJECTION:
+                const float aspect = camera->aspect;
+                const float scale  = camera->scale;
+                const float halfWidth  = aspect * scale * 0.5f;
+                const float halfHeight =          scale * 0.5f;
+                camera->projectionTransformation =
+                    glm::ortho(halfWidth, // left
+                               halfWidth, // right
+                               halfHeight, // bottom
+                               halfHeight, // top
+                               camera->zNear,
+                               camera->zFar);
+                break;
+        }
         camera->projectionTransformationNeedsUpdate = false;
     }
 }

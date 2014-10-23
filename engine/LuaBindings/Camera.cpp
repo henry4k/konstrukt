@@ -54,6 +54,38 @@ static int Lua_SetCameraViewTransformation( lua_State* l )
     return 0;
 }
 
+static int Lua_SetCameraNearAndFarPlanes( lua_State* l )
+{
+    Camera* camera = CheckCameraFromLua(l, 1);
+    const float zNear = luaL_checknumber(l, 2);
+    const float zFar  = luaL_checknumber(l, 3);
+    SetCameraNearAndFarPlanes(camera, zNear, zFar);
+    return 0;
+}
+
+static int Lua_SetCameraProjectionType( lua_State* l )
+{
+    static const char* typeNames[] =
+    {
+        "perspective",
+        "orthographic",
+        NULL
+    };
+
+    static CameraProjectionType typeMap[] =
+    {
+        CAMERA_PERSPECTIVE_PROJECTION,
+        CAMERA_ORTHOGRAPHIC_PROJECTION
+    };
+
+    Camera* camera = CheckCameraFromLua(l, 1);
+    const CameraProjectionType type =
+        typeMap[luaL_checkoption(l, 2, NULL, typeNames)];
+
+    SetCameraProjectionType(camera, type);
+    return 0;
+}
+
 static int Lua_SetCameraFieldOfView( lua_State* l )
 {
     Camera* camera = CheckCameraFromLua(l, 1);
@@ -62,12 +94,11 @@ static int Lua_SetCameraFieldOfView( lua_State* l )
     return 0;
 }
 
-static int Lua_SetCameraNearAndFarPlanes( lua_State* l )
+static int Lua_SetCameraScale( lua_State* l )
 {
     Camera* camera = CheckCameraFromLua(l, 1);
-    const float zNear = luaL_checknumber(l, 2);
-    const float zFar  = luaL_checknumber(l, 3);
-    SetCameraNearAndFarPlanes(camera, zNear, zFar);
+    const float scale = luaL_checknumber(l, 2);
+    SetCameraScale(camera, scale);
     return 0;
 }
 
@@ -89,6 +120,8 @@ bool RegisterCameraInLua()
         RegisterFunctionInLua("SetCameraAttachmentTarget", Lua_SetCameraAttachmentTarget) &&
         RegisterFunctionInLua("SetCameraModelTransformation", Lua_SetCameraModelTransformation) &&
         RegisterFunctionInLua("SetCameraViewTransformation", Lua_SetCameraViewTransformation) &&
+        RegisterFunctionInLua("SetCameraNearAndFarPlanes", Lua_SetCameraNearAndFarPlanes) &&
+        RegisterFunctionInLua("SetCameraProjectionType", Lua_SetCameraProjectionType) &&
         RegisterFunctionInLua("SetCameraFieldOfView", Lua_SetCameraFieldOfView) &&
-        RegisterFunctionInLua("SetCameraNearAndFarPlanes", Lua_SetCameraNearAndFarPlanes);
+        RegisterFunctionInLua("SetCameraScale", Lua_SetCameraScale);
 }

@@ -10,6 +10,12 @@ struct Camera;
 struct ShaderProgram;
 struct ShaderProgramSet;
 
+enum CameraProjectionType
+{
+    CAMERA_PERSPECTIVE_PROJECTION,
+    CAMERA_ORTHOGRAPHIC_PROJECTION
+};
+
 
 Camera* CreateCamera( ModelWorld* world );
 
@@ -19,9 +25,11 @@ void ReleaseCamera( Camera* camera );
 void SetCameraAttachmentTarget( Camera* camera, Solid* target, int flags);
 void SetCameraModelTransformation( Camera* camera, glm::mat4 transformation );
 void SetCameraViewTransformation( Camera* camera, glm::mat4 transformation );
-void SetCameraFieldOfView( Camera* camera, float fov );
 void SetCameraAspect( Camera* camera, float aspect );
 void SetCameraNearAndFarPlanes( Camera* camera, float zNear, float zFar );
+void SetCameraProjectionType( Camera* camera, CameraProjectionType type );
+void SetCameraFieldOfView( Camera* camera, float fov );
+void SetCameraScale( Camera* camera, float scale );
 
 /**
  * Sets uniform values, that depend solely on the camera.

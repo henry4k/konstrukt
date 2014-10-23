@@ -7,16 +7,18 @@ local CreateCamera                = ENGINE.CreateCamera
 local DestroyCamera               = ENGINE.DestroyCamera
 local SetCameraAttachmentTarget   = ENGINE.SetCameraAttachmentTarget
 local SetCameraViewTransformation = ENGINE.SetCameraViewTransformation
-local SetCameraFieldOfView        = ENGINE.SetCameraFieldOfView
 local SetCameraNearAndFarPlanes   = ENGINE.SetCameraNearAndFarPlanes
+local SetCameraProjectionType     = ENGINE.SetCameraProjectionType
 
 
 local Camera = class('core/Camera')
 
-function Camera:initialize( modelWorld )
+-- DON'T CALL THIS DIRECTLY!  Use PerspectiveCamera or OrthographicCamera instead.
+function Camera:initialize( modelWorld, projectionType )
     assert(Object.isInstanceOf(modelWorld, ModelWorld), 'Must be initialized with a model world.')
     self.handle = CreateCamera(modelWorld.handle)
     self.modelWorld = modelWorld
+    SetCameraProjectionType(self.handle, projectionType)
 end
 
 function Camera:destroy()
@@ -42,11 +44,6 @@ end
 function Camera:setViewTransformation( matrix )
     assert(Object.isInstanceOf(matrix, Mat4), 'Transformation must be an matrix.')
     SetCameraViewTransformation(self.handle, matrix.handle)
-end
-
-function Camera:setFieldOfView( fov )
-    assert(fov > 0, 'FoV must be greater than zero.')
-    SetCameraFieldOfView(self.handle, fov)
 end
 
 function Camera:setNearAndFarPlanes( zNear, zFar )

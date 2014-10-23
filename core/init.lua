@@ -53,7 +53,7 @@ ResourceManager.enableLoading(true)
 
 -- Setup default render target
 
-local Camera           = require 'core/Camera'
+local PerspectiveCamera = require 'core/PerspectiveCamera'
 local ShaderProgram    = require 'core/ShaderProgram'
 local ShaderProgramSet = require 'core/ShaderProgramSet'
 local ModelWorld       = require 'core/ModelWorld'
@@ -65,9 +65,9 @@ local foregroundModelWorld = ModelWorld()
 local worldModelWorld      = ModelWorld()
 local backgroundModelWorld = ModelWorld()
 
-local foregroundCamera = Camera(foregroundModelWorld)
-local worldCamera      = Camera(worldModelWorld)
-local backgroundCamera = Camera(backgroundModelWorld)
+local foregroundCamera = PerspectiveCamera(foregroundModelWorld)
+local worldCamera      = PerspectiveCamera(worldModelWorld)
+local backgroundCamera = PerspectiveCamera(backgroundModelWorld)
 
 foregroundCamera:setFieldOfView(math.rad(80))
 worldCamera:setFieldOfView(math.rad(80))
