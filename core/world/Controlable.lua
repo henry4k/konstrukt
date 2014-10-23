@@ -1,24 +1,24 @@
-local assert = assert
-local type   = type
-local Controlable = {}
+local Controlable = {
+    static = {
+        controls = {}
+    }
+}
 
-function Controlable:initializeControlable()
-    self.controls = {}
-end
 
-function Controlable:destroyControlable()
-end
-
-function Controlable:mapControl( controlName, methodName )
-    self.controls[controlName] = methodName
+function Controlable.static:mapControl( controlName, method )
+    local controls = self.static.controls
+    assert(not controls[controlName], controlName..' has already been mapped!')
+    controls[controlName] = method
 end
 
 function Controlable:triggerControlEvent( controlName, ... )
-    local methodName = self.controls[controlName]
-    if methodName then
-        local method = self[methodName]
-        assert(type(method) == 'function')
+    local controls = self.class.controls
+    local method = controls[controlName]
+    if method then
         method(self, ...)
+        return true
+    else
+        return false
     end
 end
 

@@ -27,6 +27,16 @@ local function merge( ... )
     return include({}, ...)
 end
 
+--- Searches `value` in `target` and returns its key or nil if nothing was found.
+local function find( target, value )
+    for k,v in pairs(target) do
+        if v == value then
+            return k
+        end
+    end
+end
+
 table.copy = copy
 table.include = include
 table.merge = merge
+table.find = find

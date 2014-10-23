@@ -1,34 +1,53 @@
 local assert = assert
+local class  = require 'middleclass'
+local Object = class.Object
+local Controlable = require 'core/Controlable'
 local RegisterKeyControl  = ENGINE.RegisterKeyControl
 local RegisterAxisControl = ENGINE.RegisterAxisControl
 local SetEventCallback    = ENGINE.SetEventCallback
 
 
-local Control = {}
+local Control = {
+    controlableStack = {}
+}
 
-Control.keyCallbacks = {}
-Control.axisCallbacks = {}
-
-function Control.registerKey( name, callback )
-    assert(type(callback) == 'function', 'Callback must be a function.')
-    RegisterKeyControl(name)
-    Control.keyCallbacks[name] = callback
+function Control.register( name )
+    RegisterKey(name)
 end
 
-function Control.registerAxis( name, callback )
-    assert(type(callback) == 'function', 'Callback must be a function.')
-    RegisterAxisControl(name)
-    Control.axisCallbacks[name] = callback
+function Control.pushControlable( controlable )
+    assert(Object.includes(controlable, Controlable),
+           'Must be called with an controlable.')
+    local controlableStack = Control.controlableStack
+    assert(not table.find(controlableStack, controlable),
+           'A controlable may only be pushed once.')
+    table.insert(controlableStack, controlable)
 end
 
-local function onKeyAction( name, pressed )
-    Control.keyCallbacks[name](pressed)
+function Control.removeControlable( controlable )
+    assert(Object.includes(controlable, Controlable),
+           'Must be called with an controlable.')
+    local controlableStack = Control.controlableStack
+    for i, v in ipairs(controlableStack) do
+        if v == controlable then
+            table.remove(controlableStack, i)
+            return
+        end
+    end
 end
-SetEventCallback('KeyControlAction', onKeyAction)
 
-local function onAxisAction( name, absolute, delta )
-    Control.axisCallbacks[name](absolute, delta)
+local function onControlAction( name, value )
+    local controlableStack = Control.controlableStack
+    local i = #controlableStack
+    while i >= 1 do
+        local controlable = controlableStack[i]
+        if controlable:triggerControlEvent(name, value) then
+            return
+        end
+        i = i - 1
+    end
 end
-SetEventCallback('AxisControlAction', onAxisAction)
+SetEventCallback('ControlAction', onControlAction)
+
 
 return Control
