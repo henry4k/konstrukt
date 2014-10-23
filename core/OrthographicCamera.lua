@@ -4,7 +4,7 @@ local Camera  = require 'core/Camera'
 local SetCameraScale = ENGINE.SetCameraScale
 
 
-local OrthographicCamera = class('core/OrthographicCamera')
+local OrthographicCamera = class('core/OrthographicCamera', Camera)
 
 function OrthographicCamera:initialize( modelWorld )
     Camera.initialize(self, modelWorld, 'orthographic')

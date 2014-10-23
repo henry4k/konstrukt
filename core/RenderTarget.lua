@@ -11,6 +11,7 @@ local SetRenderTargetShaderProgramSet = ENGINE.SetRenderTargetShaderProgramSet
 
 local RenderTarget = class('core/RenderTarget')
 
+-- DON'T CALL THIS DIRECTLY!  Use DefaultRenderTarget or TextureRenderTarget instead.
 function RenderTarget:initialize( handle )
     assert(type(handle) == 'userdata',
            'Must be initialized with a render target handle.')

@@ -4,7 +4,7 @@ local Camera  = require 'core/Camera'
 local SetCameraFieldOfView = ENGINE.SetCameraFieldOfView
 
 
-local PerspectiveCamera = class('core/PerspectiveCamera')
+local PerspectiveCamera = class('core/PerspectiveCamera', Camera)
 
 function PerspectiveCamera:initialize( modelWorld )
     Camera.initialize(self, modelWorld, 'perspective')
