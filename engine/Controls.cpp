@@ -6,9 +6,9 @@
 #include "OpenGL.h"
 #include "Window.h"
 #include "Controls.h"
-#include "ControlBindings/Keyboard.h"
-#include "ControlBindings/Mouse.h"
-#include "ControlBindings/Joystick.h"
+#include "control_bindings/Keyboard.h"
+#include "control_bindings/Mouse.h"
+#include "control_bindings/Joystick.h"
 
 
 static const int MAX_CONTROL_NAME_SIZE = 32;

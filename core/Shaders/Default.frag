@@ -1,34 +1,18 @@
 #version 120
 
-varying vec2 TexCoord;
-varying vec4 ShadowCoord;
-varying float FixedShadowBias;
-varying float LightVisibillity;
+varying vec3 Position;
 
-uniform sampler2D DiffuseSampler;
-uniform sampler2DShadow LightDepthSampler;
-uniform vec3 LightAmbient;
-uniform vec3 LightDiffuse;
-
-
-vec3 GetShadowCoord()
-{
-    return ( ShadowCoord.xyz / ShadowCoord.w ) - vec3(0,0,FixedShadowBias);
-}
-
-float GetLightVisibillity()
-{
-    vec3 shadowCoord = GetShadowCoord();
-    return shadow2D(LightDepthSampler, shadowCoord.xyz).x;
-}
+const float CheckerScale = 1.0;
+const vec3 Color0 = vec3(1.0, 1.0, 1.0) * 0.4;
+const vec3 Color1 = vec3(1.0, 1.0, 1.0) * 0.6;
 
 void main()
 {
-    float lightVisibillity = LightVisibillity * GetLightVisibillity();
-
-    vec3 lightColor = LightAmbient + LightDiffuse*lightVisibillity;
-
-    vec4 diffuse = texture2D(DiffuseSampler, TexCoord);
-    gl_FragColor.rgb = diffuse.rgb * lightColor;
-    gl_FragColor.a   = 1.0;//diffuse.a;
+    vec3  fp = floor(Position*CheckerScale);
+    float fs = fp.x + fp.y + fp.z;
+    float fm = mod(fs, 2.0);
+    if(fm == 0.0)
+        gl_FragColor = vec4(Color0, 1.0);
+    else
+        gl_FragColor = vec4(Color1, 1.0);
 }

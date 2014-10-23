@@ -92,8 +92,8 @@ Control.registerAxis('look-y', function( absolute, delta )
     UpdateCameras(LookX, LookY)
 end)
 
-local defaultShaderProgram = ShaderProgram:load('core/Shaders/Test.vert',
-                                                'core/Shaders/Test.frag')
+local defaultShaderProgram = ShaderProgram:load('core/shaders/Default.vert',
+                                                'core/shaders/Default.frag')
 local defaultShaderProgramSet = ShaderProgramSet(defaultShaderProgram)
 
 local defaultRT = require 'core/DefaultRenderTarget':get()
