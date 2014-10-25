@@ -6,17 +6,17 @@
 #include "../Controls.h"
 #include "Keyboard.h"
 
-void OnKeyAction( int key, int keycode, bool pressed );
-bool Keyboard_CreateKeyBindingFromString( const char* str, int keyControl );
+static void OnKeyAction( int key, int keycode, bool pressed );
+bool CreateKeyboardBindingFromString( const char* str, int control );
 
 struct KeyboardBinding
 {
-    int keyControl;
+    int control;
     // TODO: mod-keys?
     // keycode: see OnKeyAction
 };
 
-std::map<int,KeyboardBinding> g_KeyboardBindings;
+static std::map<int,KeyboardBinding> g_KeyboardBindings;
 
 bool InitKeyboardBindings()
 {
@@ -29,25 +29,25 @@ void DestroyKeyboardBindings()
 {
 }
 
-void OnKeyAction( int key, int keycode, bool pressed )
+static void OnKeyAction( int key, int keycode, bool pressed )
 {
     // scancodes would be better, but how can we convert config strings to scancodes?
     const std::map<int,KeyboardBinding>::const_iterator i = g_KeyboardBindings.find(key);
     if(i != g_KeyboardBindings.end())
-        HandleKeyEvent(i->second.keyControl, pressed);
+        HandleControlEvent(i->second.control, pressed);
 }
 
-bool Keyboard_CreateKeycodeBinding( int keycode, int keyControl )
+static bool CreateKeyboardKeycodeBinding( int keycode, int control )
 {
     KeyboardBinding binding;
-    binding.keyControl = keyControl;
+    binding.control = control;
 
     g_KeyboardBindings[keycode] = binding;
 
     return true;
 }
 
-char Uppercase( char ch )
+static char Uppercase( char ch )
 {
     static const char offset = 'A'-'a';
 
@@ -57,7 +57,7 @@ char Uppercase( char ch )
         return ch;
 }
 
-bool Keyboard_CreateKeyBindingFromString( const char* str, int keyControl )
+bool CreateKeyboardBindingFromString( const char* str, int control )
 {
     // a b c 1 2 3
     // escape
@@ -71,9 +71,9 @@ bool Keyboard_CreateKeyBindingFromString( const char* str, int keyControl )
     const int length = strlen(str);
 
     if(length == 1)
-        return Keyboard_CreateKeycodeBinding(Uppercase(str[0]), keyControl);
+        return CreateKeyboardKeycodeBinding(Uppercase(str[0]), control);
 
-#define KEYCODE(N,C) if(strcmp(str, (N)) == 0) return Keyboard_CreateKeycodeBinding((C), keyControl);
+#define KEYCODE(N,C) if(strcmp(str, (N)) == 0) return CreateKeyboardKeycodeBinding((C), control);
     KEYCODE("space", GLFW_KEY_SPACE)
     KEYCODE("escape", GLFW_KEY_ESCAPE)
     KEYCODE("enter", GLFW_KEY_ENTER)

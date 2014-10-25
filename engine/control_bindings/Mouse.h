@@ -3,7 +3,6 @@
 
 bool InitMouseBindings();
 void DestroyMouseBindings();
-bool Mouse_CreateKeyBindingFromString( const char* str, int axisControl );
-bool Mouse_CreateAxisBindingFromString( const char* str, int axisControl );
+bool CreateMouseBindingFromString( const char* str, int control );
 
 #endif

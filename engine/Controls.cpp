@@ -13,42 +13,31 @@
 
 static const int MAX_CONTROL_NAME_SIZE = 32;
 
-static bool CreateKeyBindingFromString( const char* str, int keyControl );
-static bool CreateAxisBindingFromString( const char* str, int axisControl );
+static bool CreateControlBindingFromString( const char* str, int control );
 
-enum AxisInterpretation
+enum Interpretation
 {
-    AXIS_ABSOLUTE_VALUE,
-    AXIS_ACCELERATION_VALUE
+    ABSOLUTE_VALUE,
+    ACCELERATION_VALUE
 };
 
-struct KeyControl
+struct Control
 {
     char name[MAX_CONTROL_NAME_SIZE];
-    KeyControlActionFn callback;
+    ControlActionFn callback;
     void* context;
-    bool* value;
-};
 
-struct AxisControl
-{
-    char name[MAX_CONTROL_NAME_SIZE];
-    AxisControlActionFn callback;
-    void* context;
-    float* value;
     float lastValue; // Needed to generate deltas
     float currentAcceleration; // Used when interpretation mode is acceleration.
-    AxisInterpretation interpretation;
+    Interpretation interpretation;
     float sensitivity; // Raw input is multiplied by this factor.
 };
 
-static std::vector<KeyControl>  g_KeyControls;
-static std::vector<AxisControl> g_AxisControls;
+static std::vector<Control> g_Controls;
 
 bool InitControls()
 {
-    g_KeyControls.clear();
-    g_AxisControls.clear();
+    g_Controls.clear();
 
     return
         InitKeyboardBindings() &&
@@ -65,22 +54,19 @@ void DestroyControls()
 
 void UpdateControls( float timeFrame )
 {
-    Joystick_UpdateControls(timeFrame);
+    UpdateJoystickControls(timeFrame);
 
-    for(int i = 0; i < g_AxisControls.size(); ++i)
+    for(int i = 0; i < g_Controls.size(); ++i)
     {
-        AxisControl* axisControl = &g_AxisControls[i];
+        Control* control = &g_Controls[i];
 
-        if(axisControl->interpretation == AXIS_ACCELERATION_VALUE)
+        if(control->interpretation == ACCELERATION_VALUE)
         {
-            const float delta = axisControl->currentAcceleration * timeFrame;
-            axisControl->lastValue += delta;
+            const float delta = control->currentAcceleration * timeFrame;
+            control->lastValue += delta;
 
-            if(axisControl->value)
-                *axisControl->value = axisControl->lastValue;
-
-            if(axisControl->callback)
-                axisControl->callback(axisControl->name, axisControl->lastValue, delta, axisControl->context);
+            if(control->callback)
+                control->callback(control->name, control->lastValue, delta, control->context);
         }
     }
 }
@@ -93,18 +79,9 @@ static bool ControlNameIsOkay( const char* name )
         return false;
     }
 
-    for(int i = 0; i < g_KeyControls.size(); ++i)
+    for(int i = 0; i < g_Controls.size(); ++i)
     {
-        if(strcmp(name, g_KeyControls[i].name) == 0)
-        {
-            Error("Control '%s' is not unique.", name);
-            return false;
-        }
-    }
-
-    for(int i = 0; i < g_AxisControls.size(); ++i)
-    {
-        if(strcmp(name, g_AxisControls[i].name) == 0)
+        if(strcmp(name, g_Controls[i].name) == 0)
         {
             Error("Control '%s' is not unique.", name);
             return false;
@@ -114,160 +91,90 @@ static bool ControlNameIsOkay( const char* name )
     return true;
 }
 
-bool RegisterKeyControl( const char* name, KeyControlActionFn callback, void* context, bool* value )
+bool RegisterControl( const char* name, ControlActionFn callback, void* context )
 {
     if(!ControlNameIsOkay(name))
         return false;
 
-    KeyControl keyControl;
-    CopyString(name, keyControl.name, sizeof(keyControl.name));
-    keyControl.callback = callback;
-    keyControl.context = context;
-    keyControl.value = value;
+    Control control;
+    CopyString(name, control.name, sizeof(control.name));
+    control.callback = callback;
+    control.context = context;
+    control.lastValue = 0;
+    control.currentAcceleration = 0;
+    control.sensitivity = GetConfigFloat(Format("control.%s-sensitivity", name), 1);
+    control.interpretation = ABSOLUTE_VALUE;
 
-    const int keyControlIndex = g_KeyControls.size();
-    g_KeyControls.push_back(keyControl);
+    const char* interpretation = GetConfigString(Format("control.%s-interpretation", name), NULL);
+    if(interpretation)
+    {
+        if(strcmp(interpretation, "absolute") == 0)
+        {
+            control.interpretation = ABSOLUTE_VALUE;
+        }
+        else if(strcmp(interpretation, "acceleration") == 0)
+        {
+            control.interpretation = ACCELERATION_VALUE;
+        }
+        else
+        {
+            Error("Unknown interpretation mode '%s' of control '%s'.", interpretation, name);
+            return false;
+        }
+    }
+
+    const int controlIndex = g_Controls.size();
+    g_Controls.push_back(control);
 
     const char* bindingName = GetConfigString(Format("control.%s", name), NULL);
     if(bindingName)
     {
-        if(CreateKeyBindingFromString(bindingName, keyControlIndex))
+        if(CreateControlBindingFromString(bindingName, controlIndex))
         {
-            Log("Key control '%s' is bound to '%s'.", name, bindingName);
+            Log("Control '%s' is bound to '%s'.", name, bindingName);
         }
         else
         {
-            Error("Failed to create key binding for '%s'.", bindingName);
+            Error("Failed to create binding for '%s'.", bindingName);
             return false;
         }
     }
     else
     {
-        Error("Key control '%s' is unused.", name);
+        Error("Control '%s' is unused.", name);
         return false;
     }
 
     return true;
 }
 
-bool RegisterAxisControl( const char* name, AxisControlActionFn callback, void* context, float* value )
+void HandleControlEvent( int controlIndex, float value )
 {
-    if(!ControlNameIsOkay(name))
-        return false;
+    assert(controlIndex < g_Controls.size());
+    Control* control = &g_Controls[controlIndex];
 
-    AxisControl axisControl;
-    CopyString(name, axisControl.name, sizeof(axisControl.name));
-    axisControl.callback = callback;
-    axisControl.context = context;
-    axisControl.value = value;
-    axisControl.lastValue = 0;
-    axisControl.currentAcceleration = 0;
-    axisControl.sensitivity = GetConfigFloat(Format("control.%s-sensitivity", name), 1);
-    axisControl.interpretation = AXIS_ABSOLUTE_VALUE;
+    value *= control->sensitivity;
 
-    const char* axisInterpretation = GetConfigString(Format("control.%s-interpretation", name), NULL);
-    if(axisInterpretation)
+    switch(control->interpretation)
     {
-        if(strcmp(axisInterpretation, "absolute") == 0)
-        {
-            axisControl.interpretation = AXIS_ABSOLUTE_VALUE;
-        }
-        else if(strcmp(axisInterpretation, "acceleration") == 0)
-        {
-            axisControl.interpretation = AXIS_ACCELERATION_VALUE;
-        }
-        else
-        {
-            Error("Unknown axis interpretation mode '%s' of control '%s'.", axisInterpretation, name);
-            return false;
-        }
-    }
-
-    const int axisControlIndex = g_AxisControls.size();
-    g_AxisControls.push_back(axisControl);
-
-    const char* bindingName = GetConfigString(Format("control.%s", name), NULL);
-    if(bindingName)
-    {
-        if(CreateAxisBindingFromString(bindingName, axisControlIndex))
-        {
-            Log("Axis control '%s' is bound to '%s'.", name, bindingName);
-        }
-        else
-        {
-            Error("Failed to create axis binding for '%s'.", bindingName);
-            return false;
-        }
-    }
-    else
-    {
-        Error("Axis control '%s' is unused.", name);
-        return false;
-    }
-
-    return true;
-}
-
-void HandleKeyEvent( int keyControlIndex, bool pressed )
-{
-    assert(keyControlIndex < g_KeyControls.size());
-    const KeyControl* keyControl = &g_KeyControls[keyControlIndex];
-
-    if(keyControl->value)
-        *keyControl->value = pressed;
-
-    if(keyControl->callback)
-        keyControl->callback(keyControl->name, pressed, keyControl->context);
-}
-
-void HandleAxisEvent( int axisControlIndex, float value )
-{
-    assert(axisControlIndex < g_AxisControls.size());
-    AxisControl* axisControl = &g_AxisControls[axisControlIndex];
-
-    value *= axisControl->sensitivity;
-
-    switch(axisControl->interpretation)
-    {
-        case AXIS_ABSOLUTE_VALUE:
-            if(axisControl->value)
-                *axisControl->value = value;
-
-            if(axisControl->callback)
+        case ABSOLUTE_VALUE:
+            if(control->callback)
             {
-                const float delta = value - axisControl->lastValue;
-                axisControl->callback(axisControl->name, value, delta, axisControl->context);
+                const float delta = value - control->lastValue;
+                control->callback(control->name, value, delta, control->context);
             }
 
-            axisControl->lastValue = value;
+            control->lastValue = value;
 
-        case AXIS_ACCELERATION_VALUE:
-            axisControl->currentAcceleration = value;
+        case ACCELERATION_VALUE:
+            control->currentAcceleration = value;
             // See UpdateControls()
     }
 }
 
-static bool CreateKeyBindingFromString( const char* str, int keyControl )
+static bool CreateControlBindingFromString( const char* str, int control )
 {
-    if(Keyboard_CreateKeyBindingFromString(str, keyControl))
-        return true;
-
-    if(Mouse_CreateKeyBindingFromString(str, keyControl))
-        return true;
-
-    if(Joystick_CreateKeyBindingFromString(str, keyControl))
-        return true;
-
-    return false;
-}
-
-static bool CreateAxisBindingFromString( const char* str, int axisControl )
-{
-    if(Mouse_CreateAxisBindingFromString(str, axisControl))
-        return true;
-
-    if(Joystick_CreateAxisBindingFromString(str, axisControl))
-        return true;
-
-    return false;
+    return CreateKeyboardBindingFromString(str, control) ||
+           CreateMouseBindingFromString(str, control) ||
+           CreateJoystickBindingFromString(str, control);
 }

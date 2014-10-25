@@ -2,9 +2,8 @@ local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
 local Controlable = require 'core/Controlable'
-local RegisterKeyControl  = ENGINE.RegisterKeyControl
-local RegisterAxisControl = ENGINE.RegisterAxisControl
-local SetEventCallback    = ENGINE.SetEventCallback
+local RegisterControl  = ENGINE.RegisterControl
+local SetEventCallback = ENGINE.SetEventCallback
 
 
 local Control = {
@@ -12,7 +11,7 @@ local Control = {
 }
 
 function Control.register( name )
-    RegisterKey(name)
+    RegisterControl(name)
 end
 
 function Control.pushControlable( controlable )

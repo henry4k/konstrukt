@@ -32,11 +32,12 @@ end)
 -- Register exit key
 
 local Control = require 'core/Control'
-Control.registerKey('exit', function( pressed )
-    if pressed then
-        ENGINE.StopGameLoop()
-    end
-end)
+-- TODO: Implement 'global' controlable.
+--Control.register('exit', function( absolute, delta )
+--    if pressed then
+--        ENGINE.StopGameLoop()
+--    end
+--end)
 
 
 -- Register resources

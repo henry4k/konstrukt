@@ -3,6 +3,6 @@
 
 bool InitKeyboardBindings();
 void DestroyKeyboardBindings();
-bool Keyboard_CreateKeyBindingFromString( const char* str, int keyControl );
+bool CreateKeyboardBindingFromString( const char* str, int control );
 
 #endif
