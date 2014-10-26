@@ -111,7 +111,7 @@ function FileSystem.getDirectoryEntries( filePath )
 end
 
 --- Iterates over directory entries and provides file paths and file information.
--- for path, info in FS:directory('example/directory') do ... end
+-- for path, info in FS.directory('example/directory') do ... end
 function FileSystem.directory( filePath )
     local entries = GetDirectoryEntries(filePath)
     local index = 0
@@ -134,7 +134,7 @@ function FileSystem.directory( filePath )
 end
 
 --- Iterates over a directory tree and provides file paths and file information.
--- for path, info in FS:directoryTree('example/directory') do ... end
+-- for path, info in FS.directoryTree('example/directory') do ... end
 function FileSystem.directoryTree( filePath )
     local function yieldTree( directory )
         for entryPath, entryInfo in FileSystem.directory(directory) do
@@ -164,7 +164,7 @@ local function SeparateStaticAndPatternPathElements( filePattern )
 end
 
 --- Iterates recursivley over all files that match the given pattern.
--- for path, info in FS:matchingFiles('example/.+%.png') do ... end
+-- for path, info in FS.matchingFiles('example/.+%.png') do ... end
 function FileSystem.matchingFiles( filePattern )
     assert(type(filePattern) == 'string', 'File pattern must be a string.')
     local staticPath = SeparateStaticAndPatternPathElements(filePattern)
