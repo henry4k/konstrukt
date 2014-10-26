@@ -18,7 +18,10 @@ function Actor:destroy()
     WorldObject.destroy(self)
 end
 
-function Actor:activate( pressed )
+function Actor:activate( absolute, delta )
+    if delta > 0 then
+        print(tostring(self)..' activates something!')
+    end
 end
 
 Actor:mapControl('activate', Actor.activate)

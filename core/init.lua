@@ -31,13 +31,21 @@ end)
 
 -- Register exit key
 
-local Control = require 'core/Control'
--- TODO: Implement 'global' controlable.
---Control.register('exit', function( absolute, delta )
---    if pressed then
---        ENGINE.StopGameLoop()
---    end
---end)
+local class       = require 'middleclass'
+local Control     = require 'core/Control'
+local Controlable = require 'core/world/Controlable'
+
+local GlobalControls = class('core/GlobalControls')
+GlobalControls:include(Controlable)
+
+function GlobalControls:exit( absolute, delta )
+    if delta > 0 then
+        ENGINE.StopGameLoop()
+    end
+end
+
+GlobalControls:mapControl('exit', GlobalControls.exit)
+Control.pushControlable(GlobalControls())
 
 
 -- Register resources
@@ -73,25 +81,6 @@ local backgroundCamera = PerspectiveCamera(backgroundModelWorld)
 foregroundCamera:setFieldOfView(math.rad(80))
 worldCamera:setFieldOfView(math.rad(80))
 backgroundCamera:setFieldOfView(math.rad(80))
-
-local function UpdateCameras( lookX, lookY )
-    local m = Mat4()
-
-    worldCamera:setViewTransformation(m)
-end
-
-LookX = 0
-LookY = 0
-
-Control.registerAxis('look-x', function( absolute, delta )
-    LookX = absolute
-    UpdateCameras(LookX, LookY)
-end)
-
-Control.registerAxis('look-y', function( absolute, delta )
-    LookY = absolute
-    UpdateCameras(LookX, LookY)
-end)
 
 local defaultShaderProgram = ShaderProgram:load('core/shaders/Default.vert',
                                                 'core/shaders/Default.frag')

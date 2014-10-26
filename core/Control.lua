@@ -1,7 +1,7 @@
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
-local Controlable = require 'core/Controlable'
+local Controlable = require 'core/world/Controlable'
 local RegisterControl  = ENGINE.RegisterControl
 local SetEventCallback = ENGINE.SetEventCallback
 
@@ -15,7 +15,7 @@ function Control.register( name )
 end
 
 function Control.pushControlable( controlable )
-    assert(Object.includes(controlable, Controlable),
+    assert(Object.includes(controlable.class, Controlable),
            'Must be called with an controlable.')
     local controlableStack = Control.controlableStack
     assert(not table.find(controlableStack, controlable),
@@ -24,23 +24,20 @@ function Control.pushControlable( controlable )
 end
 
 function Control.removeControlable( controlable )
-    assert(Object.includes(controlable, Controlable),
+    assert(Object.includes(controlable.class, Controlable),
            'Must be called with an controlable.')
     local controlableStack = Control.controlableStack
-    for i, v in ipairs(controlableStack) do
-        if v == controlable then
-            table.remove(controlableStack, i)
-            return
-        end
-    end
+    local i = table.find(controlableStack, controlable)
+    assert(i, 'Controlable must have been pushed before removing.')
+    table.remove(controlableStack, i)
 end
 
-local function onControlAction( name, value )
+local function onControlAction( name, absolute, delta )
     local controlableStack = Control.controlableStack
     local i = #controlableStack
     while i >= 1 do
         local controlable = controlableStack[i]
-        if controlable:triggerControlEvent(name, value) then
+        if controlable:triggerControlEvent(name, absolute, delta) then
             return
         end
         i = i - 1

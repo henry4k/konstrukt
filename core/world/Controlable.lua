@@ -9,6 +9,9 @@ function Controlable.static:mapControl( controlName, method )
     local controls = self.static.controls
     assert(not controls[controlName], controlName..' has already been mapped!')
     controls[controlName] = method
+
+    local Control = require 'core/Control'
+    Control.register(controlName)
 end
 
 function Controlable:triggerControlEvent( controlName, ... )
