@@ -17,6 +17,7 @@ describe('Control')
         }
 
         FakeRequire:whitelist('core/Control')
+        FakeRequire:whitelist('core/Controlable')
         FakeRequire:install()
 
         Control = require 'core/Control'

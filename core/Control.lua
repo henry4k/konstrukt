@@ -1,7 +1,7 @@
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
-local Controlable = require 'core/world/Controlable'
+local Controlable = require 'core/Controlable'
 local RegisterControl  = ENGINE.RegisterControl
 local SetEventCallback = ENGINE.SetEventCallback
 

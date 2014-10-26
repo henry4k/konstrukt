@@ -1,8 +1,8 @@
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
+local Controlable = require 'core/Controlable'
 local WorldObject = require 'core/world/WorldObject'
-local Controlable = require 'core/world/Controlable'
 
 
 --- Things that the player can take control of.

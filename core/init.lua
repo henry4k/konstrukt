@@ -33,9 +33,9 @@ end)
 
 local class       = require 'middleclass'
 local Control     = require 'core/Control'
-local Controlable = require 'core/world/Controlable'
+local Controlable = require 'core/Controlable'
 
-local GlobalControls = class('core/GlobalControls')
+local GlobalControls = class('core/init/GlobalControls')
 GlobalControls:include(Controlable)
 
 function GlobalControls:exit( absolute, delta )
@@ -50,11 +50,11 @@ Control.pushControlable(GlobalControls())
 
 -- Register resources
 
-require 'core/Texture':registerResource()
-require 'core/AudioBuffer':registerResource()
-require 'core/Mesh':registerResource()
-require 'core/Shader':registerResource()
-require 'core/ShaderProgram':registerResource()
+require 'core/audio/AudioBuffer':registerResource()
+require 'core/graphics/Texture':registerResource()
+require 'core/graphics/Mesh':registerResource()
+require 'core/graphics/Shader':registerResource()
+require 'core/graphics/ShaderProgram':registerResource()
 
 local ResourceManager = require 'core/ResourceManager'
 ResourceManager.enableLoading(true)
@@ -62,13 +62,13 @@ ResourceManager.enableLoading(true)
 
 -- Setup default render target
 
-local PerspectiveCamera = require 'core/PerspectiveCamera'
-local ShaderProgram    = require 'core/ShaderProgram'
-local ShaderProgramSet = require 'core/ShaderProgramSet'
-local ModelWorld       = require 'core/ModelWorld'
-local Vec              = require 'core/Vector'
-local Quat             = require 'core/Quaternion'
-local Mat4             = require 'core/Matrix4'
+local Vec               = require 'core/Vector'
+local Quat              = require 'core/Quaternion'
+local Mat4              = require 'core/Matrix4'
+local ModelWorld        = require 'core/graphics/ModelWorld'
+local ShaderProgram     = require 'core/graphics/ShaderProgram'
+local ShaderProgramSet  = require 'core/graphics/ShaderProgramSet'
+local PerspectiveCamera = require 'core/graphics/PerspectiveCamera'
 
 local foregroundModelWorld = ModelWorld()
 local worldModelWorld      = ModelWorld()
@@ -82,11 +82,11 @@ foregroundCamera:setFieldOfView(math.rad(80))
 worldCamera:setFieldOfView(math.rad(80))
 backgroundCamera:setFieldOfView(math.rad(80))
 
-local defaultShaderProgram = ShaderProgram:load('core/shaders/Default.vert',
-                                                'core/shaders/Default.frag')
+local defaultShaderProgram = ShaderProgram:load('core/graphics/shaders/Default.vert',
+                                                'core/graphics/shaders/Default.frag')
 local defaultShaderProgramSet = ShaderProgramSet(defaultShaderProgram)
 
-local defaultRT = require 'core/DefaultRenderTarget':get()
+local defaultRT = require 'core/graphics/DefaultRenderTarget':get()
 defaultRT:setCamera(0, 'foreground', foregroundCamera)
 defaultRT:setCamera(1,      'world',      worldCamera)
 defaultRT:setCamera(2, 'background', backgroundCamera)

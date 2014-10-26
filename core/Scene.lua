@@ -1,4 +1,4 @@
-local MeshBuffer = require 'core/MeshBuffer'
+local MeshBuffer = require 'core/graphics/MeshBuffer'
 
 
 local GetEntryByPath = function( table, path, delimiters )

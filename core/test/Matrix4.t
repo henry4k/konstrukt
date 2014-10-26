@@ -29,9 +29,9 @@ describe('A 4x4 matrix')
             ENGINE.MakeRotationMatrix:reset()
         end
 
-        FakeRequire:whitelist('core/Matrix4')
-        FakeRequire:whitelist('core/middleclass')
+        FakeRequire:whitelist('middleclass')
         FakeRequire:whitelist('core/Vector')
+        FakeRequire:whitelist('core/Matrix4')
         FakeRequire:install()
 
         Vec  = require 'core/Vector'
