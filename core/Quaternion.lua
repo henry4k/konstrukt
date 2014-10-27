@@ -13,6 +13,7 @@ local QuaternionOp                    = ENGINE.QuaternionOp
 local LerpQuaternion                  = ENGINE.LerpQuaternion
 local QuaternionXVector3              = ENGINE.QuaternionXVector3
 local QuaternionXVector4              = ENGINE.QuaternionXVector4
+local CreateMatrix4FromQuaternion     = ENGINE.CreateMatrix4FromQuaternion
 
 
 local Quat = class('core/Quaternion')
@@ -39,6 +40,10 @@ end
 
 function Quat:copy()
     return Quat(CopyQuaternion(self.handle))
+end
+
+function Quat:toMatrix()
+    return Mat4(CreateMatrix4FromQuaternion(self.handle))
 end
 
 function Quat:normalize()

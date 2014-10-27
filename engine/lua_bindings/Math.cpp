@@ -144,6 +144,14 @@ static int Lua_CreateMatrix4( lua_State* l )
     return 1;
 }
 
+static int Lua_CreateMatrix4FromQuaternion( lua_State* l )
+{
+    const quat* s = CheckQuaternionFromLua(l, 1);
+    mat4* r = (mat4*)PushUserDataToLua(l, MATRIX4_TYPE, sizeof(mat4));
+    *r = mat4_cast(*s);
+    return 1;
+}
+
 static int Lua_CopyMatrix4( lua_State* l )
 {
     const mat4* source = CheckMatrix4FromLua(l, 1);
@@ -321,6 +329,7 @@ bool RegisterMathInLua()
 
         RegisterUserDataTypeInLua(MATRIX4_TYPE, NULL) &&
         RegisterFunctionInLua("CreateMatrix4", Lua_CreateMatrix4) &&
+        RegisterFunctionInLua("CreateMatrix4FromQuaternion", Lua_CreateMatrix4FromQuaternion) &&
         RegisterFunctionInLua("CopyMatrix4", Lua_CopyMatrix4) &&
         RegisterFunctionInLua("Matrix4Op", Lua_Matrix4Op) &&
         RegisterFunctionInLua("TranslateMatrix4", Lua_TranslateMatrix4) &&

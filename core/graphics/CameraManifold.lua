@@ -29,7 +29,6 @@ end
 
 function CameraManifold:setAttachmentTarget( solid )
     self.attachmentTarget = solid
-    self.foregroundCamera:setAttachmentTarget(nil)
     self.worldCamera:setAttachmentTarget(solid, 'rt')
     self.backgroundCamera:setAttachmentTarget(solid, 'r')
 end
@@ -39,10 +38,8 @@ function CameraManifold:getAttachmentTarget()
 end
 
 function CameraManifold:setViewTransformation( matrix )
-    -- TODO:  Is that correct?
-    self.foregroundCamera:setViewTransformation(matrix)
     self.worldCamera:setViewTransformation(matrix)
-    self.backgroundCamera:setViewTransformation(matrix)
+    self.backgroundCamera:setViewTransformation(matrix:toRotationMatrix())
 end
 
 function CameraManifold:setFieldOfView( fov )
