@@ -76,7 +76,7 @@ static int Lua_DestroyModel( lua_State* l )
 static int Lua_SetModelAttachmentTarget( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
-    Solid* target = CheckSolidFromLua(l, 2);
+    Solid* target = GetSolidFromLua(l, 2);
     const int flags = CheckTransformationFlagsFromLua(l, 3);
     SetModelAttachmentTarget(model, target, flags);
     return 0;

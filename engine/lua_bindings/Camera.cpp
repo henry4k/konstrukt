@@ -32,7 +32,7 @@ static int Lua_DestroyCamera( lua_State* l )
 static int Lua_SetCameraAttachmentTarget( lua_State* l )
 {
     Camera* camera = CheckCameraFromLua(l, 1);
-    Solid* attachmentTarget = CheckSolidFromLua(l, 2);
+    Solid* attachmentTarget = GetSolidFromLua(l, 2);
     const int attachmentFlags = CheckTransformationFlagsFromLua(l, 3);
     SetCameraAttachmentTarget(camera, attachmentTarget, attachmentFlags);
     return 0;

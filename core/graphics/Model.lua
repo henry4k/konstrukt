@@ -1,12 +1,14 @@
-local assert = assert
+local assert  = assert
 local isInteger = math.isInteger
-local class  = require 'middleclass'
-local Object = class.Object
-local Vec    = require 'core/Vector'
-local Mat4   = require 'core/Matrix4'
-local Solid  = require 'core/physics/Solid'
-local Mesh   = require 'core/graphics/Mesh'
-local Texture    = require 'core/graphics/Texture'
+local class   = require 'middleclass'
+local Object  = class.Object
+local Vec     = require 'core/Vector'
+local Mat4    = require 'core/Matrix4'
+local Solid   = require 'core/physics/Solid'
+local Mesh    = require 'core/graphics/Mesh'
+local Texture = require 'core/graphics/Texture'
+local HasTransformation   = require 'core/HasTransformation'
+local HasAttachmentTarget = require 'core/physics/HasAttachmentTarget'
 local DestroyModel              = ENGINE.DestroyModel
 local SetModelAttachmentTarget  = ENGINE.SetModelAttachmentTarget
 local SetModelTransformation    = ENGINE.SetModelTransformation
@@ -21,6 +23,14 @@ local UnsetModelUniform         = ENGINE.UnsetModelUniform
 -- to render something on the screen.
 local Model = class('core/graphics/Model')
 
+Model:include(HasTransformation, function( self, matrix )
+    SetModelTransformation(self.handle, matrix.handle)
+end)
+
+Model:include(HasAttachmentTarget, function( self, solid, flags )
+    SetModelAttachmentTarget(self.handle, solid.handle, flags)
+end)
+
 -- DON'T CALL THIS DIRECTLY!  Use ModelWorld:createModel() instead.
 function Model:initialize( handle )
     self.handle = handle
@@ -30,22 +40,6 @@ end
 function Model:destroy()
     DestroyModel(self.handle)
     self.handle = nil
-end
-
-function Model:setAttachmentTarget( solid, flags )
-    assert(Object.isInstanceOf(solid, Solid), 'Attachment target must be a solid.')
-    flags = flags or 'rt'
-    SetModelAttachmentTarget(self.handle, solid.handle, flags)
-    self.attachmentTarget = solid
-end
-
-function Model:getAttachmentTarget()
-    return self.attachmentTarget
-end
-
-function Model:setTransformation( matrix )
-    assert(Object.isInstanceOf(matrix, Mat4), 'Transformation must be an matrix.')
-    SetModelTransformation(self.handle, matrix.handle)
 end
 
 function Model:setMesh( mesh )

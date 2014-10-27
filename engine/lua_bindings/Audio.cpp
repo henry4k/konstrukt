@@ -127,7 +127,7 @@ static int Lua_SetAudioSourceGain( lua_State* l )
 static int Lua_SetAudioSourceAttachmentTarget( lua_State* l )
 {
     AudioSource* source = CheckAudioSourceFromLua(l, 1);
-    Solid* target = CheckSolidFromLua(l, 2);
+    Solid* target = GetSolidFromLua(l, 2);
     const int flags = CheckTransformationFlagsFromLua(l, 3);
     SetAudioSourceAttachmentTarget(source, target, flags);
     return 0;

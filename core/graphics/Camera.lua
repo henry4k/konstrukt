@@ -1,8 +1,9 @@
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
-local Solid  = require 'core/physics/Solid'
-local ModelWorld = require 'core/graphics/ModelWorld'
+local Mat4   = require 'core/Matrix4'
+local ModelWorld          = require 'core/graphics/ModelWorld'
+local HasAttachmentTarget = require 'core/physics/HasAttachmentTarget'
 local CreateCamera                = ENGINE.CreateCamera
 local DestroyCamera               = ENGINE.DestroyCamera
 local SetCameraAttachmentTarget   = ENGINE.SetCameraAttachmentTarget
@@ -12,6 +13,10 @@ local SetCameraProjectionType     = ENGINE.SetCameraProjectionType
 
 
 local Camera = class('core/graphics/Camera')
+
+Camera:include(HasAttachmentTarget, function( self, solid, flags )
+    SetCameraAttachmentTarget(self.handle, solid.handle, flags)
+end)
 
 -- DON'T CALL THIS DIRECTLY!  Use PerspectiveCamera or OrthographicCamera instead.
 function Camera:initialize( modelWorld, projectionType )
@@ -28,17 +33,6 @@ end
 
 function Camera:getModelWorld()
     return self.modelWorld
-end
-
-function Camera:setAttachmentTarget( solid, flags )
-    assert(Object.isInstanceOf(solid, Solid), 'Attachment target must be a solid.')
-    flags = flags or 'rt'
-    SetCameraAttachmentTarget(self.handle, solid.handle, flags)
-    self.attachmentTarget = solid
-end
-
-function Camera:getAttachmentTarget()
-    return self.attachmentTarget
 end
 
 function Camera:setViewTransformation( matrix )
