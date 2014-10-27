@@ -28,7 +28,7 @@ function Quat:initialize( arg )
         self.handle = arg
     elseif Object.isInstanceOf(arg, Quat) then
         self.handle = CopyQuaternion(arg.handle)
-    elseif Object.isInstanceOf(arg, Vec) then
+    elseif Vec:isInstance(arg) then
         self.handle = CreateQuaternionFromEulerAngles(arg:unpack(3))
     elseif Object.isInstanceOf(arg, Mat4) then
         self.handle = CreateQuaternionFromMatrix(arg.handle)
