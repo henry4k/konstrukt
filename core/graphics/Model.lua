@@ -22,14 +22,8 @@ local UnsetModelUniform         = ENGINE.UnsetModelUniform
 --- Models are aggregations of meshes, textures, and shaders that can be used
 -- to render something on the screen.
 local Model = class('core/graphics/Model')
-
-Model:include(HasTransformation, function( self, matrix )
-    SetModelTransformation(self.handle, matrix.handle)
-end)
-
-Model:include(HasAttachmentTarget, function( self, solid, flags )
-    SetModelAttachmentTarget(self.handle, solid.handle, flags)
-end)
+Model:include(HasTransformation)
+Model:include(HasAttachmentTarget)
 
 -- DON'T CALL THIS DIRECTLY!  Use ModelWorld:createModel() instead.
 function Model:initialize( handle )
@@ -73,6 +67,14 @@ end
 
 function Model:unsetUniform( name )
     UnsetModelUniform(self.handle, name)
+end
+
+function Model:_setTransformation( matrix )
+    SetModelTransformation(self.handle, matrix.handle)
+end
+
+function Model:_setAttachmentTarget( solidHandle, flags )
+    SetModelAttachmentTarget(self.handle, solidHandle, flags)
 end
 
 

@@ -26,14 +26,8 @@ local PauseAudioSource               = ENGINE.PauseAudioSource
 -- properties are zero. The transformation matrix is applied additionaly after
 -- the attachment targets position has been applied.
 local AudioSource = class('core/audio/AudioSource')
-
-AudioSource:include(HasTransformation, function( self, matrix )
-    SetAudioSourceTransformation(self.handle, matrix.handle)
-end)
-
-AudioSource:include(HasAttachmentTarget, function( self, solid, flags )
-    SetAudioSourceAttachmentTarget(self.handle, solid.handle, flags)
-end)
+AudioSource:include(HasTransformation)
+AudioSource:include(HasAttachmentTarget)
 
 function AudioSource:initialize()
     self.handle = CreateAudioSource()
@@ -80,6 +74,14 @@ end
 
 function AudioSource:pause()
     PauseAudioSource(self.handle)
+end
+
+function AudioSource:_setTransformation( matrix )
+    SetAudioSourceTransformation(self.handle, matrix.handle)
+end
+
+function AudioSource:_setAttachmentTarget( solidHandle, flags )
+    SetAudioSourceAttachmentTarget(self.handle, solidHandle, flags)
 end
 
 

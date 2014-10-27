@@ -13,10 +13,7 @@ local SetCameraProjectionType     = ENGINE.SetCameraProjectionType
 
 
 local Camera = class('core/graphics/Camera')
-
-Camera:include(HasAttachmentTarget, function( self, solid, flags )
-    SetCameraAttachmentTarget(self.handle, solid.handle, flags)
-end)
+Camera:include(HasAttachmentTarget)
 
 -- DON'T CALL THIS DIRECTLY!  Use PerspectiveCamera or OrthographicCamera instead.
 function Camera:initialize( modelWorld, projectionType )
@@ -44,6 +41,10 @@ function Camera:setNearAndFarPlanes( zNear, zFar )
     assert(zNear > 0 and zFar > 0, 'z near and z far must be greater than zero.')
     assert(zFar > zNear, 'z far must be larger than z near.')
     SetCameraNearAndFarPlanes(self.handle, zNear, zFar)
+end
+
+function Camera:_setAttachmentTarget( solidHandle, flags )
+    SetCameraAttachmentTarget(self.handle, solidHandle, flags)
 end
 
 
