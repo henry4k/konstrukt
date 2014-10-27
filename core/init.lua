@@ -69,6 +69,7 @@ local ModelWorld        = require 'core/graphics/ModelWorld'
 local ShaderProgram     = require 'core/graphics/ShaderProgram'
 local ShaderProgramSet  = require 'core/graphics/ShaderProgramSet'
 local PerspectiveCamera = require 'core/graphics/PerspectiveCamera'
+local Actor             = require 'core/world/Actor'
 
 local foregroundModelWorld = ModelWorld()
 local worldModelWorld      = ModelWorld()
@@ -77,10 +78,6 @@ local backgroundModelWorld = ModelWorld()
 local foregroundCamera = PerspectiveCamera(foregroundModelWorld)
 local worldCamera      = PerspectiveCamera(worldModelWorld)
 local backgroundCamera = PerspectiveCamera(backgroundModelWorld)
-
-foregroundCamera:setFieldOfView(math.rad(80))
-worldCamera:setFieldOfView(math.rad(80))
-backgroundCamera:setFieldOfView(math.rad(80))
 
 local defaultShaderProgram = ShaderProgram:load('core/graphics/shaders/Default.vert',
                                                 'core/graphics/shaders/Default.frag')
@@ -91,6 +88,8 @@ defaultRT:setCamera(0, 'foreground', foregroundCamera)
 defaultRT:setCamera(1,      'world',      worldCamera)
 defaultRT:setCamera(2, 'background', backgroundCamera)
 defaultRT:setShaderProgramSet(defaultShaderProgramSet)
+
+actor = Actor(defaultRT)
 
 ResourceManager.enableLoading(false)
 

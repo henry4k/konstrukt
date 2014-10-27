@@ -1,7 +1,7 @@
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
-local Controlable = require 'core/Controlable'
+local Controlable      = require 'core/Controlable'
 local RegisterControl  = ENGINE.RegisterControl
 local SetEventCallback = ENGINE.SetEventCallback
 
@@ -23,7 +23,7 @@ function Control.pushControlable( controlable )
     table.insert(controlableStack, controlable)
 end
 
-function Control.removeControlable( controlable )
+function Control.popControlable( controlable )
     assert(Object.includes(controlable.class, Controlable),
            'Must be called with an controlable.')
     local controlableStack = Control.controlableStack
