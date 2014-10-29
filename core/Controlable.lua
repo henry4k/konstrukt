@@ -1,11 +1,11 @@
-local Controlable = {
+local Controllable = {
     static = {
         controls = {}
     }
 }
 
 
-function Controlable.static:mapControl( controlName, method )
+function Controllable.static:mapControl( controlName, method )
     local controls = self.static.controls
     assert(not controls[controlName], controlName..' has already been mapped!')
     controls[controlName] = method
@@ -14,7 +14,7 @@ function Controlable.static:mapControl( controlName, method )
     Control.register(controlName)
 end
 
-function Controlable:triggerControlEvent( controlName, ... )
+function Controllable:triggerControlEvent( controlName, ... )
     local controls = self.class.controls
     local method = controls[controlName]
     if method then
@@ -26,4 +26,4 @@ function Controlable:triggerControlEvent( controlName, ... )
 end
 
 
-return Controlable
+return Controllable

@@ -2,12 +2,12 @@ local class  = require 'middleclass'
 local rad    = math.rad
 local Vec         = require 'core/Vector'
 local Quat        = require 'core/Quaternion'
-local Controlable = require 'core/Controlable'
+local Controllable = require 'core/Controllable'
 local EventSource = require 'core/EventSource'
 
 
 local EgoCameraController = class('core/EgoCameraController')
-EgoCameraController:include(Controlable)
+EgoCameraController:include(Controllable)
 EgoCameraController:include(EventSource)
 
 

@@ -33,10 +33,10 @@ end)
 
 local class       = require 'middleclass'
 local Control     = require 'core/Control'
-local Controlable = require 'core/Controlable'
+local Controllable = require 'core/Controllable'
 
 local GlobalControls = class('core/init/GlobalControls')
-GlobalControls:include(Controlable)
+GlobalControls:include(Controllable)
 
 function GlobalControls:exit( absolute, delta )
     if delta > 0 then
@@ -45,7 +45,7 @@ function GlobalControls:exit( absolute, delta )
 end
 
 GlobalControls:mapControl('exit', GlobalControls.exit)
-Control.pushControlable(GlobalControls())
+Control.pushControllable(GlobalControls())
 
 
 -- Register resources

@@ -1,7 +1,7 @@
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
-local Controlable      = require 'core/Controlable'
+local Controllable      = require 'core/Controllable'
 local RegisterControl  = ENGINE.RegisterControl
 local SetEventCallback = ENGINE.SetEventCallback
 
@@ -14,8 +14,8 @@ function Control.register( name )
     RegisterControl(name)
 end
 
-function Control.pushControlable( controlable )
-    assert(Object.includes(controlable.class, Controlable),
+function Control.pushControllable( controlable )
+    assert(Object.includes(controlable.class, Controllable),
            'Must be called with an controlable.')
     local controlableStack = Control.controlableStack
     assert(not table.find(controlableStack, controlable),
@@ -23,12 +23,12 @@ function Control.pushControlable( controlable )
     table.insert(controlableStack, controlable)
 end
 
-function Control.popControlable( controlable )
-    assert(Object.includes(controlable.class, Controlable),
+function Control.popControllable( controlable )
+    assert(Object.includes(controlable.class, Controllable),
            'Must be called with an controlable.')
     local controlableStack = Control.controlableStack
     local i = table.find(controlableStack, controlable)
-    assert(i, 'Controlable must have been pushed before removing.')
+    assert(i, 'Controllable must have been pushed before removing.')
     table.remove(controlableStack, i)
 end
 
