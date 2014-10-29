@@ -8,7 +8,7 @@ local HasTransformation = {}
 
 function HasTransformation:setTransformation( matrix )
     assert(Object.isInstanceOf(matrix, Mat4), 'Transformation must be an matrix.')
-    self:_setTransformation(self, matrix)
+    self:_setTransformation(matrix)
 end
 
 

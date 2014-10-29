@@ -19,7 +19,7 @@ function ShaderProgram.static:_load( ... )
     local shaders = {...}
     for i,shader in ipairs(shaders) do
         if type(shader) == 'string' then
-            shaders[i] = ResourceManager.load('core/graphics/Shader', shader)
+            shaders[i] = Shader:load(shader)
         else
             assert(Object.isInstanceOf(shader, Shader))
         end

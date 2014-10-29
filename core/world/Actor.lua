@@ -20,7 +20,6 @@ function Actor:initialize( renderTarget )
     self.egoCameraController = EgoCameraController()
     Control.pushControllable(self.egoCameraController)
     local function onOrientationUpdated( self, orientation )
-        print(tostring(self)..': Updated orientation.')
         self.cameraManifold:setViewTransformation(orientation:toMatrix())
     end
     self.egoCameraController:addEventTarget('orientation-updated', self, onOrientationUpdated)
