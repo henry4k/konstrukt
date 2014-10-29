@@ -6,7 +6,7 @@ local Resource = { static = {} }
 
 function Resource.static:registerResource()
     ResourceManager.registerLoader(self.name, function(...)
-        return self:load(...)
+        return self:_load(...)
     end)
 end
 

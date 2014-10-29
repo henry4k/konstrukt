@@ -8,7 +8,7 @@ local DestroyTexture  = ENGINE.DestroyTexture
 local Texture = class('core/graphics/Texture')
 Texture:include(Resource)
 
-function Texture.static:load( ... )
+function Texture.static:_load( ... )
     return Texture(...)
 end
 

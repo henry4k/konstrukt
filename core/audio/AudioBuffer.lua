@@ -8,7 +8,7 @@ local DestroyAudioBuffer = ENGINE.DestroyAudioBuffer
 local AudioBuffer = class('core/audio/AudioBuffer')
 AudioBuffer:include(Resource)
 
-function AudioBuffer.static:load( fileName )
+function AudioBuffer.static:_load( fileName )
     return AudioBuffer(fileName)
 end
 

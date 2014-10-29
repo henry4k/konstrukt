@@ -9,7 +9,7 @@ local DestroyShader = ENGINE.DestroyShader
 local Shader = class('core/graphics/Shader')
 Shader:include(Resource)
 
-function Shader.static:load( fileName )
+function Shader.static:_load( fileName )
     return Shader(fileName)
 end
 

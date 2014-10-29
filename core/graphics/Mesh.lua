@@ -12,7 +12,7 @@ local DestroyMesh = ENGINE.DestroyMesh
 local Mesh = class('core/graphics/Mesh')
 Mesh:include(Resource)
 
-function Mesh.static:load( sceneFileName, objectName )
+function Mesh.static:_load( sceneFileName, objectName )
     local scene = Json.decodeFromFile(sceneFileName)
     if scene then
         local meshBuffer = Scene.createMeshBufferByPath(scene, objectName)

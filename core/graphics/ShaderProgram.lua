@@ -15,7 +15,7 @@ local UnsetGlobalUniform   = ENGINE.UnsetGlobalUniform
 local ShaderProgram = class('core/graphics/ShaderProgram')
 ShaderProgram:include(Resource)
 
-function ShaderProgram.static:load( ... )
+function ShaderProgram.static:_load( ... )
     local shaders = {...}
     for i,shader in ipairs(shaders) do
         if type(shader) == 'string' then
