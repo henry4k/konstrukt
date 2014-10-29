@@ -24,7 +24,8 @@ function ShaderProgram.static:_load( ... )
             assert(Object.isInstanceOf(shader, Shader))
         end
     end
-    return ShaderProgram(table.unpack(shaders))
+    local shaderProgram = ShaderProgram(table.unpack(shaders))
+    return { value=shaderProgram, destructor=shaderProgram.destroy }
 end
 
 --- Links the given `shaders` into a shader program.

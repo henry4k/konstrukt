@@ -9,7 +9,8 @@ local Texture = class('core/graphics/Texture')
 Texture:include(Resource)
 
 function Texture.static:_load( ... )
-    return Texture(...)
+    local texture = Texture(...)
+    return { value=texture, destructor=texture.destroy }
 end
 
 function Texture:initialize( target, fileName, ... )

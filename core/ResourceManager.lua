@@ -1,17 +1,21 @@
-local Shutdown = require 'core/Shutdown'
+-- As the resource manager also loads lua scripts, this file may have no dependencies.
 
 
 local ResourceManager = {
     loaders = {},
     resources = {},
-    loadingEnabled = false
+    loadingEnabled = true
 }
 
 --- Registers a resource loader.
 -- Resource loaders are functions or other callables.
 -- #ResourceManager.load passes the parameters to the loader, which shall return
--- the loaded resource, nil if the requested resource doesn't exist or yield an
--- error if something went wrong.
+-- a table, nil if the requested resource doesn't exist or yield an error if
+-- something went wrong.
+--
+-- The table contains:
+-- - value: The loaded resource. (This is returned by the load and get functions.)
+-- - destructor: Optional. Called when the resource shall be unloaded.
 function ResourceManager.registerLoader( type, loader )
     if ResourceManager.loaders[type] then
         error('A loader for "'..type..'" has already been registered.')
@@ -21,7 +25,7 @@ function ResourceManager.registerLoader( type, loader )
     end
 end
 
---- Enables/disables resource loading.  (Disabled by default.)
+--- Enables/disables resource loading.  (Enabled by default.)
 -- Attempting to load a resource, while loading is locked, will raise an error.
 function ResourceManager.enableLoading( enabled )
     ResourceManager.loadingEnabled = enabled
@@ -32,7 +36,12 @@ end
 -- The resource or nil if the requested resource has not been loaded yet.
 function ResourceManager.get( type, ... )
     local id = ResourceManager._createResourceIdentifier(type, ...)
-    return ResourceManager.resources[id]
+    local resource = ResourceManager.resources[id]
+    if resource then
+        return resource.value
+    else
+        return nil
+    end
 end
 
 --- Tries to load a resource if it hasn't been loaded yet.
@@ -40,39 +49,45 @@ end
 -- The resource or nil if the requested resource doesn't exist.
 function ResourceManager.load( type, ... )
     local id = ResourceManager._createResourceIdentifier(type, ...)
-    if ResourceManager.loadingEnabled then
-        local resource = ResourceManager.get(type, ...)
-        if not resource then
-            local loader = ResourceManager.loaders[type]
-            if loader then
-                resource = loader(...)
-                if resource then
-                    ResourceManager.resources[id] = resource
-                    print('Loaded resource "'..id..'".')
-                else
-                    print('Resource "'..id..'" doesn\'t exist.')
-                end
+
+    assert(ResourceManager.loadingEnabled,
+           'Can\'t load resource "'..id..'", since resource loading is disabled.')
+
+    local resourceValue = ResourceManager.get(type, ...)
+    if not resourceValue then
+        local loader = ResourceManager.loaders[type]
+        if loader then
+            local resource = loader(...)
+            if resource then
+                resourceValue = resource.value
+                assert(resourceValue)
+                ResourceManager.resources[id] = resource
+                print('Loaded resource "'..id..'".')
             else
-                error('No loader for resources of type "'..type..'".')
+                print('Resource "'..id..'" doesn\'t exist.')
             end
+        else
+            error('No loader for resources of type "'..type..'".')
         end
-        return resource
-    else
-        error('Cant load resource "'..id..'", since resource loading is disabled.')
     end
+    return resourceValue
+end
+
+function ResourceManager._put( resource, type, ... )
+    local id = ResourceManager._createResourceIdentifier(type, ...)
+    ResourceManager.resources[id] = resource
 end
 
 --- Drops all loaded resources.
 -- Tries to call #destroy in all resource objects.
 function ResourceManager.clear()
-    for _,resource in pairs(ResourceManager.resources) do
-        if resource['destroy'] then
-            resource:destroy()
+    for _, resource in pairs(ResourceManager.resources) do
+        if resource.destructor then
+            resource.destructor(resource.value)
         end
     end
     ResourceManager.resources = {}
 end
-Shutdown.registerHandler(ResourceManager.clear)
 
 --- Use the given parameters to create an unique identifier.
 -- Each parameter set creates a unique identifier that equals only other

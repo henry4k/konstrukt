@@ -9,7 +9,8 @@ local AudioBuffer = class('core/audio/AudioBuffer')
 AudioBuffer:include(Resource)
 
 function AudioBuffer.static:_load( fileName )
-    return AudioBuffer(fileName)
+    local buffer = AudioBuffer(fileName)
+    return { value=buffer, destructor=buffer.destroy }
 end
 
 function AudioBuffer:initialize( fileName )

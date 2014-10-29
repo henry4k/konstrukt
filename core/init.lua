@@ -9,17 +9,25 @@ function print( ... )
 end
 
 function loadfile( fileName, ... )
+    error('loadfile is not available in Apoapsis, you must use Lua modules instead.')
+end
+
+function dofile( fileName )
+    error('dofile is not available in Apoapsis, you must use Lua modules instead.')
+end
+
+function _loadfile( fileName, ... )
     local data = ENGINE.ReadFile(fileName)
     return load(data, fileName, ...)
 end
 
-function dofile( fileName )
-    return loadfile(fileName)()
+function _dofile( fileName )
+    return _loadfile(fileName)()
 end
 
-dofile 'core/require.lua'
-dofile 'core/table.lua'
-dofile 'core/logic.lua'
+_dofile 'core/bootstrap/table.lua'
+_dofile 'core/bootstrap/logic.lua'
+_dofile 'core/bootstrap/require.lua'
 
 
 -- Setup error handling
@@ -57,7 +65,6 @@ require 'core/graphics/Shader':registerResource()
 require 'core/graphics/ShaderProgram':registerResource()
 
 local ResourceManager = require 'core/ResourceManager'
-ResourceManager.enableLoading(true)
 
 
 -- Setup default render target
@@ -90,8 +97,6 @@ defaultRT:setCamera(2, 'background', backgroundCamera)
 defaultRT:setShaderProgramSet(defaultShaderProgramSet)
 
 actor = Actor(defaultRT)
-
-ResourceManager.enableLoading(false)
 
 
 -- Process command line arguments

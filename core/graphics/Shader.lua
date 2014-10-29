@@ -10,7 +10,8 @@ local Shader = class('core/graphics/Shader')
 Shader:include(Resource)
 
 function Shader.static:_load( fileName )
-    return Shader(fileName)
+    local shader = Shader(fileName)
+    return { value=shader, destructor=shader.destroy }
 end
 
 function Shader:initialize( fileName )
