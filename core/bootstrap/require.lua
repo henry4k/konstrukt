@@ -17,7 +17,7 @@ ResourceManager.registerLoader('module', function( moduleName )
     return nil
 end)
 
-ResourceManager._put(ResourceManager, 'module', 'core/ResourceManager')
+ResourceManager._put({ value=ResourceManager }, 'module', 'core/ResourceManager')
 
 function require( moduleName )
     return ResourceManager.get('module', moduleName) or

@@ -50,13 +50,9 @@ function Scenario.load( scenarioPackage, additionalPackages )
     print('Starting scenario ..')
     local scenarioMetadata = FS.getPackageMetadata(scenarioPackage)
     if scenarioMetadata.type == 'scenario' then
-        local startScript = scenarioPackage..'/start.lua'
-        if FS.fileExists(startScript) then
-            print('Running '..startScript)
-            dofile(startScript)
-        else
-            error('Scenario '..scenarioPackage..' doesn\'t contain a start script.')
-        end
+        local mainModule = require(scenarioPackage..'/init')
+        assert(mainModule.start, 'Scenarios main module must provide a start function.')
+        mainModule.start()
     end
 end
 

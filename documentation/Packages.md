@@ -68,8 +68,9 @@ When starting a game, packages are loaded and initialized this way:
 
 1. Mount all packages and their dependencies.
 2. Work out correct initialization order using the dependency information.
-3. Initialize each package by running all init scripts it contains.
-4. Run the scenarios start script.
+3. Initialize each package by loading all Lua modules it contains.
+4. Call the `start` function in the scenarios main module.
+   Which looks like this: `require moduleName..'/init'.start()`
 
 
 Scenarios
@@ -77,9 +78,10 @@ Scenarios
 
 Packages that setup the actual scene, which the player can interact with,
 are called scenarios.  They must be marked in `meta.json` as such and contain a
-start script called `start.lua` in the packages root directory.
+main module called `init.lua`, which must export a function called `start`.
 
-The start script is called after all packages has been initialized.
+The start function is called after all packages has been initialized.
+It could be called like this:  `require scenarioName..'/init'.start()`
 
 Note:  Only the first package passed as start argument to Apoapsis, can be used
 as scenario.
