@@ -2,7 +2,6 @@ local ResourceManager = _dofile 'core/ResourceManager.lua'
 
 local searchPaths = {
     '%s.lua',
-    '%s/init.lua',
     'core/third-party/%s.lua',
 }
 
@@ -21,8 +20,20 @@ end)
 ResourceManager._put(ResourceManager, 'module', 'core/ResourceManager')
 
 function require( moduleName )
-    return ResourceManager.load('module', moduleName)
+    return ResourceManager.get('module', moduleName) or
+           ResourceManager.load('module', moduleName)
 end
+
+-- Load all core modules:
+ResourceManager.enableLoading(true)
+local FS = require 'core/FileSystem'
+for path in FS.matchingFiles('core/.*%.lua') do
+    if not path:match('core/bootstrap/.*') then
+        local moduleName = path:match('(.*)%.lua')
+        require(moduleName)
+    end
+end
+ResourceManager.enableLoading(false)
 
 local Shutdown = require 'core/Shutdown'
 Shutdown.registerHandler(ResourceManager.clear)

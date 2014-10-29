@@ -91,7 +91,7 @@ bool InitGame( const int argc, char** argv )
     Log("-------------------------------");
 
     CreateArgumentTable(argc, argv);
-    return MountPackage("core") && RunLuaScript(GetLuaState(), "core/init.lua");
+    return MountPackage("core") && RunLuaScript(GetLuaState(), "core/bootstrap/init.lua");
 }
 
 static bool RegisterAllModulesInLua()

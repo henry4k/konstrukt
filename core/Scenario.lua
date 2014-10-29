@@ -25,7 +25,7 @@ function Scenario.load( scenarioPackage, additionalPackages )
 
     local packages = table.merge({scenarioPackage}, additionalPackages)
 
-    -- 1. Mount initially passed packages and collect dependecy information
+    -- 1. Mount initially passed packages and collect dependency information
     local dsl = DSL()
     for _, package in ipairs(packages) do
         Scenario._mountPackageAndDependencies(package, dsl)
@@ -38,9 +38,9 @@ function Scenario.load( scenarioPackage, additionalPackages )
     ResourceManager.enableLoading(true)
     for _, package in ipairs(orderedPackages) do
         print('Initializing package '..package..' ..')
-        for path in FS.matchingFiles(package..'/.*init%.lua') do
-            print('Running '..path)
-            dofile(path)
+        for path in FS.matchingFiles(package..'/.*%.lua') do
+            local moduleName = path:match('(.*)%.lua')
+            require(moduleName)
         end
     end
     ResourceManager.enableLoading(false)

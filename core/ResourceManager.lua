@@ -4,7 +4,7 @@
 local ResourceManager = {
     loaders = {},
     resources = {},
-    loadingEnabled = true
+    loadingEnabled = false
 }
 
 --- Registers a resource loader.
@@ -25,7 +25,7 @@ function ResourceManager.registerLoader( type, loader )
     end
 end
 
---- Enables/disables resource loading.  (Enabled by default.)
+--- Enables/disables resource loading.  (Disabled by default.)
 -- Attempting to load a resource, while loading is locked, will raise an error.
 function ResourceManager.enableLoading( enabled )
     ResourceManager.loadingEnabled = enabled

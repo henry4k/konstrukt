@@ -1,3 +1,10 @@
+-- Setup error handling
+
+ENGINE.SetErrorFunction(function( message )
+    return debug.traceback(message, 2)
+end)
+
+
 -- Reimplement some functions
 
 function print( ... )
@@ -30,17 +37,10 @@ _dofile 'core/bootstrap/logic.lua'
 _dofile 'core/bootstrap/require.lua'
 
 
--- Setup error handling
-
-ENGINE.SetErrorFunction(function( message )
-    return debug.traceback(message, 2)
-end)
-
-
 -- Register exit key
 
-local class       = require 'middleclass'
-local Control     = require 'core/Control'
+local class        = require 'middleclass'
+local Control      = require 'core/Control'
 local Controllable = require 'core/Controllable'
 
 local GlobalControls = class('core/init/GlobalControls')
@@ -56,19 +56,9 @@ GlobalControls:mapControl('exit', GlobalControls.exit)
 Control.pushControllable(GlobalControls())
 
 
--- Register resources
-
-require 'core/audio/AudioBuffer':registerResource()
-require 'core/graphics/Texture':registerResource()
-require 'core/graphics/Mesh':registerResource()
-require 'core/graphics/Shader':registerResource()
-require 'core/graphics/ShaderProgram':registerResource()
-
-local ResourceManager = require 'core/ResourceManager'
-
-
 -- Setup default render target
 
+local ResourceManager   = require 'core/ResourceManager'
 local Vec               = require 'core/Vector'
 local Quat              = require 'core/Quaternion'
 local Mat4              = require 'core/Matrix4'
@@ -86,8 +76,10 @@ local foregroundCamera = PerspectiveCamera(foregroundModelWorld)
 local worldCamera      = PerspectiveCamera(worldModelWorld)
 local backgroundCamera = PerspectiveCamera(backgroundModelWorld)
 
+ResourceManager.enableLoading(true)
 local defaultShaderProgram = ShaderProgram:load('core/graphics/shaders/Default.vert',
                                                 'core/graphics/shaders/Default.frag')
+ResourceManager.enableLoading(false)
 local defaultShaderProgramSet = ShaderProgramSet(defaultShaderProgram)
 
 local defaultRT = require 'core/graphics/DefaultRenderTarget':get()
