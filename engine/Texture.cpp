@@ -138,7 +138,6 @@ Texture* LoadCubeTexture( int options, const char* vfsPathTemplate )
     for(int i = 0; i < 6; i++)
     {
         const char* vfsPath = Format(vfsPathTemplate, names[i]);
-        Log("image %d = %s", i, vfsPath);
         if(!LoadImage(&images[i], vfsPath))
         {
             Error("Failed to load %s", vfsPath);

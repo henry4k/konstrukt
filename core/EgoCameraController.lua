@@ -34,11 +34,11 @@ function EgoCameraController:_rotate( amount )
 end
 
 EgoCameraController:mapControl('look-x', function( self, absolute, delta )
-    self:_rotate(Vec(rad(delta), 0, 0))
+    self:_rotate(Vec(0, rad(-delta), 0))
 end)
 
 EgoCameraController:mapControl('look-y', function( self, absolute, delta )
-    self:_rotate(Vec(0, rad(delta), 0))
+    self:_rotate(Vec(rad(-delta), 0, 0))
 end)
 
 

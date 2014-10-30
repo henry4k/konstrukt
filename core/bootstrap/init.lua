@@ -84,8 +84,8 @@ local defaultShaderProgramSet = ShaderProgramSet(defaultShaderProgram)
 
 local defaultRT = require 'core/graphics/DefaultRenderTarget':get()
 defaultRT:setCamera(0, 'foreground', foregroundCamera)
-defaultRT:setCamera(1,      'world',      worldCamera)
-defaultRT:setCamera(2, 'background', backgroundCamera)
+defaultRT:setCamera(2,      'world',      worldCamera)
+defaultRT:setCamera(1, 'background', backgroundCamera)
 defaultRT:setShaderProgramSet(defaultShaderProgramSet)
 
 actor = Actor(defaultRT)

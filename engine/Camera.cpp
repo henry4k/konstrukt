@@ -41,11 +41,12 @@ Camera* CreateCamera( ModelWorld* world )
     camera->world = world;
     ReferenceModelWorld(world);
 
-    camera->viewTransformation = mat4();
+    camera->modelTransformation = mat4(1);
+    camera->viewTransformation = mat4(1);
 
     camera->aspect = 1;
     camera->zNear  = 0.1f;
-    camera->zFar   = 100.0f;
+    camera->zFar   = 100;
 
     camera->projectionType = CAMERA_PERSPECTIVE_PROJECTION;
     camera->fieldOfView = 80;
