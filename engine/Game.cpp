@@ -29,6 +29,7 @@
 #include "lua_bindings/PhysFS.h"
 #include "lua_bindings/PhysicsManager.h"
 #include "lua_bindings/Shader.h"
+#include "lua_bindings/Timer.h"
 #include "lua_bindings/Texture.h"
 
 
@@ -110,6 +111,7 @@ static bool RegisterAllModulesInLua()
         RegisterPhysFSInLua() &&
         RegisterPhysicsManagerInLua() &&
         RegisterShaderInLua() &&
+        RegisterTimerInLua() &&
         RegisterTextureInLua() &&
         RegisterFunctionInLua("StopGameLoop", Lua_StopGameLoop);
 }

@@ -5,6 +5,11 @@ ENGINE.SetErrorFunction(function( message )
 end)
 
 
+-- Initialize random generator
+
+math.randomseed(ENGINE.GetTime())
+
+
 -- Reimplement some functions
 
 function print( ... )

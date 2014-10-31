@@ -1,3 +1,4 @@
+local Config = require 'core/Config'
 local MountPackage        = ENGINE.MountPackage
 local UnmountPackage      = ENGINE.UnmountPackage
 local ReadFile            = ENGINE.ReadFile
@@ -105,15 +106,87 @@ function FileSystem.makeDirectory( filePath )
     MakeDirectory(filePath)
 end
 
-function FileSystem.getDirectoryEntries( filePath )
+local function buildEntryComparision( directory, directoriesFirst )
+    local prefix = directory..'/'
+    return function( a, b )
+        local aIsDirectory = 0
+        local bIsDirectory = 0
+
+        local aPath = prefix..a
+        local bPath = prefix..b
+
+        if FileSystem.getFileInfo(aPath).type == 'directory' then
+            aIsDirectory = 1
+        end
+
+        if FileSystem.getFileInfo(bPath).type == 'directory' then
+            bIsDirectory = 1
+        end
+
+        if aIsDirectory ~= bIsDirectory then
+            if directoriesFirst then
+                return aIsDirectory > bIsDirectory
+            else
+                return aIsDirectory < bIsDirectory
+            end
+        end
+
+        return a < b
+    end
+end
+
+local sortFunctions = {
+    alphabetic = function( directory, entries )
+        table.sort(entries)
+    end,
+
+    directoriesFirst = function( directory, entries )
+        table.sort(entries, buildEntryComparision(directory, true))
+    end,
+
+    directoriesLast = function( directory, entries )
+        table.sort(entries, buildEntryComparision(directory, false))
+    end,
+
+    fileSystem = function( directory, entries )
+        -- Just retain the file system order.
+    end,
+
+    random = function( directory, entries )
+        table.shuffle(entries)
+    end
+}
+
+local defaultSortMethod = Config.get('debug.default-sort-method', 'directoriesLast')
+assert(sortFunctions[defaultSortMethod], 'Unknown default sort method: '..defaultSortMethod)
+
+--- Retrieves contents of a directory.
+-- @param sortMethod
+-- Optional, see #defaultSortMethod.
+-- - `alphabetic`:  Order entries alphabetically.
+-- - `directoriesFirst`:  Like `alphabetic`, but prefer directories.
+-- - `directoriesLast`:  Like `alphabetic`, but defer directories.
+-- - `fileSystem`:  Retain the file system order.
+-- - `random`:  Directory entries are shuffled. (Useful for testing, see #defaultSortMethod)
+function FileSystem.getDirectoryEntries( filePath, sortMethod )
     assertIsFilePath(filePath)
-    return GetDirectoryEntries(filePath)
+
+    sortMethod = sortMethod or defaultSortMethod
+    local sortFn = sortFunctions[sortMethod]
+    assert(sortFn, 'Unknown sort method: '..sortMethod)
+
+    local entries = GetDirectoryEntries(filePath)
+    sortFn(filePath, entries)
+    return entries
 end
 
 --- Iterates over directory entries and provides file paths and file information.
 -- for path, info in FS.directory('example/directory') do ... end
-function FileSystem.directory( filePath )
-    local entries = GetDirectoryEntries(filePath)
+--
+-- @param sortMethod
+-- See #FileSystem.getDirectoryEntries.
+function FileSystem.directory( filePath, sortMethod )
+    local entries = FileSystem.getDirectoryEntries(filePath, sortMethod)
     local index = 0
     local count = #entries
     local prefix
@@ -135,9 +208,12 @@ end
 
 --- Iterates over a directory tree and provides file paths and file information.
 -- for path, info in FS.directoryTree('example/directory') do ... end
-function FileSystem.directoryTree( filePath )
+--
+-- @param sortMethod
+-- See #FileSystem.getDirectoryEntries.
+function FileSystem.directoryTree( filePath, sortMethod )
     local function yieldTree( directory )
-        for entryPath, entryInfo in FileSystem.directory(directory) do
+        for entryPath, entryInfo in FileSystem.directory(directory, sortMethod) do
             coroutine.yield(entryPath, entryInfo)
             if entryInfo.type == 'directory' then
                 yieldTree(entryPath)
@@ -165,13 +241,16 @@ end
 
 --- Iterates recursivley over all files that match the given pattern.
 -- for path, info in FS.matchingFiles('example/.+%.png') do ... end
-function FileSystem.matchingFiles( filePattern )
+--
+-- @param sortMethod
+-- See #FileSystem.getDirectoryEntries.
+function FileSystem.matchingFiles( filePattern, sortMethod )
     assert(type(filePattern) == 'string', 'File pattern must be a string.')
     local staticPath = SeparateStaticAndPatternPathElements(filePattern)
     staticPath = staticPath or ''
     filePattern = '^'..filePattern..'$'
     return coroutine.wrap(function()
-        for path, info in FileSystem.directoryTree(staticPath) do
+        for path, info in FileSystem.directoryTree(staticPath, sortMethod) do
             if string.match(path, filePattern) then
                 coroutine.yield(path, info)
             end

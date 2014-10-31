@@ -36,7 +36,39 @@ local function find( target, value )
     end
 end
 
+local function weightComparision( a, b )
+    return a.weight < b.weight
+end
+
+--- Sort a table by computing a weight for each entry.
+local function sortByWeight( target, weightingFn )
+    local entriesWithWeighting = {}
+    for i, entry in ipairs(target) do
+        local weight = weightingFn(entry)
+        entriesWithWeighting[i] = { entry=entry, weight=weight }
+    end
+
+    table.sort(entriesWithWeighting, weightComparision)
+
+    for i, v in ipairs(entriesWithWeighting) do
+        target[i] = v.entry
+    end
+end
+
+local random = math.random
+
+local function randomWeight( entry )
+    return random()
+end
+
+--- Order the array part of a table randomly.
+local function shuffle( target )
+    return sortByWeight(target, randomWeight)
+end
+
 table.copy = copy
 table.include = include
 table.merge = merge
 table.find = find
+table.sortByWeight = sortByWeight
+table.shuffle = shuffle
