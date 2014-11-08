@@ -12,7 +12,7 @@ local InvertQuaternion                = ENGINE.InvertQuaternion
 local QuaternionOp                    = ENGINE.QuaternionOp
 local LerpQuaternion                  = ENGINE.LerpQuaternion
 local QuaternionXVector3              = ENGINE.QuaternionXVector3
-local QuaternionXVector4              = ENGINE.QuaternionXVector4
+local Vector3XQuaternion              = ENGINE.Vector3XQuaternion
 local CreateMatrix4FromQuaternion     = ENGINE.CreateMatrix4FromQuaternion
 
 
@@ -60,21 +60,23 @@ function Quat:__add( other )
 end
 
 function Quat:__mul( other )
-    assert(Object.isInstanceOf(other, Quat) or Vec:isInstance(other),
-           'Must be called with a quaternion or vector.')
-    if Vec:isInstance(other) then
-        if #other <= 3 then
-            return Vec(QuaternionXVector3(self.handle, other[1],
-                                                       other[2],
-                                                       other[3]))
-        else
-            return Vec(QuaternionXVector4(self.handle, other[1],
-                                                       other[2],
-                                                       other[3],
-                                                       other[4]))
-        end
+    assert(Object.isInstanceOf(other, Quat), 'Must be called with a quaternion.')
+    return Quat(QuaternionOp(self.handle, other.handle, '*'))
+end
+
+function Quat.static:multiplyVector( a, b )
+    if Object.isInstanceOf(a, Quat) and Vec:isInstance(b) then
+        return Vec(QuaternionXVector3(a.handle,
+                                      b[1],
+                                      b[2],
+                                      b[3]))
+    elseif Vec:isInstance(a) and Object.isInstanceOf(b, Quat) then
+        return Vec(Vector3XQuaternion(a[1],
+                                      a[2],
+                                      a[3],
+                                      b.handle))
     else
-        return Quat(QuaternionOp(self.handle, other.handle, '*'))
+        error('One parameter must be an vector and one a quaternion.')
     end
 end
 

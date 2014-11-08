@@ -49,7 +49,7 @@ Camera* CreateCamera( ModelWorld* world )
     camera->zFar   = 100;
 
     camera->projectionType = CAMERA_PERSPECTIVE_PROJECTION;
-    camera->fieldOfView = 80;
+    camera->fieldOfView = TAU/4.0; // 90 degrees
     camera->scale = 1;
     camera->projectionTransformationNeedsUpdate = true;
 

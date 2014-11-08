@@ -8,6 +8,10 @@ local CameraManifold = require 'core/graphics/CameraManifold'
 local EgoCameraController = require 'core/EgoCameraController'
 
 
+local DefaultFoV = math.rad(80)
+local ZoomedFoV = math.rad(10)
+
+
 --- Things that the player can take control of.
 local Actor = class('core/world/Actor', WorldObject)
 Actor:include(Controllable)
@@ -25,7 +29,7 @@ function Actor:initialize( renderTarget )
     self.egoCameraController:addEventTarget('orientation-updated', self, onOrientationUpdated)
 
     self.cameraManifold = CameraManifold(renderTarget)
-    self.cameraManifold:setFieldOfView(80)
+    self.cameraManifold:setFieldOfView(DefaultFoV)
 end
 
 function Actor:destroy()
@@ -35,10 +39,11 @@ function Actor:destroy()
     WorldObject.destroy(self)
 end
 
-Actor:mapControl('activate', function( self, absolute, delta )
-    print(tostring(delta))
+Actor:mapControl('zoom', function( self, absolute, delta )
     if delta > 0 then
-        print(tostring(self)..' activates something!')
+        self.cameraManifold:setFieldOfView(ZoomedFoV)
+    else
+        self.cameraManifold:setFieldOfView(DefaultFoV)
     end
 end)
 

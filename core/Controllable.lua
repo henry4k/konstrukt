@@ -1,9 +1,10 @@
 local Controllable = {
-    static = {
-        controls = {}
-    }
+    static = {}
 }
 
+function Controllable:included( klass )
+    klass.static.controls = {}
+end
 
 function Controllable.static:mapControl( controlName, method )
     local controls = self.static.controls

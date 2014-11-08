@@ -86,19 +86,17 @@ static int Lua_QuaternionXVector3( lua_State* l )
     return 3;
 }
 
-static int Lua_QuaternionXVector4( lua_State* l )
+static int Lua_Vector3XQuaternion( lua_State* l )
 {
-    const quat* a = CheckQuaternionFromLua(l, 1);
-    const vec4 b(luaL_checknumber(l, 2),
-                 luaL_checknumber(l, 3),
-                 luaL_checknumber(l, 4),
-                 luaL_checknumber(l, 5));
-    const vec4 r = *a * b;
+    const vec3 a(luaL_checknumber(l, 1),
+                 luaL_checknumber(l, 2),
+                 luaL_checknumber(l, 3));
+    const quat* b = CheckQuaternionFromLua(l, 4);
+    const vec3 r = a * *b;
     lua_pushnumber(l, r[0]);
     lua_pushnumber(l, r[1]);
     lua_pushnumber(l, r[2]);
-    lua_pushnumber(l, r[3]);
-    return 4;
+    return 3;
 }
 
 static int Lua_LerpQuaternion( lua_State* l )
@@ -325,7 +323,7 @@ bool RegisterMathInLua()
         RegisterFunctionInLua("QuaternionOp", Lua_QuaternionOp) &&
         RegisterFunctionInLua("LerpQuaternion", Lua_LerpQuaternion) &&
         RegisterFunctionInLua("QuaternionXVector3", Lua_QuaternionXVector3) &&
-        RegisterFunctionInLua("QuaternionXVector4", Lua_QuaternionXVector4) &&
+        RegisterFunctionInLua("Vector3XQuaternion", Lua_Vector3XQuaternion) &&
 
         RegisterUserDataTypeInLua(MATRIX4_TYPE, NULL) &&
         RegisterFunctionInLua("CreateMatrix4", Lua_CreateMatrix4) &&

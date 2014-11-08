@@ -1,4 +1,10 @@
-local assert = assert
+local assert       = assert
+local setmetatable = setmetatable
+local getmetatable = getmetatable
+local rawset       = rawset
+local max          = math.max
+local sqrt         = math.sqrt
+local unpack       = table.unpack
 
 
 local Vector =
@@ -19,23 +25,26 @@ function Vector:isInstance( v )
     return getmetatable(v) == self.mt
 end
 
+function Vector.prototype:clone()
+    return Vector(unpack(self))
+end
+
 function Vector.prototype:unpack( componentCount )
     if #self == componentCount then
-        return table.unpack(self)
+        return unpack(self)
     else
         local r = {}
         for i = 1, componentCount do
             r[i] = self[i]
         end
-        return table.unpack(r)
+        return unpack(r)
     end
 end
 
 function Vector.prototype:operate( other, operationFn )
-    assert(Vector:isInstance(other), 'Must be used with another vector.')
     local r = Vector()
     if Vector:isInstance(other) then
-        for i = 1, math.max(#self, #other) do
+        for i = 1, max(#self, #other) do
             rawset(r, i, operationFn(self[i], other[i]))
         end
     else -- treat as single value
@@ -46,12 +55,36 @@ function Vector.prototype:operate( other, operationFn )
     return r
 end
 
+function Vector.prototype:inverseLength()
+    local result = 0
+    for i = 1, #self do
+        local component = self[i]
+        result = result + component*component
+    end
+    return result
+end
+
+function Vector.prototype:length()
+    return sqrt(self:inverseLength())
+end
+
+function Vector.prototype:normalize()
+    local length = self:length()
+    local result = self:clone()
+    for i = 1, #result do
+        local component = result[i]
+        result[i] = component / length
+    end
+    return result
+end
+
 function Vector.prototype:__index( key )
+    assert(type(key) ~= 'number')
     return 0
 end
 
 function Vector.mt:__eq( other )
-    for i = 1, math.max(#self, #other) do
+    for i = 1, max(#self, #other) do
         if self[i] ~= other[i] then
             return false
         end
