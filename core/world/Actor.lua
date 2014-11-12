@@ -1,15 +1,15 @@
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
-local Control        = require 'core/Control'
-local Controllable    = require 'core/Controllable'
-local WorldObject    = require 'core/world/WorldObject'
-local CameraManifold = require 'core/graphics/CameraManifold'
+local Control             = require 'core/Control'
+local Controllable        = require 'core/Controllable'
+local WorldObject         = require 'core/world/WorldObject'
+local CameraManifold      = require 'core/graphics/CameraManifold'
 local EgoCameraController = require 'core/EgoCameraController'
 
 
 local DefaultFoV = math.rad(80)
-local ZoomedFoV = math.rad(10)
+local ZoomedFoV  = math.rad(10)
 
 
 --- Things that the player can take control of.

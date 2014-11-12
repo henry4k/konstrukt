@@ -3,7 +3,7 @@ local min = math.min
 local max = math.max
 
 function math.isInteger( number )
-    return math.floor(number) == number
+    return floor(number) == number
 end
 
 function math.isBetween( value, min, max )
