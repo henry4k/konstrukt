@@ -1,9 +1,15 @@
 local floor = math.floor
+local abs = math.abs
 local min = math.min
 local max = math.max
 
+
 function math.isInteger( number )
     return floor(number) == number
+end
+
+function math.sign( x )
+    return x / abs(x)
 end
 
 function math.isBetween( value, min, max )

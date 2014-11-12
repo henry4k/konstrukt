@@ -79,8 +79,11 @@ function Vector.prototype:normalize()
 end
 
 function Vector.prototype:__index( key )
-    assert(type(key) ~= 'number')
-    return 0
+    if type(key) == 'number' then
+        return 0
+    else
+        return nil
+    end
 end
 
 function Vector.mt:__eq( other )
