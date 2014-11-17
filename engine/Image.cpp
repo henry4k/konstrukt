@@ -91,7 +91,7 @@ static void FlipImageVertically( Image* image )
     for(int y = 0; y < height; y++)
     {
               char* dstStart = &newData[lineLength * y];
-        const char* srcStart = &oldData[lineLength * (height-y)];
+        const char* srcStart = &oldData[lineLength * ((height-1)-y)];
         memcpy(dstStart, srcStart, lineLength);
     }
 
