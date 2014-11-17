@@ -3,4 +3,4 @@ include_rules
 CFLAGS += $(INTERNAL_CFLAGS)
 LDFLAGS += $(INTERNAL_LDFLAGS)
 
-: foreach *.cpp |> !cxx |> %B.o {objects}
+: foreach *.cpp | $(REQUIRED_HEADERS) |> !cxx |> %B.o {objects}

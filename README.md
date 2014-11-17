@@ -17,7 +17,6 @@ Needed to compile the engine:
 - PhysFS 2.0+
 - Lua 5.2
 - Open GL
-- GLEW
 - GLFW 3
 - Open AL
 - ALURE

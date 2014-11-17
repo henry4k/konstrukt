@@ -37,11 +37,8 @@ bool InitWindow()
     const int height = GetConfigInt("window.height", 480);
     const char* title = GetConfigString("window.title", "Apoapsis");
 
-    const int versionMajor = GetConfigInt("opengl.major", 2);
-    const int versionMinor = GetConfigInt("opengl.minor", 1);
     const bool debug = GetConfigBool("opengl.debug", false);
     const bool vsync = GetConfigBool("opengl.vsync", true);
-    const bool experimentalDrivers = GetConfigBool("opengl.experimental-drivers", false);
 
     assert(g_Window == NULL);
     glfwSetErrorCallback(OnGLFWError);
@@ -52,8 +49,8 @@ bool InitWindow()
     }
 
     glfwDefaultWindowHints();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, versionMajor);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, versionMinor);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_DEPTH_BITS, GetConfigInt("opengl.depth-bits", 24));
     glfwWindowHint(GLFW_STENCIL_BITS, 0);
     glfwWindowHint(GLFW_SAMPLES, GetConfigInt("opengl.samples", 0));
@@ -71,35 +68,24 @@ bool InitWindow()
 
     glfwMakeContextCurrent(g_Window);
 
-    glewExperimental = experimentalDrivers ? GL_TRUE : GL_FALSE;
-    GLenum glewErrorCode = glewInit();
-    if(glewErrorCode != GLEW_OK)
+    if(!flextInit(g_Window))
     {
-        Error("GLEW Error: %s", glewGetErrorString(glewErrorCode));
+        Error("Failed to load OpenGL extensions.");
         return false;
     }
 
-    Log(
-        "Using OpenGL %s\n"
+    Log("Using OpenGL %s\n"
         "Vendor: %s\n"
         "Renderer: %s\n"
-        "GLSL: %s\n"
-        "GLEW: %s",
-
+        "GLSL: %s",
         glGetString(GL_VERSION),
         glGetString(GL_VENDOR),
         glGetString(GL_RENDERER),
-        glGetString(GL_SHADING_LANGUAGE_VERSION),
-        glewGetString(GLEW_VERSION)
-    );
+        glGetString(GL_SHADING_LANGUAGE_VERSION));
 
     if(vsync)
     {
-#if defined(_WIN32)
-        if(glfwExtensionSupported("WGL_EXT_swap_control_tear"))
-#else
-        if(glfwExtensionSupported("GLX_EXT_swap_control_tear"))
-#endif
+        if(FLEXT_EXT_swap_control_tear)
             glfwSwapInterval(-1); // enable vsync (allow the driver to swap even if a frame arrives a little bit late)
         else
             glfwSwapInterval(1); // enable vsync
@@ -109,7 +95,7 @@ bool InitWindow()
     glfwSetInputMode(g_Window, GLFW_STICKY_KEYS, GL_FALSE);
     glfwSetInputMode(g_Window, GLFW_STICKY_MOUSE_BUTTONS, GL_FALSE);
 
-    if(GLEW_ARB_seamless_cube_map)
+    if(FLEXT_ARB_seamless_cube_map)
     {
         Log("Seamless cubemap filtering supported");
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -117,7 +103,7 @@ bool InitWindow()
 
     if(debug)
     {
-        if(GLEW_ARB_debug_output)
+        if(FLEXT_ARB_debug_output)
         {
             glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
             glDebugMessageCallbackARB(OnDebugEvent, NULL);
@@ -260,12 +246,10 @@ static void OnDebugEvent( GLenum source, GLenum type, GLuint id, GLenum severity
     }
 
     Error("%s severity %s %s %d, %s", severityName, sourceName, typeName, id, message);
-    //Error("%s severity %s %s %d:\n%s", severityName, sourceName, typeName, id, message);
 }
 
 static void OnWindowResize( GLFWwindow* window, int width, int height )
 {
-    Log("window resize %dx%d", width, height);
     g_WindowWidth = width;
     g_WindowHeight = height;
     // TODO: Update cursor position
@@ -273,7 +257,6 @@ static void OnWindowResize( GLFWwindow* window, int width, int height )
 
 static void OnFramebufferResize( GLFWwindow* window, int width, int height )
 {
-    Log("framebuffer resize %dx%d", width, height);
     g_FramebufferWidth = width;
     g_FramebufferHeight = height;
     // TODO: Update cursor position
