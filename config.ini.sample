@@ -4,7 +4,6 @@ search-paths=.
 
 [debug]
 opengl=true
-squirrel=false
 collision=false
 
 [window]
@@ -13,10 +12,7 @@ height=600
 title=Apoapsis
 
 [opengl]
-major=2
-minor=1
 vsync=true
-experimental-drivers=false
 
 [audio]
 print-devices=false

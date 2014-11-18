@@ -1,0 +1,4 @@
+include_rules
+
+: profile.cfg |> PYTHONDONTWRITEBYTECODE=1 ./flextGLgen.py -t template -D . %f |> spec/gl.xml flextGL.h flextGL.c
+: flextGL.c | flextGL.h |> !cc |> flextGL.o

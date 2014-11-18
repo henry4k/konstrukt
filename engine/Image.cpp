@@ -1,5 +1,5 @@
 #include <stdlib.h> // malloc, free
-#include <string.h> // memset
+#include <string.h> // memset, memcpy
 
 #include <apoapsis_stb_image.h>
 
@@ -76,6 +76,29 @@ static const stbi_io_callbacks PhysFSCallbacks =
    PhysFSEOF
 };
 
+static void FlipImageVertically( Image* image )
+{
+    const char* oldData = image->data;
+    const int width  = image->width;
+    const int height = image->height;
+    const int bpp    = image->bpp;
+
+    const int size = width * height * bpp;
+    char* newData = (char*)malloc(size);
+
+    const int lineLength = bpp * width;
+
+    for(int y = 0; y < height; y++)
+    {
+              char* dstStart = &newData[lineLength * y];
+        const char* srcStart = &oldData[lineLength * ((height-1)-y)];
+        memcpy(dstStart, srcStart, lineLength);
+    }
+
+    free(image->data);
+    image->data = newData;
+}
+
 bool LoadImage( Image* image, const char* vfsPath )
 {
     memset(image, 0, sizeof(Image));
@@ -99,6 +122,8 @@ bool LoadImage( Image* image, const char* vfsPath )
         Error("Can't load '%s': %s", vfsPath, stbi_failure_reason());
         return false;
     }
+
+    FlipImageVertically(image);
 
     switch(image->bpp)
     {
