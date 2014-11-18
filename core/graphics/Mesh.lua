@@ -1,8 +1,6 @@
-local assert = assert
-local class  = require 'middleclass'
-local Object = class.Object
-local Json     = require 'core/Json'
-local Scene    = require 'core/Scene'
+local assert      = assert
+local class       = require 'middleclass'
+local Object      = class.Object
 local Resource = require 'core/Resource'
 local MeshBuffer  = require 'core/graphics/MeshBuffer'
 local CreateMesh  = ENGINE.CreateMesh
@@ -12,15 +10,10 @@ local DestroyMesh = ENGINE.DestroyMesh
 local Mesh = class('core/graphics/Mesh')
 Mesh:include(Resource)
 
-function Mesh.static:_load( sceneFileName, objectName )
-    local scene = Json.decodeFromFile(sceneFileName)
-    if scene then
-        local meshBuffer = Scene.createMeshBufferByPath(scene, objectName)
-        local mesh = Mesh(meshBuffer)
-        return { value=mesh, destructor=mesh.destroy }
-    else
-        return nil
-    end
+function Mesh.static:_load( ... )
+    local meshBuffer = MeshBuffer:load(...)
+    local mesh = Mesh(meshBuffer)
+    return { value=mesh, destructor=mesh.destroy }
 end
 
 function Mesh:initialize( meshBuffer )
