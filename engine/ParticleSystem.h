@@ -18,14 +18,17 @@ struct Mesh;
 struct ParticleSystem;
 
 
-bool InitParticleSystemModule();
-void DestroyParticleSystemModule();
+bool InitParticleSystemManager();
+void DestroyParticleSystemManager();
 void UpdateParticleSystems( double timeDelta );
 
-ParticleSystem* CreateParticleSystem();
-Mesh* GetParticleSystemMesh( ParticleSystem* system );
+ParticleSystem* CreateParticleSystem( int maxParticleCount,
+                                      float maxParticleLifeTime );
 
-void SetParticleLifetime( ParticleSystem* system, float lifeTime );
+/**
+ * Mesh is updated after each call to #UpdateParticleSystems.
+ */
+Mesh* GetParticleSystemMesh( ParticleSystem* system );
 
 void SpawnParticle( ParticleSystem* system,
                     glm::vec3 position,

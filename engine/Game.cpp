@@ -9,6 +9,7 @@
 #include "Audio.h"
 #include "Math.h"
 #include "Lua.h"
+#include "ParticleSystem.h"
 #include "PhysicsManager.h"
 #include "RenderTarget.h"
 #include "RenderManager.h"
@@ -27,6 +28,7 @@
 #include "lua_bindings/RenderTarget.h"
 #include "lua_bindings/ModelWorld.h"
 #include "lua_bindings/PhysFS.h"
+//#include "lua_bindings/ParticleSystem.h"
 #include "lua_bindings/PhysicsManager.h"
 #include "lua_bindings/Shader.h"
 #include "lua_bindings/Timer.h"
@@ -73,6 +75,10 @@ bool InitGame( const int argc, char** argv )
     if(!InitPhysicsManager())
         return false;
 
+    Log("--------- Particle System Manager ----------");
+    if(!InitParticleSystemManager())
+        return false;
+
     Log("--------- Shader ----------");
     if(!InitShader())
         return false;
@@ -110,6 +116,7 @@ static bool RegisterAllModulesInLua()
         RegisterModelWorldInLua() &&
         RegisterPhysFSInLua() &&
         RegisterPhysicsManagerInLua() &&
+        //RegisterParticleSystem() &&
         RegisterShaderInLua() &&
         RegisterTimerInLua() &&
         RegisterTextureInLua() &&
@@ -122,6 +129,7 @@ static void DestroyGame()
     DestroyDefaultRenderTarget();
     DestroyRenderManager();
     DestroyShader();
+    DestroyParticleSystemManager();
     DestroyPhysicsManager();
     DestroyControls();
     DestroyAudio();
@@ -143,6 +151,7 @@ void RunGame()
         //UpdateLua();
         UpdateAudio();
         UpdateControls(timeDelta);
+        UpdateParticleSystems(timeDelta);
         UpdatePhysicsManager(timeDelta);
         lastTime = curTime;
         RenderScene();
