@@ -61,9 +61,6 @@ bool InitLua()
     luaL_requiref(l, LUA_DBLIBNAME,   luaopen_debug,     true);
     luaL_requiref(l, "cjson",         luaopen_cjson,     true);
 
-    lua_pushnil(l);
-    lua_setglobal(l, "loadfile");
-
     lua_createtable(l, 0, 0);
     lua_setglobal(l, "ENGINE");
 
