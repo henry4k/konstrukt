@@ -6,6 +6,7 @@ local Vec    = require 'core/Vector'
 local Quat   = require 'core/Quaternion'
 local Force  = require 'core/physics/Force'
 local CollisionShape = require 'core/physics/CollisionShape'
+local EventSource    = require 'core/EventSource'
 local CreateSolid                = ENGINE.CreateSolid
 local DestroySolid               = ENGINE.DestroySolid
 local GetSolidMass               = ENGINE.GetSolidMass
@@ -28,6 +29,8 @@ local SetEventCallback           = ENGINE.SetEventCallback
 -- solid needs a #CollisionShape, but try to reuse collision shapes to save
 -- memory.
 local Solid = class('core/physics/Solid')
+Solid:include(EventSource)
+
 
 local SolidHandlesToSolids = {}
 setmetatable(SolidHandlesToSolids, {__mode='k'})
@@ -37,6 +40,7 @@ function Solid:initialize( mass, position, rotation, collisionShape )
     assert(Vec:isInstance(position), 'Position must be a vector.')
     assert(Object.isInstanceOf(rotation, Quat), 'Rotation must be a quaternion.')
     assert(Object.isInstanceOf(collisionShape, CollisionShape), 'Invalid collision shape.')
+    self:initializeEventSource()
     self.handle = CreateSolid(mass,
                               position[1],
                               position[2],
@@ -50,6 +54,7 @@ function Solid:initialize( mass, position, rotation, collisionShape )
 end
 
 function Solid:destroy()
+    self:destroyEventSource()
     for force,_ in pairs(self.forces) do
         force:destroy()
     end
@@ -120,7 +125,10 @@ end
 -- If set direction and position will be relative to the solids orientation.
 function Solid:applyImpulse( value, relativePosition, useLocalCoordinates )
     assert(Vec:isInstance(value), 'Value must be a vector.')
-    assert(Vec:isInstance(relativePosition) or nil, 'Relative position must be a vector.')
+    assert(Vec:isInstance(relativePosition) or
+           relativePosition == nil,
+           'Relative position must be a vector.')
+
     relativePosition    = relativePosition or Vec(0,0,0)
     useLocalCoordinates = useLocalCoordinates or false
     ApplySolidImpulse(self.handle,
@@ -147,19 +155,22 @@ local function CollisionHandler( solidAHandle,
                                  normalOnBX, normalOnBY, normalOnBZ,
                                  impulse )
 
-    print(string.format('collision with %f N/s', impulse))
-
-    --local pointOnA  = Vec(pointOnAX, pointOnAY, pointOnAZ)
-    --local pointOnB  = Vec(pointOnBX, pointOnBY, pointOnBZ)
+    local pointOnA  = Vec(pointOnAX, pointOnAY, pointOnAZ)
+    local pointOnB  = Vec(pointOnBX, pointOnBY, pointOnBZ)
     --local normalOnB = Vec(normalOnBX, normalOnBY, normalOnBZ)
-    --
-    --local solidA = SolidHandlesToSolids[solidAHandle]
-    --local solidB = SolidHandlesToSolids[solidBHandle]
-    --
-    --print(string.format('%s and %s collide with %f N/s',
-    --                    solidAHandle,
-    --                    solidBHandle,
-    --                    impulse))
+
+    local solidA = SolidHandlesToSolids[solidAHandle]
+    local solidB = SolidHandlesToSolids[solidBHandle]
+
+    assert(solidA and solidB)
+
+    print(string.format('%s and %s collide with %f N/s',
+                        solidAHandle,
+                        solidBHandle,
+                        impulse))
+
+    solidA:fireEvent('collision', impulse, solidB, pointOnA, pointOnB )
+    solidB:fireEvent('collision', impulse, solidA, pointOnB, pointOnA )
 end
 SetEventCallback('Collision', CollisionHandler)
 
