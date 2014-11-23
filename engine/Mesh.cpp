@@ -63,17 +63,11 @@ Mesh* CreateMesh( const MeshBuffer* buffer )
 static void BindMesh( const Mesh* mesh )
 {
     glBindBuffer(GL_ARRAY_BUFFER, mesh->vertexBuffer);
-    SetVertexAttributePointers(NULL);
 
     if(mesh->indexBuffer)
-    {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->indexBuffer);
-        glDrawElements(mesh->primitiveType, mesh->size, GL_UNSIGNED_SHORT, 0);
-    }
-    else
-    {
-        glDrawArrays(mesh->primitiveType, 0, mesh->size);
-    }
+
+    SetVertexAttributePointers(NULL);
 }
 
 static const Mesh* CurrentMesh = NULL;
