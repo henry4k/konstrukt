@@ -6,6 +6,8 @@
 #include "PhysicsManager.h"
 #include "ModelWorld.h"
 #include "Camera.h"
+#include "Time.h"
+#include "Shader.h"
 #include "RenderTarget.h"
 #include "Window.h" // SwapBuffers
 #include "RenderManager.h"
@@ -29,6 +31,10 @@ void DestroyRenderManager()
 
 void RenderScene()
 {
+    UniformValue timeValue;
+    timeValue.f = GetTime();
+    SetGlobalUniform("Time", FLOAT_UNIFORM, &timeValue);
+
     RenderTarget* defaultRenderTarget = GetDefaultRenderTarget();
     UpdateRenderTarget(defaultRenderTarget);
 
