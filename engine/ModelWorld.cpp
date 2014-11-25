@@ -239,6 +239,11 @@ static int CompareModelDrawEntries( const void* a_, const void* b_ )
 
     int r;
 
+    r = Compare((long)a->model->overlayLevel,
+                (long)b->model->overlayLevel);
+    if(r != 0)
+        return r;
+
     r = Compare((long)a->program,
                 (long)b->program);
     if(r != 0)
