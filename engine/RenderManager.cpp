@@ -6,6 +6,8 @@
 #include "PhysicsManager.h"
 #include "ModelWorld.h"
 #include "Camera.h"
+#include "Time.h"
+#include "Shader.h"
 #include "RenderTarget.h"
 #include "Window.h" // SwapBuffers
 #include "RenderManager.h"
@@ -20,7 +22,6 @@ bool InitRenderManager()
     glDisable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glClearColor(0.5, 0.5, 0.5, 1);
     return true;
 }
 
@@ -30,7 +31,9 @@ void DestroyRenderManager()
 
 void RenderScene()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    UniformValue timeValue;
+    timeValue.f = GetTime();
+    SetGlobalUniform("Time", FLOAT_UNIFORM, &timeValue);
 
     RenderTarget* defaultRenderTarget = GetDefaultRenderTarget();
     UpdateRenderTarget(defaultRenderTarget);

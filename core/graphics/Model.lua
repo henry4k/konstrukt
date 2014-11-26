@@ -12,6 +12,7 @@ local HasAttachmentTarget = require 'core/physics/HasAttachmentTarget'
 local DestroyModel              = ENGINE.DestroyModel
 local SetModelAttachmentTarget  = ENGINE.SetModelAttachmentTarget
 local SetModelTransformation    = ENGINE.SetModelTransformation
+local SetModelOverlayLevel      = ENGINE.SetModelOverlayLevel
 local SetModelMesh              = ENGINE.SetModelMesh
 local SetModelTexture           = ENGINE.SetModelTexture
 local SetModelProgramFamilyList = ENGINE.SetModelProgramFamilyList
@@ -29,6 +30,7 @@ Model:include(HasAttachmentTarget)
 function Model:initialize( handle )
     self.handle = handle
     self.attachmentTarget = nil
+    self.mesh = nil
 end
 
 function Model:destroy()
@@ -39,6 +41,16 @@ end
 function Model:setMesh( mesh )
     assert(Object.isInstanceOf(mesh, Mesh), 'Must be called with a mesh.')
     SetModelMesh(self.handle, mesh.handle)
+    self.mesh = mesh
+end
+
+function Model:getMesh()
+    return self.mesh
+end
+
+function Model:setOverlayLevel( level )
+    assert(isInteger(level), 'Overlay level must be an integer.')
+    SetModelOverlayLevel(self.handle, level)
 end
 
 function Model:setTexture( unit, texture )

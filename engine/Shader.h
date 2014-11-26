@@ -109,9 +109,9 @@ void ReleaseShaderProgram( ShaderProgram* program );
 /**
  * Use the given program for future render operations.
  */
-void BindShaderProgram( const ShaderProgram* program );
+void BindShaderProgram( ShaderProgram* program );
 
-bool HasUniform( ShaderProgram* program, const char* name );
+bool HasUniform( const ShaderProgram* program, const char* name );
 
 void SetUniform( ShaderProgram* program,
                  const char* name,
@@ -119,7 +119,7 @@ void SetUniform( ShaderProgram* program,
                  const UniformValue* value );
 
 /**
- * @see ApplyGlobalUniforms
+ * Sets the uniform `name` in all shader programs.
  */
 void SetGlobalUniform( const char* name,
                        UniformType type,
@@ -129,11 +129,6 @@ void SetGlobalUniform( const char* name,
  * Frees the global uniform slot, but program uniforms are *not* updated.
  */
 void UnsetGlobalUniform( const char* name );
-
-/**
- * Sets all global uniforms in the given program.
- */
-void ApplyGlobalUniforms( ShaderProgram* program );
 
 
 /**

@@ -63,8 +63,11 @@ void TransformMeshBuffer( MeshBuffer* buffer, const glm::mat4* transformation )
 
 void AppendMeshBuffer( MeshBuffer* buffer, const MeshBuffer* otherBuffer, const glm::mat4* transformation )
 {
+    // TODO: Raise error if target buffer doesn't use indices, but source buffer does.
+    // TODO: Generate indices if target buffer uses them, but source buffer doesn't.
+
     buffer->indices.reserve(buffer->indices.size()+otherBuffer->indices.size());
-    const VertexIndex indexOffset = buffer->indices.size();
+    const VertexIndex indexOffset = buffer->vertices.size();
     for(const VertexIndex& index : otherBuffer->indices)
         buffer->indices.push_back(index+indexOffset);
 

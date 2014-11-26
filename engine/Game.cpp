@@ -15,6 +15,7 @@
 #include "RenderManager.h"
 #include "Camera.h"
 #include "Shader.h"
+#include "Time.h"
 #include "Game.h"
 
 #include "lua_bindings/Audio.h"
@@ -31,7 +32,7 @@
 //#include "lua_bindings/ParticleSystem.h"
 #include "lua_bindings/PhysicsManager.h"
 #include "lua_bindings/Shader.h"
-#include "lua_bindings/Timer.h"
+#include "lua_bindings/Time.h"
 #include "lua_bindings/Texture.h"
 
 
@@ -61,6 +62,10 @@ bool InitGame( const int argc, char** argv )
 
     Log("----------- Window ------------");
     if(!InitWindow())
+        return false;
+
+    Log("--------- Time ----------");
+    if(!InitTime())
         return false;
 
     Log("------------ Audio ------------");
@@ -118,7 +123,7 @@ static bool RegisterAllModulesInLua()
         RegisterPhysicsManagerInLua() &&
         //RegisterParticleSystem() &&
         RegisterShaderInLua() &&
-        RegisterTimerInLua() &&
+        RegisterTimeInLua() &&
         RegisterTextureInLua() &&
         RegisterFunctionInLua("StopGameLoop", Lua_StopGameLoop);
 }
@@ -133,6 +138,7 @@ static void DestroyGame()
     DestroyPhysicsManager();
     DestroyControls();
     DestroyAudio();
+    DestroyTime();
     DestroyWindow();
     DestroyConfig();
     DestroyPhysFS();

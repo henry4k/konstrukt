@@ -90,6 +90,14 @@ static int Lua_SetModelTransformation( lua_State* l )
     return 0;
 }
 
+static int Lua_SetModelOverlayLevel( lua_State* l )
+{
+    Model* model = CheckModelFromLua(l, 1);
+    const int level = luaL_checkinteger(l, 2);
+    SetModelOverlayLevel(model, level);
+    return 0;
+}
+
 static int Lua_SetModelMesh( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
@@ -200,6 +208,7 @@ bool RegisterModelWorldInLua()
         RegisterFunctionInLua("DestroyModel", Lua_DestroyModel) &&
         RegisterFunctionInLua("SetModelAttachmentTarget", Lua_SetModelAttachmentTarget) &&
         RegisterFunctionInLua("SetModelTransformation", Lua_SetModelTransformation) &&
+        RegisterFunctionInLua("SetModelOverlayLevel", Lua_SetModelOverlayLevel) &&
         RegisterFunctionInLua("SetModelMesh", Lua_SetModelMesh) &&
         RegisterFunctionInLua("SetModelTexture", Lua_SetModelTexture) &&
         RegisterFunctionInLua("SetModelProgramFamilyList", Lua_SetModelProgramFamilyList) &&

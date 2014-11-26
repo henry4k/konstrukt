@@ -1,6 +1,7 @@
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
+local Vec    = require 'core/Vector'
 local Control             = require 'core/Control'
 local Controllable        = require 'core/Controllable'
 local WorldObject         = require 'core/world/WorldObject'
@@ -21,15 +22,19 @@ function Actor:initialize( renderTarget )
 
     Control.pushControllable(self)
 
+    self.cameraManifold = CameraManifold(renderTarget)
+    self.cameraManifold:setFieldOfView(DefaultFoV)
+
     self.egoCameraController = EgoCameraController()
     Control.pushControllable(self.egoCameraController)
     local function onOrientationUpdated( self, orientation )
-        self.cameraManifold:setViewTransformation(orientation:toMatrix())
+        local transformation = orientation:toMatrix():scale(Vec(1,1,-1))
+        -- Invert Z axis to remain in right-handed system.
+        self.cameraManifold:setViewTransformation(transformation)
     end
     self.egoCameraController:addEventTarget('orientation-updated', self, onOrientationUpdated)
 
-    self.cameraManifold = CameraManifold(renderTarget)
-    self.cameraManifold:setFieldOfView(DefaultFoV)
+    onOrientationUpdated(self, self.egoCameraController:getOrientation())
 end
 
 function Actor:destroy()

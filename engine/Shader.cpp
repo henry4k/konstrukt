@@ -229,6 +229,7 @@ void ReleaseShader( Shader* shader )
 // ----- Shader Program -----
 
 static void FreeShaderProgram( ShaderProgram* program );
+static void ApplyGlobalUniforms( ShaderProgram* program );
 
 static void ShowShaderProgramLog( ShaderProgram* program )
 {
@@ -433,13 +434,14 @@ void ReleaseShaderProgram( ShaderProgram* program )
         FreeShaderProgram(program);
 }
 
-static const ShaderProgram* CurrentShaderProgram = NULL;
+static ShaderProgram* CurrentShaderProgram = NULL;
 
-void BindShaderProgram( const ShaderProgram* program )
+void BindShaderProgram( ShaderProgram* program )
 {
     if(program != CurrentShaderProgram)
     {
         glUseProgram(program->handle);
+        ApplyGlobalUniforms(program);
         CurrentShaderProgram = program;
     }
 }
@@ -452,7 +454,7 @@ static int GetUniformIndex( const ShaderProgram* program, const char* name )
     return INVALID_UNIFORM_INDEX;
 }
 
-bool HasUniform( ShaderProgram* program, const char* name )
+bool HasUniform( const ShaderProgram* program, const char* name )
 {
     return GetUniformIndex(program, name) != INVALID_UNIFORM_INDEX;
 }
@@ -544,6 +546,12 @@ void SetGlobalUniform( const char* name,
     CopyString(name, uniform->name, sizeof(uniform->name));
     uniform->type = type;
     memcpy(&uniform->value, value, GetUniformSize(type));
+
+    if(CurrentShaderProgram)
+        SetUniform(CurrentShaderProgram,
+                   uniform->name,
+                   uniform->type,
+                   &uniform->value);
 }
 
 void UnsetGlobalUniform( const char* name )
@@ -553,13 +561,19 @@ void UnsetGlobalUniform( const char* name )
         memset(uniform, 0, sizeof(GlobalUniform));
 }
 
-void ApplyGlobalUniforms( ShaderProgram* program )
+/**
+ * Sets all global uniforms in the given program.
+ */
+static void ApplyGlobalUniforms( ShaderProgram* program )
 {
     for(int i = 0; i < MAX_GLOBAL_UNIFORMS; i++)
     {
         GlobalUniform* uniform = &GlobalUniforms[i];
         if(uniform->active)
-            SetUniform(program, uniform->name, uniform->type, &uniform->value);
+            SetUniform(program,
+                       uniform->name,
+                       uniform->type,
+                       &uniform->value);
     }
 }
 

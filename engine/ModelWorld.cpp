@@ -38,6 +38,7 @@ struct Model
     LocalUniform uniforms[MAX_LOCAL_UNIFORMS];
     Solid* attachmentTarget;
     int attachmentFlags;
+    int overlayLevel;
 };
 
 struct ModelWorld
@@ -95,6 +96,41 @@ void ReleaseModelWorld( ModelWorld* world )
         FreeModelWorld(world);
 }
 
+static int CurrentOverlayLevel = 0;
+
+static void SetOverlayLevel( int level )
+{
+    if(level == CurrentOverlayLevel)
+        return;
+
+    if(CurrentOverlayLevel == 0 &&
+                     level != 0)
+    {
+        glDepthMask(GL_FALSE);
+
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        //glEnable(GL_POLYGON_OFFSET_LINE);
+        //glEnable(GL_POLYGON_OFFSET_POINT);
+
+    }
+    else if(CurrentOverlayLevel != 0 &&
+                          level == 0)
+    {
+        glDepthMask(GL_TRUE);
+
+        glDisable(GL_POLYGON_OFFSET_FILL);
+        //glDisable(GL_POLYGON_OFFSET_LINE);
+        //glDisable(GL_POLYGON_OFFSET_POINT);
+    }
+
+    if(level != 0)
+    {
+        glPolygonOffset(0.0, -level);
+    }
+
+    CurrentOverlayLevel = level;
+}
+
 void DrawModelWorld( const ModelWorld* world,
                      const ShaderProgramSet* programSet,
                      Camera* camera )
@@ -123,10 +159,12 @@ void DrawModelWorld( const ModelWorld* world,
 
     // Render draw list:
     ShaderProgram* currentProgram = NULL;
+    int currentOverlayLevel = 0;
     for(int i = 0; i < drawListSize; i++)
     {
         const Model* model = drawList[i].model;
         ShaderProgram* program = drawList[i].program;
+        int overlayLevel = model->overlayLevel;
 
         if(!ModelIsComplete(model))
         {
@@ -148,9 +186,13 @@ void DrawModelWorld( const ModelWorld* world,
 
         SetModelUniforms(model, program, camera);
 
+        SetOverlayLevel(model->overlayLevel);
+
         // Mesh optimization is handled by the mesh module already.
         DrawMesh(model->mesh);
     }
+
+    SetOverlayLevel(0);
 }
 
 static mat4 CalculateModelTransformation( const Model* model )
@@ -196,6 +238,11 @@ static int CompareModelDrawEntries( const void* a_, const void* b_ )
     const ModelDrawEntry* b = (const ModelDrawEntry*)b_;
 
     int r;
+
+    r = Compare((long)a->model->overlayLevel,
+                (long)b->model->overlayLevel);
+    if(r != 0)
+        return r;
 
     r = Compare((long)a->program,
                 (long)b->program);
@@ -282,6 +329,11 @@ void SetModelAttachmentTarget( Model* model, Solid* target, int flags )
 void SetModelTransformation( Model* model, mat4 transformation )
 {
     model->transformation = transformation;
+}
+
+void SetModelOverlayLevel( Model* model, int level )
+{
+    model->overlayLevel = level;
 }
 
 void SetModelMesh( Model* model, Mesh* mesh )
