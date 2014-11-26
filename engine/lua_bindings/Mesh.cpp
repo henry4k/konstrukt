@@ -8,7 +8,7 @@ static int Lua_CreateMesh( lua_State* l )
 {
     const MeshBuffer* buffer = CheckMeshBufferFromLua(l, 1);
 
-    Mesh* mesh = CreateMesh(buffer);
+    Mesh* mesh = CreateMeshFromBuffer(buffer);
     if(mesh)
     {
         PushPointerToLua(l, mesh);

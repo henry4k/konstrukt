@@ -8,7 +8,8 @@ struct MeshBuffer;
 struct Mesh;
 
 
-Mesh* CreateMesh( const MeshBuffer* buffer );
+Mesh* CreateMeshFromBuffer( const MeshBuffer* buffer );
+
 void DrawMesh( const Mesh* mesh );
 
 void ReferenceMesh( Mesh* mesh );

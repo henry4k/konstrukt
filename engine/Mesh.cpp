@@ -17,14 +17,8 @@ struct Mesh
 };
 
 
-Mesh* CreateMesh( const MeshBuffer* buffer )
+static Mesh* CreateMesh( bool useIndexBuffer )
 {
-    const int vertexCount = GetMeshBufferVertexCount(buffer);
-    const int indexCount = GetMeshBufferIndexCount(buffer);
-
-    if(!vertexCount)
-        Error("Creating an empty mesh.");
-
     Mesh* mesh = new Mesh;
     memset(mesh, 0, sizeof(Mesh));
 
@@ -32,7 +26,25 @@ Mesh* CreateMesh( const MeshBuffer* buffer )
 
     mesh->primitiveType = GL_TRIANGLES; // Default to triangles (can be changed later)
 
+    // Create and initialize vertex buffer
     glGenBuffers(1, &mesh->vertexBuffer);
+
+    if(useIndexBuffer)
+        glGenBuffers(1, &mesh->indexBuffer);
+
+    return mesh;
+}
+
+Mesh* CreateMeshFromBuffer( const MeshBuffer* buffer )
+{
+    const int vertexCount = GetMeshBufferVertexCount(buffer);
+    const int indexCount = GetMeshBufferIndexCount(buffer);
+    const bool useIndexBuffer = indexCount > 0;
+
+    if(vertexCount == 0)
+        Error("Creating an empty mesh.");
+
+    Mesh* mesh = CreateMesh(useIndexBuffer);
 
     glBindBuffer(GL_ARRAY_BUFFER, mesh->vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER,
@@ -40,10 +52,8 @@ Mesh* CreateMesh( const MeshBuffer* buffer )
                  GetMeshBufferVertices(buffer),
                  GL_STATIC_DRAW);
 
-    if(indexCount)
+    if(useIndexBuffer)
     {
-        glGenBuffers(1, &mesh->indexBuffer);
-
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->indexBuffer);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                      indexCount*sizeof(unsigned short),
