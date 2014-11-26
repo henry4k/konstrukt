@@ -4,13 +4,30 @@ Mixins:
     "Benötigt Stromanschluss"
     "Benötigt Kommunikationsanschluss"
 
+Materialien:
+    Aluminium-Platte:
+        Benötigt n Gramm Aluminium.
+        Wiegt n Gramm.
+
+    Glas-Platte:
+        Benötigt n Gramm Glas.
+        Wiegt n Gramm.
+
+    Aluminium-Rohr:
+        Benötigt n Gramm Aluminium.
+        Wiegt n Gramm.
+
+Werkzeuge:
+    Schweissgerät
+    Schraubenzieher
+
 Strukturen:
     Leere:
-        Kann Rohren enthalten.
+        Kann Rohre enthalten.
 
     Gerüst: Leere
         Rahmenfunktionalität.
-        Kann Rohren enthalten.
+        Kann Rohre enthalten.
 
         Jede Seite kann mit einer Platte versehen werden:
             verschweisst:
@@ -57,6 +74,18 @@ Strukturen:
     Display: Leere
         Benötigt Stromanschluss.
         Benötigt Kommunikationsanschluss.
+
+    3D Printer:
+        Erzeugt Objekte mit niedriger Qualität.
+
+    Recycler/Shredder:
+        Zershreddert Objekte in Einzelteile.
+        Z.B. Recheneinheit -> Plastikteile, Metallteile, Platinenteile
+             Die Platinenteile können ohne weitere Schritte nicht wieder verwendet werden.
+
+    Schmelzofen:
+        Benötigt viel Energie.
+        Erzeugt simple Metallgegenstände (Würfel, Platte).
 
 Rohre:
     Stromverbindung
