@@ -88,7 +88,43 @@ end
 
 function Vector.mt:__eq( other )
     for i = 1, max(#self, #other) do
-        if self[i] ~= other[i] then
+        if not self[i] == other[i] then
+            return false
+        end
+    end
+    return true
+end
+
+function Vector.prototype:componentsLesserThan( other )
+    for i = 1, max(#self, #other) do
+        if not self[i] < other[i] then
+            return false
+        end
+    end
+    return true
+end
+
+function Vector.prototype:componentsGreaterThan( other )
+    for i = 1, max(#self, #other) do
+        if not self[i] > other[i] then
+            return false
+        end
+    end
+    return true
+end
+
+function Vector.prototype:componentsLesserOrEqualTo( other )
+    for i = 1, max(#self, #other) do
+        if not self[i] <= other[i] then
+            return false
+        end
+    end
+    return true
+end
+
+function Vector.prototype:componentsGreaterOrEqualTo( other )
+    for i = 1, max(#self, #other) do
+        if not self[i] >= other[i] then
             return false
         end
     end
