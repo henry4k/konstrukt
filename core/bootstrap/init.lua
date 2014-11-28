@@ -61,6 +61,23 @@ GlobalControls:mapControl('exit', GlobalControls.exit)
 Control.pushControllable(GlobalControls())
 
 
+-- Setup chunk manager
+
+local Shutdown       = require 'core/Shutdown'
+local Vec            = require 'core/Vector'
+local VoxelVolume    = require 'core/voxel/VoxelVolume'
+local ChunkManager   = require 'core/world/ChunkManager'
+local ChunkActivator = require 'core/world/ChunkActivator'
+
+local voxelVolume = VoxelVolume(Vec(32, 32, 32))
+chunkManager = ChunkManager(voxelVolume)
+
+Shutdown.registerHandler(function()
+    chunkManager:destroy()
+    voxelVolume:destroy()
+end)
+
+
 -- Setup default render target
 
 local ResourceManager   = require 'core/ResourceManager'
