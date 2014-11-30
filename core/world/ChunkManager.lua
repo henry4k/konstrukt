@@ -3,7 +3,7 @@ local Object      = class.Object
 local Vec         = require 'core/Vector'
 local Volume      = require 'core/Volume'
 local Chunk       = require 'core/world/Chunk'
-local VoxelVolume = require 'core/voxel/VoxelVolume'
+local VoxelVolume = require 'core/world/VoxelVolume'
 
 
 --- Manages the static game world, by dividing it into chunks.
