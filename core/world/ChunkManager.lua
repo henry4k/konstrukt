@@ -1,19 +1,23 @@
+local assert      = assert
 local floor       = math.floor
-local ceil        = math.ceil
 local class       = require 'middleclass'
 local Object      = class.Object
 local Vec         = require 'core/Vector'
 local Chunk       = require 'core/world/Chunk'
 local VoxelVolume = require 'core/world/VoxelVolume'
+local ModelWorld  = require 'core/graphics/ModelWorld'
 
 
 --- Manages the static game world, by dividing it into chunks.
 local ChunkManager = class('core/world/ChunkManager')
 
-function ChunkManager:initialize( voxelVolume )
+function ChunkManager:initialize( voxelVolume, modelWorld )
     assert(Object.isInstanceOf(voxelVolume, VoxelVolume),
            'Must be initialized with a voxel volume.')
+    assert(Object.isInstanceOf(modelWorld, ModelWorld),
+           'Must be initialized with a model world.')
     self.voxelVolume = voxelVolume
+    self.modelWorld = modelWorld
     self.chunkSize = 8
     self.chunks = {}
     self.activators = {} -- Defines which chunks need to be active.
@@ -81,13 +85,14 @@ function ChunkManager:update()
 
     -- Create needed chunks:
     local chunkHalfWidths = Vec(1, 1, 1) * (self.chunkSize / 2)
+    local modelWorld = self.modelWorld
     for chunkId, chunkPosition in pairs(neededChunks) do
         if not chunks[chunkId] then
             local chunk = Chunk()
             chunks[chunkId] = chunk
             local min = chunkPosition - chunkHalfWidths
             local max = chunkPosition + chunkHalfWidths
-            chunk:update(self.voxelVolume, min, max)
+            chunk:update(self.voxelVolume, min, max, modelWorld)
         end
     end
 end

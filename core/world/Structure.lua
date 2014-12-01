@@ -19,5 +19,9 @@ function Structure:destroy()
     WorldObject.destroy(self)
 end
 
+function Structure:generateModels( chunkBuilder )
+    -- Dummy function.  This is meant to be overridden in child classes.
+end
+
 
 return Structure

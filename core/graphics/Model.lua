@@ -31,6 +31,8 @@ function Model:initialize( handle )
     self.handle = handle
     self.attachmentTarget = nil
     self.mesh = nil
+    self.activeTextures = {}
+    self.activeUniforms = {}
 end
 
 function Model:destroy()
@@ -58,6 +60,14 @@ function Model:setTexture( unit, texture )
     assert(unit >= 0, 'Unit must be positive.')
     assert(Object.isInstanceOf(texture, Texture), 'Must be called with a texture.')
     SetModelTexture(self.handle, unit, texture.handle)
+    self.activeTextures[unit] = true
+end
+
+function Model:unsetAllTextures()
+    for unit, _ in pairs(self.activeTextures) do
+        SetModelTexture(self.handle, unit, nil)
+        self.activeTextures[unit] = nil
+    end
 end
 
 function Model:setProgramFamilyList( familyList )
@@ -75,10 +85,18 @@ function Model:setUniform( name, value, type )
         assert(type, 'Type is missing.')
         SetModelUniform(self.handle, name, type, value)
     end
+    self.activeUniforms[name] = true
 end
 
 function Model:unsetUniform( name )
     UnsetModelUniform(self.handle, name)
+    self.activeUniforms[name] = nil
+end
+
+function Model:unsetAllUniforms()
+    for name, _ in pairs(self.activeUniforms) do
+        self:unsetUniform(name)
+    end
 end
 
 function Model:_setTransformation( matrix )

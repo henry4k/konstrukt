@@ -1,7 +1,5 @@
-local format  = string.format
-local class   = require 'middleclass'
-local Object  = class.Object
-local Vec     = require 'core/Vector'
+local format = string.format
+local class  = require 'middleclass'
 
 
 --- Represents a part of the static game world.
@@ -14,26 +12,26 @@ function Chunk.static:generateId( x, y, z )
 end
 
 function Chunk:initialize()
-    -- store needed textures and shaders here
-    -- create models
-    -- create meshes
+    self.models = {}
 end
 
 function Chunk:destroy()
     -- destroy created resource here (meshes and models probably)
+    for _, model in pairs(self.models) do
+        model:destroy()
+    end
+    self.models = nil
 end
 
-function Chunk:update( voxelVolume, min, max )
-    -- update meshes
-    --[[
-    for z = min[3], max[3], 1 do
-    for y = min[2], max[2], 1 do
-    for x = min[1], max[1], 1 do
-        -- TODO: Update stuff here!
+function Chunk:update( voxelVolume, min, max, modelWorld )
+    local chunkBuilder = ChunkBuilder()
+
+    local structures = voxelVolume:getStructuresInAABB(min, max)
+    for _, structure in ipairs(structures) do
+        structure:generateModels(chunkBuilder)
     end
-    end
-    end
-    ]]
+
+    chunkBuilder:updateModels(self.models, modelWorld)
 end
 
 

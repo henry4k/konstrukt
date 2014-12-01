@@ -110,7 +110,7 @@ static int Lua_SetModelTexture( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
     const int unit = luaL_checkinteger(l, 2);
-    Texture* texture = CheckTextureFromLua(l, 3);
+    Texture* texture = GetTextureFromLua(l, 3);
     SetModelTexture(model, unit, texture);
     return 0;
 }
