@@ -42,6 +42,7 @@ Dadurch hat man prinzipiell immernoch die Probleme von v1,
 aber man kann sehr leicht die Integrität prüfen
 und die Implementation ist sehr einfach, wodurch weniger Fehler entstehen sollten.
 
+```
 Voxel:
     init(x,y,z):
         read()
@@ -57,6 +58,7 @@ Voxel:
     Die Position darf nicht verändert werden.
 
     DAO wird als Dirty markiert, wenn Eigenschaften verändert wurden.
+```
 
 Voxel haben folgendes Format:
 - Typ-ID
