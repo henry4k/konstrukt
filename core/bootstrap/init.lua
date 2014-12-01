@@ -61,23 +61,6 @@ GlobalControls:mapControl('exit', GlobalControls.exit)
 Control.pushControllable(GlobalControls())
 
 
--- Setup chunk manager
-
-local Shutdown       = require 'core/Shutdown'
-local Vec            = require 'core/Vector'
-local VoxelVolume    = require 'core/voxel/VoxelVolume'
-local ChunkManager   = require 'core/world/ChunkManager'
-local ChunkActivator = require 'core/world/ChunkActivator'
-
-local voxelVolume = VoxelVolume(Vec(32, 32, 32))
-chunkManager = ChunkManager(voxelVolume)
-
-Shutdown.registerHandler(function()
-    chunkManager:destroy()
-    voxelVolume:destroy()
-end)
-
-
 -- Setup default render target
 
 local ResourceManager   = require 'core/ResourceManager'
@@ -111,6 +94,23 @@ defaultRT:setCamera(1, 'background', backgroundCamera)
 defaultRT:setShaderProgramSet(defaultShaderProgramSet)
 
 actor = Actor(defaultRT)
+
+
+-- Setup chunk manager
+
+local Shutdown       = require 'core/Shutdown'
+local Vec            = require 'core/Vector'
+local VoxelVolume    = require 'core/world/VoxelVolume'
+local ChunkManager   = require 'core/world/ChunkManager'
+local ChunkActivator = require 'core/world/ChunkActivator'
+
+local voxelVolume = VoxelVolume(Vec(32, 32, 32))
+chunkManager = ChunkManager(voxelVolume, worldModelWorld)
+
+Shutdown.registerHandler(function()
+    chunkManager:destroy()
+    voxelVolume:destroy()
+end)
 
 
 -- Process command line arguments

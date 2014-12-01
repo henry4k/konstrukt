@@ -50,7 +50,7 @@ function VoxelVolume:getStructuresInAABB( min, max )
     assert(Vec:isInstance(min) and
            Vec:isInstance(max), 'Min and max must be vectors.')
     assert(min:componentsLesserOrEqualTo(max), 'Min must be smaller than max.')
-    -- TODO!
+    error('unimplemented')
 end
 
 

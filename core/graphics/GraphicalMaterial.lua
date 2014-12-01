@@ -2,6 +2,7 @@ local assert    = assert
 local isInteger = math.isInteger
 local class     = require 'middleclass'
 local Object    = class.Object
+local Vec       = require 'core/Vector'
 local Mat4      = require 'core/Matrix4'
 local Texture   = require 'core/graphics/Texture'
 local Model     = require 'core/graphics/Model'

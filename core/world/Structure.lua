@@ -8,7 +8,7 @@ local Structure = class('core/world/Structure', WorldObject)
 --- Helper function! So you don't need to import the StructureDictionary every time.
 function Structure.static:register()
     local dict = require 'core/world/StructureDictionary'
-    dict:registerClass(self)
+    dict.registerClass(self)
 end
 
 function Structure:initialize( voxelVolume, origin )
