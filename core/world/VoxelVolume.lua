@@ -1,12 +1,13 @@
 local class = require 'middleclass'
 local Vec   = require 'core/Vector'
-local Voxel = require 'core/voxel/Voxel'
-local SetVoxelVolumeSize = ENGINE.SetVoxelVolumeSize
-local ReadVoxelData      = ENGINE.ReadVoxelData
-local WriteVoxelData     = ENGINE.WriteVoxelData
+local Voxel = require 'core/world/Voxel'
+local StructureDictionary = require 'core/world/StructureDictionary'
+local SetVoxelVolumeSize  = ENGINE.SetVoxelVolumeSize
+local ReadVoxelData       = ENGINE.ReadVoxelData
+local WriteVoxelData      = ENGINE.WriteVoxelData
 
 
-local VoxelVolume = class('core/voxel/VoxelVolume')
+local VoxelVolume = class('core/world/VoxelVolume')
 
 VoxelVolume.static._singletonExists = false
 
@@ -33,6 +34,16 @@ function VoxelVolume:writeVoxel( position, voxel )
     assert(Vec:isInstance(position), 'Position must be a vector.')
     assert(Voxel:isInstance(voxel), 'Must be called with a voxel.')
     WriteVoxelData(position[1], position[2], position[3], voxel)
+end
+
+function VoxelVolume:getStructureAt( position )
+    assert(Vec:isInstance(position), 'Position must be a vector.')
+    local voxel = self:readVoxel(position)
+    -- TODO!
+    local id = voxel:get(0, 10)
+    local structureClass = StructureDictionary.getClassFromId(id)
+    local structure = structureClass(self, position)
+    return structure
 end
 
 
