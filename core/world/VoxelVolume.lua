@@ -39,6 +39,10 @@ function VoxelVolume:writeVoxel( position, voxel )
     WriteVoxelData(position[1], position[2], position[3], voxel)
 end
 
+function VoxelVolume:flushCaches()
+    -- Dummy function.
+end
+
 function VoxelVolume:getStructureAt( position )
     assert(Vec:isInstance(position), 'Position must be a vector.')
     local voxel = self:readVoxel(position)

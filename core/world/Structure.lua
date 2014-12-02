@@ -19,6 +19,8 @@ function Structure.static:register()
     dict.registerClass(self)
 end
 
+local maxSize = Vec(15, 15, 15)
+
 local voxelAccessor = VoxelAccessor()
 voxelAccessor:addMask('id', 10)
 voxelAccessor:addMask('size_x', 4)
@@ -34,9 +36,9 @@ function Structure:initialize( voxelVolume, origin )
     WorldObject.initialize(self)
     self.voxelVolume = voxelVolume
     self.origin = origin
-    self.dirty = false
-    self.voxelCache = {}
 
+    -- TODO: Read during initialization is bad!
+    -- Separate loading and initialization!
     local originVoxel = voxelVolume:readVoxel(origin)
     self.size = Vec(voxelAccessor:read('size_x', originVoxel),
                     voxelAccessor:read('size_y', originVoxel),
@@ -44,7 +46,6 @@ function Structure:initialize( voxelVolume, origin )
 end
 
 function Structure:destroy()
-    self:write()
     WorldObject.destroy(self)
 end
 
@@ -56,28 +57,9 @@ end
 --
 function Structure:setSize( size )
     assert(Vec:isInstance(size), 'Size must be a vector!')
-
-    self.size = size -- TODO: No component may be greater than 2^4!
+    assert(size:componentsLesserOrEqualTo(maxSize), 'Size larger than maxSize!')
+    self.size = size
     error('unimplemented') -- TODO!
-end
-
---- Retrieves a possibly cached voxel wich is owned by the structure.
--- Raises an error if the voxel does not belong to the structure.
-function Structure:getOwnedVoxelAt( offset )
-    local voxelCache = self.voxelCache
-    local voxel = voxelCache[tostring(offset)]
-    if voxel then
-        return voxel
-    else
-        error('unimplemented') -- TODO!
-    end
-end
-
-function Structure:write()
-    if self.dirty then
-        -- TODO: Figure out how to access voxels, as only the voxel may be accessed that are owned by this structure!
-        self.dirty = false
-    end
 end
 
 function Structure:generateModels( chunkBuilder )
