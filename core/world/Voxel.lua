@@ -42,7 +42,12 @@ local function checkBitRange( voxel, bitPosition, bitCount )
     return index, bitOffset
 end
 
-function Voxel.prototype:set( bitPosition, bitCount, value )
+function Voxel.prototype:read( bitPosition, bitCount )
+    local index, bitOffset = checkBitRange(self, bitPosition, bitCount)
+    return bit32extract(self[index], bitOffset, bitCount)
+end
+
+function Voxel.prototype:write( bitPosition, bitCount, value )
     local index, bitOffset = checkBitRange(self, bitPosition, bitCount)
 
     assert(value >= 0, 'Value must be positive.')
@@ -53,11 +58,6 @@ function Voxel.prototype:set( bitPosition, bitCount, value )
     end
 
     self[index] = bit32replace(self[index], value, bitOffset, bitCount)
-end
-
-function Voxel.prototype:get( bitPosition, bitCount )
-    local index, bitOffset = checkBitRange(self, bitPosition, bitCount)
-    return bit32extract(self[index], bitOffset, bitCount)
 end
 
 function Voxel.mt:__newindex( key, value )
