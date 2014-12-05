@@ -12,7 +12,6 @@ function CachingVoxelVolume:initialize( size )
 end
 
 function CachingVoxelVolume:destroy()
-    self:flushCaches()
     VoxelVolume.destroy(self)
 end
 
@@ -32,10 +31,13 @@ function CachingVoxelVolume:writeVoxel( position, voxel )
     assert(Vec:isInstance(position), 'Position must be a vector.')
     assert(Voxel:isInstance(voxel), 'Must be called with a voxel.')
     local hash = tostring(position)
+    self.readCache[hash] = voxel
     self.writeCache[hash] = { position=position, voxel=voxel }
 end
 
 function CachingVoxelVolume:flushCaches()
+    VoxelVolume:flushCaches()
+
     for hash, data in pairs(self.writeCache) do
         VoxelVolume.writeVoxel(self, data.position, data.voxel)
     end
