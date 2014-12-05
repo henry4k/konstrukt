@@ -64,10 +64,17 @@ static int Lua_WriteVoxelData( lua_State* l )
     return 0;
 }
 
+static int Lua_GetVoxelInt32Count( lua_State* l )
+{
+    lua_pushinteger(l, VOXEL_INT32_COUNT);
+    return 1;
+}
+
 bool RegisterVoxelVolumeInLua()
 {
     return
         RegisterFunctionInLua("SetVoxelVolumeSize", Lua_SetVoxelVolumeSize) &&
         RegisterFunctionInLua("ReadVoxelData", Lua_ReadVoxelData) &&
-        RegisterFunctionInLua("WriteVoxelData", Lua_WriteVoxelData);
+        RegisterFunctionInLua("WriteVoxelData", Lua_WriteVoxelData) &&
+        RegisterFunctionInLua("GetVoxelInt32Count", Lua_GetVoxelInt32Count);
 }

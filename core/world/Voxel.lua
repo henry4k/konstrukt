@@ -8,6 +8,9 @@ local floor        = math.floor
 local isBetween    = math.isBetween
 local bit32extract = bit32.extract
 local bit32replace = bit32.replace
+local GetVoxelInt32Count = ENGINE.GetVoxelInt32Count
+
+local voxelValueCount = GetVoxelInt32Count()
 
 
 local Voxel =
@@ -21,7 +24,20 @@ setmetatable(Voxel, Voxel)
 
 
 function Voxel:__call( ... )
-    return setmetatable({...}, self.mt)
+    local instance = {...}
+
+    if #instance ~= voxelValueCount then
+        if #instance == 0 then
+            -- initialize with zeros
+            for i = 1, voxelValueCount do
+                instance[i] = 0
+            end
+        else
+            error('Voxel needs to be initialized with exactly '..voxelValueCount..' integer values.')
+        end
+    end
+
+    return setmetatable(instance, self.mt)
 end
 
 function Voxel:isInstance( v )
