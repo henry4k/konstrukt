@@ -1,11 +1,20 @@
-local Controllable = {
+--- @module core.Controllable
+
+---
+-- @mixin Controllable
+Controllable = {
     static = {}
 }
 
+---
+-- @local
 function Controllable:included( klass )
     klass.static.controls = {}
 end
 
+---
+-- @param controlName
+-- @param method
 function Controllable.static:mapControl( controlName, method )
     local controls = self.static.controls
     assert(not controls[controlName], controlName..' has already been mapped!')
@@ -15,6 +24,11 @@ function Controllable.static:mapControl( controlName, method )
     Control.register(controlName)
 end
 
+---
+-- Is called by `Control`.
+-- @callback
+-- @param controlName
+-- @param ... Parameters which passed to the controls method.
 function Controllable:triggerControlEvent( controlName, ... )
     local controls = self.class.controls
     local method = controls[controlName]

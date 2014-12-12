@@ -1,3 +1,7 @@
+---
+-- @script core.bootstrap.require
+
+
 local ResourceManager = _dofile 'core/ResourceManager.lua'
 
 local searchPaths = {

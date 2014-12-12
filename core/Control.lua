@@ -1,3 +1,7 @@
+---
+-- @module core.Control
+
+
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
@@ -10,10 +14,14 @@ local Control = {
     controlableStack = {}
 }
 
+---
+-- @param name
 function Control.register( name )
     RegisterControl(name)
 end
 
+---
+-- @param controlable
 function Control.pushControllable( controlable )
     assert(Object.includes(controlable.class, Controllable),
            'Must be called with an controlable.')
@@ -23,6 +31,8 @@ function Control.pushControllable( controlable )
     table.insert(controlableStack, controlable)
 end
 
+---
+-- @param controlable
 function Control.popControllable( controlable )
     assert(Object.includes(controlable.class, Controllable),
            'Must be called with an controlable.')

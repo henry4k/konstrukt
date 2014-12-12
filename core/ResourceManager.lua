@@ -1,3 +1,6 @@
+---
+-- @module core.ResourceManager
+
 -- As the resource manager also loads lua scripts, this file may have no dependencies.
 
 
@@ -9,7 +12,7 @@ local ResourceManager = {
 
 --- Registers a resource loader.
 -- Resource loaders are functions or other callables.
--- #ResourceManager.load passes the parameters to the loader, which shall return
+-- `ResourceManager.load` passes the parameters to the loader, which shall return
 -- a table, nil if the requested resource doesn't exist or yield an error if
 -- something went wrong.
 --
@@ -73,6 +76,8 @@ function ResourceManager.load( type, ... )
     return resourceValue
 end
 
+---
+-- @local
 function ResourceManager._put( resource, type, ... )
     local id = ResourceManager._createResourceIdentifier(type, ...)
     ResourceManager.resources[id] = resource
@@ -92,6 +97,7 @@ end
 --- Use the given parameters to create an unique identifier.
 -- Each parameter set creates a unique identifier that equals only other
 -- identifiers if they're created using the same set of parameters.
+-- @local
 function ResourceManager._createResourceIdentifier( ... )
     local args = {...}
     local strings = {}

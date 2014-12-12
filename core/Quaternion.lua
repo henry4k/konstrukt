@@ -1,3 +1,7 @@
+---
+-- @module core.Quaternion
+
+
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
@@ -18,6 +22,7 @@ local CreateMatrix4FromQuaternion     = ENGINE.CreateMatrix4FromQuaternion
 
 local Quat = class('core/Quaternion')
 
+---
 -- Quat() - New identity quaternion.
 -- Quat( quat ) - Copy quaternion.
 -- Quat( vec ), Quat( x, y, z ) - Create quaternion from euler angles.
@@ -38,32 +43,39 @@ function Quat:initialize( arg )
     end
 end
 
+---
 function Quat:copy()
     return Quat(CopyQuaternion(self.handle))
 end
 
+---
 function Quat:toMatrix()
     return Mat4(CreateMatrix4FromQuaternion(self.handle))
 end
 
+---
 function Quat:normalize()
     return Quat(NormalizeQuaternion(self.handle))
 end
 
-function Quat:_unm()
+---
+function Quat:__unm()
     return Quat(InvertQuaternion(self.handle))
 end
 
+---
 function Quat:__add( other )
     assert(Object.isInstanceOf(other, Quat), 'Must be called with an quaternion.')
     return Quat(QuaternionOp(self.handle, other.handle, '+'))
 end
 
+---
 function Quat:__mul( other )
     assert(Object.isInstanceOf(other, Quat), 'Must be called with a quaternion.')
     return Quat(QuaternionOp(self.handle, other.handle, '*'))
 end
 
+---
 function Quat.static:multiplyVector( a, b )
     if Object.isInstanceOf(a, Quat) and Vec:isInstance(b) then
         return Vec(QuaternionXVector3(a.handle,
@@ -80,11 +92,13 @@ function Quat.static:multiplyVector( a, b )
     end
 end
 
+---
 function Quat:lerp( factor, other )
     assert(Object.isInstanceOf(other, Quat), 'Must be called with an quaternion.')
     return Quat(LerpQuaternion(self.handle, other.handle, 'l', factor))
 end
 
+---
 function Quat:slerp( factor, other )
     assert(Object.isInstanceOf(other, Quat), 'Must be called with an quaternion.')
     return Quat(LerpQuaternion(self.handle, other.handle, 's', factor))

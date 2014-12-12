@@ -1,3 +1,7 @@
+---
+-- @module core.DependencySortedList
+
+
 local class  = require 'middleclass'
 
 

@@ -1,10 +1,13 @@
+--- An audio buffer contains audio data, which is e.g. loaded from a file.
+-- @module core.audio.AudioBuffer
+
+
 local class    = require 'middleclass'
 local Resource = require 'core/Resource'
 local LoadAudioBuffer    = ENGINE.LoadAudioBuffer
 local DestroyAudioBuffer = ENGINE.DestroyAudioBuffer
 
 
---- An audio buffer contains audio data, which is e.g. loaded from a file.
 local AudioBuffer = class('core/audio/AudioBuffer')
 AudioBuffer:include(Resource)
 

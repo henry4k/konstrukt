@@ -1,3 +1,8 @@
+---
+-- @module core.graphics.TextureRenderTarget
+-- @see Texture
+
+
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object

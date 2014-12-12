@@ -1,3 +1,11 @@
+--- A body that is simulated by the physics engine.
+-- If a solid has no mass (i.e. it equals zero), it is concidered to be static.
+-- So it isn't affected by collisions with other solids or gravity. Also each
+-- solid needs a `CollisionShape`, but try to reuse collision shapes to save memory.
+--
+-- @module core.physics.Solid
+
+
 local assert = assert
 local isBetween = math.isBetween
 local class  = require 'middleclass'
@@ -23,11 +31,6 @@ local CreateForce                = ENGINE.CreateForce
 local SetEventCallback           = ENGINE.SetEventCallback
 
 
---- A body that is simulated by the physics ENGINE.
--- If a solid has no mass (i.e. it equals zero), it is concidered to be static.
--- So it isn't affected by collisions with other solids or gravity. Also each
--- solid needs a #CollisionShape, but try to reuse collision shapes to save
--- memory.
 local Solid = class('core/physics/Solid')
 Solid:include(EventSource)
 

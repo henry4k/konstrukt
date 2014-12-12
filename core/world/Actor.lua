@@ -1,3 +1,7 @@
+--- Things that the player can take control of.
+-- @module core.world.Actor
+
+
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
@@ -13,7 +17,6 @@ local DefaultFoV = math.rad(80)
 local ZoomedFoV  = math.rad(10)
 
 
---- Things that the player can take control of.
 local Actor = class('core/world/Actor', WorldObject)
 Actor:include(Controllable)
 

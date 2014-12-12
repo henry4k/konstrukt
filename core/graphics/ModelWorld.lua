@@ -1,3 +1,7 @@
+--- A model world defines a possibly large set of models that can be rendered together.
+-- @module core.graphics.ModelWorld
+
+
 local class  = require 'middleclass'
 local Model  = require 'core/graphics/Model'
 local CreateModelWorld  = ENGINE.CreateModelWorld
@@ -5,7 +9,6 @@ local DestroyModelWorld = ENGINE.DestroyModelWorld
 local CreateModel       = ENGINE.CreateModel
 
 
---- A model world defines a possibly large set of models that can be rendered together.
 local ModelWorld = class('core/graphics/ModelWorld')
 
 function ModelWorld:initialize()

@@ -1,3 +1,7 @@
+---
+-- @module core.graphics.Camera
+
+
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
@@ -15,7 +19,9 @@ local SetCameraProjectionType     = ENGINE.SetCameraProjectionType
 local Camera = class('core/graphics/Camera')
 Camera:include(HasAttachmentTarget)
 
--- DON'T CALL THIS DIRECTLY!  Use PerspectiveCamera or OrthographicCamera instead.
+---
+-- @warning DON'T CALL THIS DIRECTLY!
+-- Use `PerspectiveCamera` or `OrthographicCamera` instead.
 function Camera:initialize( modelWorld, projectionType )
     assert(Object.isInstanceOf(modelWorld, ModelWorld), 'Must be initialized with a model world.')
     self.handle = CreateCamera(modelWorld.handle)

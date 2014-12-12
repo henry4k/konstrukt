@@ -1,3 +1,7 @@
+---
+-- @module core.Shutdown
+
+
 local SetEventCallback = ENGINE.SetEventCallback
 
 

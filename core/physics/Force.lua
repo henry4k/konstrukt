@@ -1,3 +1,12 @@
+--- Changes the velocity of a `Solid` over time.
+-- Here a force is defined by its vector and position. The vector defines the
+-- Forces that are at the center will only change the solids linear velocity,
+-- while forces that are applied off-center will also change the angular
+-- velocity. They are applied in each simulation step until you 'destroy' them.
+--
+-- @module core.physics.Force
+
+
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
@@ -6,15 +15,10 @@ local DestroyForce = ENGINE.DestroyForce
 local SetForce     = ENGINE.SetForce
 
 
---- Changes the velocity of a solid over time.
--- Here a force is defined by its vector and position. The vector defines the
--- Forces that are at the center will only change the solids linear velocity,
--- while forces that are applied off-center will also change the angular
--- velocity. They are applied in each simulation step until you 'destroy' them.
 local Force = class('core/physics/Force')
 
 --- Initially all properties are zero, so that the force has no effect.
--- DON'T CALL THIS DIRECTLY!  Use Solid:createForce() instead.
+-- @warning DON'T CALL THIS DIRECTLY!  Use `Solid:createForce` instead.
 function Force:initialize( handle )
     self.handle = handle
 end

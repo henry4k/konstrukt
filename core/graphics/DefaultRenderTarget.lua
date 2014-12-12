@@ -1,3 +1,7 @@
+---
+-- @module core.graphics.DefaultRenderTarget
+
+
 local class        = require 'middleclass'
 local RenderTarget = require 'core/graphics/RenderTarget'
 local GetDefaultRenderTarget = ENGINE.GetDefaultRenderTarget

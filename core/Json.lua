@@ -1,3 +1,7 @@
+---
+-- @module core.Json
+
+
 local FS = require 'core/FileSystem'
 local _Encode = cjson.encode
 local _Decode = cjson.decode

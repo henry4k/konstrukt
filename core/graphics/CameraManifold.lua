@@ -1,3 +1,7 @@
+---
+-- @module core.graphics.CameraManifold
+
+
 local assert       = assert
 local class        = require 'middleclass'
 local Object       = class.Object

@@ -1,8 +1,11 @@
+--- Static world objects, which are made from voxels use this as their base class.
+-- @module core.world.Structure
+
+
 local class = require 'middleclass'
 local WorldObject = require 'core/world/WorldObject'
 
 
---- Static world objects, which are made from voxels use this as their base class.
 local Structure = class('core/world/Structure', WorldObject)
 
 function Structure:initialize()

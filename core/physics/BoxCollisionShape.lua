@@ -1,3 +1,8 @@
+---
+-- @module core.physics.BoxCollisionShape
+-- @see CollisionShape
+
+
 local assert         = assert
 local class          = require 'middleclass'
 local Vec            = require 'core/Vector'

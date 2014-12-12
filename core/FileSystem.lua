@@ -1,3 +1,7 @@
+---
+-- @module core.FileSystem
+
+
 local Config = require 'core/Config'
 local MountPackage        = ENGINE.MountPackage
 local UnmountPackage      = ENGINE.UnmountPackage
@@ -161,8 +165,11 @@ local defaultSortMethod = Config.get('debug.default-sort-method', 'directoriesLa
 assert(sortFunctions[defaultSortMethod], 'Unknown default sort method: '..defaultSortMethod)
 
 --- Retrieves contents of a directory.
+--
+-- @param filePath
+--
 -- @param sortMethod
--- Optional, see #defaultSortMethod.
+-- Optional, see `defaultSortMethod`.
 -- - `alphabetic`:  Order entries alphabetically.
 -- - `directoriesFirst`:  Like `alphabetic`, but prefer directories.
 -- - `directoriesLast`:  Like `alphabetic`, but defer directories.
@@ -181,10 +188,12 @@ function FileSystem.getDirectoryEntries( filePath, sortMethod )
 end
 
 --- Iterates over directory entries and provides file paths and file information.
--- for path, info in FS.directory('example/directory') do ... end
+-- @usage for path, info in FS.directory('example/directory') do ... end
+--
+-- @param filePath
 --
 -- @param sortMethod
--- See #FileSystem.getDirectoryEntries.
+-- See `FileSystem.getDirectoryEntries`.
 function FileSystem.directory( filePath, sortMethod )
     local entries = FileSystem.getDirectoryEntries(filePath, sortMethod)
     local index = 0
@@ -208,6 +217,8 @@ end
 
 --- Iterates over a directory tree and provides file paths and file information.
 -- for path, info in FS.directoryTree('example/directory') do ... end
+--
+-- @param filePath
 --
 -- @param sortMethod
 -- See #FileSystem.getDirectoryEntries.
@@ -241,6 +252,8 @@ end
 
 --- Iterates recursivley over all files that match the given pattern.
 -- for path, info in FS.matchingFiles('example/.+%.png') do ... end
+--
+-- @param filePattern
 --
 -- @param sortMethod
 -- See #FileSystem.getDirectoryEntries.

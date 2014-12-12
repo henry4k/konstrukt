@@ -1,3 +1,8 @@
+---
+-- @module core.graphics.MeshBuffer
+-- @see Mesh
+
+
 local assert   = assert
 local class    = require 'middleclass'
 local Object   = class.Object

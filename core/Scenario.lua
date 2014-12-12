@@ -1,3 +1,7 @@
+---
+-- @module core.Scenario
+
+
 local FS  = require 'core/FileSystem'
 local DSL = require 'core/DependencySortedList'
 local ResourceManager = require 'core/ResourceManager'
@@ -5,6 +9,10 @@ local ResourceManager = require 'core/ResourceManager'
 
 local Scenario = {}
 
+---
+-- @local
+-- @param packageName
+-- @param dsl
 function Scenario._mountPackageAndDependencies( packageName, dsl )
     local packageMetadata = FS.mountPackage(packageName)
     if packageMetadata then
@@ -19,6 +27,9 @@ function Scenario._mountPackageAndDependencies( packageName, dsl )
     end
 end
 
+---
+-- @param scenarioPackage
+-- @param additionalPackages
 function Scenario.load( scenarioPackage, additionalPackages )
     assert(type(scenarioPackage) == 'string', 'Scenario package must be a string')
     additionalPackages = additionalPackages or {}

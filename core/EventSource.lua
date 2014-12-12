@@ -1,10 +1,17 @@
+--- Events can be used for inter object communication.
+-- Using the event source mixin makes sense, if can't know which objects may
+-- want to react on an event.  Also you don't need to worry about the targets
+-- life time, since EventSource will automatically forget about targets that
+-- have no further references.
+--
+-- @todo Mark this as mixin!
+--
+-- @module core.EventSource
+
+
 local assert  = assert
 
 
---- Events can be used for iter object communication.
--- Using the vent source mixin makes sense, if can't know which objects may wan't
--- to react on an event.  Also you don't need to worry about the targets life time,
--- since EventSource will automatically forget about targets without any further references.
 local EventSource = {}
 
 function EventSource:initializeEventSource()

@@ -1,3 +1,7 @@
+---
+-- @script core.bootstrap.init
+
+
 -- Setup error handling
 
 ENGINE.SetErrorFunction(function( message )

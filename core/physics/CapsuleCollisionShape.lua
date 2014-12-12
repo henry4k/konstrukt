@@ -1,3 +1,8 @@
+---
+-- @module core.physics.CapsuleCollisionShape
+-- @see CollisionShape
+
+
 local class          = require 'middleclass'
 local CollisionShape = require 'core/physics/CollisionShape'
 local CreateCapsuleCollisionShape = ENGINE.CreateCapsuleCollisionShape

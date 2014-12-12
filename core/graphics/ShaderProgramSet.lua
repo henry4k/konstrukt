@@ -1,3 +1,15 @@
+--- Some effects, like shadow mapping, require models to be rendered
+--- with a separate set of shader programs, that is adapted to the effect.
+--
+-- Shader program sets group programs into families.
+-- A model just needs to save the family name, which is then resolved by
+-- the used shader program set.
+-- E.g. there can be a family for static and one for animated models.
+--
+-- @module core.graphics.ShaderProgramSet
+-- @see ShaderProgram
+
+
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
@@ -7,14 +19,6 @@ local DestroyShaderProgramSet = ENGINE.DestroyShaderProgramSet
 local SetShaderProgramFamily  = ENGINE.SetShaderProgramFamily
 
 
-
---- Some effects, like shadow mapping, require models to be rendered
---- with a separate set of shader programs, that is adapted to the effect.
---
--- Shader program sets group programs into families.
--- A model just needs to save the family name, which is then resolved by
--- the used shader program set.
--- E.g. there can be a family for static and one for animated models.
 local ShaderProgramSet = class('core/graphics/ShaderProgramSet')
 
 function ShaderProgramSet:initialize( defaultShaderProgram )

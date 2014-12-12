@@ -1,3 +1,13 @@
+--- Can play positional audio in an 3D environment.
+-- Like the `AudioListener`, the audio source has a transformation and an
+-- attachment target. The attachment target provides information about position,
+-- direction and velocity. If the audio source has no attachment target, those
+-- properties are zero. The transformation matrix is applied additionaly after
+-- the attachment targets position has been applied.
+--
+-- @module core.audio.AudioSource
+
+
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
@@ -19,20 +29,16 @@ local PlayAudioSource                = ENGINE.PlayAudioSource
 local PauseAudioSource               = ENGINE.PauseAudioSource
 
 
---- Can play positional audio in an 3D environment.
--- Like the #AudioListener, the audio source has a transformation and an
--- attachment target. The attachment target provides information about position,
--- direction and velocity. If the audio source has no attachment target, those
--- properties are zero. The transformation matrix is applied additionaly after
--- the attachment targets position has been applied.
 local AudioSource = class('core/audio/AudioSource')
 AudioSource:include(HasTransformation)
 AudioSource:include(HasAttachmentTarget)
 
+---
 function AudioSource:initialize()
     self.handle = CreateAudioSource()
 end
 
+---
 function AudioSource:destroy()
     DestroyAudioSource(self.handle)
     self.handle = nil
@@ -52,16 +58,22 @@ function AudioSource:setLooping( looping )
     SetAudioSourceLooping(self.handle, looping)
 end
 
+---
+-- @param pitch
 function AudioSource:setPitch( pitch )
     assert(pitch >= 0, 'Pitch must be positive.')
     SetAudioSourcePitch(self.handle, pitch)
 end
 
+---
+-- @param gain
 function AudioSource:setGain( gain )
     assert(gain >= 0, 'Gain should be positive.')
     SetAudioSourceGain(self.handle, gain)
 end
 
+---
+-- @param buffer
 function AudioSource:enqueue( buffer )
     assert(Object.isInstanceOf(buffer, AudioBuffer), 'Wasn\'t called with an audio buffer.')
     EnqueueAudioBuffer(self.handle, buffer.handle)
@@ -72,14 +84,22 @@ function AudioSource:play()
     PlayAudioSource(self.handle)
 end
 
+---
 function AudioSource:pause()
     PauseAudioSource(self.handle)
 end
 
+---
+-- @local
+-- @param matrix
 function AudioSource:_setTransformation( matrix )
     SetAudioSourceTransformation(self.handle, matrix.handle)
 end
 
+---
+-- @local
+-- @param solidHandle
+-- @param flags
 function AudioSource:_setAttachmentTarget( solidHandle, flags )
     SetAudioSourceAttachmentTarget(self.handle, solidHandle, flags)
 end

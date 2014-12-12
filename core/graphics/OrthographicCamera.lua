@@ -1,3 +1,8 @@
+---
+-- @module core.graphics.OrthographicCamera
+-- @see Camera
+
+
 local assert = assert
 local class  = require 'middleclass'
 local Camera  = require 'core/graphics/Camera'

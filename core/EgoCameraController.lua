@@ -1,3 +1,8 @@
+---
+-- @module core.EgoCameraController
+-- @includes Controllable EventSource
+
+
 local class        = require 'middleclass'
 local Vec          = require 'core/Vector'
 local Quat         = require 'core/Quaternion'

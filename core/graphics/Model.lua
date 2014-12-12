@@ -1,3 +1,7 @@
+--- Models are aggregations of meshes, textures, and shaders that can be used to render something on the screen.
+-- @module core.graphics.Model
+
+
 local assert  = assert
 local isInteger = math.isInteger
 local class   = require 'middleclass'
@@ -20,13 +24,12 @@ local SetModelUniform           = ENGINE.SetModelUniform
 local UnsetModelUniform         = ENGINE.UnsetModelUniform
 
 
---- Models are aggregations of meshes, textures, and shaders that can be used
--- to render something on the screen.
 local Model = class('core/graphics/Model')
 Model:include(HasTransformation)
 Model:include(HasAttachmentTarget)
 
--- DON'T CALL THIS DIRECTLY!  Use ModelWorld:createModel() instead.
+---
+-- @warning DON'T CALL THIS DIRECTLY!  Use `ModelWorld:createModel` instead.
 function Model:initialize( handle )
     self.handle = handle
     self.attachmentTarget = nil

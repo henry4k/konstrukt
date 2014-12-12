@@ -1,3 +1,7 @@
+---
+-- @module core.Matrix4
+
+
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object

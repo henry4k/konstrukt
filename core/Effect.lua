@@ -1,3 +1,9 @@
+---
+--
+-- @module core.Effect
+-- @see EffectTarget
+
+
 local class  = require 'middleclass'
 local Object = class.Object
 

@@ -1,7 +1,9 @@
+--- Mixin that provides a more convenient middleclass integration of the resource loaders.
+-- @module core.Resource
+
+
 local ResourceManager = require 'core/ResourceManager'
 
-
---- Provides a more convenient middleclass integration of the resource loaders.
 local Resource = { static = {} }
 
 function Resource:included( klass )
@@ -10,10 +12,14 @@ function Resource:included( klass )
     end)
 end
 
+---
+-- @param ...
 function Resource.static:load( ... )
     return ResourceManager.load(self.name, ...)
 end
 
+---
+-- @param ...
 function Resource.static:get( ... )
     return ResourceManager.get(self.name, ...)
 end

@@ -1,4 +1,5 @@
---- Extensions to the standard table functions:
+--- Extensions to the standard table functions
+-- @script core.bootstrap.table
 
 --- Copy entries of a set of tables into the target table.
 --
