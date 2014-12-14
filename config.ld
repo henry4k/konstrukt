@@ -2,31 +2,25 @@
 project = 'Apoapsis'
 title = 'Reference'
 description = 'Scripting API'
+style = '!pale'
+prettify_files = true
 format = 'markdown'
 topics = { 'README.md', 'documentation/Packages.md' }
 package = 'core'
 file = 'core'
 not_luadoc = true
 no_space_before_args = true
-backtick_references = true
+sort_modules = true
+backtick_references = false
 
 new_type('topic', 'Topics', true)
 new_type('script', 'Scripts', true, 'topic')
 new_type('module', 'Modules', true, 'script')
+new_type('classmod', 'Classes', true, 'module')
+new_type('mixin', 'Mixins', true, 'classmod')
 
-new_type('type', 'Classes', false)
-new_type('mixin', 'Mixins', false, 'type')
+new_type('event', 'Events', false)
+new_type('control', 'Mapped controls', false)
+new_type('configkey', 'Config keys', false)
 
-custom_tags = {
-    { 'callback', hidden = true },
-    { 'extends' },
-    { 'includes' }
-}
-
-custom_display_name_handler = function( item, default_handler )
-    local display_name = default_handler(item)
-    if item.tags.callback then
-        display_name = display_name .. ' [callback]'
-    end
-    return display_name
-end
+alias('internal', 'local')

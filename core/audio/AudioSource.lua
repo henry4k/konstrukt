@@ -1,5 +1,5 @@
 --- Can play positional audio in an 3D environment.
--- Like the `AudioListener`, the audio source has a transformation and an
+-- Like the @{AudioListener}, the audio source has a transformation and an
 -- attachment target. The attachment target provides information about position,
 -- direction and velocity. If the audio source has no attachment target, those
 -- properties are zero. The transformation matrix is applied additionaly after

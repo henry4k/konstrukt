@@ -1,5 +1,8 @@
 --- An audio buffer contains audio data, which is e.g. loaded from a file.
--- @module core.audio.AudioBuffer
+--
+-- Includes @{Resource}.
+--
+-- @classmod core.audio.AudioBuffer
 
 
 local class    = require 'middleclass'
@@ -11,6 +14,12 @@ local DestroyAudioBuffer = ENGINE.DestroyAudioBuffer
 local AudioBuffer = class('core/audio/AudioBuffer')
 AudioBuffer:include(Resource)
 
+--- Loads an audio source from a file.
+--
+-- @function load( fileName )
+--
+-- @return[type=AudioBuffer]
+--
 function AudioBuffer.static:_load( fileName )
     local buffer = AudioBuffer(fileName)
     return { value=buffer, destructor=buffer.destroy }

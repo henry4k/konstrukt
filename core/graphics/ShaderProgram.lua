@@ -34,7 +34,7 @@ function ShaderProgram.static:_load( ... )
     return { value=shaderProgram, destructor=shaderProgram.destroy }
 end
 
---- Links the given `shaders` into a shader program.
+--- Links the given @{Shader}s into a shader program.
 function ShaderProgram:initialize( ... )
     local shaders = {...}
     local shaderHandles = {}

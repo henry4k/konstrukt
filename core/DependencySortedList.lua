@@ -1,5 +1,18 @@
----
--- @module core.DependencySortedList
+--- A container that can be used to sort entries that have dependencies.
+--
+-- Each entry added to this list can 'depend' on other entries.
+-- 
+-- Once all entries have been added, the list can be sorted.
+-- Each entry will be placed *after* all its dependencies.
+--
+-- This is especially useful when working out the correct loading order for
+-- packages.
+--
+-- The list also detects dependency errors, like missing and circular
+-- dependencies.
+--
+-- @classmod core.DependencySortedList
+-- @alias DSL
 
 
 local class  = require 'middleclass'
@@ -7,14 +20,25 @@ local class  = require 'middleclass'
 
 local DSL = class('core/DependencySortedList')
 
+
 function DSL:initialize()
     self.entryMap = {}
 end
 
+--- Test whether the list contains an entry called `name`.
 function DSL:has( name )
     return self.entryMap[name] ~= nil
 end
 
+--- Insert a new unique entry.
+--
+-- The same entry may not be added twice.
+--
+-- @param name
+--
+-- @param[opt] dependencies
+-- A list of entry names that the added entry depends on.
+--
 function DSL:add( name, dependencies )
     assert(not self.entryMap[name], 'Entry '..name..' already exists.')
     self.entryMap[name] = dependencies
@@ -40,6 +64,11 @@ local function resolveTransitiveDependencies( entryMap,
     end
 end
 
+--- Work out the correct order and return the sorted result list.
+--
+-- @return
+-- A list which contains all entries in an order that statisfies their dependencies.
+--
 function DSL:sort()
 
     local resolvedEntryMap = {}

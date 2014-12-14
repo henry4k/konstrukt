@@ -1,9 +1,9 @@
 --- A body that is simulated by the physics engine.
 -- If a solid has no mass (i.e. it equals zero), it is concidered to be static.
 -- So it isn't affected by collisions with other solids or gravity. Also each
--- solid needs a `CollisionShape`, but try to reuse collision shapes to save memory.
+-- solid needs a @{CollisionShape}, but try to reuse collision shapes to save memory.
 --
--- @module core.physics.Solid
+-- @classmod core.physics.Solid
 
 
 local assert = assert
@@ -117,7 +117,7 @@ end
 --- Instantly applies an impulse.
 -- In contrast to forces, impulses are independent of the simulation rate.
 --
--- @param impulseVector
+-- @param value
 -- Describes the magnitude and direction.
 --
 -- @param relativePosition

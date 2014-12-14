@@ -1,5 +1,6 @@
 ---
--- @module core.Quaternion
+-- @classmod core.Quaternion
+-- @alias Quat
 
 
 local assert = assert
@@ -43,12 +44,12 @@ function Quat:initialize( arg )
     end
 end
 
----
+--- Create an independent clone of the instance.
 function Quat:copy()
     return Quat(CopyQuaternion(self.handle))
 end
 
----
+--- Create a roation matrix from this quaternion.
 function Quat:toMatrix()
     return Mat4(CreateMatrix4FromQuaternion(self.handle))
 end
@@ -58,12 +59,12 @@ function Quat:normalize()
     return Quat(NormalizeQuaternion(self.handle))
 end
 
----
+--- Invert the orientation.
 function Quat:__unm()
     return Quat(InvertQuaternion(self.handle))
 end
 
----
+--- 
 function Quat:__add( other )
     assert(Object.isInstanceOf(other, Quat), 'Must be called with an quaternion.')
     return Quat(QuaternionOp(self.handle, other.handle, '+'))

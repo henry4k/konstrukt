@@ -22,6 +22,7 @@ Actor:include(Controllable)
 
 function Actor:initialize( renderTarget )
     WorldObject.initialize(self)
+    self:initializeControllable()
 
     Control.pushControllable(self)
 
@@ -44,6 +45,7 @@ function Actor:destroy()
     Control.popControllable(self.egoCameraController)
     Control.popControllable(self)
     self.cameraManifold:destroy()
+    self:destroyControllable()
     WorldObject.destroy(self)
 end
 

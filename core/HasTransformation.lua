@@ -1,5 +1,6 @@
 ---
--- @module core.HasTransformation
+-- @mixin core.HasTransformation
+-- TODO: This class is obsolete.
 
 
 local assert  = assert

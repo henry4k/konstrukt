@@ -1,15 +1,12 @@
---- @module core.graphics.PerspectiveCamera
+--- @classmod core.graphics.PerspectiveCamera
 
 local assert = assert
 local class  = require 'middleclass'
 local Camera  = require 'core/graphics/Camera'
 local SetCameraFieldOfView = ENGINE.SetCameraFieldOfView
 
----
--- @table PerspectiveCamera
--- @extends `Camera`
--- @see Camera
-PerspectiveCamera = class('core/graphics/PerspectiveCamera', Camera)
+
+local PerspectiveCamera = class('core/graphics/PerspectiveCamera', Camera)
 
 ---
 -- @param modelWorld

@@ -29,7 +29,7 @@ Model:include(HasTransformation)
 Model:include(HasAttachmentTarget)
 
 ---
--- @warning DON'T CALL THIS DIRECTLY!  Use `ModelWorld:createModel` instead.
+-- @warning DON'T CALL THIS DIRECTLY!  Use @{ModelWorld:createModel} instead.
 function Model:initialize( handle )
     self.handle = handle
     self.attachmentTarget = nil

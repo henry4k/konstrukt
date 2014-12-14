@@ -17,7 +17,7 @@ local RenderTarget = class('core/graphics/RenderTarget')
 
 ---
 -- @warning DON'T CALL THIS DIRECTLY!
--- Use `DefaultRenderTarget` or `TextureRenderTarget` instead.
+-- Use @{DefaultRenderTarget} or @{TextureRenderTarget} instead.
 function RenderTarget:initialize( handle )
     assert(type(handle) == 'userdata',
            'Must be initialized with a render target handle.')

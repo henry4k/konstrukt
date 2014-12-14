@@ -21,7 +21,7 @@ Camera:include(HasAttachmentTarget)
 
 ---
 -- @warning DON'T CALL THIS DIRECTLY!
--- Use `PerspectiveCamera` or `OrthographicCamera` instead.
+-- Use @{PerspectiveCamera} or @{OrthographicCamera} instead.
 function Camera:initialize( modelWorld, projectionType )
     assert(Object.isInstanceOf(modelWorld, ModelWorld), 'Must be initialized with a model world.')
     self.handle = CreateCamera(modelWorld.handle)

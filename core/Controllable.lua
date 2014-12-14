@@ -1,20 +1,31 @@
---- @module core.Controllable
+--- For things that want to listen for specific control events.
+--
+-- @mixin core.Controllable
 
----
--- @mixin Controllable
 Controllable = {
     static = {}
 }
 
----
--- @local
 function Controllable:included( klass )
     klass.static.controls = {}
 end
 
----
+--- Must be called by the including class in its constructor.
+function Controllable:initializeControllable()
+end
+
+--- Must be called by the including class in its destructor.
+function Controllable:destroyControllable()
+end
+
+--- Map the given control to a method.
+--
+-- Implicitly registers the control.
+--
 -- @param controlName
--- @param method
+-- @param[type=function] method
+-- @see Control.pushControllable
+--
 function Controllable.static:mapControl( controlName, method )
     local controls = self.static.controls
     assert(not controls[controlName], controlName..' has already been mapped!')
@@ -25,10 +36,11 @@ function Controllable.static:mapControl( controlName, method )
 end
 
 ---
--- Is called by `Control`.
--- @callback
+-- Is called by @{Control}.
+-- @internal
 -- @param controlName
--- @param ... Parameters which passed to the controls method.
+-- @param ...
+-- Parameters which passed to the controls method.
 function Controllable:triggerControlEvent( controlName, ... )
     local controls = self.class.controls
     local method = controls[controlName]

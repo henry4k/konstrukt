@@ -1,12 +1,11 @@
 --- Events can be used for inter object communication.
--- Using the event source mixin makes sense, if can't know which objects may
--- want to react on an event.  Also you don't need to worry about the targets
--- life time, since EventSource will automatically forget about targets that
--- have no further references.
 --
--- @todo Mark this as mixin!
+-- Using the event source mixin makes sense, if you can't know which objects
+-- may want to react on an event.  Also you don't need to worry about
+-- the targets life time, since it will automatically forget targets
+-- that have no further references.
 --
--- @module core.EventSource
+-- @mixin core.EventSource
 
 
 local assert  = assert
@@ -14,15 +13,18 @@ local assert  = assert
 
 local EventSource = {}
 
+--- Must be called by the including class in its constructor.
 function EventSource:initializeEventSource()
     self.events = {}
 end
 
+--- Must be called by the including class in its destructor.
 function EventSource:destroyEventSource()
 end
 
 local eventMetaTable = { __mode = 'k' }
 
+--- 
 function EventSource:addEventTarget( eventName, target, callback )
     assert(eventName and target and callback)
     local event = self.events[eventName]

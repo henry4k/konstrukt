@@ -12,7 +12,7 @@ local ResourceManager = {
 
 --- Registers a resource loader.
 -- Resource loaders are functions or other callables.
--- `ResourceManager.load` passes the parameters to the loader, which shall return
+-- @{ResourceManager.load} passes the parameters to the loader, which shall return
 -- a table, nil if the requested resource doesn't exist or yield an error if
 -- something went wrong.
 --

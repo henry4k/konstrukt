@@ -1,5 +1,5 @@
---- Mixin that provides a more convenient middleclass integration of the resource loaders.
--- @module core.Resource
+--- Provides a more convenient middleclass integration of the resource loaders.
+-- @mixin core.Resource
 
 
 local ResourceManager = require 'core/ResourceManager'

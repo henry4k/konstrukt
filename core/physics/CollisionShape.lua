@@ -1,4 +1,4 @@
---- Defines the shape of a `Solid`.
+--- Defines the shape of a @{Solid}.
 -- There are different types of collision shapes, each of them has its own
 -- constructor function.
 --

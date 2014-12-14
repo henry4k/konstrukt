@@ -1,5 +1,5 @@
 ---
--- @module core.Vector
+-- @classmod core.Vector
 
 
 local assert       = assert

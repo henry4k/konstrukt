@@ -1,5 +1,5 @@
 --- Describes the properties of your virtual ears.
--- Like the `AudioSource` the listener has a transformation and an
+-- Like the @{AudioSource} the listener has a transformation and an
 -- attachment target. The attachment target provides information about position,
 -- orientation and velocity. If the listener has no attachment target, those
 -- properties are zero. The transformation matrix is applied additionaly after
@@ -20,6 +20,10 @@ local SetAudioListenerTransformation   = ENGINE.SetAudioListenerTransformation
 local AudioListener = {}
 
 
+--- Attaches the listener to a solid.
+--- Sets the listeners attachment target.
+-- @param[type=Solid] solid
+-- @param[type=string] flags
 function AudioListener.setAttachmentTarget( solid, flags )
     assert(Object.isInstanceOf(solid, Solid), 'Attachment target must be a solid.')
     flags = flags or 'rt'
