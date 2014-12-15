@@ -1,4 +1,4 @@
----
+--- Controls the games shutdown.
 -- @module core.Shutdown
 
 

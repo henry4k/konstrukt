@@ -1,5 +1,14 @@
----
--- @module core.graphics.ShaderProgram
+--- Shader programs are used to define how models are rendered.
+--
+-- They consist of multiple @{Shader} objects, which must provide an entry point
+-- for each mandatory rendering stage:  Vertex and fragment shader.
+--
+-- This is just a brief summary, the complete documentation is available at
+-- http://www.opengl.org/wiki/GLSL_Object
+--
+-- Includes @{Resource}.
+--
+-- @classmod core.graphics.ShaderProgram
 
 
 local assert          = assert
@@ -18,9 +27,14 @@ local UnsetGlobalUniform   = ENGINE.UnsetGlobalUniform
 local ShaderProgram = class('core/graphics/ShaderProgram')
 ShaderProgram:include(Resource)
 
----
--- @local
--- @param ...
+--- Creates a shader program by loading and linking the given shader sources.
+--
+-- @function static:load( ... )
+--
+-- @param[type=string] ...
+-- Multiple shader sources that are then loaded, compiled and linked into the
+-- program.
+--
 function ShaderProgram.static:_load( ... )
     local shaders = {...}
     for i,shader in ipairs(shaders) do
@@ -44,13 +58,18 @@ function ShaderProgram:initialize( ... )
     self.handle = LinkShaderProgram(table.unpack(shaderHandles))
 end
 
----
 function ShaderProgram:destroy()
     DestroyShaderProgram(self.handle)
     self.handle = nil
 end
 
----
+--- Sets a global default value for a uniform.
+--
+-- @param name
+-- @param[type=number|Vector|Matrix4] value
+-- @param[opt] type
+-- Is needed for number unifroms.  Either `integer` or `float` are applicable.
+--
 function ShaderProgram.static:setGlobalUniform( name, value, type )
     if class.Object.isInstanceOf(value, Mat4) then
         assert(not type, 'Type argument is ignored, when called with a matrix.')
@@ -64,7 +83,10 @@ function ShaderProgram.static:setGlobalUniform( name, value, type )
     end
 end
 
----
+--- Remove a global uniform.
+--
+-- Note that the uniform may still be set in some shader programs.
+--
 function ShaderProgram.static:unsetGlobalUniform( name )
     UnsetGlobalUniform(name)
 end

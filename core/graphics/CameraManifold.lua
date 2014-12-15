@@ -1,5 +1,8 @@
----
--- @module core.graphics.CameraManifold
+--- Controls multiple cameras simultaneously.
+--
+-- *This is still under construction and will probably change in the future.*
+--
+-- @classmod core.graphics.CameraManifold
 
 
 local assert       = assert
@@ -11,6 +14,9 @@ local PerspectiveCamera = require 'core/graphics/PerspectiveCamera'
 
 local CameraManifold = class('core/graphics/CameraManifold', RenderTarget)
 
+---
+-- @param renderTarget
+--
 function CameraManifold:initialize( renderTarget )
     assert(Object.isInstanceOf(renderTarget, RenderTarget), 'Must be initialized with a render target.')
     self.renderTarget = renderTarget
@@ -31,6 +37,7 @@ function CameraManifold:getModelWorld()
     return self.worldCamera:getModelWorld()
 end
 
+--- Change the cameras attachment target.
 function CameraManifold:setAttachmentTarget( solid )
     self.attachmentTarget = solid
     self.worldCamera:setAttachmentTarget(solid, 'rt')

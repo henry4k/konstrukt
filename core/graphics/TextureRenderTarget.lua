@@ -1,6 +1,8 @@
----
--- @module core.graphics.TextureRenderTarget
--- @see Texture
+--- Renders to a texture.
+--
+-- Extends @{RenderTarget}.
+--
+-- @classmod core.graphics.TextureRenderTarget
 
 
 local assert = assert
@@ -13,6 +15,9 @@ local CreateTextureRenderTarget = ENGINE.CreateTextureRenderTarget
 
 local TextureRenderTarget = class('core/graphics/TextureRenderTarget', RenderTarget)
 
+---
+-- @param[type=Texture] texture
+--
 function TextureRenderTarget:initialize( texture )
     assert(Object.isInstanceOf(texture, Texture),
            'Must be initialized with a texture.')

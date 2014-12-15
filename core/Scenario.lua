@@ -1,4 +1,7 @@
----
+--- Loads and initializes scenarios.
+--
+-- See @{Packages.md}.
+--
 -- @module core.Scenario
 
 
@@ -9,10 +12,6 @@ local ResourceManager = require 'core/ResourceManager'
 
 local Scenario = {}
 
----
--- @local
--- @param packageName
--- @param dsl
 function Scenario._mountPackageAndDependencies( packageName, dsl )
     local packageMetadata = FS.mountPackage(packageName)
     if packageMetadata then
@@ -27,9 +26,21 @@ function Scenario._mountPackageAndDependencies( packageName, dsl )
     end
 end
 
----
--- @param scenarioPackage
--- @param additionalPackages
+--- Performs the neccessary steps to load and start a scenario.
+--
+-- 1. Mounts the required packages.
+-- 2. Load resources in correct order.
+-- 3. Start the scenario.
+--    (Calls the `start` function exported by the scenarios `init` module.)
+--
+-- See @{Packages.md}.
+--
+-- @param[type=string] scenarioPackage
+-- Name of the package, which shall be loaded as scenario.
+--
+-- @param[opt,type=table] additionalPackages
+-- List of additional packages, that shall be loaded.
+--
 function Scenario.load( scenarioPackage, additionalPackages )
     assert(type(scenarioPackage) == 'string', 'Scenario package must be a string')
     additionalPackages = additionalPackages or {}

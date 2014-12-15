@@ -1,6 +1,8 @@
----
--- @module core.graphics.OrthographicCamera
--- @see Camera
+--- An orthographic camera.
+--
+-- Extends @{Camera}.
+--
+-- @classmod core.graphics.OrthographicCamera
 
 
 local assert = assert
@@ -15,6 +17,7 @@ function OrthographicCamera:initialize( modelWorld )
     Camera.initialize(self, modelWorld, 'orthographic')
 end
 
+--- Change the visible area.
 function OrthographicCamera:setScale( scale )
     assert(scale > 0, 'Scale must be greater than zero.')
     SetCameraScale(self.handle, scale)

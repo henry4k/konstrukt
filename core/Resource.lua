@@ -1,4 +1,9 @@
 --- Provides a more convenient middleclass integration of the resource loaders.
+--
+-- Classes that include the mixin must provide a static `_load` function, which
+-- accepts some parameters describing the resource.
+-- See @{ResourceManager.registerLoader}.
+--
 -- @mixin core.Resource
 
 
@@ -12,14 +17,16 @@ function Resource:included( klass )
     end)
 end
 
----
--- @param ...
+--- Shortcut for loading a resource.
+-- @see ResourceManager.load
+-- @usage skyTexture = Texture:load('sky.png')
 function Resource.static:load( ... )
     return ResourceManager.load(self.name, ...)
 end
 
----
--- @param ...
+--- Shortcut for getting a resource.
+-- @see ResourceManager.get
+-- @usage skyTexture = Texture:get('sky.png')
 function Resource.static:get( ... )
     return ResourceManager.get(self.name, ...)
 end

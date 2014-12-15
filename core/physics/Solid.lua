@@ -1,4 +1,5 @@
 --- A body that is simulated by the physics engine.
+--
 -- If a solid has no mass (i.e. it equals zero), it is concidered to be static.
 -- So it isn't affected by collisions with other solids or gravity. Also each
 -- solid needs a @{CollisionShape}, but try to reuse collision shapes to save memory.
@@ -38,6 +39,12 @@ Solid:include(EventSource)
 local SolidHandlesToSolids = {}
 setmetatable(SolidHandlesToSolids, {__mode='k'})
 
+---
+-- @param mass
+-- @param[type=Vector] position
+-- @param[type=Quaternion] rotation
+-- @param[type=CollisionShape] collisionShape
+--
 function Solid:initialize( mass, position, rotation, collisionShape )
     assert(mass >= 0, 'Mass must be positive.')
     assert(Vec:isInstance(position), 'Position must be a vector.')
@@ -65,10 +72,12 @@ function Solid:destroy()
     self.handle = nil
 end
 
+---
 function Solid:getMass()
     return GetSolidMass(self.handle)
 end
 
+---
 function Solid:setMass( mass )
     assert(mass >= 0, 'Mass must be positive.')
     SetSolidMass(self.handle, mass)

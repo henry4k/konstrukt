@@ -16,7 +16,7 @@ AudioBuffer:include(Resource)
 
 --- Loads an audio source from a file.
 --
--- @function load( fileName )
+-- @function static:load( fileName )
 --
 -- @return[type=AudioBuffer]
 --

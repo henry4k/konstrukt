@@ -1,7 +1,6 @@
 --- A 4x4 matrix class.
 -- @classmod core.Matrix4
 
-
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
@@ -24,8 +23,8 @@ function Matrix4:initialize( handle )
     self.handle = handle or CreateMatrix4()
 end
 
---- Create an independent clone of the instance.
-function Matrix4:copy()
+--- Create an independent copy of the instance.
+function Matrix4:clone()
     return Matrix4(CopyMatrix4(self.handle))
 end
 

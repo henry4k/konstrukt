@@ -1,4 +1,4 @@
----
+--- Executed during engine initialization.
 -- @script core.bootstrap.init
 
 
@@ -42,7 +42,7 @@ function _dofile( fileName )
 end
 
 _dofile 'core/bootstrap/table.lua'
-_dofile 'core/bootstrap/logic.lua'
+_dofile 'core/bootstrap/math.lua'
 _dofile 'core/bootstrap/require.lua'
 
 

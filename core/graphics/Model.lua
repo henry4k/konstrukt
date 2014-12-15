@@ -1,5 +1,8 @@
 --- Models are aggregations of meshes, textures, and shaders that can be used to render something on the screen.
--- @module core.graphics.Model
+--
+-- Includes @{HasTransformation} and @{HasAttachmentTarget}.
+--
+-- @classmod core.graphics.Model
 
 
 local assert  = assert
@@ -28,8 +31,7 @@ local Model = class('core/graphics/Model')
 Model:include(HasTransformation)
 Model:include(HasAttachmentTarget)
 
----
--- @warning DON'T CALL THIS DIRECTLY!  Use @{ModelWorld:createModel} instead.
+--- Can't be instanciated directly, use @{ModelWorld:createModel} instead.
 function Model:initialize( handle )
     self.handle = handle
     self.attachmentTarget = nil
@@ -41,12 +43,14 @@ function Model:destroy()
     self.handle = nil
 end
 
+--- Changes a models mesh.
 function Model:setMesh( mesh )
     assert(Object.isInstanceOf(mesh, Mesh), 'Must be called with a mesh.')
     SetModelMesh(self.handle, mesh.handle)
     self.mesh = mesh
 end
 
+--- Retrieves the currently used mesh.
 function Model:getMesh()
     return self.mesh
 end
@@ -56,6 +60,9 @@ function Model:setOverlayLevel( level )
     SetModelOverlayLevel(self.handle, level)
 end
 
+--- Changes a texture unit.
+-- @param[type=number] unit
+-- @param[type=Texture] texture
 function Model:setTexture( unit, texture )
     assert(isInteger(unit), 'Unit must be an integer.')
     assert(unit >= 0, 'Unit must be positive.')
@@ -63,10 +70,26 @@ function Model:setTexture( unit, texture )
     SetModelTexture(self.handle, unit, texture.handle)
 end
 
-function Model:setProgramFamilyList( familyList )
-    SetModelProgramFamilyList(self.handle, familyList)
+--- Changes the programs family.
+--
+-- @param[type=string] family
+--
+-- @param[type=string] ...
+-- Fallback families, which are tried if a @{ShaderProgramSet} lacks the
+-- originally requested family.
+--
+function Model:setProgramFamily( family, ... )
+    local families = {family, ...}
+    SetModelProgramFamilyList(self.handle, table.concat(families, ','))
 end
 
+--- Changes a model specific uniform.
+--
+-- @param name
+-- @param[type=number|Vector|Matrix4] value
+-- @param[opt] type
+-- Is needed for number unifroms.  Either `integer` or `float` are applicable.
+--
 function Model:setUniform( name, value, type )
     if Object.isInstanceOf(value, Mat4) then
         assert(not type, 'Type argument is ignored, when called with a matrix.')
@@ -80,6 +103,7 @@ function Model:setUniform( name, value, type )
     end
 end
 
+--- Remove a uniform.
 function Model:unsetUniform( name )
     UnsetModelUniform(self.handle, name)
 end

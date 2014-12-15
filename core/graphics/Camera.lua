@@ -1,5 +1,8 @@
----
--- @module core.graphics.Camera
+--- Cameras define the transformation which is used to render the associated @{ModelWorld} to the @{RenderTarget}.
+--
+-- Includes @{HasAttachmentTarget}.
+--
+-- @classmod core.graphics.Camera
 
 
 local assert = assert
@@ -19,10 +22,9 @@ local SetCameraProjectionType     = ENGINE.SetCameraProjectionType
 local Camera = class('core/graphics/Camera')
 Camera:include(HasAttachmentTarget)
 
----
--- @warning DON'T CALL THIS DIRECTLY!
--- Use @{PerspectiveCamera} or @{OrthographicCamera} instead.
+--- Abstract class.  Use @{PerspectiveCamera} or @{OrthographicCamera} instead.
 function Camera:initialize( modelWorld, projectionType )
+    assert(self.class ~= Camera, 'Camera is an abstract class and not meant to be instanciated directly.')
     assert(Object.isInstanceOf(modelWorld, ModelWorld), 'Must be initialized with a model world.')
     self.handle = CreateCamera(modelWorld.handle)
     self.modelWorld = modelWorld
@@ -34,15 +36,22 @@ function Camera:destroy()
     self.handle = nil
 end
 
+--- Retrieve @{ModelWorld} used by the camera.
 function Camera:getModelWorld()
     return self.modelWorld
 end
 
+--- Change the cameras view transformation matrix.
 function Camera:setViewTransformation( matrix )
     assert(Object.isInstanceOf(matrix, Mat4), 'Transformation must be an matrix.')
     SetCameraViewTransformation(self.handle, matrix.handle)
 end
 
+--- Set the cameras view range.
+--
+-- Due to the design of the rendering system, cameras can't display infinitly
+-- near or far objects.
+--
 function Camera:setNearAndFarPlanes( zNear, zFar )
     assert(zNear > 0 and zFar > 0, 'z near and z far must be greater than zero.')
     assert(zFar > zNear, 'z far must be larger than z near.')

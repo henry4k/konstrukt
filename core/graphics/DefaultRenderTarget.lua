@@ -1,5 +1,8 @@
----
--- @module core.graphics.DefaultRenderTarget
+--- Render target for the default frame buffer. (Aka window system frame buffer.)
+--
+-- Extends @{RenderTarget}.
+--
+-- @classmod core.graphics.DefaultRenderTarget
 
 
 local class        = require 'middleclass'
@@ -9,6 +12,7 @@ local GetDefaultRenderTarget = ENGINE.GetDefaultRenderTarget
 
 local DefaultRenderTarget = class('core/graphics/DefaultRenderTarget', RenderTarget)
 
+--- Retrieve the singleton.
 function DefaultRenderTarget.static:get()
     if not self.instance then
         self.instance = DefaultRenderTarget()
@@ -17,6 +21,7 @@ function DefaultRenderTarget.static:get()
 end
 
 function DefaultRenderTarget:initialize()
+    assert(not DefaultRenderTarget.instance, 'Use DefaultRenderTarget:get() instead.')
     RenderTarget.initialize(self, GetDefaultRenderTarget())
 end
 

@@ -20,6 +20,8 @@ function ModelWorld:destroy()
     self.handle = nil
 end
 
+--- Creates a new model in this model world.
+-- @return[type=Model]
 function ModelWorld:createModel()
     return Model(CreateModel(self.handle))
 end
