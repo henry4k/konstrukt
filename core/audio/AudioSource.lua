@@ -6,9 +6,9 @@
 -- properties are zero. The transformation matrix is applied additionaly after
 -- the attachment targets position has been applied.
 --
--- Includes @{HasTransformation} and @{HasAttachmentTarget}.
+-- Includes @{HasTransformation} and @{core.physics.HasAttachmentTarget}.
 --
--- @module core.audio.AudioSource
+-- @classmod core.audio.AudioSource
 
 
 local assert = assert

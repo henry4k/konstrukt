@@ -3,7 +3,6 @@ project = 'Apoapsis'
 title = 'Reference'
 description = 'Scripting API'
 style = '!pale'
-prettify_files = true
 format = 'markdown'
 topics = { 'README.md', 'documentation/Packages.md' }
 package = 'core'

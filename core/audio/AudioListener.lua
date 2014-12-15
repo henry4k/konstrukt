@@ -25,7 +25,7 @@ local AudioListener = {}
 --
 -- @param[type=Solid] solid
 -- @param[type=string,opt='rt'] flags
--- See @{physics.HasAttachmentTarget:setAttachmentTarget}.
+-- See @{HasAttachmentTarget:setAttachmentTarget}.
 --
 function AudioListener.setAttachmentTarget( solid, flags )
     assert(Object.isInstanceOf(solid, Solid), 'Attachment target must be a solid.')

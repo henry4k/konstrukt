@@ -1,6 +1,8 @@
 ---
--- @module core.physics.HasAttachmentTarget
+--
 -- @see Solid
+--
+-- @module core.physics.HasAttachmentTarget
 
 
 local assert  = assert
@@ -12,7 +14,6 @@ local Solid   = require 'core/physics/Solid'
 local HasAttachmentTarget = {}
 
 ---
--- @local
 -- @param solid
 -- @param flags
 function HasAttachmentTarget:setAttachmentTarget( solid, flags )
