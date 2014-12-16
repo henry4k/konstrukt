@@ -14,6 +14,7 @@ at https://github.com/henry4k/apoapsis-example to see how it can be used.
 ## Dependencies
 
 Needed to compile the engine:
+
 - PhysFS 2.0+
 - Lua 5.2
 - Open GL
