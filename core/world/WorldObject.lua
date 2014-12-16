@@ -1,5 +1,5 @@
 --- Something in the game world, which you can see and interact with.
--- @module core.world.WorldObject
+-- @classmod core.world.WorldObject
 
 
 local class = require 'middleclass'

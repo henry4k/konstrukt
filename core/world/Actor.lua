@@ -1,5 +1,10 @@
 --- Things that the player can take control of.
--- @module core.world.Actor
+--
+-- Extends @{WorldObject}.
+--
+-- Includes @{Controllable}.
+--
+-- @classmod core.world.Actor
 
 
 local assert = assert
@@ -20,6 +25,11 @@ local ZoomedFoV  = math.rad(10)
 local Actor = class('core/world/Actor', WorldObject)
 Actor:include(Controllable)
 
+
+---
+-- You probably want to extend this class, since it isn't of much use on itself.
+-- @param[type=RenderTarget] renderTarget
+--
 function Actor:initialize( renderTarget )
     WorldObject.initialize(self)
     self:initializeControllable()
@@ -49,6 +59,8 @@ function Actor:destroy()
     WorldObject.destroy(self)
 end
 
+--- While pressed, the field of view set to a smaller value.
+-- @control zoom
 Actor:mapControl('zoom', function( self, absolute, delta )
     if delta > 0 then
         self.cameraManifold:setFieldOfView(ZoomedFoV)

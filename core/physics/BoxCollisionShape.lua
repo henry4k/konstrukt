@@ -1,6 +1,8 @@
----
--- @module core.physics.BoxCollisionShape
--- @see CollisionShape
+--- Defines a cube for collision tests.
+--
+-- Extends @{CollisionShape}.
+--
+-- @classmod core.physics.BoxCollisionShape
 
 
 local assert         = assert
@@ -12,6 +14,10 @@ local CreateBoxCollisionShape = ENGINE.CreateBoxCollisionShape
 
 local BoxCollisionShape = class('core/physics/BoxCollisionShape', CollisionShape)
 
+---
+-- @param[type=Vector] halfWidths
+-- Half widths are the radii of a box.
+--
 function BoxCollisionShape:initialize( halfWidths )
     assert(Vec:isInstance(halfWidths), 'Half width must be a vector.')
     CollisionShape.initialize(self, CreateBoxCollisionShape(halfWidths:unpack(3)))

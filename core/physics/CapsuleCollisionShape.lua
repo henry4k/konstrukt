@@ -1,6 +1,8 @@
----
--- @module core.physics.CapsuleCollisionShape
--- @see CollisionShape
+--- Defines a capsule for collision tests.
+--
+-- Extends @{CollisionShape}.
+--
+-- @classmod core.physics.CapsuleCollisionShape
 
 
 local class          = require 'middleclass'
@@ -10,6 +12,10 @@ local CreateCapsuleCollisionShape = ENGINE.CreateCapsuleCollisionShape
 
 local CapsuleCollisionShape = class('core/physics/CapsuleCollisionShape', CollisionShape)
 
+---
+-- @param radius
+-- @param height
+--
 function CapsuleCollisionShape:initialize( radius, height )
     CollisionShape.initialize(self, CreateCapsuleCollisionShape(radius, height))
 end

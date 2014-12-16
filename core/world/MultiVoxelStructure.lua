@@ -1,4 +1,14 @@
---- @module core.world.MultiVoxelStructure
+--- Structures that can span multiple voxels.
+--
+-- A multi voxel structure owns all voxels in an AABB volume.
+--
+-- It has an origin point and a size, wich defines an AABB.
+-- This defines which voxel belong to the structure.
+--
+-- Extends @{Structure}.
+--
+-- @classmod core.world.MultiVoxelStructure
+-- @alias MVStructure
 
 local assert        = assert
 local tostring      = tostring
@@ -12,12 +22,6 @@ local VoxelAccessor = require 'core/world/VoxelAccessor'
 local Structure     = require 'core/world/Structure'
 
 
---- Structures that can span multiple voxels.
---
--- A multi voxel structure owns all voxels in an AABB volume.
---
--- It has an origin point and a size, wich defines an AABB.
--- This defines which voxel belong to the structure.
 local MVStructure = class('core/world/MultiVoxelStructure', Structure)
 
 local minSize = Vec(1, 1, 1)
@@ -30,6 +34,10 @@ voxelAccessor:addMask('sizeY', 4)
 voxelAccessor:addMask('sizeZ', 4)
 MVStructure.static.voxelAccessor = voxelAccessor
 
+---
+-- @param voxelVolume
+-- @param position
+--
 function MVStructure:initialize( voxelVolume, position )
     Structure.initialize(self, voxelVolume, position)
 

@@ -18,7 +18,9 @@ local SetRenderTargetShaderProgramSet = ENGINE.SetRenderTargetShaderProgramSet
 
 local RenderTarget = class('core/graphics/RenderTarget')
 
---- Abstract class.  Use @{DefaultRenderTarget} or @{TextureRenderTarget} instead.
+--- Abstract class.
+--
+-- Use @{DefaultRenderTarget} or @{TextureRenderTarget} instead.
 --
 -- @see setShaderProgramSet
 --

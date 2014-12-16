@@ -22,7 +22,8 @@ local SetCameraProjectionType     = ENGINE.SetCameraProjectionType
 local Camera = class('core/graphics/Camera')
 Camera:include(HasAttachmentTarget)
 
---- Abstract class.  Use @{PerspectiveCamera} or @{OrthographicCamera} instead.
+--- Abstract class.
+-- Use @{PerspectiveCamera} or @{OrthographicCamera} instead.
 function Camera:initialize( modelWorld, projectionType )
     assert(self.class ~= Camera, 'Camera is an abstract class and not meant to be instanciated directly.')
     assert(Object.isInstanceOf(modelWorld, ModelWorld), 'Must be initialized with a model world.')

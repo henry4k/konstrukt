@@ -39,7 +39,7 @@ Solid:include(EventSource)
 local SolidHandlesToSolids = {}
 setmetatable(SolidHandlesToSolids, {__mode='k'})
 
----
+--- Create a new solid.
 -- @param mass
 -- @param[type=Vector] position
 -- @param[type=Quaternion] rotation
@@ -72,23 +72,28 @@ function Solid:destroy()
     self.handle = nil
 end
 
----
+--- Returns the solids mass or zero, if it's static.
 function Solid:getMass()
     return GetSolidMass(self.handle)
 end
 
----
+--- Changes the solids mass.
+-- May be a positive value or zero.
+-- Passing zero marks the object as static/immovable.
 function Solid:setMass( mass )
     assert(mass >= 0, 'Mass must be positive.')
     SetSolidMass(self.handle, mass)
 end
 
 --- Changes a solids restitution factor, which defines its 'bouncyness'.
+-- @param[type=number] restitution
+-- Between 0 and 1.
 function Solid:setRestitution( restitution )
     assert(isBetween(restitution, 0, 1), 'Restitution must be between 0 and 1.')
     SetSolidRestitution(self.handle, restitution)
 end
 
+--- Changes a solids friction.
 function Solid:setFriction( friction )
     assert(friction >= 0, 'Friction must be positive.')
     SetSolidFriction(self.handle, friction)
@@ -101,29 +106,35 @@ function Solid:setCollisionThreshold( threshold )
     SetSolidCollisionThreshold(self.handle, threshold)
 end
 
+--- Prevents collision events from being triggered for this solid. (Which is the default behaviour.)
 function Solid:disableCollisionEvents()
     SetSolidCollisionThreshold(self.handle, -1)
 end
 
+--- Returns the solids current position as 3d vector.
 function Solid:getPosition()
     return Vec(GetSolidPosition(self.handle))
 end
 
+--- Returns the solids current orientation as quaternion.
 function Solid:getRotation()
     return Quat(GetSolidRotation(self.handle))
 end
 
 --- Velocity at which the solid moves through space.
+-- @return[type=Vector]
 function Solid:getLinearVelocity()
     return Vec(GetSolidLinearVelocity(self.handle))
 end
 
 --- Velocity at which the solid rotates around itself.
+-- @return[type=Vector]
 function Solid:getAngularVelocity()
     return Vec(GetSolidAngularVelocity(self.handle))
 end
 
 --- Instantly applies an impulse.
+--
 -- In contrast to forces, impulses are independent of the simulation rate.
 --
 -- @param value
@@ -135,6 +146,7 @@ end
 --
 -- @param useLocalCoordinates
 -- If set direction and position will be relative to the solids orientation.
+--
 function Solid:applyImpulse( value, relativePosition, useLocalCoordinates )
     assert(Vec:isInstance(value), 'Value must be a vector.')
     assert(Vec:isInstance(relativePosition) or
@@ -153,12 +165,20 @@ function Solid:applyImpulse( value, relativePosition, useLocalCoordinates )
                       useLocalCoordinates)
 end
 
+--- Creates a new force, which affects this solid.
+-- Initially all properties are zero, so that the force has no effect.
+-- @return[type=Force]
 function Solid:createForce()
     local force = Force(CreateForce(self.handle))
     self.forces[force] = force.handle
     return force
 end
 
+--- Fired when one solid collided with another.
+-- @event collision
+-- @param[type=number] impulse
+-- @param[type=Solid] other
+-- @param[type=Vector] contactPoint
 
 local function CollisionHandler( solidAHandle,
                                  solidBHandle,
