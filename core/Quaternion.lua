@@ -1,3 +1,17 @@
+--- A set of imaginary numbers which describe a rotation in 3d space.
+--
+-- More information on them can be found e.g. on [wikipedia](http://en.wikipedia.org/wiki/Quaternion).
+--
+-- To cut it short, in contrast to euler rotation quaternions have ...
+--
+-- - ... less computational overhead.
+-- - ... no [Gimbal Lock](http://en.wikipedia.org/wiki/Gimbal_lock).
+-- - ... [better interpolation](https://www.youtube.com/watch?v=QxIdIZ0eKCE).
+--
+-- @classmod core.Quaternion
+-- @alias Quat
+
+
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
@@ -18,10 +32,13 @@ local CreateMatrix4FromQuaternion     = ENGINE.CreateMatrix4FromQuaternion
 
 local Quat = class('core/Quaternion')
 
--- Quat() - New identity quaternion.
--- Quat( quat ) - Copy quaternion.
--- Quat( vec ), Quat( x, y, z ) - Create quaternion from euler angles.
--- Quat( mat ) - Create quaternion from matrix.
+--- Create a new quaternion.
+--
+-- @usage
+-- Quat() -- New identity quaternion.
+-- Quat( quat ) -- Copy quaternion.
+-- Quat( vec ) or Quat( x, y, z ) -- Create quaternion from euler angles.
+-- Quat( mat ) -- Create quaternion from matrix.
 function Quat:initialize( arg )
     arg = arg or CreateQuaternion()
 
@@ -38,32 +55,42 @@ function Quat:initialize( arg )
     end
 end
 
-function Quat:copy()
+--- Create an independent copy of the instance.
+function Quat:clone()
     return Quat(CopyQuaternion(self.handle))
 end
 
+--- Create a roation matrix from this quaternion.
 function Quat:toMatrix()
     return Mat4(CreateMatrix4FromQuaternion(self.handle))
 end
 
+--- Computes the unit quaternion.
 function Quat:normalize()
     return Quat(NormalizeQuaternion(self.handle))
 end
 
-function Quat:_unm()
+--- Invert the orientation.
+function Quat:__unm()
     return Quat(InvertQuaternion(self.handle))
 end
 
+--- Add another quaternion.
 function Quat:__add( other )
     assert(Object.isInstanceOf(other, Quat), 'Must be called with an quaternion.')
     return Quat(QuaternionOp(self.handle, other.handle, '+'))
 end
 
+--- Multiply with another quaternion.
 function Quat:__mul( other )
     assert(Object.isInstanceOf(other, Quat), 'Must be called with a quaternion.')
     return Quat(QuaternionOp(self.handle, other.handle, '*'))
 end
 
+--- Multiply with a vector.
+--
+-- One parameter must be an vector and one a quaternion.
+--
 function Quat.static:multiplyVector( a, b )
     if Object.isInstanceOf(a, Quat) and Vec:isInstance(b) then
         return Vec(QuaternionXVector3(a.handle,
@@ -80,11 +107,13 @@ function Quat.static:multiplyVector( a, b )
     end
 end
 
+--- Linear interpolation with another quaternion.
 function Quat:lerp( factor, other )
     assert(Object.isInstanceOf(other, Quat), 'Must be called with an quaternion.')
     return Quat(LerpQuaternion(self.handle, other.handle, 'l', factor))
 end
 
+--- Spherical linear interpolation with another quaternion.
 function Quat:slerp( factor, other )
     assert(Object.isInstanceOf(other, Quat), 'Must be called with an quaternion.')
     return Quat(LerpQuaternion(self.handle, other.handle, 's', factor))

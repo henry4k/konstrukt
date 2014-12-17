@@ -1,6 +1,0 @@
-@INCLUDE = ../base-doxyfile.cfg
-
-PROJECT_BRIEF = "engine documentation"
-OUTPUT_DIRECTORY = documentation
-OPTIMIZE_OUTPUT_FOR_C = YES
-FILE_PATTERNS = *.h

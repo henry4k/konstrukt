@@ -1,3 +1,6 @@
+--- A 4x4 matrix class.
+-- @classmod core.Matrix4
+
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
@@ -20,10 +23,16 @@ function Matrix4:initialize( handle )
     self.handle = handle or CreateMatrix4()
 end
 
-function Matrix4:copy()
+--- Create an independent copy of the instance.
+function Matrix4:clone()
     return Matrix4(CopyMatrix4(self.handle))
 end
 
+--- Create a lookt-at matrix.
+--
+-- @param[type=core.Vector] eye
+-- @param[type=core.Vector] center
+-- @param[type=core.Vector] up
 function Matrix4.static:lookAt( eye, center, up )
     return self(CreateLookAtMatrix(eye[1],
                                    eye[2],
@@ -36,26 +45,32 @@ function Matrix4.static:lookAt( eye, center, up )
                                    up[3]))
 end
 
+--- Add another matrix.
 function Matrix4:__add( other )
     assert(Object.isInstanceOf(other, Matrix4), 'Must be called with a matrix.')
     return Matrix4(Matrix4Op(self.handle, other.handle, '+'))
 end
 
+--- Substract another matrix.
 function Matrix4:__sub( other )
     assert(Object.isInstanceOf(other, Matrix4), 'Must be called with a matrix.')
     return Matrix4(Matrix4Op(self.handle, other.handle, '-'))
 end
 
+--- Multiply with another matrix.
 function Matrix4:__mul( other )
     assert(Object.isInstanceOf(other, Matrix4), 'Must be called with a matrix.')
     return Matrix4(Matrix4Op(self.handle, other.handle, '*'))
 end
 
+--- Divide by another matrix.
 function Matrix4:__div( other )
     assert(Object.isInstanceOf(other, Matrix4), 'Must be called with a matrix.')
     return Matrix4(Matrix4Op(self.handle, other.handle, '/'))
 end
 
+--- Translate along the given vector.
+-- @param[type=core.Vector] v
 function Matrix4:translate( v )
     assert(Vec:isInstance(v), 'Must be called with a vector.')
     return Matrix4(TranslateMatrix4(self.handle,
@@ -64,6 +79,8 @@ function Matrix4:translate( v )
                                     v[3]))
 end
 
+--- Scale by the given vector.
+-- @param[type=core.Vector] v
 function Matrix4:scale( v )
     assert(Vec:isInstance(v) or type(v) == 'number',
            'Must be called with a vector or a number.')
@@ -76,6 +93,9 @@ function Matrix4:scale( v )
                                 v[3]))
 end
 
+--- Rotate around the given vector by `angle` radians.
+-- @param angle
+-- @param[type=core.Vector] vec
 function Matrix4:rotate( angle, vec )
     assert(Vec:isInstance(vec), 'Must be called with a vector.')
     return Matrix4(RotateMatrix4(self.handle,
@@ -85,6 +105,8 @@ function Matrix4:rotate( angle, vec )
                                  vec[3]))
 end
 
+--- Transform the given vector.
+-- @return[type=core.Vector] The transformed vector.
 function Matrix4:transform( vec )
     assert(Vec:isInstance(vec), 'Must be called with a vector.')
     return Vec(Matrix4TransformVector(self.handle,
@@ -94,6 +116,9 @@ function Matrix4:transform( vec )
                                       vec[4]))
 end
 
+--- Creates a rotation matrix.
+-- This simply strips the translation and skew components.
+-- @return[type=core.Matrix4]
 function Matrix4:toRotationMatrix()
     return Matrix4(MakeRotationMatrix(self.handle))
 end

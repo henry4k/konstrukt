@@ -1,3 +1,17 @@
+--- Group programs into families.
+--
+-- A model just needs to save the family name, which is then resolved by
+-- the used shader program set.
+-- E.g. there can be a family for static and one for animated models.
+--
+-- Some effects, like shadow mapping, require models to be rendered
+-- with a special shader programs, that are adapted to the effect.
+--
+-- @see core.graphics.ShaderProgram
+--
+-- @classmod core.graphics.ShaderProgramSet
+
+
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
@@ -7,16 +21,13 @@ local DestroyShaderProgramSet = ENGINE.DestroyShaderProgramSet
 local SetShaderProgramFamily  = ENGINE.SetShaderProgramFamily
 
 
-
---- Some effects, like shadow mapping, require models to be rendered
---- with a separate set of shader programs, that is adapted to the effect.
---
--- Shader program sets group programs into families.
--- A model just needs to save the family name, which is then resolved by
--- the used shader program set.
--- E.g. there can be a family for static and one for animated models.
 local ShaderProgramSet = class('core/graphics/ShaderProgramSet')
 
+---
+-- @param[type=core.graphics.ShaderProgram] defaultShaderProgram
+-- Shader program which is used as a fallback, if a the required family is not
+-- available in this set.
+--
 function ShaderProgramSet:initialize( defaultShaderProgram )
     assert(Object.isInstanceOf(defaultShaderProgram, ShaderProgram),
            'Must be initialized with a default shader program.')
@@ -28,6 +39,7 @@ function ShaderProgramSet:destroy()
     self.handle = nil
 end
 
+--- Register a shader program for a specific family.
 function ShaderProgramSet:setFamily( name, shaderProgram )
     assert(Object.isInstanceOf(shaderProgram, ShaderProgram),
            'Must be called with a shader program.')

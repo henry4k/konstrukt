@@ -1,3 +1,10 @@
+--- Used to store and assemble @{core.graphics.Mesh}es.
+--
+-- Includes @{core.Resource}.
+--
+-- @classmod core.graphics.MeshBuffer
+
+
 local assert   = assert
 local class    = require 'middleclass'
 local Object   = class.Object
@@ -29,10 +36,17 @@ end
 local MeshBuffer = class('core/graphics/MeshBuffer')
 MeshBuffer:include(Resource)
 
-function MeshBuffer.static:_load( sceneFileName, objectName )
+--- Loads a mesh buffer from a JSON encoded scene.
+--
+-- @function static:load( sceneFileName, objectName )
+--
+-- @usage
+-- doorMeshBuffer = MeshBuffer:load('airlock.json', 'airlock/door')
+--
+function MeshBuffer.static:_load( sceneFileName, objectPath )
     local sceneGraph = Json.decodeFromFile(sceneFileName)
     if sceneGraph then
-        local definition = GetEntryByPath(sceneGraph, objectName, './')
+        local definition = GetEntryByPath(sceneGraph, objectPath, './')
         local meshBuffer = MeshBuffer()
         meshBuffer:readDefinition(definition)
         meshBuffer:lock()
@@ -52,20 +66,32 @@ function MeshBuffer:destroy()
     self.handle = nil
 end
 
+--- Whether the buffer is write protected.
+-- @see lock
 function MeshBuffer:isLocked()
     return self.locked
 end
 
+--- Protect the buffer from being modified.
+-- @see isLocked
 function MeshBuffer:lock()
     self.locked = true
 end
 
+--- Transform the vertices by an transformation matrix.
 function MeshBuffer:transform( transformation )
     assert(not self.locked, 'Mesh buffer is write protected.')
     assert(Object.isInstanceOf(transformation, Mat4), 'Transformation must be an matrix.')
     TransformMeshBuffer(self.handle, transformation.handle)
 end
 
+--- Append vertices from another buffer.
+--
+-- @param[type=MeshBuffer] other
+--
+-- @param[type=Matrix4,opt] transformation
+-- Transformation that is (optionally) applied to the appended vertices.
+--
 function MeshBuffer:appendMeshBuffer( other, transformation )
     assert(not self.locked, 'Mesh buffer is write protected.')
     assert(Object.isInstanceOf(other, MeshBuffer), 'Must be called with another mesh buffer.')
@@ -77,12 +103,25 @@ function MeshBuffer:appendMeshBuffer( other, transformation )
     end
 end
 
+--- Add a new index.
+-- See the [OpenGL documentation on index buffers](https://www.opengl.org/wiki/Vertex_Specification#Index_buffers).
 function MeshBuffer:appendIndex( index )
     assert(not self.locked, 'Mesh buffer is write protected.')
     assert(index >= 0, 'Index must be positive.')
     AppendIndexToMeshBuffer(self.handle, index)
 end
 
+--- Add a new vertex.
+--
+-- @param[type=table] vertex
+-- Format:
+--
+-- - `x, y, z`: position (mandatory)
+-- - `r, g, b`: color (optional; defaults to 1,1,1)
+-- - `tx, ty`: texture coordinate (optional; defaults to 0,0)
+-- - `nx, ny, nz`: normal vector (optional; defaults to 0,1,0)
+-- - `tanx, tany, tanz`: tangent vector (optional; defaults to 1,0,0,1)
+--
 function MeshBuffer:appendVertex( vertex )
     assert(not self.locked, 'Mesh buffer is write protected.')
     local v = vertex

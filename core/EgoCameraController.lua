@@ -1,3 +1,13 @@
+--- @{core.Controllable}, which rotates a camera around its origin.
+--
+-- Just like in most ego shooters this is done by using axis controls, e.g.
+-- the mouses x and y axes.
+--
+-- Includes @{core.Controllable} and @{core.EventSource}.
+--
+-- @classmod core.EgoCameraController
+
+
 local class        = require 'middleclass'
 local Vec          = require 'core/Vector'
 local Quat         = require 'core/Quaternion'
@@ -16,8 +26,8 @@ local EgoCameraController = class('core/EgoCameraController')
 EgoCameraController:include(Controllable)
 EgoCameraController:include(EventSource)
 
-
 function EgoCameraController:initialize()
+    self:initializeControllable()
     self:initializeEventSource()
     self.rotation = Vec(0, 0)
     self.orientation = Quat()
@@ -26,8 +36,17 @@ end
 
 function EgoCameraController:destroy()
     self:destroyEventSource()
+    self:destroyControllable()
 end
 
+--- Limits the rotation.
+--
+-- @param[type=number|nil] maxXOffset
+-- Max offset on the x axis.  Passing `nil` removes the limitation.
+--
+-- @param[type=number|nil] maxYOffset
+-- Max offset on the y axis.  Passing `nil` removes the limitation.
+--
 function EgoCameraController:setMaxOffset( maxXOffset, maxYOffset )
     assert((maxXOffset == nil or isBetween(maxXOffset, 0, turn/2)) and
            (maxYOffset == nil or isBetween(maxYOffset, 0, turn/2)),
@@ -36,6 +55,8 @@ function EgoCameraController:setMaxOffset( maxXOffset, maxYOffset )
     self.maxXOffset = maxYOffset
 end
 
+--- Returns the current orientation.
+-- @return[type=core.Quaternion]
 function EgoCameraController:getOrientation()
     return self.orientation
 end
@@ -74,11 +95,19 @@ function EgoCameraController:_rotate( offset )
     self:fireEvent('orientation-updated', orientation)
 end
 
+--- Fired after each orientation change.
+-- @event orientation-updated
+-- @param[type=core.Quaternion] orientation
+
+--- Changes the orientation along the x axis.
+-- @control look-x
 EgoCameraController:mapControl('look-x', function( self, absolute, delta )
     delta = delta * 0.01
     self:_rotate(Vec(0, delta))
 end)
 
+--- Changes the orientation along the y axis.
+-- @control look-y
 EgoCameraController:mapControl('look-y', function( self, absolute, delta )
     delta = delta * 0.01
     self:_rotate(Vec(delta, 0))

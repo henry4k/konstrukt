@@ -1,3 +1,7 @@
+--- Executed during engine initialization.
+-- @script core.bootstrap.init
+
+
 -- Setup error handling
 
 ENGINE.SetErrorFunction(function( message )
@@ -38,7 +42,7 @@ function _dofile( fileName )
 end
 
 _dofile 'core/bootstrap/table.lua'
-_dofile 'core/bootstrap/logic.lua'
+_dofile 'core/bootstrap/math.lua'
 _dofile 'core/bootstrap/require.lua'
 
 
@@ -51,13 +55,14 @@ local Controllable = require 'core/Controllable'
 local GlobalControls = class('core/init/GlobalControls')
 GlobalControls:include(Controllable)
 
-function GlobalControls:exit( absolute, delta )
+--- Stops the gameloop and thus stops the game.
+-- @control exit
+GlobalControls:mapControl('exit', function( self, absolute, delta )
     if delta > 0 then
         ENGINE.StopGameLoop()
     end
-end
+end)
 
-GlobalControls:mapControl('exit', GlobalControls.exit)
 Control.pushControllable(GlobalControls())
 
 

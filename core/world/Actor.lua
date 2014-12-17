@@ -1,3 +1,12 @@
+--- Things that the player can take control of.
+--
+-- Extends @{core.world.WorldObject}.
+--
+-- Includes @{core.Controllable}.
+--
+-- @classmod core.world.Actor
+
+
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
@@ -13,12 +22,17 @@ local DefaultFoV = math.rad(80)
 local ZoomedFoV  = math.rad(10)
 
 
---- Things that the player can take control of.
 local Actor = class('core/world/Actor', WorldObject)
 Actor:include(Controllable)
 
+
+---
+-- You probably want to extend this class, since it isn't of much use on itself.
+-- @param[type=core.graphics.RenderTarget] renderTarget
+--
 function Actor:initialize( renderTarget )
     WorldObject.initialize(self)
+    self:initializeControllable()
 
     Control.pushControllable(self)
 
@@ -41,9 +55,12 @@ function Actor:destroy()
     Control.popControllable(self.egoCameraController)
     Control.popControllable(self)
     self.cameraManifold:destroy()
+    self:destroyControllable()
     WorldObject.destroy(self)
 end
 
+--- While pressed, the field of view set to a smaller value.
+-- @control zoom
 Actor:mapControl('zoom', function( self, absolute, delta )
     if delta > 0 then
         self.cameraManifold:setFieldOfView(ZoomedFoV)

@@ -66,6 +66,8 @@ Structures that are *created in huge amounts* and are probably *accessed very of
 Documentation
 -------------
 
+### C/C++
+
 Use JavaDoc and markdown to document source code.
 
 Use `#GlobalDefinition`, neither `::GlobalDefinition` nor `GlobalDefinition()`!
@@ -83,6 +85,26 @@ Example:
      * @return
      * `aaa` or `0` if `aaa` is negative.
      */
+
+
+### Lua
+
+Use JavaDoc and markdown to document code.
+
+Use global references, except when referencing a local module member.
+If you can't refer to something using JavaDoc syntax,
+use code formatting (backticks) to highlight it.
+
+Example:
+
+    --- Summary goes here
+    --
+    -- More detailed description goes here
+    -- and may span multiple lines.
+    --
+    -- @return
+    -- `aaa` or `0` if `aaa` is negative.
+    --
 
 
 Issues Tracker

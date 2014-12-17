@@ -1,3 +1,8 @@
+--- Lets an object host @{core.Effect}s.
+--
+-- @mixin core.EffectTarget
+
+
 local class  = require 'middleclass'
 local Object = class.Object
 local Effect = require 'core/Effect'
@@ -5,10 +10,12 @@ local Effect = require 'core/Effect'
 
 local EffectTarget = {}
 
+--- Must be called by the including class in its constructor.
 function EffectTarget:initializeEffectTarget()
     self.effects = {}
 end
 
+--- Must be called by the including class in its destructor.
 function EffectTarget:destroyEffectTarget()
     for _,effect in ipairs(self.effects) do
         effect:destroy()
@@ -16,6 +23,17 @@ function EffectTarget:destroyEffectTarget()
     self.effects = {}
 end
 
+--- Adds a new effect instance.
+--
+-- Constructs and adds an effect using the given class and the parameters.
+--
+-- @param[type=class] effectClass
+--
+-- @param ...
+-- Parameters that are passed the effects constructor.
+--
+-- @return The effect instance.
+--
 function EffectTarget:addEffect( effectClass, ... )
     assert(Object.isSubclassOf(effectClass, Effect), 'The effect class must inherit Effect.')
     local effect = effectClass(self, ...)
@@ -24,6 +42,12 @@ function EffectTarget:addEffect( effectClass, ... )
     return effect
 end
 
+--- Removes an existing effect.
+--
+-- Also calls the effects destructor upon successful removal.
+--
+-- @param[type=core.Effect] effect
+--
 function EffectTarget:removeEffect( effect )
     for i,e in ipairs(self.effects) do
         if e == effect then
@@ -33,15 +57,27 @@ function EffectTarget:removeEffect( effect )
     end
 end
 
-function EffectTarget:callEffects( event, ... )
-    for _,effect in ipairs(self.effects) do
-        local eventHandler = effect[event]
-        if eventHandler then
-            eventHandler(effect, ...)
+--- Calls a method in all hosted effects.
+--
+-- The order in which the effects are called is determined by their priority.
+--
+-- Effects may or may not have that method.
+--
+-- @param methodName
+--
+-- @param ...
+-- Parameters passed to the method.
+--
+function EffectTarget:callEffects( methodName, ... )
+    for _, effect in ipairs(self.effects) do
+        local method = effect[methodName]
+        if method then
+            method(effect, ...)
         end
     end
 end
 
+--- Creates a list of all hosted effects, which are instances of the given class.
 function EffectTarget:findEffectsByClass( effectClass )
     local found = {}
     for _,effect in ipairs(self.effects) do

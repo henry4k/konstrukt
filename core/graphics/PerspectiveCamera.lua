@@ -1,3 +1,9 @@
+--- A perspectivic camera.
+--
+-- Extends @{core.graphics.Camera}.
+--
+-- @classmod core.graphics.PerspectiveCamera
+
 local assert = assert
 local class  = require 'middleclass'
 local Camera  = require 'core/graphics/Camera'
@@ -10,6 +16,7 @@ function PerspectiveCamera:initialize( modelWorld )
     Camera.initialize(self, modelWorld, 'perspective')
 end
 
+--- Changes the cameras field of view.
 function PerspectiveCamera:setFieldOfView( fov )
     assert(fov > 0, 'FoV must be greater than zero.')
     SetCameraFieldOfView(self.handle, fov)

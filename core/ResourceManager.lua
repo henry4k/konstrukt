@@ -1,3 +1,7 @@
+--- Loads, stores and unloads resources.
+--
+-- @module core.ResourceManager
+
 -- As the resource manager also loads lua scripts, this file may have no dependencies.
 
 
@@ -8,14 +12,17 @@ local ResourceManager = {
 }
 
 --- Registers a resource loader.
+--
 -- Resource loaders are functions or other callables.
--- #ResourceManager.load passes the parameters to the loader, which shall return
--- a table, nil if the requested resource doesn't exist or yield an error if
--- something went wrong.
+-- @{core.ResourceManager.load} passes the parameters to the loader, which shall
+-- return a table, nil if the requested resource doesn't exist or yield an error
+-- if something went wrong.
 --
 -- The table contains:
+--
 -- - value: The loaded resource. (This is returned by the load and get functions.)
 -- - destructor: Optional. Called when the resource shall be unloaded.
+--
 function ResourceManager.registerLoader( type, loader )
     if ResourceManager.loaders[type] then
         error('A loader for "'..type..'" has already been registered.')
@@ -25,15 +32,19 @@ function ResourceManager.registerLoader( type, loader )
     end
 end
 
---- Enables/disables resource loading.  (Disabled by default.)
+--- Enables/disables resource loading. (Disabled by default.)
+--
 -- Attempting to load a resource, while loading is locked, will raise an error.
+--
 function ResourceManager.enableLoading( enabled )
     ResourceManager.loadingEnabled = enabled
 end
 
 --- Return a loaded resource.
+--
 -- @return
--- The resource or nil if the requested resource has not been loaded yet.
+-- The resource or `nil` if the requested resource has not been loaded yet.
+--
 function ResourceManager.get( type, ... )
     local id = ResourceManager._createResourceIdentifier(type, ...)
     local resource = ResourceManager.resources[id]
@@ -45,8 +56,10 @@ function ResourceManager.get( type, ... )
 end
 
 --- Tries to load a resource if it hasn't been loaded yet.
+--
 -- @return
--- The resource or nil if the requested resource doesn't exist.
+-- The resource or `nil` if the requested resource doesn't exist.
+--
 function ResourceManager.load( type, ... )
     local id = ResourceManager._createResourceIdentifier(type, ...)
 
@@ -79,7 +92,9 @@ function ResourceManager._put( resource, type, ... )
 end
 
 --- Drops all loaded resources.
--- Tries to call #destroy in all resource objects.
+--
+-- Also calls the resources destructor.
+--
 function ResourceManager.clear()
     for _, resource in pairs(ResourceManager.resources) do
         if resource.destructor then
@@ -90,8 +105,12 @@ function ResourceManager.clear()
 end
 
 --- Use the given parameters to create an unique identifier.
+--
 -- Each parameter set creates a unique identifier that equals only other
 -- identifiers if they're created using the same set of parameters.
+--
+-- @internal
+--
 function ResourceManager._createResourceIdentifier( ... )
     local args = {...}
     local strings = {}

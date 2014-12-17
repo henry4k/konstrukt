@@ -28,7 +28,7 @@ struct Shader;
  * Shader programs are used to define how models are rendered.
  *
  * They consist of multiple #Shader objects, which must provide an entry point
- * for each mandatory rendering stage. (Vertex and fragment shader)
+ * for each mandatory rendering stage:  Vertex and fragment shader.
  *
  * This is just a brief summary, the complete documentation is available at
  * http://www.opengl.org/wiki/GLSL_Object
@@ -37,7 +37,7 @@ struct ShaderProgram;
 
 /**
  * Some effects, like shadow mapping, require models to be rendered
- * with a separate set of shader programs, that is adapted to the effect.
+ * with a special shader programs, that are adapted to the effect.
  *
  * Shader program sets group programs into families.
  * A model just needs to save the family name, which is then resolved by

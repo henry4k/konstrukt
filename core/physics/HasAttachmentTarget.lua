@@ -1,3 +1,10 @@
+---
+--
+-- @see core.physics.Solid
+--
+-- @module core.physics.HasAttachmentTarget
+
+
 local assert  = assert
 local class   = require 'middleclass'
 local Object  = class.Object
@@ -6,6 +13,9 @@ local Solid   = require 'core/physics/Solid'
 
 local HasAttachmentTarget = {}
 
+---
+-- @param solid
+-- @param flags
 function HasAttachmentTarget:setAttachmentTarget( solid, flags )
     assert(Object.isInstanceOf(solid, Solid) or not solid, 'Attachment target must be a solid or nil.')
     flags = flags or 'rt'
@@ -17,6 +27,7 @@ function HasAttachmentTarget:setAttachmentTarget( solid, flags )
     end
 end
 
+---
 function HasAttachmentTarget:getAttachmentTarget()
     return self.attachmentTarget
 end

@@ -1,3 +1,13 @@
+--- Changes the velocity of a @{core.physics.Solid} over time.
+--
+-- Here a force is defined by its vector and position. The vector defines the
+-- Forces that are at the center will only change the solids linear velocity,
+-- while forces that are applied off-center will also change the angular
+-- velocity. They are applied in each simulation step until you 'destroy' them.
+--
+-- @classmod core.physics.Force
+
+
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
@@ -6,16 +16,11 @@ local DestroyForce = ENGINE.DestroyForce
 local SetForce     = ENGINE.SetForce
 
 
---- Changes the velocity of a solid over time.
--- Here a force is defined by its vector and position. The vector defines the
--- Forces that are at the center will only change the solids linear velocity,
--- while forces that are applied off-center will also change the angular
--- velocity. They are applied in each simulation step until you 'destroy' them.
 local Force = class('core/physics/Force')
 
---- Initially all properties are zero, so that the force has no effect.
--- DON'T CALL THIS DIRECTLY!  Use Solid:createForce() instead.
+--- *DON'T CALL THIS DIRECTLY!*  Use @{core.physics.Solid:createForce} instead.
 function Force:initialize( handle )
+    assert(type(handle) == 'userdata', 'Create forces with Solid:createForce()!')
     self.handle = handle
 end
 
@@ -34,6 +39,7 @@ end
 --
 -- @param useLocalCoordinates
 -- If set direction and position will be relative to the solids orientation.
+--
 function Force:set( value, relativePosition, useLocalCoordinates )
     assert(Vec:isInstance(value), 'Value must be vector.')
     assert(Vec:isInstance(relativePosition) or nil, 'Relative position must be vector.')

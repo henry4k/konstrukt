@@ -1,3 +1,7 @@
+--- Provides file access to the mounted packages and the user directory.
+-- @module core.FileSystem
+
+
 local Config = require 'core/Config'
 local MountPackage        = ENGINE.MountPackage
 local UnmountPackage      = ENGINE.UnmountPackage
@@ -22,7 +26,9 @@ local function assertIsFilePath( filePath )
     end
 end
 
--- See documentation/Packages.md
+--- Default values for package metadata.
+-- @internal
+-- @see Packages.md
 local packageMetadataMetatable = {
     __index = {
         type = 'regular',
@@ -54,28 +60,49 @@ function FileSystem.mountPackage( packageName )
     end
 end
 
+--- Unmounts a previously mounted package.
+--
+-- This does *not* unload any loaded resources of that package.
+--
+-- @return[type=boolean] `true` if the operation succeeded.
+--
 function FileSystem.unmountPackage( packageName )
     assertIsPackageName(packageName)
     FileSystem.mountedPackages[packageName] = nil
     return UnmountPackage(packageName)
 end
 
+--- Returns the metadata of a mounted package.
 function FileSystem.getPackageMetadata( packageName )
     assertIsPackageName(packageName)
     return FileSystem.mountedPackages[packageName]
 end
 
+--- Returns the contents of a regular file as a string.
+-- @return[type=string]
 function FileSystem.readFile( filePath )
     assertIsFilePath(filePath)
     return ReadFile(filePath)
 end
 
+--- Create or replace a regular file with the given content.
+-- @param filePath
+-- @param[type=string] content
 function FileSystem.writeFile( filePath, content )
     assertIsFilePath(filePath)
     assert(type(content) == 'string', 'File content must be a string.')
     WriteFile(filePath, content)
 end
 
+--- Delete a file.
+--
+-- This works only for files in the user directory, not for mounted modules.
+--
+-- @param filePath
+--
+-- @param[type=boolean] recursive
+-- Whether to delete directories recursively.
+--
 function FileSystem.deleteFile( filePath, recursive )
     assertIsFilePath(filePath)
     assert(not recursive, 'Recursive deleting is not supported yet.')
@@ -83,6 +110,7 @@ function FileSystem.deleteFile( filePath, recursive )
     DeleteFile(filePath)
 end
 
+--- Tests whether a file exists at the given path.
 function FileSystem.fileExists( filePath )
     assertIsFilePath(filePath)
     return FileExists(filePath)
@@ -91,16 +119,23 @@ end
 --- Retrieves file attributes.
 -- @return:
 -- A table in the following entries:
--- - size: File size in bytes.
--- - mtime: File modification time as unix timestamp if available.
--- - ctime: File creation time as unix timestamp if available.
--- - type: `regular`, `directory`, `symlink` or `other`.
+--
+-- - `size`: File size in bytes.
+-- - `mtime`: File modification time as unix timestamp if available.
+-- - `ctime`: File creation time as unix timestamp if available.
+-- - `type`: `regular`, `directory`, `symlink` or `other`.
+--
 -- Keep in mind that the timestamps may or may not be available.
+--
 function FileSystem.getFileInfo( filePath )
     assertIsFilePath(filePath)
     return GetFileInfo(filePath)
 end
 
+--- Create a direcotry.
+--
+-- This is only possible in the user directory.
+--
 function FileSystem.makeDirectory( filePath )
     assertIsFilePath(filePath)
     MakeDirectory(filePath)
@@ -157,17 +192,25 @@ local sortFunctions = {
     end
 }
 
+--- Determines which sort method is used by default.
+-- @configkey debug.default-sort-method
+-- Defaults to `directoriesLast`.
 local defaultSortMethod = Config.get('debug.default-sort-method', 'directoriesLast')
 assert(sortFunctions[defaultSortMethod], 'Unknown default sort method: '..defaultSortMethod)
 
 --- Retrieves contents of a directory.
--- @param sortMethod
--- Optional, see #defaultSortMethod.
+--
+-- @param filePath
+--
+-- @param[type=string] sortMethod
+-- Optional, see `defaultSortMethod`.
+--
 -- - `alphabetic`:  Order entries alphabetically.
 -- - `directoriesFirst`:  Like `alphabetic`, but prefer directories.
 -- - `directoriesLast`:  Like `alphabetic`, but defer directories.
 -- - `fileSystem`:  Retain the file system order.
--- - `random`:  Directory entries are shuffled. (Useful for testing, see #defaultSortMethod)
+-- - `random`:  Directory entries are shuffled. (Useful for testing, see @{debug.default-sort-method})
+--
 function FileSystem.getDirectoryEntries( filePath, sortMethod )
     assertIsFilePath(filePath)
 
@@ -181,10 +224,14 @@ function FileSystem.getDirectoryEntries( filePath, sortMethod )
 end
 
 --- Iterates over directory entries and provides file paths and file information.
--- for path, info in FS.directory('example/directory') do ... end
+--
+-- @param filePath
 --
 -- @param sortMethod
--- See #FileSystem.getDirectoryEntries.
+-- See @{getDirectoryEntries}.
+--
+-- @usage for path, info in FS.directory('example/directory') do ... end
+--
 function FileSystem.directory( filePath, sortMethod )
     local entries = FileSystem.getDirectoryEntries(filePath, sortMethod)
     local index = 0
@@ -207,10 +254,14 @@ function FileSystem.directory( filePath, sortMethod )
 end
 
 --- Iterates over a directory tree and provides file paths and file information.
--- for path, info in FS.directoryTree('example/directory') do ... end
+--
+-- @param filePath
 --
 -- @param sortMethod
--- See #FileSystem.getDirectoryEntries.
+-- See @{getDirectoryEntries}.
+--
+-- @usage for path, info in FS.directoryTree('example/directory') do ... end
+--
 function FileSystem.directoryTree( filePath, sortMethod )
     local function yieldTree( directory )
         for entryPath, entryInfo in FileSystem.directory(directory, sortMethod) do
@@ -240,10 +291,14 @@ local function SeparateStaticAndPatternPathElements( filePattern )
 end
 
 --- Iterates recursivley over all files that match the given pattern.
--- for path, info in FS.matchingFiles('example/.+%.png') do ... end
+--
+-- @param filePattern
 --
 -- @param sortMethod
--- See #FileSystem.getDirectoryEntries.
+-- See @{getDirectoryEntries}.
+--
+-- @usage for path, info in FS.matchingFiles('example/.+%.png') do ... end
+--
 function FileSystem.matchingFiles( filePattern, sortMethod )
     assert(type(filePattern) == 'string', 'File pattern must be a string.')
     local staticPath = SeparateStaticAndPatternPathElements(filePattern)

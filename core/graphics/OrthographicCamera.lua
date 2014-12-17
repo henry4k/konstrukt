@@ -1,3 +1,10 @@
+--- An orthographic camera.
+--
+-- Extends @{core.graphics.Camera}.
+--
+-- @classmod core.graphics.OrthographicCamera
+
+
 local assert = assert
 local class  = require 'middleclass'
 local Camera  = require 'core/graphics/Camera'
@@ -10,6 +17,7 @@ function OrthographicCamera:initialize( modelWorld )
     Camera.initialize(self, modelWorld, 'orthographic')
 end
 
+--- Change the visible area.
 function OrthographicCamera:setScale( scale )
     assert(scale > 0, 'Scale must be greater than zero.')
     SetCameraScale(self.handle, scale)
