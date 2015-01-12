@@ -80,8 +80,8 @@ end
 --- Creates a list of all hosted effects, which are instances of the given class.
 function EffectTarget:findEffectsByClass( effectClass )
     local found = {}
-    for _,effect in ipairs(self.effects) do
-        if e:isInstanceOf(effectClass) then
+    for _, effect in ipairs(self.effects) do
+        if effect:isInstanceOf(effectClass) then
             table.insert(found, effect)
         end
     end

@@ -280,11 +280,11 @@ local function SeparateStaticAndPatternPathElements( filePattern )
     local static, dynamic = string.match(filePattern, staticDynamicPattern)
     if static then
         -- do nothing
-    elseif string.match(p, '.*'..magicCharacterSet..'.*') then
+    elseif string.match(filePattern, '.*'..magicCharacterSet..'.*') then
         static = nil
-        dynamic = p
+        dynamic = filePattern
     else
-        static = p
+        static = filePattern
         dynamic = nil
     end
     return static, dynamic

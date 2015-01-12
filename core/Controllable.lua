@@ -2,7 +2,7 @@
 --
 -- @mixin core.Controllable
 
-Controllable = {
+local Controllable = {
     static = {}
 }
 

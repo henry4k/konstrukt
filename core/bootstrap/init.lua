@@ -69,9 +69,6 @@ Control.pushControllable(GlobalControls())
 -- Setup default render target
 
 local ResourceManager   = require 'core/ResourceManager'
-local Vec               = require 'core/Vector'
-local Quat              = require 'core/Quaternion'
-local Mat4              = require 'core/Matrix4'
 local ModelWorld        = require 'core/graphics/ModelWorld'
 local ShaderProgram     = require 'core/graphics/ShaderProgram'
 local ShaderProgramSet  = require 'core/graphics/ShaderProgramSet'
@@ -108,7 +105,7 @@ local Scenario = require 'core/Scenario'
 local interactive = false
 local packages = {}
 
-for i, argument in ipairs(ARGS) do
+for _, argument in ipairs(ARGS) do
     if argument:match('-.*') then
         if argument == '-i' then
             interactive = true

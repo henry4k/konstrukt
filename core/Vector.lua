@@ -2,7 +2,6 @@
 -- @classmod core.Vector
 
 
-local assert       = assert
 local setmetatable = setmetatable
 local getmetatable = getmetatable
 local rawset       = rawset

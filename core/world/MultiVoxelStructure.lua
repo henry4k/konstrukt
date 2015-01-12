@@ -11,13 +11,9 @@
 -- @alias MVStructure
 
 local assert        = assert
-local tostring      = tostring
 local class         = require 'middleclass'
-local Object        = class.Object
 local Vec           = require 'core/Vector'
-local WorldObject   = require 'core/world/WorldObject'
 local Voxel         = require 'core/world/Voxel'
-local VoxelVolume   = require 'core/world/VoxelVolume'
 local VoxelAccessor = require 'core/world/VoxelAccessor'
 local Structure     = require 'core/world/Structure'
 

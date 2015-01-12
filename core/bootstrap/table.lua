@@ -6,6 +6,7 @@ local pairs = pairs
 local setmetatable = setmetatable
 local getmetatable = getmetatable
 local random = math.random
+local sort = table.sort
 
 --- Copy entries of a set of tables into the target table.
 --

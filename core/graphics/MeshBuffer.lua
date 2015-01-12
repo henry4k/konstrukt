@@ -20,7 +20,7 @@ local AppendVertexToMeshBuffer = ENGINE.AppendVertexToMeshBuffer
 
 
 local GetEntryByPath = function( table, path, delimiters )
-    local delimiters = delimiters or '.'
+    delimiters = delimiters or '.'
     local current = table
     for entry in path:gmatch('[^'..delimiters..']+') do
         if current[entry] then

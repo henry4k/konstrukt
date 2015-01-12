@@ -7,9 +7,7 @@
 -- @classmod core.world.Actor
 
 
-local assert = assert
 local class  = require 'middleclass'
-local Object = class.Object
 local Vec    = require 'core/Vector'
 local Control             = require 'core/Control'
 local Controllable        = require 'core/Controllable'

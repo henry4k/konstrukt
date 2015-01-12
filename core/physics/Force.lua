@@ -10,7 +10,6 @@
 
 local assert = assert
 local class  = require 'middleclass'
-local Object = class.Object
 local Vec    = require 'core/Vector'
 local DestroyForce = ENGINE.DestroyForce
 local SetForce     = ENGINE.SetForce

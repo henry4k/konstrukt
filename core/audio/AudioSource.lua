@@ -14,8 +14,6 @@
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
-local Solid  = require 'core/physics/Solid'
-local Mat4   = require 'core/Matrix4'
 local AudioBuffer         = require 'core/audio/AudioBuffer'
 local HasTransformation   = require 'core/HasTransformation'
 local HasAttachmentTarget = require 'core/physics/HasAttachmentTarget'
@@ -51,7 +49,7 @@ end
 -- right side. No matter how the listener is positioned.
 --
 function AudioSource:setRelative( relative )
-    assert(type(looping) == 'boolean')
+    assert(type(relative) == 'boolean')
     SetAudioSourceRelative(self.handle, relative)
 end
 

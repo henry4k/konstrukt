@@ -11,7 +11,6 @@ local class   = require 'middleclass'
 local Object  = class.Object
 local Vec     = require 'core/Vector'
 local Mat4    = require 'core/Matrix4'
-local Solid   = require 'core/physics/Solid'
 local Mesh    = require 'core/graphics/Mesh'
 local Texture = require 'core/graphics/Texture'
 local HasTransformation   = require 'core/HasTransformation'
