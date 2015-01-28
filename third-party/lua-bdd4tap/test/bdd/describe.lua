@@ -1,5 +1,5 @@
 local testBuilder = require 'Test.Builder'.new()
-local bdd = require 'test/bdd'
+local bdd = require 'test.bdd'
 
 local describe =
 {
