@@ -1,9 +1,9 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core/test/common'
+require 'core-test/common'
 
 local Spy = require 'test.mock.Spy'
-local class = require 'core/middleclass'
+local class = require 'middleclass'
 local Effect = require 'core/Effect'
 local EffectTarget = require 'core/EffectTarget'
 
