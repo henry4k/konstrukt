@@ -1,65 +1,79 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core/test/common'
+require 'core-test/common'
 
 local Mock = require 'test.mock.Mock'
+local class = require 'middleclass'
 
 describe('Control')
     :setup(function()
         EventCallbacks = {}
 
         ENGINE = {
-            RegisterKeyControl = Mock(),
-            RegisterAxisControl = Mock(),
+            RegisterControl = Mock(),
             SetEventCallback = function( name, fn )
                 EventCallbacks[name] = fn
             end
         }
 
+        FakeRequire:whitelist('middleclass')
         FakeRequire:whitelist('core/Control')
         FakeRequire:whitelist('core/Controllable')
         FakeRequire:install()
 
         Control = require 'core/Control'
+        Controllable = require 'core/Controllable'
+
+        DummyControllable = class('DummyControllable')
+        DummyControllable:include(Controllable)
+        function DummyControllable:initialize()
+            self:initializeControllable()
+        end
+        function DummyControllable:destroy()
+            self:destroyControllable()
+        end
+        DummyControllableCallback = Mock()
+        ENGINE.RegisterControl:canBeCalled{with={'do-something'}}
+        DummyControllable:mapControl('do-something', DummyControllableCallback)
     end)
 
     :beforeEach(function()
-        ENGINE.RegisterKeyControl:reset()
-        ENGINE.RegisterAxisControl:reset()
+        ENGINE.RegisterControl:reset()
+        DummyControllableCallback:reset()
+        Control.controllableStack = {}
     end)
 
-    :it('can register key controls.', function()
-        ENGINE.RegisterKeyControl:canBeCalled{with={'key control name'}}
-        Control.registerKey('key control name', 'key control callback')
-        ENGINE.RegisterKeyControl:assertCallCount(1)
+    :it('can register controls.', function()
+        ENGINE.RegisterControl:canBeCalled{with={'control name'}}
+        Control.register('control name')
+        ENGINE.RegisterControl:assertCallCount(1)
     end)
 
-    :it('reacts to key events.', function()
-        local keyControlCallback = Mock()
-        keyControlCallback:canBeCalled{with={true}}
-        ENGINE.RegisterKeyControl:canBeCalled{with={'key control name', keyControllCallback}}
-
-        Control.registerKey('key control name', keyControlCallback)
-        EventCallbacks['KeyControlAction']('key control name', true)
-
-        keyControlCallback:assertCallCount(1)
+    :it('can push and pop controllables.', function()
+        local controllable = DummyControllable()
+        Control.pushControllable(controllable)
+        assert(#Control.controllableStack == 1)
+        Control.popControllable(controllable)
+        assert(#Control.controllableStack == 0)
     end)
 
-    :it('can register axis controls.', function()
-        ENGINE.RegisterAxisControl:canBeCalled{with={'axis control name'}}
-        Control.registerAxis('axis control name', 'axis control callback')
-        ENGINE.RegisterAxisControl:assertCallCount(1)
+    :it('notifies pushed controllables about events.', function()
+        controllable = DummyControllable()
+
+        Control.pushControllable(controllable)
+        DummyControllableCallback:assertCallCount(0)
+
+        DummyControllableCallback:canBeCalled{with={controllable, 1, 1}}
+        EventCallbacks['ControlAction']('do-something', 1, 1)
+        DummyControllableCallback:assertCallCount(1)
     end)
 
-    :it('can register axis controls.', function()
-        local axisControlCallback = Mock()
-        axisControlCallback:canBeCalled{with={1.0, 0.5}}
-        ENGINE.RegisterAxisControl:canBeCalled{with={'axis control name', axisControllCallback}}
-
-        Control.registerAxis('axis control name', axisControlCallback)
-        EventCallbacks['AxisControlAction']('axis control name', 1.0, 0.5)
-
-        axisControlCallback:assertCallCount(1)
+    :it('won\'t notify popped controllables about events anymore.', function()
+        controllable = DummyControllable()
+        Control.pushControllable(controllable)
+        Control.popControllable(controllable)
+        EventCallbacks['ControlAction']('do-something', 1, 1)
+        DummyControllableCallback:assertCallCount(0)
     end)
 
 
