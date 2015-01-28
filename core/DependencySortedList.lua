@@ -41,6 +41,7 @@ end
 --
 function DSL:add( name, dependencies )
     assert(not self.entryMap[name], 'Entry '..name..' already exists.')
+    dependencies = dependencies or {}
     self.entryMap[name] = dependencies
 end
 
@@ -97,7 +98,7 @@ function DSL:sort()
         elseif bDependsOnA then
             return false
         else
-            return false -- dont care
+            return false -- don't care
         end
     end)
 
