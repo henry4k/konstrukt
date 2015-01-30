@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core/test/common'
+require 'core-test/common'
 
 local Spy = require 'test.mock.Spy'
 
@@ -12,10 +12,12 @@ describe('The resource manager')
 
         MeshLoader = Spy(function( sceneFile, objectName )
             if sceneFile == 'AirLock.json' and objectName == 'AirLock.Door' then
-                return {
-                    name = objectName,
-                    destroy = MeshDestructor
+                local resource = {
+                    value = { name = 'AirLock.Door' },
+                    destructor = MeshDestructor
                 }
+                resource.value.resource = resource
+                return resource
             else
                 return nil
             end
@@ -54,7 +56,7 @@ describe('The resource manager')
 
     :it('can\'t load resources, when loading is disabled.', function()
         ResourceManager.enableLoading(false)
-        assert(ResourceManager.load('Mesh', 'AirLock.json', 'AirLock.Door') == nil)
+        assert(pcall(ResourceManager.load, 'Mesh', 'AirLock.json', 'AirLock.Door') == false)
     end)
 
     :it('loads existing resources only once.', function()
@@ -73,7 +75,7 @@ describe('The resource manager')
                                      arguments={'AirLock.json', 'AirLock.Door'}}
     end)
 
-    :it('calls "destroy" in resources that have it.', function()
+    :it('calls the resources destructor.', function()
         local mesh = ResourceManager.load('Mesh', 'AirLock.json', 'AirLock.Door')
         ResourceManager.clear()
         ResourceManager.clear()
@@ -81,9 +83,9 @@ describe('The resource manager')
         MeshDestructor:assertCallMatches{atIndex=1, arguments={mesh}}
     end)
 
-    :it('doesn\'t attempt to call "destroy" in resources that don\'t have it.', function()
+    :it('doesn\'t attempt to call the resources destructor if it doesn\'t have one.', function()
         local mesh = ResourceManager.load('Mesh', 'AirLock.json', 'AirLock.Door')
-        mesh.destroy = nil
+        mesh.resource.destructor = nil
         ResourceManager.clear()
         ResourceManager.clear()
         MeshDestructor:assertCallCount(0)
