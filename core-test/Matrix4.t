@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core/test/common'
+require 'core-test/common'
 
 local Mock = require 'test.mock.Mock'
 
@@ -50,14 +50,14 @@ describe('A 4x4 matrix')
         ENGINE.CreateMatrix4:assertCallCount(1)
     end)
 
-    :it('can be copied.', function()
+    :it('can be cloned.', function()
         ENGINE.CreateMatrix4:canBeCalled{thenReturn={'handle a'}}
         ENGINE.CopyMatrix4:canBeCalled{with={'handle a'}, thenReturn={'handle b'}}
 
         local a = Mat4()
         assert(a.handle == 'handle a')
 
-        local b = a:copy()
+        local b = a:clone()
         assert(b.handle == 'handle b')
 
         ENGINE.CreateMatrix4:assertCallCount(1)
