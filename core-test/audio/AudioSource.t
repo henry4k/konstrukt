@@ -1,8 +1,9 @@
 #!/usr/bin/env lua
 -- vim: set filetype=lua:
-require 'core/test/common'
+require 'core-test/common'
 
 local Mock = require 'test.mock.Mock'
+local class = require 'middleclass'
 
 
 describe('An audio source')
@@ -35,8 +36,17 @@ describe('An audio source')
             ENGINE.PauseAudioSource:reset()
         end
 
+        Matrix4 = class('Fake Matrix4')
+        AudioBuffer = class('Fake AudioBuffer')
+        Solid = class('Fake Solid')
+
         FakeRequire:whitelist('middleclass')
         FakeRequire:whitelist('core/audio/AudioSource')
+        FakeRequire:whitelist('core/HasTransformation')
+        FakeRequire:whitelist('core/physics/HasAttachmentTarget')
+        FakeRequire:fakeModule('core/Matrix4', Matrix4)
+        FakeRequire:fakeModule('core/audio/AudioBuffer', AudioBuffer)
+        FakeRequire:fakeModule('core/physics/Solid', Solid)
         FakeRequire:install()
 
         AudioSource = require 'core/audio/AudioSource'
@@ -97,22 +107,25 @@ describe('An audio source')
     end)
 
     :it('has an attachment target.', function()
-        ENGINE.SetAudioSourceAttachmentTarget:canBeCalled{with={'source handle', 'solid handle'}}
-        local solid = { handle = 'solid handle' }
+        ENGINE.SetAudioSourceAttachmentTarget:canBeCalled{with={'source handle', 'solid handle', 'rt'}}
+        local solid = Solid()
+        solid.handle = 'solid handle'
         Source:setAttachmentTarget(solid)
         ENGINE.SetAudioSourceAttachmentTarget:assertCallCount(1)
     end)
 
     :it('has a transformation.', function()
-        ENGINE.SetAudioSourceTransformation:canBeCalled{with={'source handle', 'matrix handle'}}
-        local matrix = { handle = 'matrix handle' }
+        ENGINE.SetAudioSourceTransformation:canBeCalled{with={'source handle', 'matrix handle'} }
+        local matrix = Matrix4()
+        matrix.handle = 'matrix handle'
         Source:setTransformation(matrix)
         ENGINE.SetAudioSourceTransformation:assertCallCount(1)
     end)
 
     :it('can enqueue buffers.', function()
-        ENGINE.EnqueueAudioBuffer:canBeCalled{with={'source handle', 'buffer handle'}}
-        local buffer = { handle = 'buffer handle' }
+        ENGINE.EnqueueAudioBuffer:canBeCalled{with={'source handle', 'buffer handle'} }
+        local buffer = AudioBuffer()
+        buffer.handle = 'buffer handle'
         Source:enqueue(buffer)
         ENGINE.EnqueueAudioBuffer:assertCallCount(1)
     end)
