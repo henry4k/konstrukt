@@ -1,6 +1,5 @@
+--- @mixin core.Controllable
 --- For things that want to listen for specific control events.
---
--- @mixin core.Controllable
 
 Controllable = {
     static = {}
@@ -24,7 +23,7 @@ end
 --
 -- @param controlName
 -- @param[type=function] method
--- @see Control.pushControllable
+-- @see core.Control.pushControllable
 --
 function Controllable.static:mapControl( controlName, method )
     local controls = self.static.controls

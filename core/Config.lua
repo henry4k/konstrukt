@@ -1,5 +1,5 @@
+--- @module core.Config
 --- Read configuration values.
--- @module core.Config
 
 
 local GetConfigValue = ENGINE.GetConfigValue

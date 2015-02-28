@@ -1,3 +1,5 @@
+--- @classmod core.world.MultiVoxelStructure
+--- @alias MVStructure
 --- Structures that can span multiple voxels.
 --
 -- A multi voxel structure owns all voxels in an AABB volume.
@@ -6,9 +8,6 @@
 -- This defines which voxel belong to the structure.
 --
 -- Extends @{Structure}.
---
--- @classmod core.world.MultiVoxelStructure
--- @alias MVStructure
 
 local assert        = assert
 local tostring      = tostring

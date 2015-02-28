@@ -1,8 +1,7 @@
+--- @classmod core.physics.BoxCollisionShape
 --- Defines a cube for collision tests.
 --
 -- Extends @{CollisionShape}.
---
--- @classmod core.physics.BoxCollisionShape
 
 
 local assert         = assert

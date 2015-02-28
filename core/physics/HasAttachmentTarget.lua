@@ -1,8 +1,7 @@
+--- @module core.physics.HasAttachmentTarget
 ---
 --
 -- @see Solid
---
--- @module core.physics.HasAttachmentTarget
 
 
 local assert  = assert

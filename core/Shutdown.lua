@@ -1,5 +1,5 @@
+--- @module core.Shutdown
 --- Controls the games shutdown.
--- @module core.Shutdown
 
 
 local SetEventCallback = ENGINE.SetEventCallback

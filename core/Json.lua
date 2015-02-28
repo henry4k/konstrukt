@@ -1,5 +1,5 @@
+--- @module core.Json
 --- Utility functions for working with JSON encoded files.
--- @module core.Json
 
 
 local FS = require 'core/FileSystem'

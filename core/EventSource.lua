@@ -1,11 +1,10 @@
+--- @mixin core.EventSource
 --- Events can be used for inter object communication.
 --
 -- Using the event source mixin makes sense, if you can't know which objects
 -- may want to react on an event.  Also you don't need to worry about
 -- the targets life time, since it will automatically forget targets
 -- that have no further references.
---
--- @mixin core.EventSource
 
 
 local assert  = assert

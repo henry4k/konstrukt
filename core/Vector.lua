@@ -1,5 +1,5 @@
+--- @classmod core.Vector
 --- n-dimensional vectors!
--- @classmod core.Vector
 
 
 local assert       = assert

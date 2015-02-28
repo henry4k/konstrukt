@@ -1,8 +1,7 @@
+--- @classmod core.graphics.MeshBuffer
 --- Used to store and assemble @{Mesh}es.
 --
 -- Includes @{Resource}.
---
--- @classmod core.graphics.MeshBuffer
 
 
 local assert   = assert

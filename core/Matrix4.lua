@@ -1,5 +1,5 @@
+--- @classmod core.Matrix4
 --- A 4x4 matrix class.
--- @classmod core.Matrix4
 
 local assert = assert
 local class  = require 'middleclass'

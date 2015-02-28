@@ -1,5 +1,5 @@
+--- @module core.FileSystem
 --- Provides file access to the mounted packages and the user directory.
--- @module core.FileSystem
 
 
 local Config = require 'core/Config'

@@ -2,9 +2,10 @@
 project = 'Apoapsis'
 title = 'Reference'
 description = 'Scripting API'
-style = '!pale'
 format = 'markdown'
-topics = { 'README.md', 'documentation/Packages.md' }
+topics = { 'README.md',
+           'documentation/Packages.md',
+           'documentation/Structure.md' }
 package = 'core'
 file = 'core'
 not_luadoc = true

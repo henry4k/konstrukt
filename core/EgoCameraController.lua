@@ -1,11 +1,10 @@
+--- @classmod core.EgoCameraController
 --- @{Controllable}, which rotates a camera around its origin.
 --
 -- Just like in most ego shooters this is done by using axis controls, e.g.
 -- the mouses x and y axes.
 --
 -- Includes @{Controllable} and @{EventSource}.
---
--- @classmod core.EgoCameraController
 
 
 local class        = require 'middleclass'

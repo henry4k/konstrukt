@@ -1,8 +1,7 @@
+--- @classmod core.graphics.Camera
 --- Cameras define the transformation which is used to render the associated @{ModelWorld} to the @{RenderTarget}.
 --
--- Includes @{HasAttachmentTarget}.
---
--- @classmod core.graphics.Camera
+-- Includes @{core.physics.HasAttachmentTarget}.
 
 
 local assert = assert

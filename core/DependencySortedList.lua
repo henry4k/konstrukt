@@ -1,3 +1,5 @@
+--- @classmod core.DependencySortedList
+--- @alias DSL
 --- A container that can be used to sort entries that have dependencies.
 --
 -- Each entry added to this list can 'depend' on other entries.
@@ -10,9 +12,6 @@
 --
 -- The list also detects dependency errors, like missing and circular
 -- dependencies.
---
--- @classmod core.DependencySortedList
--- @alias DSL
 
 
 local class  = require 'middleclass'

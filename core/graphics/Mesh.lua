@@ -1,10 +1,9 @@
+--- @classmod core.graphics.Mesh
 --- Geometry that can be directly rendered by the graphics card.
 --
 -- Meshes are mostly generated from @{MeshBuffer}s.
 --
 -- Includes @{Resource}.
---
--- @classmod core.graphics.Mesh
 
 
 local assert      = assert
@@ -25,7 +24,7 @@ Mesh:include(Resource)
 --
 -- @param[type=string] ...
 -- The same parameters that are valid for mesh buffers.
--- See @{MeshBuffer.static:load}.
+-- See @{MeshBuffer:load}.
 --
 function Mesh.static:_load( ... )
     local meshBuffer = MeshBuffer:load(...)

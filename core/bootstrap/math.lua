@@ -1,5 +1,5 @@
+--- @script core.bootstrap.math
 --- Extensions to the standard @{math} functions.
--- @script core.bootstrap.math
 
 
 local floor = math.floor

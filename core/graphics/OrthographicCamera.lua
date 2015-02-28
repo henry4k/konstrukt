@@ -1,8 +1,7 @@
+--- @classmod core.graphics.OrthographicCamera
 --- An orthographic camera.
 --
 -- Extends @{Camera}.
---
--- @classmod core.graphics.OrthographicCamera
 
 
 local assert = assert

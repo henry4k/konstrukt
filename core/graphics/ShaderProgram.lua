@@ -1,3 +1,4 @@
+--- @classmod core.graphics.ShaderProgram
 --- Shader programs are used to define how models are rendered.
 --
 -- They consist of multiple @{Shader} objects, which must provide an entry point
@@ -7,17 +8,15 @@
 -- http://www.opengl.org/wiki/GLSL_Object
 --
 -- Includes @{Resource}.
---
--- @classmod core.graphics.ShaderProgram
 
 
-local assert          = assert
-local class           = require 'middleclass'
-local Object          = class.Object
-local Vec             = require 'core/Vector'
-local Mat4            = require 'core/Matrix4'
-local Shader          = require 'core/graphics/Shader'
-local Resource        = require 'core/Resource'
+local assert   = assert
+local class    = require 'middleclass'
+local Object   = class.Object
+local Vec      = require 'core/Vector'
+local Mat4     = require 'core/Matrix4'
+local Shader   = require 'core/graphics/Shader'
+local Resource = require 'core/Resource'
 local LinkShaderProgram    = ENGINE.LinkShaderProgram
 local DestroyShaderProgram = ENGINE.DestroyShaderProgram
 local SetGlobalUniform     = ENGINE.SetGlobalUniform

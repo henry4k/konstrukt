@@ -1,8 +1,7 @@
+--- @classmod core.graphics.Texture
 ---
 --
 -- Includes @{Resource}.
---
--- @classmod core.graphics.Texture
 
 
 local class    = require 'middleclass'
@@ -17,7 +16,7 @@ Texture:include(Resource)
 
 ---
 --
--- @function static.load( fileName, ... )
+-- @function static:load( fileName, ... )
 --
 -- @param[type=string] target
 -- Texture type.  Available are:

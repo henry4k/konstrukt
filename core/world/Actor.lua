@@ -1,10 +1,9 @@
+--- @classmod core.world.Actor
 --- Things that the player can take control of.
 --
 -- Extends @{WorldObject}.
 --
 -- Includes @{Controllable}.
---
--- @classmod core.world.Actor
 
 
 local assert = assert

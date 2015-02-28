@@ -1,8 +1,7 @@
+--- @classmod core.Effect
 --- Can be used to change the behaviour of an object at runtime.
 --
 -- To be able to host effects, objects need to include the @{EffectTarget} mixin.
---
--- @classmod core.Effect
 
 
 local class  = require 'middleclass'

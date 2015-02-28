@@ -1,5 +1,5 @@
+--- @mixin core.HasTransformation
 ---
--- @mixin core.HasTransformation
 -- TODO: This class is obsolete.
 
 

@@ -1,8 +1,7 @@
+--- @classmod core.graphics.PerspectiveCamera
 --- A perspectivic camera.
 --
 -- Extends @{Camera}.
---
--- @classmod core.graphics.PerspectiveCamera
 
 local assert = assert
 local class  = require 'middleclass'

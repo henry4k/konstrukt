@@ -1,8 +1,7 @@
+--- @classmod core.audio.AudioBuffer
 --- An audio buffer contains audio data, which is e.g. loaded from a file.
 --
 -- Includes @{Resource}.
---
--- @classmod core.audio.AudioBuffer
 
 
 local class    = require 'middleclass'

@@ -1,5 +1,5 @@
+--- @script core.bootstrap.table
 --- Extensions to the standard @{table} functions.
--- @script core.bootstrap.table
 
 local ipairs = ipairs
 local pairs = pairs
