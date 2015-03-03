@@ -31,13 +31,11 @@ function VoxelVolume:initialize( size )
 end
 
 function VoxelVolume:destroy()
-    self:flushCaches()
 end
 
 function VoxelVolume:readVoxel( position )
     assert(Vec:isInstance(position), 'Position must be a vector.')
-    local data = ReadVoxelData(position:unpack(3))
-    return Voxel(unpack(data))
+    return Voxel(ReadVoxelData(position:unpack(3)))
 end
 
 function VoxelVolume:writeVoxel( position, voxel )
@@ -46,40 +44,48 @@ function VoxelVolume:writeVoxel( position, voxel )
     WriteVoxelData(position[1], position[2], position[3], voxel)
 end
 
-function VoxelVolume:flushCaches()
-    -- Dummy function.
-
-    -- No need to flush the structure cache, since its values are weak.
-    -- self.structureCache = setmetatable({}, weakValueMT)
-end
-
-function VoxelVolume:_getStructureOrigin( position )
-    -- TODO: Structures larger than 1,1,1 are not supported yet.
-    return position
-end
-
-function VoxelVolume:_readStructureAt( originPosition )
-    local voxel = self:readVoxel(originPosition)
-    local id = Structure.voxelAccessor:read('id', voxel)
-    local structureClass = StructureDictionary.getClassFromId(id)
-    local structure = structureClass(self, originPosition)
-    structure:read()
-    return structure
-end
-
-function VoxelVolume:getStructureAt( position )
+function VoxelVolume:getStructure( position )
     assert(Vec:isInstance(position), 'Position must be a vector.')
-    local originPosition = self:_getStructureOrigin(position)
-    local hash = tostring(originPosition)
+
+    local positionHash = tostring(position)
     local structureCache = self.structureCache
-    local structure = structureCache[hash]
+    local structure = structureCache[positionHash]
+
     if not structure then
-        structure = self:_readStructureAt(originPosition)
-        structureCache[hash] = structure
+        local voxel = self:readVoxel(position)
+        local id = Structure.voxelAccessor:read('id', voxel)
+        -- TODO: Optimize voxelAccessor as a local?
+        local class = StructureDictionary.getClassFromId(id)
+
+        local origin = class.getOrigin(voxel)
+
+        structure = structureClass()
+        structure:_read(self, origin)
+
+        structureCache[positionHash] = structure
+        if origin ~= position then
+            local originHash = tostring(origin)
+            structureCache[originHash] = structure
+        end
     end
+
     return structure
 end
 
+function VoxelVolume:createStructure( structureClass, origin, ... )
+    assert(Object.isSubclassOf(structureClass, Structure),
+           'Structure classes must inherit the structure base class.')
+    assert(structureClass.id,
+           'Structure has no ID.  Forgot to register it to the StructureDictionary?  Or hasn\'t assignIds() been called yet?')
+
+    local originHash = tostring(origin)
+    self.structureCache[originHash] = structure
+
+    local structure = structureClass()
+    structure:_create(self, origin, ...)
+end
+
+--[[
 function VoxelVolume:getStructuresInAABB( min, max )
     assert(Vec:isInstance(min) and
            Vec:isInstance(max), 'Min and max must be vectors.')
@@ -103,6 +109,8 @@ function VoxelVolume:getStructuresInAABB( min, max )
     end
     return structures
 end
+]]
 
 
 return VoxelVolume
+

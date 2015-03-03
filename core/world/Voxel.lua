@@ -23,8 +23,8 @@ setmetatable(Voxel.prototype, Voxel.prototype)
 setmetatable(Voxel, Voxel)
 
 
-function Voxel:__call( ... )
-    local instance = {...}
+function Voxel:__call( data )
+    local instance = data or {}
 
     if #instance ~= voxelValueCount then
         if #instance == 0 then
