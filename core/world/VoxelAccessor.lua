@@ -20,11 +20,13 @@ end
 function VoxelAccessor:setMask( name, bitPosition, bitCount )
     assert(not self.masks[name], 'A mask called "'..name..'" has already been set.')
     self.masks[name] = { bitPosition=bitPosition, bitCount=bitCount }
+    return self
 end
 
 function VoxelAccessor:addMask( name, bitCount )
     self:setMask(name, self.nextPosition, bitCount)
     self.nextPosition = self.nextPosition + bitCount
+    return self
 end
 
 function VoxelAccessor:read( voxel, name )
