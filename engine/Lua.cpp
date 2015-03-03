@@ -51,7 +51,7 @@ bool InitLua()
 
     lua_gc(l, LUA_GCSTOP, 0); // only collect manually
 
-    // Load standart modules (except package and io module)
+    // Load standard modules (except package and io module)
     luaopen_base(l);
     luaL_requiref(l, LUA_COLIBNAME,   luaopen_coroutine, true);
     luaL_requiref(l, LUA_TABLIBNAME,  luaopen_table,     true);
