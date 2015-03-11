@@ -1,6 +1,7 @@
 --- Extensions to the standard @{math} functions.
 -- @script core.bootstrap.math
 
+-- luacheck: globals math
 
 local floor = math.floor
 local abs = math.abs

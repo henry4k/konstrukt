@@ -15,6 +15,7 @@ math.randomseed(ENGINE.GetTime())
 
 
 -- Reimplement some functions
+-- luacheck: globals print loadfile dofile
 
 function print( ... )
     local args = {...}

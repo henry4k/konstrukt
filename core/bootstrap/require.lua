@@ -1,6 +1,7 @@
 --- Implements @{require}, because Apoapsis doesn't access the file system directly.
 -- @script core.bootstrap.require
 
+-- luacheck: globals require
 
 local ResourceManager = _dofile 'core/ResourceManager.lua'
 

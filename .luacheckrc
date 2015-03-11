@@ -1,7 +1,8 @@
-std = 'lua52'
+-- vim: set filetype=lua:
+std = 'min'
 unused_args = false
-globals = { 'ENGINE',
-            'cjson',
-            'ARGS',
-            '_loadfile',
+read_globals = { 'ENGINE',
+                 'cjson',
+                 'ARGS' }
+globals = { '_loadfile',
             '_dofile' }
