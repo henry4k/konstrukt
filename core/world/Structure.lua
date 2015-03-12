@@ -7,6 +7,9 @@ local WorldObject   = require 'core/world/WorldObject'
 local Voxel         = require 'core/world/Voxel'
 local VoxelVolume   = require 'core/world/VoxelVolume'
 local VoxelAccessor = require 'core/world/VoxelAccessor'
+local VoxelCreator  = require 'core/world/VoxelCreator'
+local VoxelReader   = require 'core/world/VoxelReader'
+local VoxelWriter   = require 'core/world/VoxelWriter'
 
 
 --- Static world objects, which are made from voxels, use this as their base class.
@@ -22,11 +25,9 @@ local voxelAccessor = VoxelAccessor()
 voxelAccessor:addMask('id', 10)
 Structure.static.voxelAccessor = voxelAccessor
 
---[[
-    assert(Object.isInstanceOf(voxelVolume, VoxelVolume),
-           'Must be called with a voxel volume.')
-    assert(Vec:isInstance(origin), 'Origin must be a vector!')
-  ]]
+function Structure.static:getOrigin( voxel, position )
+    error('Implementation missing.')
+end
 
 function Structure:initialize()
     WorldObject.initialize(self)
@@ -38,24 +39,23 @@ function Structure:destroy()
     WorldObject.destroy(self)
 end
 
-function Structure:_read( voxelVolume, origin )
-    local voxelReader = nil -- TODO
+function Structure:_create( voxelVolume, origin, ... )
     self.origin = origin
+    local voxelCreator = VoxelCreator(voxelVolume, self)
+    self:create(voxelCreator, ...)
+    voxelCreator:destroy()
+end
+
+function Structure:_read( voxelVolume, origin )
+    self.origin = origin
+    local voxelReader = VoxelReader(voxelVolume, self)
     self:read(voxelReader)
     voxelReader:destroy()
 end
 
-function Structure:_create( voxelVolume, origin, ... ) -- TODO
-    local voxelCreator = nil -- TODO
-    self.origin = origin
-    self:create(voxelCreator)
-    voxelCreator:destroy()
-    -- TODO: Inform structures, which intersect the new area, about their destruction.
-end
-
 function Structure:_write( voxelVolume )
-    local voxelWriter = nil -- TODO
     self.origin = origin
+    local voxelWriter = VoxelWriter(voxelVolume, self)
     self:write(voxelWriter)
     voxelWriter:destroy()
 end
@@ -64,11 +64,11 @@ function Structure:ownsVoxel( position )
     error('Implementation missing.')
 end
 
-function Structure:read( voxelReader )
+function Structure:create( voxelCreator )
     -- Dummy function.  This is meant to be overridden in child classes.
 end
 
-function Structure:create( voxelCreator )
+function Structure:read( voxelReader )
     -- Dummy function.  This is meant to be overridden in child classes.
 end
 

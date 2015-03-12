@@ -57,7 +57,7 @@ function VoxelVolume:getStructure( position )
         -- TODO: Optimize voxelAccessor as a local?
         local class = StructureDictionary.getClassFromId(id)
 
-        local origin = class.getOrigin(voxel)
+        local origin = class.getOrigin(voxel, position)
 
         structure = structureClass()
         structure:_read(self, origin)
@@ -74,15 +74,17 @@ end
 
 function VoxelVolume:createStructure( structureClass, origin, ... )
     assert(Object.isSubclassOf(structureClass, Structure),
-           'Structure classes must inherit the structure base class.')
+           'Structure class must inherit the structure base class.')
     assert(structureClass.id,
-           'Structure has no ID.  Forgot to register it to the StructureDictionary?  Or hasn\'t assignIds() been called yet?')
+           'Structure class has no ID.  Forgot to register it in the StructureDictionary?  Or hasn\'t assignIds() been called yet?')
+
+    local structure = structureClass()
+    structure:_create(self, origin, ...)
 
     local originHash = tostring(origin)
     self.structureCache[originHash] = structure
 
-    local structure = structureClass()
-    structure:_create(self, origin, ...)
+    return structure
 end
 
 --[[
