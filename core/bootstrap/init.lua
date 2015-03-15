@@ -99,6 +99,25 @@ defaultRT:setShaderProgramSet(defaultShaderProgramSet)
 actor = Actor(defaultRT)
 
 
+-- Setup chunk manager
+
+local Shutdown       = require 'core/Shutdown'
+local Vec            = require 'core/Vector'
+local VoxelVolume    = require 'core/world/VoxelVolume'
+local CachingVoxelVolume = require 'core/world/CachingVoxelVolume'
+local ChunkManager   = require 'core/world/ChunkManager'
+local ChunkActivator = require 'core/world/ChunkActivator'
+
+local voxelVolume = CachingVoxelVolume(Vec(32, 32, 32))
+--local voxelVolume = VoxelVolume(Vec(32, 32, 32))
+chunkManager = ChunkManager(voxelVolume, worldModelWorld)
+
+Shutdown.registerHandler(function()
+    chunkManager:destroy()
+    voxelVolume:destroy()
+end)
+
+
 -- Process command line arguments
 
 local Scenario = require 'core/Scenario'
