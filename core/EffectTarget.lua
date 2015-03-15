@@ -1,6 +1,5 @@
+--- @mixin core.EffectTarget
 --- Lets an object host @{core.Effect}s.
---
--- @mixin core.EffectTarget
 
 
 local class  = require 'middleclass'

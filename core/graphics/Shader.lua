@@ -1,3 +1,4 @@
+--- @classmod core.graphics.Shader
 --- Shaders are compiled shader sources, like objects are compiled `.c/.cpp` sources.
 --
 -- Shaders alone aren't of any use.  They first need to be linked to into a
@@ -10,8 +11,6 @@
 -- Includes @{core.Resource}.
 --
 -- @see core.graphics.ShaderProgram
---
--- @classmod core.graphics.Shader
 
 
 local class    = require 'middleclass'

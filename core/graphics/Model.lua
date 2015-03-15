@@ -1,8 +1,7 @@
+--- @classmod core.graphics.Model
 --- Models are aggregations of meshes, textures, and shaders that can be used to render something on the screen.
 --
 -- Includes @{core.HasTransformation} and @{core.physics.HasAttachmentTarget}.
---
--- @classmod core.graphics.Model
 
 
 local assert  = assert

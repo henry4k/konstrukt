@@ -1,8 +1,7 @@
+--- @classmod core.graphics.Texture
 --- Image, which can be directly used for rendering by the graphics card.
 --
 -- Includes @{core.Resource}.
---
--- @classmod core.graphics.Texture
 
 
 local class    = require 'middleclass'

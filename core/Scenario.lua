@@ -1,8 +1,7 @@
+--- @module core.Scenario
 --- Loads and initializes scenarios.
 --
 -- See @{Packages.md}.
---
--- @module core.Scenario
 
 
 local FS  = require 'core/FileSystem'

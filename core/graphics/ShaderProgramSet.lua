@@ -1,4 +1,5 @@
---- Group programs into families.
+--- @classmod core.graphics.ShaderProgramSet
+--- ShaderProgramSets group programs into families.
 --
 -- A model just needs to save the family name, which is then resolved by
 -- the used shader program set.
@@ -8,8 +9,6 @@
 -- with a special shader programs, that are adapted to the effect.
 --
 -- @see core.graphics.ShaderProgram
---
--- @classmod core.graphics.ShaderProgramSet
 
 
 local assert = assert

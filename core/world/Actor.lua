@@ -1,10 +1,9 @@
+--- @classmod core.world.Actor
 --- Things that the player can take control of.
 --
 -- Extends @{core.world.WorldObject}.
 --
 -- Includes @{core.Controllable}.
---
--- @classmod core.world.Actor
 
 
 local class  = require 'middleclass'

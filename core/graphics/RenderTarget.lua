@@ -1,8 +1,5 @@
+--- @classmod core.graphics.RenderTarget
 --- (aka framebuffer)
---
---
---
--- @classmod core.graphics.RenderTarget
 
 
 local assert = assert

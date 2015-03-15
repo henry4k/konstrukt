@@ -1,5 +1,8 @@
---- A set of imaginary numbers which describe a rotation in 3d space.
+--- @classmod core.Quaternion
+--- @alias Quat
+---
 --
+-- A set of imaginary numbers which describe a rotation in 3d space.
 -- More information on them can be found e.g. on [wikipedia](http://en.wikipedia.org/wiki/Quaternion).
 --
 -- To cut it short, in contrast to euler rotation quaternions have ...
@@ -7,9 +10,6 @@
 -- - ... less computational overhead.
 -- - ... no [Gimbal Lock](http://en.wikipedia.org/wiki/Gimbal_lock).
 -- - ... [better interpolation](https://www.youtube.com/watch?v=QxIdIZ0eKCE).
---
--- @classmod core.Quaternion
--- @alias Quat
 
 
 local assert = assert

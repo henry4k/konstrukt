@@ -1,8 +1,7 @@
+--- @classmod core.world.Structure
 --- Static world objects, which are made from voxels use this as their base class.
 --
 -- Extends @{core.world.WorldObject}.
---
--- @classmod core.world.Structure
 
 
 local class = require 'middleclass'

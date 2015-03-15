@@ -1,5 +1,5 @@
+--- @module middleclass
 ---
--- @module middleclass
 
 
 local middleclass = {

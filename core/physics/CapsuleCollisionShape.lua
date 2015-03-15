@@ -1,8 +1,7 @@
+--- @classmod core.physics.CapsuleCollisionShape
 --- Defines a capsule for collision tests.
 --
 -- Extends @{core.physics.CollisionShape}.
---
--- @classmod core.physics.CapsuleCollisionShape
 
 
 local class          = require 'middleclass'

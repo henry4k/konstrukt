@@ -1,10 +1,9 @@
+--- @classmod core.graphics.Mesh
 --- Geometry that can be directly rendered by the graphics card.
 --
 -- Meshes are mostly generated from @{core.graphics.MeshBuffer}s.
 --
 -- Includes @{core.Resource}.
---
--- @classmod core.graphics.Mesh
 
 
 local assert      = assert

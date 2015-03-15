@@ -1,8 +1,7 @@
+--- @classmod core.graphics.CameraManifold
 --- Controls multiple cameras simultaneously.
 --
 -- *This is still under construction and will probably change in the future.*
---
--- @classmod core.graphics.CameraManifold
 
 
 local assert       = assert

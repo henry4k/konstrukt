@@ -1,10 +1,9 @@
+--- @mixin core.Resource
 --- Provides a more convenient middleclass integration of the resource loaders.
 --
 -- Classes that include the mixin must provide a static `_load` function, which
 -- accepts some parameters describing the resource.
 -- See @{core.ResourceManager.registerLoader}.
---
--- @mixin core.Resource
 
 
 local ResourceManager = require 'core/ResourceManager'

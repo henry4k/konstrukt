@@ -1,9 +1,8 @@
+--- @classmod core.physics.CollisionShape
 --- Defines the shape of a @{core.physics.Solid}.
 --
 -- There are different types of collision shapes, each of them has its own
 -- constructor function.
---
--- @classmod core.physics.CollisionShape
 
 
 local class  = require 'middleclass'

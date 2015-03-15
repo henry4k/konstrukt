@@ -1,5 +1,5 @@
+--- @module core.graphics.ModelWorld
 --- A model world defines a possibly large set of models that can be rendered together.
--- @module core.graphics.ModelWorld
 
 
 local class  = require 'middleclass'

@@ -1,11 +1,10 @@
+--- @classmod core.physics.Solid
 --- A body that is simulated by the physics engine.
 --
 -- If a solid has no mass (i.e. it equals zero), it is concidered to be static.
 -- So it isn't affected by collisions with other solids or gravity. Also each
 -- solid needs a @{core.physics.CollisionShape}, but try to reuse
 -- collision shapes to save memory.
---
--- @classmod core.physics.Solid
 
 
 local assert = assert

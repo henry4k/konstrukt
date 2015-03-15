@@ -1,7 +1,6 @@
+--- @classmod core.Matrix4
 --- A 4x4 matrix class.
--- @classmod core.Matrix4
 
-local type   = type
 local assert = assert
 local class  = require 'middleclass'
 local Object = class.Object
@@ -16,9 +15,11 @@ local Matrix4TransformVector = ENGINE.Matrix4TransformVector
 local CreateLookAtMatrix     = ENGINE.CreateLookAtMatrix
 local MakeRotationMatrix     = ENGINE.MakeRotationMatrix
 
+
 local Matrix4 = class('core/Matrix4')
 
 function Matrix4:initialize( handle )
+    assert(not handle or type(handle) == 'userdata')
     self.handle = handle or CreateMatrix4()
 end
 

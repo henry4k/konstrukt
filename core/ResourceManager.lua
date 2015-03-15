@@ -1,6 +1,5 @@
---- Loads, stores and unloads resources.
---
--- @module core.ResourceManager
+--- @module core.ResourceManager
+---
 
 -- As the resource manager also loads lua scripts, this file may have no dependencies.
 

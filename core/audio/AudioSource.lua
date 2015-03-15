@@ -1,3 +1,4 @@
+--- @classmod core.audio.AudioSource
 --- Can play positional audio in an 3D environment.
 --
 -- Like the @{core.audio.AudioListener}, the audio source has a transformation
@@ -7,8 +8,6 @@
 -- after the attachment targets position has been applied.
 --
 -- Includes @{core.HasTransformation} and @{core.physics.HasAttachmentTarget}.
---
--- @classmod core.audio.AudioSource
 
 
 local assert = assert

@@ -1,8 +1,7 @@
+--- @classmod core.graphics.TextureRenderTarget
 --- Renders to a texture.
 --
 -- Extends @{core.graphics.RenderTarget}.
---
--- @classmod core.graphics.TextureRenderTarget
 
 
 local assert = assert

@@ -1,6 +1,5 @@
+--- @mixin core.Controllable
 --- For things that want to listen for specific control events.
---
--- @mixin core.Controllable
 
 local Controllable = {
     static = {}

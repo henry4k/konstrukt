@@ -1,3 +1,4 @@
+--- @module core.audio.AudioListener
 --- Describes the properties of your virtual ears.
 --
 -- Like the @{core.audio.AudioSource} the listener has a transformation and an
@@ -5,8 +6,6 @@
 -- orientation and velocity. If the listener has no attachment target, those
 -- properties are zero. The transformation matrix is applied additionaly after
 -- the attachment targets position has been applied.
---
--- @module core.audio.AudioListener
 
 
 local assert = assert

@@ -1,3 +1,4 @@
+--- @module core.Control
 --- Manages @{core.Control}s and @{core.Controllable}s.
 -- 
 -- Each control is identified by a name and must be registered before use.
@@ -24,8 +25,6 @@
 -- Controllables are stored in a stack.
 -- Each time a control changes its value, the first controllable which maps
 -- that control receives the event.
---
--- @module core.Control
 
 
 local assert = assert

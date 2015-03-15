@@ -1,5 +1,5 @@
+--- @module core.FileSystem
 --- Provides file access to the mounted packages and the user directory.
--- @module core.FileSystem
 
 
 local Config = require 'core/Config'
@@ -28,7 +28,7 @@ end
 
 --- Default values for package metadata.
 -- @internal
--- @see Packages.md
+-- @see documentation/Packages.md
 local packageMetadataMetatable = {
     __index = {
         type = 'regular',

@@ -1,5 +1,5 @@
+--- @script core.bootstrap.init
 --- Executed during engine initialization.
--- @script core.bootstrap.init
 
 
 -- Setup error handling

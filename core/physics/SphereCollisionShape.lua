@@ -1,8 +1,7 @@
+--- @classmod core.physics.SphereCollisionShape
 --- Defines a sphere for collision tests.
 --
 -- Extends @{core.physics.CollisionShape}.
---
--- @classmod core.physics.SphereCollisionShape
 
 
 local class          = require 'middleclass'

@@ -1,8 +1,7 @@
+--- @classmod core.graphics.DefaultRenderTarget
 --- Render target for the default frame buffer. (Aka window system frame buffer.)
 --
 -- Extends @{core.graphics.RenderTarget}.
---
--- @classmod core.graphics.DefaultRenderTarget
 
 
 local class        = require 'middleclass'
