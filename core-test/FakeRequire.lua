@@ -22,7 +22,7 @@ function FakeRequire:isWhitelisted( name )
     return false
 end
 
-function FakeRequire.require_( moduleName )
+function FakeRequire._require( moduleName )
     local module = FakeRequire.fakedModules[moduleName]
     if module then return module end
 
@@ -34,7 +34,7 @@ function FakeRequire.require_( moduleName )
 end
 
 function FakeRequire:install()
-    require = self.require_
+    require = self._require
 end
 
 function FakeRequire:uninstall()

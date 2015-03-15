@@ -1,6 +1,8 @@
 --- @script core.bootstrap.table
 --- Extensions to the standard @{table} functions.
 
+-- luacheck: globals table
+
 local ipairs = ipairs
 local pairs = pairs
 local setmetatable = setmetatable
