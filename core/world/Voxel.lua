@@ -3,6 +3,7 @@ local error        = error
 local setmetatable = setmetatable
 local getmetatable = getmetatable
 local unpack       = unpack
+local max          = math.max
 local pow          = math.pow
 local floor        = math.floor
 local isBetween    = math.isBetween

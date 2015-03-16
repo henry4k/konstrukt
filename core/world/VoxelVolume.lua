@@ -1,5 +1,6 @@
 local assert    = assert
 local class     = require 'middleclass'
+local Object    = class.Object
 local Vec       = require 'core/Vector'
 local Voxel     = require 'core/world/Voxel'
 local Structure = require 'core/world/Structure'
@@ -53,9 +54,9 @@ function VoxelVolume:getStructure( position )
         local voxel = self:readVoxel(position)
         local id = Structure.voxelAccessor:read('id', voxel)
         -- TODO: Optimize voxelAccessor as a local?
-        local class = StructureDictionary.getClassFromId(id)
+        local structureClass = StructureDictionary.getClassFromId(id)
 
-        local origin = class.getOrigin(voxel, position)
+        local origin = structureClass:getOrigin(voxel, position)
 
         structure = structureClass()
         structure:_read(self, origin)

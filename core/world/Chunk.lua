@@ -1,5 +1,6 @@
 local format = string.format
 local class  = require 'middleclass'
+local ChunkBuilder = require 'core/world/ChunkBuilder'
 
 
 --- Represents a part of the static game world.

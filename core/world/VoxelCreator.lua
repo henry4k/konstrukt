@@ -9,7 +9,8 @@ function VoxelCreator:initialize( ... )
 end
 
 function VoxelCreator:writeVoxel( position, voxel )
-    if self.structure:ownsVoxel(position) then
+    local structure = self.structure
+    if structure:ownsVoxel(position) then
         local voxelVolume = self.voxelVolume
         local oldStructure = voxelVolume:getStructure(position)
         if oldStructure ~= structure then
