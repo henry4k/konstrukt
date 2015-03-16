@@ -54,6 +54,18 @@ function ResourceManager.get( type, ... )
     end
 end
 
+local InaccessibleResourceMT = {
+    __index = function( table, key )
+        if key == 'value' then
+            error(table.errorMessage)
+        end
+    end
+}
+local function CreateInaccessibleResource( errorFormat, ... )
+    return setmetatable({ errorMessage = errorFormat:format(...) },
+                        InaccessibleResourceMT)
+end
+
 --- Tries to load a resource if it hasn't been loaded yet.
 --
 -- @return
@@ -69,7 +81,10 @@ function ResourceManager.load( type, ... )
     if not resourceValue then
         local loader = ResourceManager.loaders[type]
         if loader then
+            ResourceManager.resources[id] = CreateInaccessibleResource(
+                'Illegal access to %q as it\'t currently being loaded.', id)
             local resource = loader(...)
+            ResourceManager.resources[id] = nil
             if resource then
                 resourceValue = resource.value
                 assert(resourceValue)
