@@ -1,5 +1,6 @@
 local assert = assert
 local class  = require 'middleclass'
+local Object = class.Object
 
 
 local VoxelAccessor = class('core/world/VoxelAccessor')

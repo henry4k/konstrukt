@@ -1,6 +1,4 @@
 local assert    = assert
-local unpack    = table.unpack
-local insert    = table.insert
 local class     = require 'middleclass'
 local Vec       = require 'core/Vector'
 local Voxel     = require 'core/world/Voxel'

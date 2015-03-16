@@ -4,14 +4,8 @@
 -- Extends @{core.world.WorldObject}.
 
 
-local assert        = assert
-local tostring      = tostring
 local class         = require 'middleclass'
-local Object        = class.Object
-local Vec           = require 'core/Vector'
 local WorldObject   = require 'core/world/WorldObject'
-local Voxel         = require 'core/world/Voxel'
-local VoxelVolume   = require 'core/world/VoxelVolume'
 local VoxelAccessor = require 'core/world/VoxelAccessor'
 local VoxelCreator  = require 'core/world/VoxelCreator'
 local VoxelReader   = require 'core/world/VoxelReader'
@@ -37,7 +31,7 @@ end
 function Structure:initialize()
     WorldObject.initialize(self)
     self.origin = nil
-    self.structureAccessor = nil -- is this needed?
+    self.structureAccessor = nil -- TODO: Implement StructureAccessor!
 end
 
 function Structure:destroy()
@@ -59,7 +53,6 @@ function Structure:_read( voxelVolume, origin )
 end
 
 function Structure:_write( voxelVolume )
-    self.origin = origin
     local voxelWriter = VoxelWriter(voxelVolume, self)
     self:write(voxelWriter)
     voxelWriter:destroy()

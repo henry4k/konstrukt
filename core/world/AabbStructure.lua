@@ -1,11 +1,7 @@
-local assert        = assert
-local tostring      = tostring
 local class         = require 'middleclass'
-local Object        = class.Object
 local Vec           = require 'core/Vector'
 local Structure     = require 'core/world/Structure'
 local Voxel         = require 'core/world/Voxel'
-local VoxelVolume   = require 'core/world/VoxelVolume'
 local VoxelAccessor = require 'core/world/VoxelAccessor'
 
 
