@@ -7,6 +7,8 @@
 #include "TestTools.h"
 
 
+static LogHandler g_OriginalLogHandler = NULL;
+
 void ChangeDirectoryToExecutableOrigin( const char* executablePath );
 
 void TestLogHandler( LogLevel level, const char* line )
@@ -30,6 +32,7 @@ void TestLogHandler( LogLevel level, const char* line )
 void InitTests( int argc, char const * const * argv )
 {
     ChangeDirectoryToExecutableOrigin(argv[0]);
+    g_OriginalLogHandler = GetLogHandler();
     SetLogHandler(TestLogHandler);
     dummyInit(dummyGetTAPReporter(stdout));
     dummyAddInlineTests();
@@ -38,7 +41,8 @@ void InitTests( int argc, char const * const * argv )
 int RunTests()
 {
     const int failedTests = dummyRunTests();
-    SetLogHandler(DefaultLogHandler);
+    if(g_OriginalLogHandler)
+        SetLogHandler(g_OriginalLogHandler);
     //return failedTests; // TODO: prove marks failed tests as doubious, with this line
     return 0;
 }

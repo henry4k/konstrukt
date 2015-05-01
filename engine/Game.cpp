@@ -52,6 +52,10 @@ bool InitGame( const int argc, char** argv )
     if(!InitConfig(argc, argv))
         return false;
 
+    Log("----------- Log post config init ------------");
+    if(!PostConfigInitLog())
+        return false;
+
     Log("----------- PhysFS post config init ------------");
     if(!PostConfigInitPhysFS())
         return false;
