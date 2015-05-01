@@ -13,7 +13,7 @@ at https://github.com/henry4k/apoapsis-example to see how it can be used.
 
 ## Dependencies
 
-Needed to compile the engine:
+Runtime dependencies:
 
 - PhysFS 2.0+
 - Lua 5.2
@@ -22,6 +22,14 @@ Needed to compile the engine:
 - Open AL
 - ALURE
 - Bullet
+
+
+Compile time depencencies:
+
+- GLM
+- Python 3 (needed by flextGL)
+- Python 3 package wheezy.template (needed by flextGL)
+
 
 Ideally install pkg-config and use one of the provided sample
 tup.config files.
