@@ -132,8 +132,8 @@ void FatalError( const char* format, ... )
     va_start(vl, format);
     LogV(LOG_ERROR, format, vl);
     va_end(vl);
-    // abort();
-    raise(SIGTRAP);
+    //raise(SIGTRAP);
+    exit(EXIT_FAILURE);
 }
 
 #if defined(__WINDOWS__)
