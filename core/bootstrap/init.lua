@@ -39,7 +39,11 @@ function _loadfile( fileName, ... )
 end
 
 function _dofile( fileName )
-    return _loadfile(fileName)()
+    local chunk, errorMessage = _loadfile(fileName)
+    if not chunk then
+        error(errorMessage)
+    end
+    return chunk()
 end
 
 _dofile 'core/bootstrap/table.lua'

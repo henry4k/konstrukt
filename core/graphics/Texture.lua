@@ -43,6 +43,7 @@ function Texture.static:_load( target, fileName, flags )
 end
 
 function Texture:initialize( target, fileName, flags )
+    flags = flags or {}
     if target == '2d' then
         self.handle = Load2dTexture(fileName, table.unpack(flags))
     elseif target == 'cube' then

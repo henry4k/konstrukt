@@ -29,8 +29,8 @@ function Material:setTexture( unit, texture )
     self.textures[unit] = texture
 end
 
-function Material:setProgramFamilyList( familyList )
-    self.programFamilyList = familyList
+function Material:setProgramFamily( family, ... )
+    self.programFamilyList = {family, ...}
 end
 
 function Material:setUniform( name, value, type )
@@ -54,7 +54,7 @@ function Material:updateModel( model )
         model:setTexture(unit, texture)
     end
 
-    model:setProgramFamilyList(self.programFamilyList)
+    model:setProgramFamily(table.unpack(self.programFamilyList))
 
     model:unsetAllUniforms()
     for name, uniform in pairs(self.uniforms) do
