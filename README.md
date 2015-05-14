@@ -15,18 +15,19 @@ at https://github.com/henry4k/apoapsis-example to see how it can be used.
 
 Runtime dependencies:
 
-- PhysFS 2.0+
+- [PhysFS 2.0+](http://icculus.org/physfs/)
 - Lua 5.2
 - Open GL
-- GLFW 3
+- [GLFW 3](http://www.glfw.org/)
 - Open AL
 - ALURE
-- Bullet
+- [Bullet](http://bulletphysics.org/)
 
 
 Compile time depencencies:
 
-- GLM
+- [tup](http://gittup.org/tup/) (the build system)
+- [GLM](http://glm.g-truc.net/)
 - Python 3 (needed by flextGL)
 - Python 3 package wheezy.template (needed by flextGL)
 
@@ -35,13 +36,13 @@ Ideally install pkg-config and use one of the provided sample
 tup.config files.
 
 
-## Licence and copyright
+## License and copyright
 
 Copyright © Henry Kielmann
 
 Apoapsis is licensed under the MIT license, which can be found in the
-`LICENCE` file.
+`LICENSE` file.
 
-The project comes bundled with a number of dependencies, each with its own licence.
-See their respective readme and licence files in the `third-party` folder
+The project comes bundled with a number of dependencies, each with its own license.
+See their respective readme and license files in the `third-party` folder
 for details.
