@@ -10,7 +10,7 @@ function VoxelAccessor:initialize( other )
            'Must be called without parameters or with another voxel accessor.')
 
     self.masks = {}
-    self.nextPosition = 0
+    self.nextPosition = 1
 
     if other then
         setmetatable(self.masks, {__index=other.masks})

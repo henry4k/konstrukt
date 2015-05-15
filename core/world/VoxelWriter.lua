@@ -12,7 +12,7 @@ function VoxelWriter:writeVoxel( position, voxel )
     if self.structure:ownsVoxel(position) then
         return self.voxelVolume:writeVoxel(position, voxel)
     else
-        error('Can\'t write voxel at '..position..', as it doesn\'t belong to the structure.')
+        error('Can\'t write voxel at '..tostring(position)..', as it doesn\'t belong to the structure.')
     end
 end
 

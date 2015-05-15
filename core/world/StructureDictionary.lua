@@ -1,6 +1,7 @@
 local class     = require 'middleclass'
 local Object    = class.Object
 local Structure = require 'core/world/Structure'
+local UndefinedStructure = require 'core/world/UndefinedStructure'
 
 
 local StructureDictionary = {
@@ -22,6 +23,8 @@ function StructureDictionary.assignIds()
     assert(not StructureDictionary.idToClass,
            'Structure class IDs have already been assigned.')
     local idToClass = {}
+
+    idToClass[0] = UndefinedStructure
 
     -- For now, this will just be implemented super simple:
     for i, v in ipairs(StructureDictionary.classes) do

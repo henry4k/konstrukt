@@ -12,7 +12,7 @@ function VoxelReader:readVoxel( position )
     if self.structure:ownsVoxel(position) then
         return self.voxelVolume:readVoxel(position)
     else
-        error('Can\'t read voxel at '..position..', as it doesn\'t belong to the structure.')
+        error('Can\'t read voxel at '..tostring(position)..', as it doesn\'t belong to the structure.')
     end
 end
 
