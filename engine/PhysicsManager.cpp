@@ -1,4 +1,5 @@
-#include <string.h> // memset
+#include <string.h> // memset, memcpy
+
 #include <bullet/BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
 #include <bullet/BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
 #include <bullet/BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>
@@ -302,7 +303,14 @@ void GetSolidTransformation( const Solid* solid, int copyFlags, glm::mat4* targe
 {
     btTransform transform;
     solid->rigidBody->getMotionState()->getWorldTransform(transform);
+#if defined(BT_USE_SSE_IN_API)
+    ATTRIBUTE_ALIGNED16(glm::mat4) alignedTarget;
+    memcpy(&alignedTarget, target, sizeof(alignedTarget));
+    transform.getOpenGLMatrix((float*)&alignedTarget);
+    memcpy(target, &alignedTarget, sizeof(alignedTarget));
+#else
     transform.getOpenGLMatrix((float*)target);
+#endif
     *target = GetTransformation(*target, copyFlags);
 }
 
