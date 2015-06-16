@@ -14,7 +14,7 @@
 #include <bullet/LinearMath/btDefaultMotionState.h>
 
 #include "Common.h"
-#include "Game.h" // SIMULATION_FREQUENCY, MAX_FRAME_FREQUENCY
+#include "Constants.h" // SIMULATION_FREQUENCY, MAX_FRAME_FREQUENCY
 #include "Math.h"
 #include "Reference.h"
 #include "PhysicsManager.h"
