@@ -5,8 +5,10 @@
 #else
     #include <sys/stat.h>
     #include <signal.h>
+    #include <unistd.h> // isatty
 #endif
-#include <string.h> // strncpy
+#include <string.h> // strncpy, strcmp
+#include "Config.h"
 #include "Common.h"
 
 const char* Format( const char* format, ... )
@@ -21,9 +23,7 @@ const char* Format( const char* format, ... )
     return buffer;
 }
 
-static LogHandler g_LogHandler = DefaultLogHandler;
-
-void DefaultLogHandler( LogLevel level, const char* line )
+static void SimpleLogHandler( LogLevel level, const char* line )
 {
     const char* prefix = "";
     const char* postfix = "";
@@ -31,8 +31,31 @@ void DefaultLogHandler( LogLevel level, const char* line )
     switch(level)
     {
         case LOG_INFO:
-            //prefix = "";
-            //postfix = "";
+            file = stdout;
+            break;
+
+        case LOG_ERROR:
+            prefix = "ERROR: ";
+            file = stderr;
+            break;
+
+        case LOG_FATAL_ERROR:
+            prefix = "FATAL ERROR: ";
+            file = stderr;
+            break;
+    }
+
+    fprintf(file, "%s%s%s\n", prefix, line, postfix);
+}
+
+static void ColorLogHandler( LogLevel level, const char* line )
+{
+    const char* prefix = "";
+    const char* postfix = "";
+    FILE* file = NULL;
+    switch(level)
+    {
+        case LOG_INFO:
             file = stdout;
             break;
 
@@ -51,6 +74,8 @@ void DefaultLogHandler( LogLevel level, const char* line )
 
     fprintf(file, "%s%s%s\n", prefix, line, postfix);
 }
+
+static LogHandler g_LogHandler = SimpleLogHandler;
 
 void SetLogHandler( LogHandler handler )
 {
@@ -109,6 +134,45 @@ void FatalError( const char* format, ... )
     va_end(vl);
     // abort();
     raise(SIGTRAP);
+}
+
+#if defined(__WINDOWS__)
+static LogHandler AutodetectLogHandler()
+{
+    return ColorLogHandler;
+}
+#else
+static LogHandler AutodetectLogHandler()
+{
+    if(isatty(fileno(stdout)) && isatty(fileno(stderr)))
+        return ColorLogHandler;
+    else
+        return SimpleLogHandler;
+}
+#endif
+
+bool PostConfigInitLog()
+{
+    const char* handlerName = GetConfigString("debug.log-handler", "auto");
+    LogHandler handler = NULL;
+
+    if(strcmp(handlerName, "simple") == 0)
+        handler = SimpleLogHandler;
+    else if(strcmp(handlerName, "color") == 0)
+        handler = ColorLogHandler;
+    else if(strcmp(handlerName, "auto") == 0)
+        handler = AutodetectLogHandler();
+
+    if(handler)
+    {
+        SetLogHandler(handler);
+        return true;
+    }
+    else
+    {
+        Error("Unknown log handler '%s'.", handlerName);
+        return false;
+    }
 }
 
 bool CopyString( const char* source, char* destination, int destinationSize )

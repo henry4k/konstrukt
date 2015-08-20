@@ -16,7 +16,6 @@ enum LogLevel
 };
 
 typedef void (*LogHandler)( LogLevel level, const char* line );
-void DefaultLogHandler( LogLevel level, const char* line );
 void SetLogHandler( LogHandler handler );
 LogHandler GetLogHandler();
 
@@ -29,6 +28,8 @@ void Error( const char* format, ... );
  * Will abort the program after emitting the log message.
  */
 void FatalError( const char* format, ... );
+
+bool PostConfigInitLog();
 
 /**
  * Copies at most `destinationSize-1` bytes from `source` to `destination`
