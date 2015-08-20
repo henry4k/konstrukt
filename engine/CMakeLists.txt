@@ -16,6 +16,7 @@ install(TARGETS apoapsis
         RUNTIME DESTINATION bin)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}"
+                    "${CMAKE_BINARY_DIR}/third-party"
                     "${PROJECT_SOURCE_DIR}/third-party"
                     "${PROJECT_SOURCE_DIR}/third-party/inih"
                     "${PROJECT_SOURCE_DIR}/third-party/lua-cjson"
