@@ -175,6 +175,45 @@ bool PostConfigInitLog()
     }
 }
 
+#if defined(__WINDOWS__)
+static LogHandler AutodetectLogHandler()
+{
+    return ColorLogHandler;
+}
+#else
+static LogHandler AutodetectLogHandler()
+{
+    if(isatty(fileno(stdout)) && isatty(fileno(stderr)))
+        return ColorLogHandler;
+    else
+        return SimpleLogHandler;
+}
+#endif
+
+bool PostConfigInitLog()
+{
+    const char* handlerName = GetConfigString("debug.log-handler", "auto");
+    LogHandler handler = NULL;
+
+    if(strcmp(handlerName, "simple") == 0)
+        handler = SimpleLogHandler;
+    else if(strcmp(handlerName, "color") == 0)
+        handler = ColorLogHandler;
+    else if(strcmp(handlerName, "auto") == 0)
+        handler = AutodetectLogHandler();
+
+    if(handler)
+    {
+        SetLogHandler(handler);
+        return true;
+    }
+    else
+    {
+        Error("Unknown log handler '%s'.", handlerName);
+        return false;
+    }
+}
+
 bool CopyString( const char* source, char* destination, int destinationSize )
 {
     assert(source && destination && destinationSize > 0);
