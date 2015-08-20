@@ -114,9 +114,12 @@ local AabbStructure  = require 'core/world/AabbStructure'
 local StructureDictionary = require 'core/world/StructureDictionary'
 
 AabbStructure:register()
+StructureDictionary.assignIds()
 
 local voxelVolume = VoxelVolume(Vec(32, 32, 32))
 --chunkManager = ChunkManager(voxelVolume, worldModelWorld)
+
+print(voxelVolume:createStructure(AabbStructure, Vec(0,0,0), Vec(3,3,3)))
 
 Shutdown.registerHandler(function()
     --chunkManager:destroy()

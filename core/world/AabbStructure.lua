@@ -65,7 +65,13 @@ function AabbStructure:create( voxelCreator, size )
 end
 
 function AabbStructure:read( voxelReader )
-
+    self.size = Vec(1,1,1) -- so at least the origin voxel can be accessed
+    local originVoxel = voxelReader:readVoxel(self.origin)
+    self.size = Vec(voxelAccessor:read(originVoxel, 'sizeX'),
+                    voxelAccessor:read(originVoxel, 'sizeY'),
+                    voxelAccessor:read(originVoxel, 'sizeZ'))
+    assert(self.size:componentsGreaterOrEqualTo(minSize) and
+           self.size:componentsLesserOrEqualto(maxSize))
 end
 
 function AabbStructure:write( voxelWriter )
@@ -91,20 +97,6 @@ function AabbStructure:clear( voxelCreator )
     end
     end
     end
-end
-
-function AabbStructure:write( voxelWriter )
-
-end
-
-function AabbStructure:read( voxelReader )
-    self.size = Vec(1,1,1) -- so at least the origin voxel can be accessed
-    local originVoxel = voxelReader:readVoxel(self.origin)
-    self.size = Vec(voxelAccessor:read(originVoxel, 'sizeX'),
-                    voxelAccessor:read(originVoxel, 'sizeY'),
-                    voxelAccessor:read(originVoxel, 'sizeZ'))
-    assert(self.size:componentsGreaterOrEqualTo(minSize) and
-           self.size:componentsLesserOrEqualto(maxSize))
 end
 
 
