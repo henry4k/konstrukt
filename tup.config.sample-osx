@@ -7,5 +7,5 @@ CONFIG_LDFLAGS=-g
 CONFIG_LUA_CFLAGS= `pkg-config lua --cflags`
 CONFIG_LUA_LDFLAGS=`pkg-config lua --libs`
 
-CONFIG_INTERNAL_CFLAGS= `pkg-config glfw3 openal alure bullet --cflags` -I/System/Library/Frameworks/OpenGL.framework -Werror -Wall -Wextra -pedantic -Wmissing-include-dirs -Wpointer-arith -Wcast-qual -Winit-self -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter -Wno-literal-range
-CONFIG_INTERNAL_LDFLAGS=`pkg-config glfw3 openal alure bullet --libs` -framework OpenGL
+CONFIG_INTERNAL_CFLAGS= `pkg-config glfw3 openal alure bullet physfs --cflags` -I/System/Library/Frameworks/OpenGL.framework -Werror -Wall -Wextra -pedantic -Wmissing-include-dirs -Wpointer-arith -Wcast-qual -Winit-self -Wno-unknown-pragmas -Wno-variadic-macros -Wno-long-long -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter -Wno-literal-range
+CONFIG_INTERNAL_LDFLAGS=`pkg-config glfw3 openal alure bullet physfs --libs` -framework OpenGL

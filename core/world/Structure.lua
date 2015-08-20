@@ -42,20 +42,18 @@ function Structure:_create( voxelVolume, origin, ... )
     self.origin = origin
     local voxelCreator = VoxelCreator(voxelVolume, self)
     self:create(voxelCreator, ...)
-    voxelCreator:destroy()
 end
 
 function Structure:_read( voxelVolume, origin )
     self.origin = origin
     local voxelReader = VoxelReader(voxelVolume, self)
+    assert(voxelReader)
     self:read(voxelReader)
-    voxelReader:destroy()
 end
 
 function Structure:_write( voxelVolume )
     local voxelWriter = VoxelWriter(voxelVolume, self)
     self:write(voxelWriter)
-    voxelWriter:destroy()
 end
 
 function Structure:ownsVoxel( position )

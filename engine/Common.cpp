@@ -132,8 +132,47 @@ void FatalError( const char* format, ... )
     va_start(vl, format);
     LogV(LOG_ERROR, format, vl);
     va_end(vl);
-    // abort();
-    raise(SIGTRAP);
+    //raise(SIGTRAP);
+    exit(EXIT_FAILURE);
+}
+
+#if defined(__WINDOWS__)
+static LogHandler AutodetectLogHandler()
+{
+    return ColorLogHandler;
+}
+#else
+static LogHandler AutodetectLogHandler()
+{
+    if(isatty(fileno(stdout)) && isatty(fileno(stderr)))
+        return ColorLogHandler;
+    else
+        return SimpleLogHandler;
+}
+#endif
+
+bool PostConfigInitLog()
+{
+    const char* handlerName = GetConfigString("debug.log-handler", "auto");
+    LogHandler handler = NULL;
+
+    if(strcmp(handlerName, "simple") == 0)
+        handler = SimpleLogHandler;
+    else if(strcmp(handlerName, "color") == 0)
+        handler = ColorLogHandler;
+    else if(strcmp(handlerName, "auto") == 0)
+        handler = AutodetectLogHandler();
+
+    if(handler)
+    {
+        SetLogHandler(handler);
+        return true;
+    }
+    else
+    {
+        Error("Unknown log handler '%s'.", handlerName);
+        return false;
+    }
 }
 
 #if defined(__WINDOWS__)

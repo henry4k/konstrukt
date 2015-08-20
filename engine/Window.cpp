@@ -60,6 +60,7 @@ bool InitWindow()
     if(!g_Window)
     {
         Error("Window creation failed.");
+        glfwTerminate();
         return false;
     }
 

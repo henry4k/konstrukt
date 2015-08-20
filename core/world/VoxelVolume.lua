@@ -52,7 +52,7 @@ function VoxelVolume:getStructure( position )
 
     if not structure then
         local voxel = self:readVoxel(position)
-        local id = Structure.voxelAccessor:read('id', voxel)
+        local id = Structure.voxelAccessor:read(voxel, 'id')
         -- TODO: Optimize voxelAccessor as a local?
         local structureClass = StructureDictionary.getClassFromId(id)
 

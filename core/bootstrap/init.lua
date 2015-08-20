@@ -39,7 +39,11 @@ function _loadfile( fileName, ... )
 end
 
 function _dofile( fileName )
-    return _loadfile(fileName)()
+    local chunk, errorMessage = _loadfile(fileName)
+    if not chunk then
+        error(errorMessage)
+    end
+    return chunk()
 end
 
 _dofile 'core/bootstrap/table.lua'
@@ -104,14 +108,18 @@ actor = Actor(defaultRT)
 local Shutdown       = require 'core/Shutdown'
 local Vec            = require 'core/Vector'
 local VoxelVolume    = require 'core/world/VoxelVolume'
-local ChunkManager   = require 'core/world/ChunkManager'
-local ChunkActivator = require 'core/world/ChunkActivator'
+local AabbStructure  = require 'core/world/AabbStructure'
+--local ChunkManager   = require 'core/world/ChunkManager'
+--local ChunkActivator = require 'core/world/ChunkActivator'
+local StructureDictionary = require 'core/world/StructureDictionary'
+
+AabbStructure:register()
 
 local voxelVolume = VoxelVolume(Vec(32, 32, 32))
-chunkManager = ChunkManager(voxelVolume, worldModelWorld)
+--chunkManager = ChunkManager(voxelVolume, worldModelWorld)
 
 Shutdown.registerHandler(function()
-    chunkManager:destroy()
+    --chunkManager:destroy()
     voxelVolume:destroy()
 end)
 
@@ -140,6 +148,10 @@ end
 if #packages > 0 then
     Scenario.load(packages[1], packages)
 end
+
+StructureDictionary.assignIds()
+
+print(voxelVolume:createStructure(AabbStructure, Vec(0,0,0), Vec(3,3,3)))
 
 if interactive then
     debug.debug()
