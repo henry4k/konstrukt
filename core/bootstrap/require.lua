@@ -30,7 +30,7 @@ function require( moduleName )
 end
 
 -- Load all core modules:
-ResourceManager.enableLoading(true)
+ResourceManager.allowLoading(true)
 local FS = require 'core/FileSystem'
 for path in FS.matchingFiles('core/.*%.lua') do
     if not path:match('core/bootstrap/.*') then
@@ -38,7 +38,7 @@ for path in FS.matchingFiles('core/.*%.lua') do
         require(moduleName)
     end
 end
-ResourceManager.enableLoading(false)
+ResourceManager.allowLoading(false)
 
 local Shutdown = require 'core/Shutdown'
 Shutdown.registerHandler(ResourceManager.clear)

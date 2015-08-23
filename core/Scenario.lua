@@ -27,10 +27,10 @@ end
 
 --- Performs the neccessary steps to load and start a scenario.
 --
--- 1. Mounts the required packages.
+-- 1. Mount the required packages.
 -- 2. Load resources in correct order.
 -- 3. Start the scenario.
---    (Calls the `start` function exported by the scenarios `init` module.)
+--    (Call the `start` function exported by the scenarios `init` module.)
 --
 -- See @{Packages.md}.
 --
@@ -55,8 +55,8 @@ function Scenario.load( scenarioPackage, additionalPackages )
     -- 2. Work out correct load order using the dependency list
     local orderedPackages = dsl:sort()
 
-    -- 3. Load resources and scripts of each packages using $MECHANISM
-    ResourceManager.enableLoading(true)
+    -- 3. Load resources and scripts of each package using $MECHANISM
+    ResourceManager.allowLoading(true)
     for _, package in ipairs(orderedPackages) do
         print('Initializing package '..package..' ..')
         for path in FS.matchingFiles(package..'/.*%.lua') do
@@ -64,7 +64,7 @@ function Scenario.load( scenarioPackage, additionalPackages )
             require(moduleName)
         end
     end
-    ResourceManager.enableLoading(false)
+    ResourceManager.allowLoading(false)
     print('Finished resource loading.')
 
     -- 4. Start scenario

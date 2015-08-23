@@ -35,7 +35,7 @@ describe('The resource manager')
 
     :beforeEach(function()
         ResourceManager.clear()
-        ResourceManager.enableLoading(true)
+        ResourceManager.allowLoading(true)
         MeshDestructor:reset()
         MeshLoader:reset()
     end)
@@ -55,7 +55,7 @@ describe('The resource manager')
     end)
 
     :it('can\'t load resources, when loading is disabled.', function()
-        ResourceManager.enableLoading(false)
+        ResourceManager.allowLoading(false)
         assert(pcall(ResourceManager.load, 'Mesh', 'AirLock.json', 'AirLock.Door') == false)
     end)
 

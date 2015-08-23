@@ -88,10 +88,10 @@ local foregroundCamera = PerspectiveCamera(foregroundModelWorld)
 local worldCamera      = PerspectiveCamera(worldModelWorld)
 local backgroundCamera = PerspectiveCamera(backgroundModelWorld)
 
-ResourceManager.enableLoading(true)
+ResourceManager.allowLoading(true)
 local defaultShaderProgram = ShaderProgram:load('core/graphics/shaders/Default.vert',
                                                 'core/graphics/shaders/Default.frag')
-ResourceManager.enableLoading(false)
+ResourceManager.allowLoading(false)
 local defaultShaderProgramSet = ShaderProgramSet(defaultShaderProgram)
 
 local defaultRT = require 'core/graphics/DefaultRenderTarget':get()

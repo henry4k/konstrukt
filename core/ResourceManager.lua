@@ -7,7 +7,7 @@
 local ResourceManager = {
     loaders = {},
     resources = {},
-    loadingEnabled = false
+    loadingAllowed = false
 }
 
 --- Registers a resource loader.
@@ -35,8 +35,8 @@ end
 --
 -- Attempting to load a resource, while loading is locked, will raise an error.
 --
-function ResourceManager.enableLoading( enabled )
-    ResourceManager.loadingEnabled = enabled
+function ResourceManager.allowLoading( enabled )
+    ResourceManager.loadingAllowed = enabled
 end
 
 --- Return a loaded resource.
@@ -74,7 +74,7 @@ end
 function ResourceManager.load( type, ... )
     local id = ResourceManager._createResourceIdentifier(type, ...)
 
-    assert(ResourceManager.loadingEnabled,
+    assert(ResourceManager.loadingAllowed,
            'Can\'t load resource "'..id..'", since resource loading is disabled.')
 
     local resourceValue = ResourceManager.get(type, ...)
