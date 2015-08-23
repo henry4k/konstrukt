@@ -28,9 +28,8 @@ function StructureDictionary.assignIds()
 
     -- For now, this will just be implemented super simple:
     for i, v in ipairs(StructureDictionary.classes) do
-        local id = i - 1
-        idToClass[id] = v
-        v.static.id = id
+        idToClass[i] = v
+        v.static.id = i
     end
 
     StructureDictionary.idToClass = idToClass

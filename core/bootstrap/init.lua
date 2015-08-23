@@ -152,10 +152,6 @@ if #packages > 0 then
     Scenario.load(packages[1], packages)
 end
 
-StructureDictionary.assignIds()
-
-print(voxelVolume:createStructure(AabbStructure, Vec(0,0,0), Vec(3,3,3)))
-
 if interactive then
     debug.debug()
     ENGINE.StopGameLoop()
