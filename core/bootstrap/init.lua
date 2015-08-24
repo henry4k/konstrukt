@@ -35,7 +35,7 @@ end
 
 function _loadfile( fileName, ... )
     local data = ENGINE.ReadFile(fileName)
-    return load(data, fileName, ...)
+    return load(data, '@'..fileName, ...)
 end
 
 function _dofile( fileName )
