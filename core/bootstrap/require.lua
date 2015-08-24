@@ -25,8 +25,12 @@ end)
 ResourceManager._put({ value=ResourceManager }, 'module', 'core/ResourceManager')
 
 function require( moduleName )
-    return ResourceManager.get('module', moduleName) or
-           ResourceManager.load('module', moduleName)
+    local module = ResourceManager.get('module', moduleName) or
+                   ResourceManager.load('module', moduleName)
+    if not module then
+        error(string.format("module '%s' not found", moduleName))
+    end
+    return module
 end
 
 -- Load all core modules:
