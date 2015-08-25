@@ -66,7 +66,7 @@ function ChunkManager:update()
         for z = minChunk[3], maxChunk[3], 1 do
         for y = minChunk[2], maxChunk[2], 1 do
         for x = minChunk[1], maxChunk[1], 1 do
-            local id = Chunk:generateId(x, y, z)
+            local id = Chunk:idFromChunkCoords(x, y, z)
             neededChunks[id] = Vec(x, y, z)
         end
         end
@@ -120,7 +120,7 @@ end
 function ChunkManager:getActiveChunkAt( voxelCoords )
     assert(Vec:isInstance(voxelCoords), 'Voxel coordinates must be a vector.')
     local x, y, z = self:_voxelToChunkCoordinates(voxelCoords:unpack(3))
-    local id = Chunk:generateId(x, y, z)
+    local id = Chunk:idFromChunkCoords(x, y, z)
     return self.chunks[id]
 end
 

@@ -1,14 +1,18 @@
+--- @classmod core.world.Chunk
+--
+-- Represents a part of the static game world.
+-- - contains models, solids, etc. of the static wold in the given area
+
+
 local format = string.format
 local class  = require 'middleclass'
 local ChunkBuilder = require 'core/world/ChunkBuilder'
 
 
---- Represents a part of the static game world.
 local Chunk = class('core/world/Chunk')
 
---- Generate a chunk id from chunk coordinates.
--- Don't use world coordinates here!
-function Chunk.static:generateId( x, y, z )
+--- Generates a chunk id from chunk coordinates.
+function Chunk.static:idFromChunkCoords( x, y, z )
     return format('%d%d%d', x, y, z)
 end
 
@@ -24,6 +28,7 @@ function Chunk:destroy()
     self.models = nil
 end
 
+--- Updates the chunks world representation
 function Chunk:update( voxelVolume, min, max, modelWorld )
     local chunkBuilder = ChunkBuilder()
 

@@ -16,7 +16,7 @@ Texture:include(Resource)
 
 --- Creates a texture from a file.
 --
--- @function static:load( fileName, ... )
+-- @function static:load( target, fileName, flags )
 --
 -- @param[type=string] target
 -- Texture type.  Available are:
