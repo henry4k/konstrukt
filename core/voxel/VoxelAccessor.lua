@@ -3,7 +3,7 @@ local class  = require 'middleclass'
 local Object = class.Object
 
 
-local VoxelAccessor = class('core/world/VoxelAccessor')
+local VoxelAccessor = class('core/voxel/VoxelAccessor')
 
 function VoxelAccessor:initialize( other )
     assert(not other or Object.isInstanceOf(other, VoxelAccessor),

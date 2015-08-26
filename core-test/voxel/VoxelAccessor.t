@@ -2,7 +2,7 @@
 -- vim: set filetype=lua:
 require 'core-test/common'
 local Spy = require 'test.mock.Spy'
-local VoxelAccessor = require 'core/world/VoxelAccessor'
+local VoxelAccessor = require 'core/voxel/VoxelAccessor'
 
 
 describe('A voxel accessor')

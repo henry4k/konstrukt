@@ -1,17 +1,17 @@
---- @classmod core.world.SingleVoxelStructure
+--- @classmod core.voxel.SingleVoxelStructure
 --- Base class for structures which consist of a single voxel.
 --
--- Extends @{core.world.Structure}.
+-- Extends @{core.voxel.Structure}.
 
 
 local class         = require 'middleclass'
 local Vec           = require 'core/Vector'
-local Structure     = require 'core/world/Structure'
-local Voxel         = require 'core/world/Voxel'
-local VoxelAccessor = require 'core/world/VoxelAccessor'
+local Structure     = require 'core/voxel/Structure'
+local Voxel         = require 'core/voxel/Voxel'
+local VoxelAccessor = require 'core/voxel/VoxelAccessor'
 
 
-local SingleVoxelStructure = class('core/world/SingleVoxelStructure', Structure)
+local SingleVoxelStructure = class('core/voxel/SingleVoxelStructure', Structure)
 
 function SingleVoxelStructure.static:getOrigin( voxel, position )
     return position

@@ -3,13 +3,13 @@ local floor       = math.floor
 local class       = require 'middleclass'
 local Object      = class.Object
 local Vec         = require 'core/Vector'
-local Chunk       = require 'core/world/Chunk'
-local VoxelVolume = require 'core/world/VoxelVolume'
+local Chunk       = require 'core/voxel/Chunk'
+local VoxelVolume = require 'core/voxel/VoxelVolume'
 local ModelWorld  = require 'core/graphics/ModelWorld'
 
 
 --- Manages the static game world, by dividing it into chunks.
-local ChunkManager = class('core/world/ChunkManager')
+local ChunkManager = class('core/voxel/ChunkManager')
 
 function ChunkManager:initialize( voxelVolume, modelWorld )
     assert(Object.isInstanceOf(voxelVolume, VoxelVolume),

@@ -1,4 +1,4 @@
---- @classmod core.world.Chunk
+--- @classmod core.voxel.Chunk
 --
 -- Represents a part of the static game world.
 -- - contains models, solids, etc. of the static wold in the given area
@@ -6,10 +6,10 @@
 
 local format = string.format
 local class  = require 'middleclass'
-local ChunkBuilder = require 'core/world/ChunkBuilder'
+local ChunkBuilder = require 'core/voxel/ChunkBuilder'
 
 
-local Chunk = class('core/world/Chunk')
+local Chunk = class('core/voxel/Chunk')
 
 --- Generates a chunk id from chunk coordinates.
 function Chunk.static:idFromChunkCoords( x, y, z )

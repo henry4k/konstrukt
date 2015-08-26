@@ -1,13 +1,13 @@
 local class         = require 'middleclass'
 local Vec           = require 'core/Vector'
-local Structure     = require 'core/world/Structure'
-local Voxel         = require 'core/world/Voxel'
-local VoxelAccessor = require 'core/world/VoxelAccessor'
+local Structure     = require 'core/voxel/Structure'
+local Voxel         = require 'core/voxel/Voxel'
+local VoxelAccessor = require 'core/voxel/VoxelAccessor'
 
 
 -- AabbStructures have an origin point and a size (this is called AABB).
 -- This defines which voxel belong to the structure.
-local AabbStructure = class('core/world/AabbStructure', Structure)
+local AabbStructure = class('core/voxel/AabbStructure', Structure)
 
 local minSize = Vec(1, 1, 1)
 local maxSize = Vec(15, 15, 15) -- 2^4 - 1

@@ -1,7 +1,7 @@
 local class   = require 'middleclass'
 
 
-local ChunkActivator = class('core/world/ChunkActivator')
+local ChunkActivator = class('core/voxel/ChunkActivator')
 
 function ChunkActivator:initialize( position, range )
     self.position = position

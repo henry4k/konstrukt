@@ -1,4 +1,4 @@
---- @classmod core.world.Structure
+--- @classmod core.voxel.Structure
 --- Static world objects, which are made from voxels use this as their base class.
 --
 -- Extends @{core.world.WorldObject}.
@@ -6,17 +6,17 @@
 
 local class         = require 'middleclass'
 local WorldObject   = require 'core/world/WorldObject'
-local VoxelAccessor = require 'core/world/VoxelAccessor'
-local VoxelCreator  = require 'core/world/VoxelCreator'
-local VoxelReader   = require 'core/world/VoxelReader'
-local VoxelWriter   = require 'core/world/VoxelWriter'
+local VoxelAccessor = require 'core/voxel/VoxelAccessor'
+local VoxelCreator  = require 'core/voxel/VoxelCreator'
+local VoxelReader   = require 'core/voxel/VoxelReader'
+local VoxelWriter   = require 'core/voxel/VoxelWriter'
 
 
-local Structure = class('core/world/Structure', WorldObject)
+local Structure = class('core/voxel/Structure', WorldObject)
 
 --- Helper function! So you don't need to import the StructureDictionary every time.
 function Structure.static:register()
-    local dict = require 'core/world/StructureDictionary'
+    local dict = require 'core/voxel/StructureDictionary'
     dict.registerClass(self)
 end
 

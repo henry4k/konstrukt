@@ -1,14 +1,14 @@
---- @classmod core.world.UndefinedStructure
+--- @classmod core.voxel.UndefinedStructure
 --- Placeholder for voxels which haven't been initialized yet.
 --
--- Extends @{core.world.SingleVoxelStructure}.
+-- Extends @{core.voxel.SingleVoxelStructure}.
 
 
 local class                = require 'middleclass'
-local SingleVoxelStructure = require 'core/world/SingleVoxelStructure'
+local SingleVoxelStructure = require 'core/voxel/SingleVoxelStructure'
 
 
-local UndefinedStructure = class('core/world/UndefinedStructure', SingleVoxelStructure)
+local UndefinedStructure = class('core/voxel/UndefinedStructure', SingleVoxelStructure)
 
 function UndefinedStructure:initialize( ... )
     SingleVoxelStructure.initialize(self, ...)

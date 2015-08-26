@@ -1,7 +1,7 @@
 local class     = require 'middleclass'
 local Object    = class.Object
-local Structure = require 'core/world/Structure'
-local UndefinedStructure = require 'core/world/UndefinedStructure'
+local Structure = require 'core/voxel/Structure'
+local UndefinedStructure = require 'core/voxel/UndefinedStructure'
 
 
 local StructureDictionary = {

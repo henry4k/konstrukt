@@ -2,9 +2,9 @@ local assert    = assert
 local class     = require 'middleclass'
 local Object    = class.Object
 local Vec       = require 'core/Vector'
-local Voxel     = require 'core/world/Voxel'
-local Structure = require 'core/world/Structure'
-local StructureDictionary = require 'core/world/StructureDictionary'
+local Voxel     = require 'core/voxel/Voxel'
+local Structure = require 'core/voxel/Structure'
+local StructureDictionary = require 'core/voxel/StructureDictionary'
 local SetVoxelVolumeSize  = ENGINE.SetVoxelVolumeSize
 local ReadVoxelData       = ENGINE.ReadVoxelData
 local WriteVoxelData      = ENGINE.WriteVoxelData
@@ -13,7 +13,7 @@ local WriteVoxelData      = ENGINE.WriteVoxelData
 local weakValueMT = { __mode = 'v' }
 
 
-local VoxelVolume = class('core/world/VoxelVolume')
+local VoxelVolume = class('core/voxel/VoxelVolume')
 
 VoxelVolume.static._singletonExists = false
 

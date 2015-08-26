@@ -7,7 +7,7 @@ local GraphicalMaterial = require 'core/graphics/GraphicalMaterial'
 
 
 --- Helper class that is used to update the static models and solids of a chunk.
-local ChunkBuilder = class('core/world/ChunkBuilder')
+local ChunkBuilder = class('core/voxel/ChunkBuilder')
 
 function ChunkBuilder:initialize()
     self.meshBuffers = {}

@@ -1,8 +1,8 @@
 local class       = require 'middleclass'
-local VoxelWriter = require 'core/world/VoxelWriter'
+local VoxelWriter = require 'core/voxel/VoxelWriter'
 
 
-local VoxelCreator = class('core/world/VoxelCreator', VoxelWriter)
+local VoxelCreator = class('core/voxel/VoxelCreator', VoxelWriter)
 
 function VoxelCreator:initialize( ... )
     VoxelWriter.initialize(self, ...)

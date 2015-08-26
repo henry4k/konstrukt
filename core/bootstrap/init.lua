@@ -107,19 +107,16 @@ actor = Actor(defaultRT)
 
 local Shutdown       = require 'core/Shutdown'
 local Vec            = require 'core/Vector'
-local VoxelVolume    = require 'core/world/VoxelVolume'
-local AabbStructure  = require 'core/world/AabbStructure'
---local ChunkManager   = require 'core/world/ChunkManager'
---local ChunkActivator = require 'core/world/ChunkActivator'
-local StructureDictionary = require 'core/world/StructureDictionary'
+local VoxelVolume    = require 'core/voxel/VoxelVolume'
+local AabbStructure  = require 'core/voxel/AabbStructure'
+--local ChunkManager   = require 'core/voxel/ChunkManager'
+--local ChunkActivator = require 'core/voxel/ChunkActivator'
+local StructureDictionary = require 'core/voxel/StructureDictionary'
 
 AabbStructure:register()
-StructureDictionary.assignIds()
 
 local voxelVolume = VoxelVolume(Vec(32, 32, 32))
 --chunkManager = ChunkManager(voxelVolume, worldModelWorld)
-
-print(voxelVolume:createStructure(AabbStructure, Vec(0,0,0), Vec(3,3,3)))
 
 Shutdown.registerHandler(function()
     --chunkManager:destroy()
@@ -151,6 +148,9 @@ end
 if #packages > 0 then
     Scenario.load(packages[1], packages)
 end
+
+StructureDictionary.assignIds()
+print(voxelVolume:createStructure(AabbStructure, Vec(0,0,0), Vec(3,3,3)))
 
 if interactive then
     debug.debug()
