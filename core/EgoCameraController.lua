@@ -4,7 +4,7 @@
 -- Just like in most ego shooters this is done by using axis controls, e.g.
 -- the mouses x and y axes.
 --
--- Includes @{core.ontrollable} and @{core.EventSource}.
+-- Includes @{core.Controllable} and @{core.EventSource}.
 
 
 local class        = require 'middleclass'
