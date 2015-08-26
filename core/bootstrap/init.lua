@@ -71,6 +71,14 @@ end)
 Control.pushControllable(GlobalControls())
 
 
+-- Global events
+local GlobalEventSource = require 'core/GlobalEventSource'
+
+ENGINE.SetEventCallback('Shutdown', function()
+    GlobalEventSource:fireEvent('shutdown')
+end)
+
+
 -- Setup default render target
 
 local ResourceManager   = require 'core/ResourceManager'
@@ -105,22 +113,32 @@ actor = Actor(defaultRT)
 
 -- Setup chunk manager
 
-local Shutdown       = require 'core/Shutdown'
-local Vec            = require 'core/Vector'
-local VoxelVolume    = require 'core/voxel/VoxelVolume'
-local AabbStructure  = require 'core/voxel/AabbStructure'
---local ChunkManager   = require 'core/voxel/ChunkManager'
---local ChunkActivator = require 'core/voxel/ChunkActivator'
+local Vec               = require 'core/Vector'
+local VoxelVolume       = require 'core/voxel/VoxelVolume'
+local AabbStructure     = require 'core/voxel/AabbStructure'
+local ChunkManager      = require 'core/voxel/ChunkManager'
+local ChunkActivator    = require 'core/voxel/ChunkActivator'
 local StructureDictionary = require 'core/voxel/StructureDictionary'
 
 AabbStructure:register()
 
-local voxelVolume = VoxelVolume(Vec(32, 32, 32))
---chunkManager = ChunkManager(voxelVolume, worldModelWorld)
-
-Shutdown.registerHandler(function()
-    --chunkManager:destroy()
+voxelVolume = VoxelVolume(Vec(32, 32, 32))
+GlobalEventSource:addEventTarget('shutdown', voxelVolume, function()
     voxelVolume:destroy()
+end)
+
+chunkManager = ChunkManager(voxelVolume, worldModelWorld)
+GlobalEventSource:addEventTarget('shutdown', chunkManager, function()
+    chunkManager:destroy()
+end)
+
+GlobalEventSource:addEventTarget('resources loaded', StructureDictionary, function()
+    StructureDictionary.assignIds()
+end)
+
+GlobalEventSource:addEventTarget('scenario started', chunkManager, function()
+    chunkManager:addActivator(ChunkActivator(Vec(10,10,10), 10))
+    chunkManager:update()
 end)
 
 
@@ -148,9 +166,6 @@ end
 if #packages > 0 then
     Scenario.load(packages[1], packages)
 end
-
-StructureDictionary.assignIds()
-print(voxelVolume:createStructure(AabbStructure, Vec(0,0,0), Vec(3,3,3)))
 
 if interactive then
     debug.debug()

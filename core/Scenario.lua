@@ -7,6 +7,7 @@
 local FS  = require 'core/FileSystem'
 local DSL = require 'core/DependencySortedList'
 local ResourceManager = require 'core/ResourceManager'
+local GlobalEventSource = require 'core/GlobalEventSource'
 
 
 local Scenario = {}
@@ -66,6 +67,8 @@ function Scenario.load( scenarioPackage, additionalPackages )
     end
     ResourceManager.allowLoading(false)
     print('Finished resource loading.')
+    GlobalEventSource:fireEvent('resources loaded')
+
 
     -- 4. Start scenario
     print('Starting scenario ..')
@@ -75,6 +78,7 @@ function Scenario.load( scenarioPackage, additionalPackages )
         assert(mainModule.start, 'Scenarios main module must provide a start function.')
         mainModule.start()
     end
+    GlobalEventSource:fireEvent('scenario started')
 end
 
 return Scenario

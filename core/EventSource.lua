@@ -7,7 +7,7 @@
 -- that have no further references.
 
 
-local assert  = assert
+local assert = assert
 
 
 local EventSource = {}

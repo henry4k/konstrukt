@@ -44,5 +44,5 @@ for path in FS.matchingFiles('core/.*%.lua') do
 end
 ResourceManager.allowLoading(false)
 
-local Shutdown = require 'core/Shutdown'
-Shutdown.registerHandler(ResourceManager.clear)
+local GlobalEventSource = require 'core/GlobalEventSource'
+GlobalEventSource:addEventTarget('shutdown', ResourceManager, ResourceManager.clear)
