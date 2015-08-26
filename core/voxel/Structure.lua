@@ -31,7 +31,6 @@ end
 function Structure:initialize()
     WorldObject.initialize(self)
     self.origin = nil
-    self.structureAccessor = nil -- TODO: Implement StructureAccessor!
 end
 
 function Structure:destroy()

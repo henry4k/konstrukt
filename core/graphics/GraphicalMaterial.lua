@@ -47,7 +47,7 @@ end
 function Material:updateModel( model )
     assert(Object.isInstanceOf(model, Model), 'Must be called with a model.')
 
-    model:setOverlayLevel(self.level)
+    model:setOverlayLevel(self.overlayLevel)
 
     model:unsetAllTextures()
     for unit, texture in pairs(self.textures) do

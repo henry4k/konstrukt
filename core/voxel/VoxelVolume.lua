@@ -43,7 +43,7 @@ function VoxelVolume:writeVoxel( position, voxel )
     WriteVoxelData(position[1], position[2], position[3], voxel)
 end
 
-function VoxelVolume:getStructure( position )
+function VoxelVolume:getStructureAt( position )
     assert(Vec:isInstance(position), 'Position must be a vector.')
 
     local positionHash = tostring(position)
@@ -86,7 +86,6 @@ function VoxelVolume:createStructure( structureClass, origin, ... )
     return structure
 end
 
---[[
 function VoxelVolume:getStructuresInAABB( min, max )
     assert(Vec:isInstance(min) and
            Vec:isInstance(max), 'Min and max must be vectors.')
@@ -106,11 +105,10 @@ function VoxelVolume:getStructuresInAABB( min, max )
 
     local structures = {}
     for structure, _ in pairs(uniqueStructures) do
-        insert(structures, structure)
+        table.insert(structures, structure)
     end
     return structures
 end
-]]
 
 
 return VoxelVolume

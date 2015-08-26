@@ -21,9 +21,9 @@ end
 
 function ChunkBuilder:addMeshBuffer( material, newGeometry, transformation )
     assert(Object.isInstanceOf(material, GraphicalMaterial),
-        'Must be called with a graphical material.')
+           'Must be called with a graphical material.')
     assert(Object.isInstanceOf(newGeometry, MeshBuffer),
-        'Must be called with a mesh buffer.')
+           'Must be called with a mesh buffer.')
 
     local meshBuffer = self.meshBuffers[material]
     if not meshBuffer then

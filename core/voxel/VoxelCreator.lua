@@ -12,7 +12,7 @@ function VoxelCreator:writeVoxel( position, voxel )
     local structure = self.structure
     if structure:ownsVoxel(position) then
         local voxelVolume = self.voxelVolume
-        local oldStructure = voxelVolume:getStructure(position)
+        local oldStructure = voxelVolume:getStructureAt(position)
         if oldStructure ~= structure then
             -- TODO: Inform structure, which intersects the new area, about its destruction.
             print(string.format('TODO: Replaced structure %s should be destroyed.', oldStructure.class.name))

@@ -44,6 +44,7 @@ function ChunkManager:removeActivator( activator )
             i = i + 1
         end
     end
+    -- TODO: Enhance function behaviour
 end
 
 --- Create needed chunks and destroys unneeded ones.
@@ -78,20 +79,22 @@ function ChunkManager:update()
     -- Destroy unneeded chunks:
     for chunkId, chunk in pairs(chunks) do
         if not neededChunks[chunkId] then
+            print(string.format('Chunk %s not needed anymore - destroying it.', chunkId))
             chunk:destroy()
             chunks[chunkId] = nil
         end
     end
 
     -- Create needed chunks:
-    local chunkHalfWidths = Vec(1, 1, 1) * (self.chunkSize / 2)
     local modelWorld = self.modelWorld
     for chunkId, chunkPosition in pairs(neededChunks) do
         if not chunks[chunkId] then
             local chunk = Chunk()
             chunks[chunkId] = chunk
-            local min = chunkPosition - chunkHalfWidths
-            local max = chunkPosition + chunkHalfWidths
+            local voxelPosition = self:chunkToVoxelCoordinates(chunkPosition)
+            local min = voxelPosition
+            local max = voxelPosition + (self.chunkSize-1)
+            print(string.format('Updating chunk %s from %s to %s.', chunkId, min, max))
             chunk:update(self.voxelVolume, min, max, modelWorld)
         end
     end
@@ -113,6 +116,19 @@ end
 function ChunkManager:voxelToChunkCoordinates( voxelCoords )
     assert(Vec:isInstance(voxelCoords), 'Voxel coordinates must be a vector.')
     return Vec(self:_voxelToChunkCoordinates(voxelCoords:unpack(3)))
+end
+
+function ChunkManager:_chunkToVoxelCoordinates( x, y, z )
+    local chunkSize = self.chunkSize
+    return x * chunkSize,
+           y * chunkSize,
+           z * chunkSize
+end
+
+--- Chunk position, which covers the world at the given coordinates.
+function ChunkManager:chunkToVoxelCoordinates( chunkCoords )
+    assert(Vec:isInstance(chunkCoords), 'Chunk coordinates must be a vector.')
+    return Vec(self:_chunkToVoxelCoordinates(chunkCoords:unpack(3)))
 end
 
 --- Tries to retrieve the active chunk that covers the given world position.
