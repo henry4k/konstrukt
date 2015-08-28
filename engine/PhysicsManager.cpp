@@ -94,7 +94,7 @@ bool InitPhysicsManager()
 
     memset(Forces, 0, sizeof(Forces));
 
-    World->setGravity(btVector3(0,-0.1,0));
+    World->setGravity(btVector3(0,0,0));
     World->setInternalTickCallback(WorldTickCallback);
 
     return true;
@@ -114,12 +114,12 @@ void UpdatePhysicsManager( double timeDelta )
     static const int maxSteps = MAX_FRAME_FREQUENCY / SIMULATION_FREQUENCY;
     static const double stepTimeDelta = 1.0 / (double)SIMULATION_FREQUENCY;
     World->stepSimulation(timeDelta, maxSteps, stepTimeDelta);
+    ApplyForces(timeDelta);
 }
 
 static void WorldTickCallback( btDynamicsWorld* world, btScalar timeDelta )
 {
     HandleCollisions();
-    ApplyForces(timeDelta);
 }
 
 static CollisionShape* CreateCollisionShape( CollisionShapeType type, btCollisionShape* bulletInstance )
@@ -326,26 +326,35 @@ glm::vec3 GetSolidAngularVelocity( const Solid* solid )
     return GlmFromBulletVec(velocity);
 }
 
+static const glm::vec3 centralPosition(0,0,0);
+
 void ApplySolidImpulse( const Solid* solid,
                         glm::vec3 impulse,
                         glm::vec3 relativePosition,
                         bool useLocalCoordinates )
 {
+    const bool isCentral = relativePosition == centralPosition;
     if(useLocalCoordinates)
     {
         using namespace glm;
-
-        mat4 transformation;
+        mat4 rotation;
         GetSolidTransformation(solid,
-                               COPY_ROTATION | COPY_TRANSLATION,
-                               &transformation);
+                               COPY_ROTATION,
+                               &rotation);
 
-        impulse          = vec3(transformation * vec4(impulse, 1));
-        relativePosition = vec3(transformation * vec4(relativePosition, 1));
+        impulse          = vec3(rotation * vec4(impulse, 1));
+        relativePosition = vec3(rotation * vec4(relativePosition, 1));
     }
 
-    solid->rigidBody->applyImpulse(BulletFromGlmVec(impulse),
-                                   BulletFromGlmVec(relativePosition));
+    if(isCentral)
+    {
+        solid->rigidBody->applyCentralImpulse(BulletFromGlmVec(impulse));
+    }
+    else
+    {
+        solid->rigidBody->applyImpulse(BulletFromGlmVec(impulse),
+                                       BulletFromGlmVec(relativePosition));
+    }
 }
 
 static void DestroyAllFocesOfSolid( Solid* solid )
@@ -412,20 +421,28 @@ static void ApplyForces( float timeDelta )
 
             vec3 value = force->value * timeDelta;
             vec3 relativePosition = force->relativePosition;
+            const bool isCentral = relativePosition == centralPosition;
 
             if(force->useLocalCoordinates)
             {
-                mat4 transformation;
+                mat4 rotation;
                 GetSolidTransformation(force->solid,
-                                       COPY_ROTATION | COPY_TRANSLATION,
-                                       &transformation);
+                                       COPY_ROTATION,
+                                       &rotation);
 
-                value            = vec3(transformation * vec4(value, 1));
-                relativePosition = vec3(transformation * vec4(relativePosition, 1));
+                value            = vec3(rotation * vec4(value, 1));
+                relativePosition = vec3(rotation * vec4(relativePosition, 1));
             }
 
-            force->solid->rigidBody->applyForce(BulletFromGlmVec(value),
-                                                BulletFromGlmVec(relativePosition));
+            if(isCentral)
+            {
+                force->solid->rigidBody->applyCentralForce(BulletFromGlmVec(value));
+            }
+            else
+            {
+                force->solid->rigidBody->applyForce(BulletFromGlmVec(value),
+                                                    BulletFromGlmVec(relativePosition));
+            }
         }
     }
 }
