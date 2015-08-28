@@ -40,8 +40,8 @@ end
 --
 function Force:set( value, relativePosition, useLocalCoordinates )
     assert(Vec:isInstance(value), 'Value must be vector.')
-    assert(Vec:isInstance(relativePosition) or nil, 'Relative position must be vector.')
     relativePosition    = relativePosition or Vec(0,0,0)
+    assert(Vec:isInstance(relativePosition), 'Relative position must be vector.')
     useLocalCoordinates = useLocalCoordinates or false
     SetForce(self.handle,
              value[1],

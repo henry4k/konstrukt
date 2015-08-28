@@ -179,7 +179,6 @@ end
 -- @param[type=number] impulse
 -- @param[type=core.physics.Solid] other
 -- @param[type=core.Vector] contactPoint
-
 local function CollisionHandler( solidAHandle,
                                  solidBHandle,
                                  pointOnAX, pointOnAY, pointOnAZ,
