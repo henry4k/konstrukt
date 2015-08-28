@@ -10,6 +10,7 @@ local GraphicalMaterial = require 'core/graphics/GraphicalMaterial'
 local ChunkBuilder = class('core/voxel/ChunkBuilder')
 
 function ChunkBuilder:initialize()
+    self.structureTransformation = nil
     self.meshBuffers = {}
 end
 
@@ -17,6 +18,10 @@ function ChunkBuilder:destroy()
     for _, meshBuffer in pairs(self.meshBuffers) do
         meshBuffer:destroy()
     end
+end
+
+function ChunkBuilder:setStructureTransformation( transformation )
+    self.structureTransformation = transformation
 end
 
 function ChunkBuilder:addMeshBuffer( material, newGeometry, transformation )
@@ -31,7 +36,8 @@ function ChunkBuilder:addMeshBuffer( material, newGeometry, transformation )
         self.meshBuffers[material] = meshBuffer
     end
 
-    meshBuffer:appendMeshBuffer(newGeometry, transformation)
+    meshBuffer:appendMeshBuffer(newGeometry, self.structureTransformation *
+                                             transformation)
 end
 
 function ChunkBuilder:updateModels( models, modelWorld )
