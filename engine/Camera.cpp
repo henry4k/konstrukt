@@ -171,7 +171,7 @@ static const mat4 GetCameraModelTransformation( const Camera* camera )
         GetSolidTransformation(camera->attachmentTarget,
                                camera->attachmentFlags,
                                &solidTransformation);
-    return solidTransformation * camera->modelTransformation;
+    return glm::inverse(solidTransformation) * camera->modelTransformation;
 }
 
 template<class CalcFn>
