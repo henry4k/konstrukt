@@ -1,6 +1,6 @@
 --- @module core.Control
 --- Manages @{core.Control}s and @{core.Controllable}s.
--- 
+--
 -- Each control is identified by a name and must be registered before use.
 -- Controls are mapped to input devices using configuration values.
 --
@@ -10,7 +10,7 @@
 -- space key on your keyboard triggers a control action.
 --
 -- Besides the keyboard, there are also other input devices:
--- 
+--
 -- Mouse buttons can be referenced using `mouse-button:0`, `mouse-button:1`, etc.
 -- Where 0 is the primary button, 1 the secondary button, and so on.
 --

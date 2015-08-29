@@ -17,6 +17,15 @@ end
 function Controllable:destroyControllable()
 end
 
+function Controllable.static:getControls()
+    local controls = self.controls
+    if not controls then
+        controls = {}
+        self.controls = controls
+    end
+    return controls
+end
+
 --- Map the given control to a method.
 --
 -- Implicitly registers the control.
@@ -26,12 +35,16 @@ end
 -- @see core.Control.pushControllable
 --
 function Controllable.static:mapControl( controlName, method )
-    local controls = self.static.controls
+    local controls = self.static:getControls()
     assert(not controls[controlName], controlName..' has already been mapped!')
     controls[controlName] = method
 
     local Control = require 'core/Control'
     Control.register(controlName)
+end
+
+function Controllable:setChildControllables( childs )
+    self.childControllables = childs
 end
 
 --- Is called by @{core.Control}.
@@ -40,7 +53,17 @@ end
 -- @param ...
 -- Parameters which passed to the controls method.
 function Controllable:triggerControlEvent( controlName, ... )
-    local controls = self.class.controls
+    local childControllables = self.childControllables
+    if childControllables then
+        for _, child in ipairs(childControllables) do
+            local result = child:triggerControlEvent(controlName, ...)
+            if result == true then
+                return true
+            end
+        end
+    end
+
+    local controls = self.class:getControls()
     local method = controls[controlName]
     if method then
         method(self, ...)
@@ -49,6 +72,5 @@ function Controllable:triggerControlEvent( controlName, ... )
         return false
     end
 end
-
 
 return Controllable
