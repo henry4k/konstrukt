@@ -1,7 +1,8 @@
-local class     = require 'middleclass'
-local Object    = class.Object
-local Structure = require 'core/voxel/Structure'
+local class              = require 'middleclass'
+local Object             = class.Object
+local Structure          = require 'core/voxel/Structure'
 local UndefinedStructure = require 'core/voxel/UndefinedStructure'
+local GlobalEventSource  = require 'core/GlobalEventSource'
 
 
 local StructureDictionary = {
@@ -19,7 +20,7 @@ end
 
 --- Work out correct IDs for registered structure classes.
 -- Must be called only *once* after all structure classes have been registered.
-function StructureDictionary.assignIds()
+function StructureDictionary._assignIds()
     assert(not StructureDictionary.idToClass,
            'Structure class IDs have already been assigned.')
     local idToClass = {}
@@ -42,6 +43,10 @@ function StructureDictionary.getClassFromId( id )
     assert(structureClass, 'No structure class matches!')
     return structureClass
 end
+
+GlobalEventSource:addEventTarget('resources loaded', StructureDictionary, function()
+    StructureDictionary._assignIds()
+end)
 
 
 return StructureDictionary
