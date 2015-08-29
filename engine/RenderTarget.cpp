@@ -89,7 +89,9 @@ static void FreeRenderTarget( RenderTarget* target )
         if(camera)
             ReleaseCamera(camera);
     }
-    ReleaseShaderProgramSet(target->shaderProgramSet);
+
+    if(target->shaderProgramSet)
+        ReleaseShaderProgramSet(target->shaderProgramSet);
 
     switch(target->type)
     {
@@ -98,7 +100,8 @@ static void FreeRenderTarget( RenderTarget* target )
 
         case FBO_RENDER_TARGET:
             // destroy fbo
-            ReleaseTexture(target->typeSpecific.fbo.texture);
+            if(target->typeSpecific.fbo.texture)
+                ReleaseTexture(target->typeSpecific.fbo.texture);
             break;
     }
 
