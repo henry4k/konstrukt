@@ -233,6 +233,8 @@ Solid* CreateSolid( float mass, glm::vec3 position, glm::quat rotation, Collisio
     World->addRigidBody(rigidBody);
     ReferenceCollisionShape(shape);
 
+    solid->rigidBody->setGravity(btVector3(0,0,0)); // See EnableGravityForSolid
+
     // TEST BEGIN
     solid->rigidBody->setSleepingThresholds(0, 0);
     // TEST END
@@ -336,6 +338,15 @@ glm::vec3 GetSolidAngularVelocity( const Solid* solid )
 {
     const btVector3& velocity = solid->rigidBody->getAngularVelocity();
     return GlmFromBulletVec(velocity);
+}
+
+void EnableGravityForSolid( const Solid* solid, bool enable )
+{
+    const int flags = solid->rigidBody->getFlags();
+    if(enable)
+        solid->rigidBody->setFlags(flags & ~BT_DISABLE_WORLD_GRAVITY);
+    else
+        solid->rigidBody->setFlags(flags | BT_DISABLE_WORLD_GRAVITY);
 }
 
 static const glm::vec3 centralPosition(0,0,0);

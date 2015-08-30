@@ -117,6 +117,14 @@ glm::vec3 GetSolidLinearVelocity( const Solid* solid );
  */
 glm::vec3 GetSolidAngularVelocity( const Solid* solid );
 
+
+/**
+ * Only solids which have gravity enabled will be affected by it.
+ *
+ * The gravity is enabled for all solids per default.
+ */
+void EnableGravityForSolid( const Solid* solid, bool enable );
+
 /**
  * Instantly applies an impulse.
  *

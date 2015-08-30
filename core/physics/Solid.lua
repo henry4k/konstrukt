@@ -27,6 +27,7 @@ local GetSolidPosition           = ENGINE.GetSolidPosition
 local GetSolidRotation           = ENGINE.GetSolidRotation
 local GetSolidLinearVelocity     = ENGINE.GetSolidLinearVelocity
 local GetSolidAngularVelocity    = ENGINE.GetSolidAngularVelocity
+local EnableGravityForSolid      = ENGINE.EnableGravityForSolid
 local ApplySolidImpulse          = ENGINE.ApplySolidImpulse
 local CreateForce                = ENGINE.CreateForce
 local SetEventCallback           = ENGINE.SetEventCallback
@@ -131,6 +132,12 @@ end
 -- @return[type=core.Vector]
 function Solid:getAngularVelocity()
     return Vec(GetSolidAngularVelocity(self.handle))
+end
+
+ --- Only solids which have gravity enabled will be affected by it.
+ -- The gravity is enabled for all solids per default.
+function Solid:enableGravity( enable )
+    EnableGravityForSolid(self.handle, enable)
 end
 
 --- Instantly applies an impulse.

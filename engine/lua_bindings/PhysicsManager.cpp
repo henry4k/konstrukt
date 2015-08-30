@@ -244,6 +244,14 @@ static int Lua_GetSolidAngularVelocity( lua_State* l )
     return 3;
 }
 
+static int Lua_EnableGravityForSolid( lua_State* l )
+{
+    const Solid* solid = CheckSolidFromLua(l, 1);
+    const bool enable = lua_toboolean(l, 2);
+    EnableGravityForSolid(solid, enable);
+    return 0;
+}
+
 static int Lua_ApplySolidImpulse( lua_State* l )
 {
     const Solid* solid = CheckSolidFromLua(l, 1);
@@ -331,5 +339,6 @@ bool RegisterPhysicsManagerInLua()
         RegisterFunctionInLua("GetSolidRotation", Lua_GetSolidRotation) &&
         RegisterFunctionInLua("GetSolidLinearVelocity", Lua_GetSolidLinearVelocity) &&
         RegisterFunctionInLua("GetSolidAngularVelocity", Lua_GetSolidAngularVelocity) &&
+        RegisterFunctionInLua("EnableGravityForSolid", Lua_EnableGravityForSolid) &&
         RegisterFunctionInLua("ApplySolidImpulse", Lua_ApplySolidImpulse);
 }
