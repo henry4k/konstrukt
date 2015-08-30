@@ -30,6 +30,11 @@ static int Lua_DestroyCollisionShape( lua_State* l )
     return 0;
 }
 
+static int Lua_CreateEmptyCollisionShape( lua_State* l )
+{
+    return CreateLuaCollisionShape(l, CreateEmptyCollisionShape());
+}
+
 static int Lua_CreateBoxCollisionShape( lua_State* l )
 {
     const glm::vec3 halfWidth(luaL_checknumber(l, 1),
@@ -293,6 +298,7 @@ bool RegisterPhysicsManagerInLua()
 
     return
         RegisterFunctionInLua("DestroyCollisionShape", Lua_DestroyCollisionShape) &&
+        RegisterFunctionInLua("CreateEmptyCollisionShape", Lua_CreateEmptyCollisionShape) &&
         RegisterFunctionInLua("CreateBoxCollisionShape", Lua_CreateBoxCollisionShape) &&
         RegisterFunctionInLua("CreateSphereCollisionShape", Lua_CreateSphereCollisionShape) &&
         RegisterFunctionInLua("CreateCapsuleCollisionShape", Lua_CreateCapsuleCollisionShape) &&

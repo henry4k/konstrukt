@@ -4,6 +4,7 @@
 #include <bullet/BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
 #include <bullet/BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>
 #include <bullet/BulletCollision/CollisionShapes/btCollisionShape.h>
+#include <bullet/BulletCollision/CollisionShapes/btEmptyShape.h>
 #include <bullet/BulletCollision/CollisionShapes/btBoxShape.h>
 #include <bullet/BulletCollision/CollisionShapes/btSphereShape.h>
 #include <bullet/BulletCollision/CollisionShapes/btCapsuleShape.h>
@@ -22,6 +23,7 @@
 
 enum CollisionShapeType
 {
+    EMPTY_SHAPE,
     BOX_SHAPE,
     SPHERE_SHAPE,
     CAPSULE_SHAPE,
@@ -130,6 +132,12 @@ static CollisionShape* CreateCollisionShape( CollisionShapeType type, btCollisio
     shape->bulletInstance = bulletInstance;
     shape->bulletInstance->setUserPointer(shape);
     return shape;
+}
+
+CollisionShape* CreateEmptyCollisionShape()
+{
+    return CreateCollisionShape(EMPTY_SHAPE,
+                                new btEmptyShape());
 }
 
 CollisionShape* CreateBoxCollisionShape( glm::vec3 halfWidth )

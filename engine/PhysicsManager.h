@@ -55,6 +55,7 @@ void UpdatePhysicsManager( double timeDelta );
 void SetCollisionCallback( CollisionCallback callback );
 
 
+CollisionShape* CreateEmptyCollisionShape();
 CollisionShape* CreateBoxCollisionShape( glm::vec3 halfWidth );
 CollisionShape* CreateSphereCollisionShape( float radius );
 CollisionShape* CreateCapsuleCollisionShape( float radius, float height );
