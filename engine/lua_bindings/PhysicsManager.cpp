@@ -6,6 +6,16 @@
 #include "PhysicsManager.h"
 
 
+static int Lua_SetGravity( lua_State* l )
+{
+    const glm::vec3 force(luaL_checknumber(l, 1),
+                          luaL_checknumber(l, 2),
+                          luaL_checknumber(l, 3));
+    SetGravity(force);
+    return 0;
+}
+
+
 // --- Collision Shape ---
 
 static int CreateLuaCollisionShape( lua_State* l, CollisionShape* shape )
@@ -297,6 +307,8 @@ bool RegisterPhysicsManagerInLua()
     SetCollisionCallback(LuaCollisionCallback);
 
     return
+        RegisterFunctionInLua("SetGravity", Lua_SetGravity) &&
+
         RegisterFunctionInLua("DestroyCollisionShape", Lua_DestroyCollisionShape) &&
         RegisterFunctionInLua("CreateEmptyCollisionShape", Lua_CreateEmptyCollisionShape) &&
         RegisterFunctionInLua("CreateBoxCollisionShape", Lua_CreateBoxCollisionShape) &&

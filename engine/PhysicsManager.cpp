@@ -96,7 +96,6 @@ bool InitPhysicsManager()
 
     memset(Forces, 0, sizeof(Forces));
 
-    World->setGravity(btVector3(0,0,0));
     World->setInternalTickCallback(WorldTickCallback);
 
     return true;
@@ -117,6 +116,11 @@ void UpdatePhysicsManager( double timeDelta )
     static const double stepTimeDelta = 1.0 / (double)SIMULATION_FREQUENCY;
     World->stepSimulation(timeDelta, maxSteps, stepTimeDelta);
     ApplyForces(timeDelta);
+}
+
+void SetGravity( glm::vec3 force )
+{
+    World->setGravity(BulletFromGlmVec(force));
 }
 
 static void WorldTickCallback( btDynamicsWorld* world, btScalar timeDelta )

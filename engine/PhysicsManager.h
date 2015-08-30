@@ -53,6 +53,7 @@ bool InitPhysicsManager();
 void DestroyPhysicsManager();
 void UpdatePhysicsManager( double timeDelta );
 void SetCollisionCallback( CollisionCallback callback );
+void SetGravity( glm::vec3 force );
 
 
 CollisionShape* CreateEmptyCollisionShape();
