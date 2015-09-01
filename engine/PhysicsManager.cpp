@@ -210,7 +210,15 @@ Solid* CreateSolid( float mass, glm::vec3 position, glm::quat rotation, Collisio
     InitReferenceCounter(&solid->refCounter);
 
     btVector3 localInertia;
-    shape->bulletInstance->calculateLocalInertia(mass, localInertia);
+    if(shape->type == EMPTY_SHAPE)
+    {
+        const float v = 0.4f * mass * 0.5f; // simulate a sphere with radius 0.5
+        localInertia = btVector3(v,v,v);
+    }
+    else
+    {
+        shape->bulletInstance->calculateLocalInertia(mass, localInertia);
+    }
 
     btMotionState* motionState =
         new btDefaultMotionState(btTransform(btQuaternion(rotation[0],
