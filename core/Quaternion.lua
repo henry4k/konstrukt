@@ -39,7 +39,7 @@ local Quat = class('core/Quaternion')
 -- Quat( quat ) -- Copy quaternion.
 -- Quat( vec ) or Quat( x, y, z ) -- Create quaternion from euler angles.
 -- Quat( mat ) -- Create quaternion from matrix.
-function Quat:initialize( arg )
+function Quat:initialize( arg, y, z )
     arg = arg or CreateQuaternion()
 
     if type(arg) == 'userdata' then
@@ -48,6 +48,8 @@ function Quat:initialize( arg )
         self.handle = CopyQuaternion(arg.handle)
     elseif Vec:isInstance(arg) then
         self.handle = CreateQuaternionFromEulerAngles(arg:unpack(3))
+    elseif type(arg) == 'number' then
+        self.handle = CreateQuaternionFromEulerAngles(arg, y, z)
     elseif Object.isInstanceOf(arg, Mat4) then
         self.handle = CreateQuaternionFromMatrix(arg.handle)
     else
