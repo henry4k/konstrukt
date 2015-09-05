@@ -28,7 +28,7 @@ function Matrix4:clone()
     return Matrix4(CopyMatrix4(self.handle))
 end
 
---- Create a lookt-at matrix.
+--- Create a look-at matrix.
 --
 -- @param[type=core.Vector] eye
 -- @param[type=core.Vector] center

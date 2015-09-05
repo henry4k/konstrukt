@@ -18,10 +18,12 @@ local Object = class.Object
 local Vec    = require 'core/Vector'
 local Mat4   = require 'core/Matrix4'
 local CreateQuaternion                = ENGINE.CreateQuaternion
+local CreateQuaternionByAngleAndAxis  = ENGINE.CreateQuaternionByAngleAndAxis
 local CreateQuaternionFromEulerAngles = ENGINE.CreateQuaternionFromEulerAngles
 local CreateQuaternionFromMatrix      = ENGINE.CreateQuaternionFromMatrix
 local CopyQuaternion                  = ENGINE.CopyQuaternion
 local NormalizeQuaternion             = ENGINE.NormalizeQuaternion
+local QuaternionConjugate             = ENGINE.QuaternionConjugate
 local InvertQuaternion                = ENGINE.InvertQuaternion
 local QuaternionOp                    = ENGINE.QuaternionOp
 local LerpQuaternion                  = ENGINE.LerpQuaternion
@@ -57,6 +59,22 @@ function Quat:initialize( arg, y, z )
     end
 end
 
+function Quat.static.byAngleAndAxis( w, x, y, z )
+    if Vec:isInstance(x) then
+        return Quat(CreateQuaternionByAngleAndAxis(w, x:unpack(3)))
+    else
+        return Quat(CreateQuaternionByAngleAndAxis(w, x, y, z))
+    end
+end
+
+function Quat.static.fromEulerAngles( x, y, z )
+    if Vec:isInstance(x) then
+        return Quat(CreateQuaternionFromEulerAngles(x:unpack(3)))
+    else
+        return Quat(CreateQuaternionFromEulerAngles(x, y, z))
+    end
+end
+
 --- Create an independent copy of the instance.
 function Quat:clone()
     return Quat(CopyQuaternion(self.handle))
@@ -70,6 +88,11 @@ end
 --- Computes the unit quaternion.
 function Quat:normalize()
     return Quat(NormalizeQuaternion(self.handle))
+end
+
+--- Get the quaternion conjugate.
+function Quat:conjugate()
+    return Quat(QuaternionConjugate(self.handle))
 end
 
 --- Invert the orientation.

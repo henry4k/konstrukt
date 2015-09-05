@@ -18,6 +18,17 @@ static int Lua_CreateQuaternion( lua_State* l )
     return 1;
 }
 
+static int Lua_CreateQuaternionByAngleAndAxis( lua_State* l )
+{
+    const float angle = luaL_checknumber(l, 1);
+    const vec3  axis(luaL_checknumber(l, 2),
+                     luaL_checknumber(l, 3),
+                     luaL_checknumber(l, 4));
+    const quat r = angleAxis(angle, axis);
+    CopyUserDataToLua(l, QUATERNION_TYPE, sizeof(quat), &r);
+    return 1;
+}
+
 static int Lua_CreateQuaternionFromEulerAngles( lua_State* l )
 {
     const quat r(vec3(luaL_checknumber(l, 1),
@@ -47,6 +58,14 @@ static int Lua_NormalizeQuaternion( lua_State* l )
     const quat* source = CheckQuaternionFromLua(l, 1);
     quat* r = (quat*)PushUserDataToLua(l, QUATERNION_TYPE, sizeof(quat));
     *r = normalize(*source);
+    return 1;
+}
+
+static int Lua_QuaternionConjugate( lua_State* l )
+{
+    const quat* source = CheckQuaternionFromLua(l, 1);
+    quat* r = (quat*)PushUserDataToLua(l, QUATERNION_TYPE, sizeof(quat));
+    *r = conjugate(*source);
     return 1;
 }
 
@@ -315,10 +334,12 @@ bool RegisterMathInLua()
     return
         RegisterUserDataTypeInLua(QUATERNION_TYPE, NULL) &&
         RegisterFunctionInLua("CreateQuaternion", Lua_CreateQuaternion) &&
+        RegisterFunctionInLua("CreateQuaternionByAngleAndAxis", Lua_CreateQuaternionByAngleAndAxis) &&
         RegisterFunctionInLua("CreateQuaternionFromEulerAngles", Lua_CreateQuaternionFromEulerAngles) &&
         RegisterFunctionInLua("CreateQuaternionFromMatrix", Lua_CreateQuaternionFromMatrix) &&
         RegisterFunctionInLua("CopyQuaternion", Lua_CopyQuaternion) &&
         RegisterFunctionInLua("NormalizeQuaternion", Lua_NormalizeQuaternion) &&
+        RegisterFunctionInLua("QuaternionConjugate", Lua_QuaternionConjugate) &&
         RegisterFunctionInLua("InvertQuaternion", Lua_InvertQuaternion) &&
         RegisterFunctionInLua("QuaternionOp", Lua_QuaternionOp) &&
         RegisterFunctionInLua("LerpQuaternion", Lua_LerpQuaternion) &&

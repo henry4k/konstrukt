@@ -79,6 +79,13 @@ function Vector.prototype:operate( other, operationFn )
     return r
 end
 
+function Vector.prototype:cross( other )
+    assert(#self == 3 and #other == 3, 'The cross product needs exactly 3 components.')
+    return Vector(self[2]*other[3] - self[3]*other[2],
+                  self[3]*other[1] - self[1]*other[3],
+                  self[1]*other[2] - self[2]*other[1])
+end
+
 --- Compute inverse vector length.
 --
 -- `v:inverseLength() == 1/v:length()`
