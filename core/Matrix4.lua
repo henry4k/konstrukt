@@ -34,15 +34,15 @@ end
 -- @param[type=core.Vector] center
 -- @param[type=core.Vector] up
 function Matrix4.static:lookAt( eye, center, up )
-    return self(CreateLookAtMatrix(eye[1],
-                                   eye[2],
-                                   eye[3],
-                                   center[1],
-                                   center[2],
-                                   center[3],
-                                   up[1],
-                                   up[2],
-                                   up[3]))
+    return Matrix4(CreateLookAtMatrix(eye[1],
+                                      eye[2],
+                                      eye[3],
+                                      center[1],
+                                      center[2],
+                                      center[3],
+                                      up[1],
+                                      up[2],
+                                      up[3]))
 end
 
 --- Add another matrix.

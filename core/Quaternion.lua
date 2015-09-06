@@ -39,27 +39,19 @@ local Quat = class('core/Quaternion')
 -- @usage
 -- Quat() -- New identity quaternion.
 -- Quat( quat ) -- Copy quaternion.
--- Quat( vec ) or Quat( x, y, z ) -- Create quaternion from euler angles.
--- Quat( mat ) -- Create quaternion from matrix.
-function Quat:initialize( arg, y, z )
-    arg = arg or CreateQuaternion()
+function Quat:initialize( quat )
+    quat = quat or CreateQuaternion()
 
-    if type(arg) == 'userdata' then
-        self.handle = arg
-    elseif Object.isInstanceOf(arg, Quat) then
-        self.handle = CopyQuaternion(arg.handle)
-    elseif Vec:isInstance(arg) then
-        self.handle = CreateQuaternionFromEulerAngles(arg:unpack(3))
-    elseif type(arg) == 'number' then
-        self.handle = CreateQuaternionFromEulerAngles(arg, y, z)
-    elseif Object.isInstanceOf(arg, Mat4) then
-        self.handle = CreateQuaternionFromMatrix(arg.handle)
+    if type(quat) == 'userdata' then
+        self.handle = quat
+    elseif Object.isInstanceOf(quat, Quat) then
+        self.handle = CopyQuaternion(quat.handle)
     else
         error('Invalid constructor use.')
     end
 end
 
-function Quat.static.byAngleAndAxis( w, x, y, z )
+function Quat.static:byAngleAndAxis( w, x, y, z )
     if Vec:isInstance(x) then
         return Quat(CreateQuaternionByAngleAndAxis(w, x:unpack(3)))
     else
@@ -67,12 +59,17 @@ function Quat.static.byAngleAndAxis( w, x, y, z )
     end
 end
 
-function Quat.static.fromEulerAngles( x, y, z )
+function Quat.static:fromEulerAngles( x, y, z )
     if Vec:isInstance(x) then
         return Quat(CreateQuaternionFromEulerAngles(x:unpack(3)))
     else
         return Quat(CreateQuaternionFromEulerAngles(x, y, z))
     end
+end
+
+function Quat.static:fromMatrix( matrix )
+    assert(Object.isInstanceOf(matrix, Mat4), 'Argument must be a matrix.')
+    return Quat(CreateQuaternionFromMatrix(matrix.handle))
 end
 
 --- Create an independent copy of the instance.
