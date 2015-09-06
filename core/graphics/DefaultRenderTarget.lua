@@ -11,14 +11,6 @@ local GetDefaultRenderTarget = ENGINE.GetDefaultRenderTarget
 
 local DefaultRenderTarget = class('core/graphics/DefaultRenderTarget', RenderTarget)
 
---- Retrieve the singleton.
-function DefaultRenderTarget.static:get()
-    if not self.instance then
-        self.instance = DefaultRenderTarget()
-    end
-    return self.instance
-end
-
 function DefaultRenderTarget:initialize()
     assert(not DefaultRenderTarget.instance, 'Use DefaultRenderTarget:get() instead.')
     RenderTarget.initialize(self, GetDefaultRenderTarget())
@@ -30,4 +22,4 @@ function DefaultRenderTarget:destroy()
 end
 
 
-return DefaultRenderTarget
+return DefaultRenderTarget()
