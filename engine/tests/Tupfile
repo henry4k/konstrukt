@@ -7,3 +7,4 @@ include_rules
 : Config.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  Config.t
 : MeshBuffer.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  MeshBuffer.t
 : Math.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  Math.t
+: Time.o $(REQUIRED_ARCHIVES) |> !ldcxx |>  Time.t
