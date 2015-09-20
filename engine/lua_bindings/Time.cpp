@@ -14,11 +14,12 @@ static int Lua_GetTime( lua_State* l )
     return 1;
 }
 
-static void OnLuaTimerTriggered( Timer* timer, void* context )
+static void OnLuaTimerTriggered( Timer* timer, double timeDelta, void* context )
 {
     lua_State* l = GetLuaState();
     PushPointerToLua(l, timer);
-    FireLuaEvent(l, g_TimerTriggeredEvent, 1, false);
+    lua_pushnumber(l, timeDelta);
+    FireLuaEvent(l, g_TimerTriggeredEvent, 2, false);
 }
 
 static int Lua_CreateTimer( lua_State* l )

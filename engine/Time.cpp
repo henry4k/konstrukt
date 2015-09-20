@@ -10,7 +10,7 @@ static const int MAX_TIMERS = 8;
 struct Timer
 {
     double minDelay;
-    double nextOccurrence;
+    double lastOccurrence;
     TimerCallback callback;
     void* context;
 };
@@ -41,13 +41,13 @@ void UpdateTime( double timeDelta )
     for(int i = 0; i < MAX_TIMERS; i++)
     {
         Timer* timer = &Timers[i];
-        if(TimerIsActive(timer) && timer->nextOccurrence <= Time)
+        if(TimerIsActive(timer))
         {
-            timer->callback(timer, timer->context);
-            if(TimerIsActive(timer))
+            const double timerTimeDelta = Time - timer->lastOccurrence;
+            if(timerTimeDelta >= timer->minDelay)
             {
-                timer->nextOccurrence = timer->nextOccurrence +
-                                        timer->minDelay;
+                timer->lastOccurrence = Time;
+                timer->callback(timer, timerTimeDelta, timer->context);
             }
         }
     }
@@ -84,7 +84,7 @@ Timer* CreateTimer( double minDelay, void* context, TimerCallback callback )
     {
         memset(timer, 0, sizeof(Timer));
         timer->minDelay = minDelay;
-        timer->nextOccurrence = Time + minDelay;
+        timer->lastOccurrence = Time;
         timer->callback = callback;
         timer->context = context;
         return timer;

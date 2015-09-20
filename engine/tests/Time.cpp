@@ -15,10 +15,12 @@ public:
 
 static const void* ExpectedTimerContext = NULL;
 static int   TimerCallCount = 0;
-static void MyTimerCallback( Timer* timer, void* context )
+static double LastTimeDelta = 0;
+static void MyTimerCallback( Timer* timer, double timeDelta, void* context )
 {
     Require(context == ExpectedTimerContext);
     TimerCallCount++;
+    LastTimeDelta = timeDelta;
 }
 
 int main( int argc, char** argv )
@@ -59,16 +61,19 @@ int main( int argc, char** argv )
 
             UpdateTime(9);
             Require(TimerCallCount == 1);
+            Require(LastTimeDelta == 10);
 
             UpdateTime(10);
             Require(TimerCallCount == 2);
+            Require(LastTimeDelta == 10);
 
-            //UpdateTime(100);
-            //Require(TimerCallCount == 12);
+            UpdateTime(11);
+            Require(TimerCallCount == 3);
+            Require(LastTimeDelta == 11);
 
             DestroyTimer(myTimer);
             UpdateTime(100);
-            Require(TimerCallCount == 2);
+            Require(TimerCallCount == 3);
         });
 
     return RunTests();

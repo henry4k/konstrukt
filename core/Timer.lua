@@ -6,7 +6,7 @@
 -- function Grenade:initialize()
 --     self.timer = Timer(10, self, Grenade.onTimerTriggered)
 -- end
--- function Grenade:onTimerTriggered( timer )
+-- function Grenade:onTimerTriggered( timeDelta, timer )
 --     timer:destroy()
 --     self.timer = nil
 --     self:explode()
@@ -21,14 +21,14 @@ local SetEventCallback = ENGINE.SetEventCallback
 
 local timerHandleToInstanceMap = {}
 
-local function onTimerTriggered( timer )
+local function onTimerTriggered( timer, timeDelta )
     local timerInstance = timerHandleToInstanceMap[timer]
     assert(timerInstance, 'Unknown timer instance.')
     local target = timerInstance.target
     if target then
-        timerInstance.callback(target, timerInstance)
+        timerInstance.callback(target, timeDelta, timerInstance)
     else
-        timerInstance.callback(timerInstance)
+        timerInstance.callback(timeDelta, timerInstance, timeDelta)
     end
 end
 SetEventCallback('TimerTriggered', onTimerTriggered)

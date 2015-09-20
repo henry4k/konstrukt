@@ -7,7 +7,7 @@
  */
 struct Timer;
 
-typedef void (*TimerCallback)( Timer* timer, void* context );
+typedef void (*TimerCallback)( Timer* timer, double timeDelta, void* context );
 
 
 bool InitTime();
