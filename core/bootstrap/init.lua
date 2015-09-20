@@ -53,12 +53,10 @@ _dofile 'core/bootstrap/require.lua'
 
 -- Register exit key
 
-local class        = require 'middleclass'
-local Control      = require 'core/Control'
-local Controllable = require 'core/Controllable'
+local Control        = require 'core/Control'
+local GlobalControls = require 'core/GlobalControls'
 
-local GlobalControls = class('core/init/GlobalControls')
-GlobalControls:include(Controllable)
+Control.pushControllable(GlobalControls())
 
 --- Stops the gameloop and thus stops the game.
 -- @control exit
@@ -67,7 +65,6 @@ GlobalControls:mapControl('exit', function( self, absolute, delta )
         ENGINE.StopGameLoop()
     end
 end)
-Control.pushControllable(GlobalControls())
 
 
 -- Fire global event on engine shutdown
