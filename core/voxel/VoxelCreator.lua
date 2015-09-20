@@ -13,11 +13,13 @@ function VoxelCreator:writeVoxel( position, voxel )
     if structure:ownsVoxel(position) then
         local voxelVolume = self.voxelVolume
         local oldStructure = voxelVolume:getStructureAt(position)
-        if oldStructure ~= structure then
+        if oldStructure and oldStructure ~= structure then
             -- TODO: Inform structure, which intersects the new area, about its destruction.
             print(string.format('TODO: Replaced structure %s should be destroyed.', oldStructure.class.name))
         end
-        return voxelVolume:writeVoxel(position, voxel)
+        if not voxelVolume:writeVoxel(position, voxel) then
+            error('Can\'t create voxel at '..tostring(position)..'.')
+        end
     else
         error('Can\'t create voxel at '..tostring(position)..', as it doesn\'t belong to the structure.')
     end

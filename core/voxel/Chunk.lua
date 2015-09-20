@@ -14,7 +14,7 @@ local Chunk = class('core/voxel/Chunk')
 
 --- Generates a chunk id from chunk coordinates.
 function Chunk.static:idFromChunkCoords( x, y, z )
-    return format('%d%d%d', x, y, z)
+    return format('%d,%d,%d', x, y, z)
 end
 
 function Chunk:initialize()

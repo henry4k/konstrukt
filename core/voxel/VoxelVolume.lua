@@ -32,15 +32,20 @@ end
 function VoxelVolume:destroy()
 end
 
+--- Returns @{core.voxel.Voxel} or `nil` if something went wrong.
 function VoxelVolume:readVoxel( position )
     assert(Vec:isInstance(position), 'Position must be a vector.')
-    return Voxel(ReadVoxelData(position:unpack(3)))
+    local voxelData = ReadVoxelData(position:unpack(3))
+    if voxelData then
+        return Voxel(voxelData)
+    end
 end
 
+--- Returns whether the operation was successfull.
 function VoxelVolume:writeVoxel( position, voxel )
     assert(Vec:isInstance(position), 'Position must be a vector.')
     assert(Voxel:isInstance(voxel), 'Must be called with a voxel.')
-    WriteVoxelData(position[1], position[2], position[3], voxel)
+    return WriteVoxelData(position[1], position[2], position[3], voxel)
 end
 
 function VoxelVolume:getStructureAt( position )
@@ -52,6 +57,10 @@ function VoxelVolume:getStructureAt( position )
 
     if not structure then
         local voxel = self:readVoxel(position)
+        if not voxel then
+            return
+        end
+
         local id = Structure.voxelAccessor:read(voxel, 'id')
         -- TODO: Optimize voxelAccessor as a local?
         local structureClass = StructureDictionary.getClassFromId(id)
@@ -98,7 +107,9 @@ function VoxelVolume:getStructuresInAABB( min, max )
     for x = min[1], max[1] do
         local position = Vec(x, y, z)
         local structure = self:getStructureAt(position)
-        uniqueStructures[structure] = true
+        if structure then
+            uniqueStructures[structure] = true
+        end
     end
     end
     end

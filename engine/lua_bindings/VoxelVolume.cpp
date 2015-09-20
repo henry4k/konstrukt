@@ -26,8 +26,8 @@ static int Lua_ReadVoxelData( lua_State* l )
     const bool success = ReadVoxelData(x, y, z, voxel);
     if(!success)
     {
-        luaL_error(l, "Can't read voxel data.");
-        return 0;
+        lua_pushnil(l);
+        return 1;
     }
 
     lua_createtable(l, VOXEL_INT32_COUNT, 0);
@@ -57,11 +57,12 @@ static int Lua_WriteVoxelData( lua_State* l )
     const bool success = WriteVoxelData(x, y, z, voxel);
     if(!success)
     {
-        luaL_error(l, "Can't write voxel data.");
-        return 0;
+        lua_pushboolean(l, false);
+        return 1;
     }
 
-    return 0;
+    lua_pushboolean(l, true);
+    return 1;
 }
 
 static int Lua_GetVoxelInt32Count( lua_State* l )
