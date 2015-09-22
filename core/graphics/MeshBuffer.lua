@@ -13,6 +13,9 @@ local Resource = require 'core/Resource'
 local CreateMeshBuffer         = ENGINE.CreateMeshBuffer
 local DestroyMeshBuffer        = ENGINE.DestroyMeshBuffer
 local TransformMeshBuffer      = ENGINE.TransformMeshBuffer
+local IndexMeshBuffer          = ENGINE.IndexMeshBuffer
+local CalcMeshBufferNormals    = ENGINE.CalcMeshBufferNormals
+local CalcMeshBufferTangents   = ENGINE.CalcMeshBufferTangents
 local AppendMeshBuffer         = ENGINE.AppendMeshBuffer
 local AppendIndexToMeshBuffer  = ENGINE.AppendIndexToMeshBuffer
 local AppendVertexToMeshBuffer = ENGINE.AppendVertexToMeshBuffer
@@ -82,6 +85,25 @@ function MeshBuffer:transform( transformation )
     assert(not self.locked, 'Mesh buffer is write protected.')
     assert(Object.isInstanceOf(transformation, Mat4), 'Transformation must be an matrix.')
     TransformMeshBuffer(self.handle, transformation.handle)
+end
+
+--- Build index buffer from scratch.
+function MeshBuffer:index()
+    assert(not self.locked, 'Mesh buffer is write protected.')
+    IndexMeshBuffer(self.handle)
+end
+
+--- Calculate normals from scratch.
+function MeshBuffer:calcNormals()
+    assert(not self.locked, 'Mesh buffer is write protected.')
+    CalcMeshBufferNormals(self.handle)
+end
+
+--- Calculate tangents from scratch.
+-- Make sure that the mesh has normals and texture coordinates.
+function MeshBuffer:calcTangents()
+    assert(not self.locked, 'Mesh buffer is write protected.')
+    CalcMeshBufferTangents(self.handle)
 end
 
 --- Append vertices from another buffer.
@@ -168,6 +190,8 @@ function MeshBuffer:readDefinition( definition )
             self:appendIndex(index)
         end
     end
+
+    self:calcTangents()
 
     return self
 end

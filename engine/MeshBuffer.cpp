@@ -1,4 +1,6 @@
 #include <vector>
+#include <assert.h>
+#include <math.h> // fabsf
 
 #include "Common.h"
 #include "Math.h"
@@ -50,9 +52,10 @@ static void TransformMeshBufferRange( MeshBuffer* buffer, const glm::mat4* trans
     const Vertex* end = &buffer->vertices[firstVertex+vertexCount];
     for(; vertex != end; ++vertex)
     {
-        vertex->position = vec3( *transformation * vec4(vertex->position, 1) );
-        vertex->normal   = normalize(rotation * vertex->normal);
-        vertex->tangent  = *transformation * vertex->tangent;
+        vertex->position  = vec3( *transformation * vec4(vertex->position, 1) );
+        vertex->normal    = normalize(rotation * vertex->normal);
+        vertex->tangent   = normalize(rotation * vertex->tangent);
+        vertex->bitangent = normalize(rotation * vertex->bitangent);
     }
 }
 
@@ -99,4 +102,196 @@ int GetMeshBufferIndexCount( const MeshBuffer* buffer )
 const VertexIndex* GetMeshBufferIndices( const MeshBuffer* buffer )
 {
     return &buffer->indices[0];
+}
+
+
+// ---- mesh reindexing ----
+
+const float Epsilon = 0.001;
+
+static bool IsNearlyEqual( float a, float b )
+{
+    const float delta = fabsf(a-b);
+    return delta <= Epsilon;
+}
+
+static bool IsNearlyEqualVec2( vec2 a, vec2 b )
+{
+    return IsNearlyEqual(a[0], b[0]) &&
+           IsNearlyEqual(a[1], b[1]);
+}
+
+static bool IsNearlyEqualVec3( vec3 a, vec3 b )
+{
+    return IsNearlyEqual(a[0], b[0]) &&
+           IsNearlyEqual(a[1], b[1]) &&
+           IsNearlyEqual(a[2], b[2]);
+}
+
+static int FindSimilarVertex( const Vertex* vertices,
+                              int vertexCount,
+                              const Vertex* reference )
+{
+    for(int i = 0; i < vertexCount; i++)
+    {
+        const Vertex* vertex = &vertices[i];
+        if(IsNearlyEqualVec3(vertex->position, reference->position) &&
+           IsNearlyEqualVec3(vertex->color,    reference->color) &&
+           IsNearlyEqualVec2(vertex->texCoord, reference->texCoord) &&
+           IsNearlyEqualVec3(vertex->normal,   reference->normal))
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static void IndexVertex( const Vertex* vertex,
+                         Vertex* newVertices,
+                         VertexIndex* newIndices,
+                         int* newVertexCount,
+                         int* newIndexCount )
+{
+    const int index = FindSimilarVertex(newVertices,
+                                        *newVertexCount,
+                                        vertex);
+    if(index >= 0)
+    {
+        newIndices[*newIndexCount] = (VertexIndex)index;
+        *newIndexCount = *newIndexCount + 1;
+
+        // Average tangents:
+        newVertices[index].tangent   += vertex->tangent;
+        newVertices[index].bitangent += vertex->bitangent;
+    }
+    else
+    {
+        newIndices[*newIndexCount] = (VertexIndex)*newVertexCount;
+        *newIndexCount = *newIndexCount + 1;
+
+        newVertices[*newVertexCount] = *vertex;
+        *newVertexCount = *newVertexCount + 1;
+    }
+}
+
+void IndexMeshBuffer( MeshBuffer* buffer )
+{
+    const Vertex* vertices     = GetMeshBufferVertices(buffer);
+    const VertexIndex* indices = GetMeshBufferIndices(buffer);
+    const int vertexCount      = GetMeshBufferVertexCount(buffer);
+    const int indexCount       = GetMeshBufferIndexCount(buffer);
+
+    Vertex* newVertices     = new Vertex[vertexCount];
+    VertexIndex* newIndices = new VertexIndex[vertexCount];
+    int newVertexCount = 0;
+    int newIndexCount  = 0;
+
+    if(indexCount > 0)
+    {
+        for(int i = 0; i < indexCount; i++)
+        {
+            const int index = indices[i];
+            const Vertex* vertex = &vertices[index];
+            IndexVertex(vertex,
+                        newVertices,
+                        newIndices,
+                        &newVertexCount,
+                        &newIndexCount);
+        }
+    }
+    else
+    {
+        for(int i = 0; i < vertexCount; i++)
+        {
+            const Vertex* vertex = &vertices[i];
+            IndexVertex(vertex,
+                        newVertices,
+                        newIndices,
+                        &newVertexCount,
+                        &newIndexCount);
+        }
+    }
+
+    buffer->vertices.assign(newVertices, newVertices+newVertexCount);
+    buffer->indices.assign(newIndices, newIndices+newIndexCount);
+
+    delete[] newVertices;
+    delete[] newIndices;
+}
+
+
+// ---- iterator ----
+
+typedef void (*VertexModificationCallback)( Vertex* vertex );
+
+static void ModifyVertices( MeshBuffer* buffer,
+                            VertexModificationCallback cb,
+                            int stride )
+{
+    Vertex* vertices      = &buffer->vertices[0];
+    VertexIndex* indices  = &buffer->indices[0];
+    const int vertexCount = GetMeshBufferVertexCount(buffer);
+    const int indexCount  = GetMeshBufferIndexCount(buffer);
+
+    if(indexCount > 0)
+    {
+        assert(indexCount % stride == 0);
+        for(int i = 0; i < indexCount; i+=stride)
+        {
+            const int index = indices[i];
+            Vertex* vertex = &vertices[index];
+            cb(vertex);
+        }
+    }
+    else
+    {
+        assert(vertexCount % stride == 0);
+        for(int i = 0; i < vertexCount; i+=stride)
+        {
+            Vertex* vertex = &vertices[i];
+            cb(vertex);
+        }
+    }
+}
+
+
+// ---- normal calculation ----
+
+static void ResetVertexNormal( Vertex* vertex )
+{
+    vertex->normal = vec3(0,0,0);
+}
+
+static void NormalizeVertexNormal( Vertex* vertex )
+{
+    vertex->normal = normalize(vertex->normal);
+}
+
+void CalcMeshBufferNormals( MeshBuffer* buffer )
+{
+    ModifyVertices(buffer, ResetVertexNormal, 1);
+    ModifyVertices(buffer, CalcTriangleTangents, 3);
+    ModifyVertices(buffer, NormalizeVertexNormal, 1);
+}
+
+
+// ---- tangent calculation ----
+
+static void ResetVertexTangents( Vertex* vertex )
+{
+    vertex->tangent   = vec3(0,0,0);
+    vertex->bitangent = vec3(0,0,0);
+}
+
+static void NormalizeVertexTangents( Vertex* vertex )
+{
+    vertex->tangent   = normalize(vertex->tangent);
+    vertex->bitangent = normalize(vertex->bitangent);
+}
+
+void CalcMeshBufferTangents( MeshBuffer* buffer )
+{
+    ModifyVertices(buffer, ResetVertexTangents, 1);
+    ModifyVertices(buffer, CalcTriangleTangents, 3);
+    ModifyVertices(buffer, NormalizeVertexTangents, 1);
 }

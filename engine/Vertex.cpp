@@ -1,5 +1,8 @@
+#include <assert.h>
 #include "OpenGL.h"
 #include "Vertex.h"
+
+using namespace glm;
 
 enum
 {
@@ -7,7 +10,8 @@ enum
     VERTEX_COLOR,
     VERTEX_TEXCOORD,
     VERTEX_NORMAL,
-    VERTEX_TANGENT
+    VERTEX_TANGENT,
+    VERTEX_BITANGENT
 };
 
 void EnableVertexArrays()
@@ -17,6 +21,7 @@ void EnableVertexArrays()
     glEnableVertexAttribArray(VERTEX_TEXCOORD);
     glEnableVertexAttribArray(VERTEX_NORMAL);
     glEnableVertexAttribArray(VERTEX_TANGENT);
+    glEnableVertexAttribArray(VERTEX_BITANGENT);
 }
 
 void BindVertexAttributes( unsigned int programHandle )
@@ -26,6 +31,7 @@ void BindVertexAttributes( unsigned int programHandle )
     glBindAttribLocation(programHandle, VERTEX_TEXCOORD, "VertexTexCoord");
     glBindAttribLocation(programHandle, VERTEX_NORMAL,   "VertexNormal");
     glBindAttribLocation(programHandle, VERTEX_TANGENT,  "VertexTangent");
+    glBindAttribLocation(programHandle, VERTEX_BITANGENT,"VertexBitangent");
 }
 
 void SetVertexAttributePointers( const void* data )
@@ -37,6 +43,60 @@ void SetVertexAttributePointers( const void* data )
     AttribPointer(VERTEX_COLOR,3,GL_FLOAT,float);
     AttribPointer(VERTEX_TEXCOORD,2,GL_FLOAT,float);
     AttribPointer(VERTEX_NORMAL,3,GL_FLOAT,float);
-    AttribPointer(VERTEX_TANGENT,4,GL_FLOAT,float);
+    AttribPointer(VERTEX_TANGENT,3,GL_FLOAT,float);
+    AttribPointer(VERTEX_BITANGENT,3,GL_FLOAT,float);
 #undef AttribPointer
+}
+
+static void CalcVertexTangents( vec3 p1, // position B-A
+                                vec3 p2, // position C-A
+                                vec2 t1, // texcoord B-A
+                                vec2 t2, // texcoord C-A
+                                vec3* tangent,
+                                vec3* bitangent )
+{
+    const float coef = 1 / (t1[0]*t2[1] - t2[0]*t1[1]);
+    *bitangent = (p1*t2[0] - p2*t1[0])*coef;
+    *tangent   = (p1*t2[1] - p2*t1[1])*coef;
+}
+
+void CalcTriangleTangents( Vertex* vertices )
+{
+    Vertex* a = &vertices[0];
+    Vertex* b = &vertices[1];
+    Vertex* c = &vertices[2];
+
+    vec3 tangent;
+    vec3 bitangent;
+
+    CalcVertexTangents(b->position - a->position,
+                       c->position - a->position,
+                       b->texCoord - a->texCoord,
+                       c->texCoord - a->texCoord,
+                       &tangent,
+                       &bitangent);
+
+    a->tangent += tangent;
+    b->tangent += tangent;
+    c->tangent += tangent;
+
+    a->bitangent += bitangent;
+    b->bitangent += bitangent;
+    c->bitangent += bitangent;
+}
+
+void CalcTriangleNormal( Vertex* vertices )
+{
+    Vertex* a = &vertices[0];
+    Vertex* b = &vertices[1];
+    Vertex* c = &vertices[2];
+
+    const vec3 p1 = b->position - a->position;
+    const vec3 p2 = c->position - a->position;
+
+    const vec3 normal = cross(p1, p2);
+
+    a->normal += normal;
+    b->normal += normal;
+    c->normal += normal;
 }

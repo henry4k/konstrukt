@@ -29,6 +29,27 @@ static int Lua_TransformMeshBuffer( lua_State* l )
     return 0;
 }
 
+static int Lua_IndexMeshBuffer( lua_State* l )
+{
+    MeshBuffer* buffer = CheckMeshBufferFromLua(l, 1);
+    IndexMeshBuffer(buffer);
+    return 0;
+}
+
+static int Lua_CalcMeshBufferNormals( lua_State* l )
+{
+    MeshBuffer* buffer = CheckMeshBufferFromLua(l, 1);
+    CalcMeshBufferNormals(buffer);
+    return 0;
+}
+
+static int Lua_CalcMeshBufferTangents( lua_State* l )
+{
+    MeshBuffer* buffer = CheckMeshBufferFromLua(l, 1);
+    CalcMeshBufferTangents(buffer);
+    return 0;
+}
+
 static int Lua_AppendMeshBuffer( lua_State* l )
 {
     MeshBuffer* targetBuffer = CheckMeshBufferFromLua(l, 1);
@@ -72,10 +93,8 @@ static int Lua_AppendVertexToMeshBuffer( lua_State* l )
     vertex.normal[1] = luaL_checknumber(l, i++);
     vertex.normal[2] = luaL_checknumber(l, i++);
 
-    vertex.tangent[0] = luaL_checknumber(l, i++);
-    vertex.tangent[1] = luaL_checknumber(l, i++);
-    vertex.tangent[2] = luaL_checknumber(l, i++);
-    vertex.tangent[3] = luaL_checknumber(l, i++);
+    vertex.tangent   = vec3(0,0,0);
+    vertex.bitangent = vec3(0,0,0);
 
     AddVertexToMeshBuffer(targetBuffer, &vertex);
     return 0;
@@ -97,6 +116,9 @@ bool RegisterMeshBufferInLua()
         RegisterFunctionInLua("CreateMeshBuffer", Lua_CreateMeshBuffer) &&
         RegisterFunctionInLua("DestroyMeshBuffer", Lua_DestroyMeshBuffer) &&
         RegisterFunctionInLua("TransformMeshBuffer", Lua_TransformMeshBuffer) &&
+        RegisterFunctionInLua("IndexMeshBuffer", Lua_IndexMeshBuffer) &&
+        RegisterFunctionInLua("CalcMeshBufferNormals", Lua_CalcMeshBufferNormals) &&
+        RegisterFunctionInLua("CalcMeshBufferTangents", Lua_CalcMeshBufferTangents) &&
         RegisterFunctionInLua("AppendMeshBuffer", Lua_AppendMeshBuffer) &&
         RegisterFunctionInLua("AppendIndexToMeshBuffer", Lua_AppendIndexToMeshBuffer) &&
         RegisterFunctionInLua("AppendVertexToMeshBuffer", Lua_AppendVertexToMeshBuffer);

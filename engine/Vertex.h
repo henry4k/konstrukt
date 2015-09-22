@@ -13,19 +13,15 @@ struct Vertex
     glm::vec3 color;
     glm::vec2 texCoord;
     glm::vec3 normal;
-    glm::vec4 tangent;
+    glm::vec3 tangent;
+    glm::vec3 bitangent;
 };
 
 
 void EnableVertexArrays();
 void BindVertexAttributes( unsigned int programHandle );
 void SetVertexAttributePointers( const void* data );
-
-
-struct DebugVertex
-{
-    glm::vec3 position;
-    glm::vec3 color;
-};
+void CalcTriangleNormal( Vertex* vertices );
+void CalcTriangleTangents( Vertex* vertices );
 
 #endif
