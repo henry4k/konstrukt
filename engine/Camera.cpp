@@ -223,6 +223,10 @@ void SetCameraModelUniforms( Camera* camera,
 
     // These are almost always used:
     SetUniform(program,
+               "View",
+               MAT4_UNIFORM,
+               (const UniformValue*)view);
+    SetUniform(program,
                "ModelView",
                MAT4_UNIFORM,
                (const UniformValue*)&modelView);
