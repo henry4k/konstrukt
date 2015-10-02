@@ -21,7 +21,7 @@ struct Vertex
 void EnableVertexArrays();
 void BindVertexAttributes( unsigned int programHandle );
 void SetVertexAttributePointers( const void* data );
-void CalcTriangleNormal( Vertex* vertices );
-void CalcTriangleTangents( Vertex* vertices );
+void CalcTriangleTangents( Vertex* a, Vertex* b, Vertex* c );
+void CalcTriangleNormal( Vertex* a, Vertex* b, Vertex* c );
 
 #endif

@@ -223,10 +223,21 @@ void IndexMeshBuffer( MeshBuffer* buffer )
 // ---- iterator ----
 
 typedef void (*VertexModificationCallback)( Vertex* vertex );
-
 static void ModifyVertices( MeshBuffer* buffer,
-                            VertexModificationCallback cb,
-                            int stride )
+                            VertexModificationCallback cb )
+{
+    Vertex* vertices      = &buffer->vertices[0];
+    const int vertexCount = GetMeshBufferVertexCount(buffer);
+    for(int i = 0; i < vertexCount; i++)
+    {
+        Vertex* vertex = &vertices[i];
+        cb(vertex);
+    }
+}
+
+typedef void (*TriangleModificationCallback)( Vertex* a, Vertex* b, Vertex* c );
+static void ModifyTriangles( MeshBuffer* buffer,
+                             TriangleModificationCallback cb )
 {
     Vertex* vertices      = &buffer->vertices[0];
     VertexIndex* indices  = &buffer->indices[0];
@@ -235,21 +246,24 @@ static void ModifyVertices( MeshBuffer* buffer,
 
     if(indexCount > 0)
     {
-        assert(indexCount % stride == 0);
-        for(int i = 0; i < indexCount; i+=stride)
+        assert(indexCount % 3 == 0);
+        for(int i = 0; i < indexCount; i+=3)
         {
-            const int index = indices[i];
-            Vertex* vertex = &vertices[index];
-            cb(vertex);
+            Vertex* a = &vertices[indices[i+0]];
+            Vertex* b = &vertices[indices[i+1]];
+            Vertex* c = &vertices[indices[i+2]];
+            cb(a,b,c);
         }
     }
     else
     {
-        assert(vertexCount % stride == 0);
-        for(int i = 0; i < vertexCount; i+=stride)
+        assert(vertexCount % 3 == 0);
+        for(int i = 0; i < vertexCount; i+=3)
         {
-            Vertex* vertex = &vertices[i];
-            cb(vertex);
+            Vertex* a = &vertices[i+0];
+            Vertex* b = &vertices[i+1];
+            Vertex* c = &vertices[i+2];
+            cb(a,b,c);
         }
     }
 }
@@ -269,9 +283,9 @@ static void NormalizeVertexNormal( Vertex* vertex )
 
 void CalcMeshBufferNormals( MeshBuffer* buffer )
 {
-    ModifyVertices(buffer, ResetVertexNormal, 1);
-    ModifyVertices(buffer, CalcTriangleTangents, 3);
-    ModifyVertices(buffer, NormalizeVertexNormal, 1);
+    ModifyVertices(buffer, ResetVertexNormal);
+    ModifyTriangles(buffer, CalcTriangleNormal);
+    ModifyVertices(buffer, NormalizeVertexNormal);
 }
 
 
@@ -291,7 +305,7 @@ static void NormalizeVertexTangents( Vertex* vertex )
 
 void CalcMeshBufferTangents( MeshBuffer* buffer )
 {
-    ModifyVertices(buffer, ResetVertexTangents, 1);
-    ModifyVertices(buffer, CalcTriangleTangents, 3);
-    ModifyVertices(buffer, NormalizeVertexTangents, 1);
+    ModifyVertices(buffer, ResetVertexTangents);
+    ModifyTriangles(buffer, CalcTriangleTangents);
+    ModifyVertices(buffer, NormalizeVertexTangents);
 }
