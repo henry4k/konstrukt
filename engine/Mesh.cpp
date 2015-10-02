@@ -14,7 +14,17 @@ struct Mesh
     GLuint indexBuffer;
     int primitiveType;
     int size;
+#if defined(APOAPSIS_DEBUG_MESH)
+    GLuint debugVertexBuffer;
+    int debugVertexCount;
+#endif
 };
+
+
+#if defined(APOAPSIS_DEBUG_MESH)
+static void BuildDebugMesh( const MeshBuffer* buffer, Mesh* mesh );
+static void DrawDebugMesh( const Mesh* mesh );
+#endif
 
 
 Mesh* CreateMesh( const MeshBuffer* buffer )
@@ -57,6 +67,10 @@ Mesh* CreateMesh( const MeshBuffer* buffer )
         mesh->size = vertexCount;
     }
 
+#if defined(APOAPSIS_DEBUG_MESH)
+    BuildDebugMesh(buffer, mesh);
+#endif
+
     return mesh;
 }
 
@@ -84,6 +98,10 @@ void DrawMesh( const Mesh* mesh )
         glDrawElements(mesh->primitiveType, mesh->size, GL_UNSIGNED_SHORT, 0);
     else
         glDrawArrays(mesh->primitiveType, 0, mesh->size);
+
+#if defined(APOAPSIS_DEBUG_MESH)
+    DrawDebugMesh(mesh);
+#endif
 }
 
 static void FreeMesh( Mesh* mesh )
@@ -109,3 +127,79 @@ void ReleaseMesh( Mesh* mesh )
     if(!HasReferences(&mesh->refCounter))
         FreeMesh(mesh);
 }
+
+
+#if defined(APOAPSIS_DEBUG_MESH)
+const int DebugVerticesPerVertex = 6;
+
+static void CalcDebugVertices( const Vertex* input, Vertex* outputs )
+{
+    using namespace glm;
+
+    const float scale = 0.03f;
+
+    outputs[0].position = input->position;
+    outputs[1].position = input->position + input->normal * scale;
+    outputs[1].color = vec3(0,0,1);
+
+    outputs[2].position = input->position;
+    outputs[3].position = input->position + input->tangent * scale;
+    outputs[3].color = vec3(1,0,0);
+
+    outputs[4].position = input->position;
+    outputs[5].position = input->position + input->bitangent * scale;
+    outputs[5].color = vec3(0,1,0);
+}
+
+static void BuildDebugMesh( const MeshBuffer* buffer, Mesh* mesh )
+{
+    const int vertexCount      = GetMeshBufferVertexCount(buffer);
+    const int indexCount       = GetMeshBufferIndexCount(buffer);
+    const Vertex* vertices     = GetMeshBufferVertices(buffer);
+    const VertexIndex* indices = GetMeshBufferIndices(buffer);
+
+    const int elementCount = (indexCount > 0) ? indexCount : vertexCount;
+    const int debugVertexCount = elementCount * DebugVerticesPerVertex;
+    Vertex* debugVertices = new Vertex[debugVertexCount];
+    memset(debugVertices, 0, sizeof(Vertex)*debugVertexCount);
+
+    if(indexCount > 0)
+    {
+        for(int i = 0; i < indexCount; i++)
+        {
+            const VertexIndex index = indices[i];
+            const Vertex* input = &vertices[index];
+            Vertex* outputs = &debugVertices[i*DebugVerticesPerVertex];
+            CalcDebugVertices(input, outputs);
+        }
+    }
+    else
+    {
+        for(int i = 0; i < vertexCount; i++)
+        {
+            const Vertex* input = &vertices[i];
+            Vertex* outputs = &debugVertices[i*DebugVerticesPerVertex];
+            CalcDebugVertices(input, outputs);
+        }
+    }
+
+    glGenBuffers(1, &mesh->debugVertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->debugVertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER,
+                 debugVertexCount*sizeof(Vertex),
+                 debugVertices,
+                 GL_STATIC_DRAW);
+
+    delete[] debugVertices;
+
+    mesh->debugVertexCount = debugVertexCount;
+}
+
+static void DrawDebugMesh( const Mesh* mesh )
+{
+    CurrentMesh = NULL; // Make sure the render function always gets called.
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->debugVertexBuffer);
+    SetVertexAttributePointers(NULL);
+    glDrawArrays(GL_LINES, 0, mesh->debugVertexCount);
+}
+#endif
