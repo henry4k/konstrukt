@@ -9,8 +9,8 @@ import xml.etree.ElementTree as etree
 
 from wheezy.template.engine   import Engine
 from wheezy.template.ext.core import CoreExtension
+from wheezy.template.ext.code import CodeExtension
 from wheezy.template.loader   import FileLoader
-
 
 ################################################################################
 # Find the local directory for this file
@@ -60,9 +60,11 @@ def download_spec(always_download = False):
 
 class Version():
     def __init__(self, major, minor, profile_or_api):
+        # 'gl', 'gles1' or 'gles2'
         self.api = 'gl' + profile_or_api if profile_or_api in ['es1', 'es2'] else 'gl'
         self.major = int(major)
         self.minor = int(minor)
+        # 'core' or 'compatibility'
         self.profile = profile_or_api if self.api == 'gl' else ''
 
     def __str__(self):
@@ -74,17 +76,50 @@ class Version():
 
     
 def parse_profile(filename):
-    comment_pattern = re.compile('#.*$|\s+$')
-    version_pattern = re.compile('version\s+(\d)\.(\d)\s*(core|compatibility|es|)\s*$')
-    extension_pattern = re.compile('extension\s+(\w+)\s+(required|optional)\s*$')
+    comment_pattern = re.compile('\s*#.*$|\s+$')
+    version_pattern = re.compile('\s*version\s+(\d)\.(\d)\s*(core|compatibility|es|)\s*$')
+    extension_pattern = re.compile('\s*extension\s+(\w+)\s+(required|optional)\s*$')
+    functions_pattern = re.compile('\s*(begin|end) functions$')
+    function_pattern = re.compile('\s*[A-Z][A-Za-z0-9]+$')
 
     version = None
     extensions = []
     extension_set = set()
+    funcslist = []    
+
+    function_mode = False
 
     with open(filename, 'r') as file:
         for line_no,line in enumerate(file, start=1):
+            
+            # Comment: ignore line
+            match = comment_pattern.match(line)
+            if match:
+                continue
 
+            # Begin/End Function list mode
+            match = functions_pattern.match(line)
+            if match:
+                if function_mode == False and match.group(1) == 'begin':
+                    function_mode = True
+                    continue
+                elif function_mode == True and match.group(1) == 'end':
+                    function_mode = False
+                    continue
+                else:
+                    print ('Mismatched \'begin/end function\' (%s:%d): %s' % (filename, line_no, line))
+                    exit(1)
+
+            # Parse functions if in function list mode
+            if function_mode:
+                for name in line.split():
+                    if not function_pattern.match(name):
+                        print ('\'%s\' does not appear to be a valid OpenGL function name (%s:%d): %s' % (name, filename, line_no, line))
+                        exit(1)
+                    funcslist.append(name)
+                continue                
+
+            # Version command
             match = version_pattern.match(line)
             if match:
                 if version != None:
@@ -97,6 +132,7 @@ def parse_profile(filename):
                     
                 continue
 
+            # Extension command
             match = extension_pattern.match(line)
             if match:            
                 if match.group(1) in extension_set:
@@ -107,12 +143,16 @@ def parse_profile(filename):
                 extensions.append((match.group(1), match.group(2) == 'required'))
                 continue
 
-            match = comment_pattern.match(line)
-            if not match:
-                print ('Syntax Error (%s:%d): %s' % (filename, line_no, line))
-                exit(1)
+            # Unknown command: Error
+            print ('Syntax Error (%s:%d): %s' % (filename, line_no, line))
+            exit(1)
+
+    if funcslist:
+        #Functions needed by loader code
+        funcslist.append("GetIntegerv")
+        funcslist.append("GetStringi")        
     
-    return version, extensions
+    return version, extensions, set(funcslist)
 
 
 ################################################################################
@@ -273,7 +313,7 @@ def parse_xml_features(root, int_version, api, profile):
 
     return subsets
 
-def parse_xml_extensions(root, extensions):
+def parse_xml_extensions(root, extensions, api, profile):
     removedEnums    = set()
     removedTypes    = set()
     removedCommands = set()
@@ -285,7 +325,23 @@ def parse_xml_extensions(root, extensions):
         if (extension==None):
             print ('%s is not an extension' % name)
             continue
-        subsets.append(APISubset(name, extract_names(extension, 'require/type'), extract_names(extension, 'require/enum'), extract_names(extension, 'require/command')))
+
+        subsetTypes = []
+        subsetEnums = []
+        subsetCommands = []
+
+        for require in extension.findall('./require'):
+            # Given set of names is restricted to some API or profile subset
+            # (e.g. KHR_debug has different set of names for 'gl' and 'gles2')
+            if 'api' in require.attrib:
+                if require.attrib['api'] != api: continue
+                if 'profile' in require.attrib and require.attrib['profile'] != profile: continue
+
+            subsetTypes += extract_names(require, 'type')
+            subsetEnums += extract_names(require, 'enum')
+            subsetCommands += extract_names(require, 'command')
+
+        subsets.append(APISubset(name, subsetTypes, subsetEnums, subsetCommands))
 
     return subsets
 
@@ -309,7 +365,7 @@ def generate_enums(subsets, enums):
 
     return enumsDecl
 
-def generate_functions(subsets, commands):
+def generate_functions(subsets, commands, funcslist):
     functions = []
     function_set = set()
     
@@ -318,6 +374,7 @@ def generate_functions(subsets, commands):
         subset_functions = []
         for name in subset.commands:
             if name in function_set: continue
+            if funcslist and name[2:] not in funcslist: continue
             subset_functions.append(Function(commands[name].returntype, commands[name].name[2:], commands[name].params))
             function_set.add(name)
 
@@ -339,16 +396,16 @@ def resolve_type_dependencies(subsets, types, commands):
 
     return requiredTypes
 
-def parse_xml(version, extensions):
+def parse_xml(version, extensions, funcslist):
     tree = etree.parse(gl_xml_file)
     root = tree.getroot()
 
     types    = parse_xml_types(root, version.api)
-    enums    = parse_xml_enums(root, version.api)
+    raw_enums    = parse_xml_enums(root, version.api)
     commands = parse_xml_commands(root)
 
     subsetsGL  = parse_xml_features  (root, version.int_value(), version.api, version.profile)
-    subsetsEXT = parse_xml_extensions(root, extensions)
+    subsetsEXT = parse_xml_extensions(root, extensions, version.api, version.profile)
 
     subsets  = subsetsGL
     subsets += subsetsEXT
@@ -356,25 +413,33 @@ def parse_xml(version, extensions):
     requiredTypes = resolve_type_dependencies(subsets, types, commands)
 
     passthru     = generate_passthru(requiredTypes, types)
-    enums        = generate_enums(subsets, enums)
-    functions    = generate_functions(subsets, commands)
+    enums        = generate_enums(subsets, raw_enums)
+    functions    = generate_functions(subsets, commands, funcslist)
 
-    return passthru, enums, functions
+    return passthru, enums, functions, types, raw_enums
 
 
 ################################################################################
 # Source generation
 ################################################################################
 
-def generate_source(options, version, enums, functions_by_category, passthru, extensions):
+def generate_source(options, version, enums, functions_by_category, passthru, extensions, types, raw_enums):
     template_pattern = re.compile("(.*).template")
+
+    # Sort by categories and sort the functions inside the categories
+    functions_by_category = sorted(functions_by_category
+                                  ,key=lambda x: x[0])
+    functions_by_category = list(map(lambda c: (c[0], sorted(c[1], key=lambda x: x.name))
+                                ,functions_by_category))
 
     template_namespace = {'passthru'  : passthru,
                           'functions' : functions_by_category,
                           'enums'     : enums,
                           'options'   : options,
                           'version'   : version,
-                          'extensions': extensions}
+                          'extensions': extensions,
+                          'types': types,
+                          'raw_enums': raw_enums}
     if not os.path.isdir(options.template_dir):
         print ('%s is not a directory' % options.template_dir)
         exit(1)
@@ -386,7 +451,7 @@ def generate_source(options, version, enums, functions_by_category, passthru, ex
     if not os.path.exists(options.outdir):
         os.mkdir(options.outdir)
 
-    engine = Engine(loader=FileLoader([options.template_dir]), extensions=[CoreExtension()])
+    engine = Engine(loader=FileLoader([options.template_dir]),extensions=[CoreExtension(),CodeExtension()])
     
     generatedFiles = 0
     allFiles       = 0;

@@ -26,30 +26,19 @@ Runtime dependencies:
 
 Compile time depencencies:
 
-- [tup](http://gittup.org/tup/) (the build system)
+- CMake
 - [GLM](http://glm.g-truc.net/)
 - Python 3 (needed by flextGL)
 - Python 3 package wheezy.template (needed by flextGL)
 
 
-Ideally install pkg-config and use one of the provided sample
-tup.config files.
+## Issues
 
-
-## Compiling
-
-After preparing the runtime and compiletime dependencies, you need to tell tup
-where it can find these dependencies and which compilation flags it should
-use.
-
-For this you must create a file called `tup.config` in the project root.
-See the provided sample configs for reference.
-
-If the compiler complains about a missing `OnDebugEvent` function, then add
-`-DAPOAPSIS_GL_DEBUG_FIX` to the `CFLAGS` in your config.
-The problem occurs, when the OpenGL `ARB_debug_output` extension defines its
-callback syntax with a slightly different parameter set.  If you know why this
-happens, it would be great if you could send me a short note. :)
+If the compiler complains about a missing `OnDebugEvent` function, then enable
+the `APOAPSIS_GL_DEBUG_FIX` in CMake.  The problem occurs, when the OpenGL
+`ARB_debug_output` extension defines its callback syntax with a slightly
+different parameter set.  If you know why this happens, it would be great if
+you could send me a short note. :)
 
 
 ## Running the tests
