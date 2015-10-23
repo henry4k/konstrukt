@@ -1,6 +1,0 @@
-include_rules
-
-: foreach *.cpp | $(REQUIRED_HEADERS) |> !cxx |> %B.o {objects}
-: {objects} control_bindings/*.o lua_bindings/*.o |> !ar |> apoapsis.a
-
-: apoapsis.a $(REQUIRED_ARCHIVES) |> !ldcxx |> apoapsis

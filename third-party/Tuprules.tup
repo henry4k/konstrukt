@@ -1,3 +1,0 @@
-CFLAGS += -fno-strict-aliasing
-CFLAGS += -fno-unwind-tables
-CFLAGS += -fno-asynchronous-unwind-tables

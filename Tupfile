@@ -1,3 +1,0 @@
-include_rules
-
-: engine/apoapsis |> cp %f %o |> apoapsis

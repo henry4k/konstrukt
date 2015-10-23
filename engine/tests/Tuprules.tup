@@ -1,1 +1,0 @@
-REQUIRED_ARCHIVES = $(TUP_CWD)/TestTools.o $(TUP_CWD)/../apoapsis.a $(ROOT)/third-party/dummy/dummy.a $(REQUIRED_ARCHIVES)
