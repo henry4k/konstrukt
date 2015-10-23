@@ -11,7 +11,7 @@
 
 
 static const GLuint INVALID_FBO = 0;
-static const int MAX_CAMERAS = 4;
+static const int MAX_CAMERAS = 8;
 
 enum RenderTargetType
 {

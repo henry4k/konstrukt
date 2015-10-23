@@ -14,7 +14,7 @@ using glm::mat4;
 
 
 static const int MAX_LOCAL_UNIFORMS = 8;
-static const int MAX_MODELS = 8;
+static const int MAX_MODELS = 64;
 
 static const float DEFAULT_ZNEAR =   0.1;
 static const float DEFAULT_ZFAR  = 100.0;

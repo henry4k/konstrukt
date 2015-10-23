@@ -4,7 +4,7 @@
 #include "Time.h"
 
 
-static const int MAX_TIMERS = 8;
+static const int MAX_TIMERS = 16;
 
 
 struct Timer

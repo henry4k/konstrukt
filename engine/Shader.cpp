@@ -10,8 +10,8 @@
 
 
 static const GLuint INVALID_SHADER_HANDLE = 0;
-static const int MAX_GLOBAL_UNIFORMS = 8;
-static const int MAX_SHADER_PROGRAM_SET_ENTRIES = 8;
+static const int MAX_GLOBAL_UNIFORMS = 16;
+static const int MAX_SHADER_PROGRAM_SET_ENTRIES = 16;
 
 
 struct Shader

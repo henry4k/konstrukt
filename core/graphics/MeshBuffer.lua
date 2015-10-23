@@ -155,9 +155,9 @@ function MeshBuffer:appendVertex( vertex )
         v.z,
 
         -- color
-        v.r or 1,
-        v.g or 1,
-        v.b or 1,
+        v.r or 0,
+        v.g or 0,
+        v.b or 0,
 
         -- texture coord
         v.tx or 0,
