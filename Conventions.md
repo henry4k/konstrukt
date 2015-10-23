@@ -122,7 +122,7 @@ specific issue. `N` is the issue ID.
 File Organization
 -----------------
 
-(I'm still indecided..)
+(I'm still undecided..)
 
     Example/
         FluidTank/
