@@ -18,7 +18,7 @@ file(GLOB Sources *.h
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Constants.h.in
                ${CMAKE_CURRENT_BINARY_DIR}/Constants.h @ONLY)
 
-add_executable(apoapsis Game.h ${Sources})
+add_executable(apoapsis ${Sources})
 
 target_compile_features(apoapsis PRIVATE cxx_lambdas)
 
@@ -45,3 +45,5 @@ target_link_libraries(apoapsis stbimage
                                ${BULLET_DYNAMICS_LIBRARY}
                                ${BULLET_MATH_LIBRARY}
                                ${PhysFS_LIBRARIES})
+
+add_subdirectory(tests)

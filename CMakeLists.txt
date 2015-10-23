@@ -4,9 +4,8 @@ project(apoapsis)
 
 ### Options:
 
-option(BUILD_TESTS "Build native tests" OFF)
-set(SCRIPT_INSTALL_PATH "share/apoapsis"
-    CACHE PATH "Where the scripts shall be installed.") # TODO
+set(APOAPSIS_SCRIPT_INSTALL_PATH "share/apoapsis"
+    CACHE PATH "Where the scripts shall be installed.")
 
 
 ### Dependencies:
@@ -38,4 +37,4 @@ add_subdirectory(third-party)
 add_subdirectory(engine)
 
 install(DIRECTORY core
-        DESTINATION "${SCRIPT_INSTALL_PATH}")
+        DESTINATION "${APOAPSIS_SCRIPT_INSTALL_PATH}")
