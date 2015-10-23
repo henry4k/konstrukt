@@ -1,0 +1,43 @@
+special vertex attributes and uniforms:
+
+    uniform: game time (sollte allgemein in shadern verfuegbar sein)
+    attribute: origin
+    attribute: birth time
+    attribute: velocity
+
+---
+
+- die Vertex Struktur modular gestalten
+- das Farb Attribut missbrauchen
+
+    glm::vec3 position;
+    glm::vec3 color;
+    glm::vec2 texCoord;
+    glm::vec3 normal;
+    glm::vec4 tangent;
+
+----
+
+Anwendungen:
+
+-Gase (Rauch, Feuer):
+    - billboard
+    - ein und ausblenden
+    - rotieren
+    - geschwindigkeit daempfen (quasi reibung)
+    - gravitation
+
+- Funken:
+    - 3D, in bewegungsrichtung rotieren
+    - helligkeit/farbe nach geschwindigkeit
+    - gravitation
+    - geschwindigkeit daempfen (quasi reibung)
+
+---
+
+Aber wie soll man Partikel rotieren lassen?
+- Auf der CPU rotieren.
+- Geometry-Instancing nutzen.
+- Im Shader rotieren?
+    Waehr das mit abstand beste, aber wie soll das gehen?
+    Dazu muesste man die Partikel-Position als Vertex-Attribut uebergeben.
