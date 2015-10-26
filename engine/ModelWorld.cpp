@@ -1,5 +1,6 @@
 #include <string.h> // memset, strcmp
 #include <stdlib.h> // qsort
+#include <stdint.h> // uintptr_t
 
 #include "Common.h"
 #include "Mesh.h"
@@ -222,7 +223,7 @@ static void SetModelUniforms( const Model* model,
     }
 }
 
-static int Compare( long a, long b )
+static int Compare( uintptr_t a, uintptr_t b )
 {
     if(a == b)
         return 0;
@@ -239,23 +240,23 @@ static int CompareModelDrawEntries( const void* a_, const void* b_ )
 
     int r;
 
-    r = Compare((long)a->model->overlayLevel,
-                (long)b->model->overlayLevel);
+    r = Compare((uintptr_t)a->model->overlayLevel,
+                (uintptr_t)b->model->overlayLevel);
     if(r != 0)
         return r;
 
-    r = Compare((long)a->program,
-                (long)b->program);
+    r = Compare((uintptr_t)a->program,
+                (uintptr_t)b->program);
     if(r != 0)
         return r;
 
-    r = Compare((long)a->model->mesh,
-                (long)b->model->mesh);
+    r = Compare((uintptr_t)a->model->mesh,
+                (uintptr_t)b->model->mesh);
     if(r != 0)
         return r;
 
-    r = Compare((long)a->model->textures[0],
-                (long)b->model->textures[0]);
+    r = Compare((uintptr_t)a->model->textures[0],
+                (uintptr_t)b->model->textures[0]);
     if(r != 0)
         return r;
 
