@@ -1,18 +1,18 @@
 #include <string.h> // memset, memcpy
 
-#include <bullet/BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
-#include <bullet/BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
-#include <bullet/BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>
-#include <bullet/BulletCollision/CollisionShapes/btCollisionShape.h>
-#include <bullet/BulletCollision/CollisionShapes/btEmptyShape.h>
-#include <bullet/BulletCollision/CollisionShapes/btBoxShape.h>
-#include <bullet/BulletCollision/CollisionShapes/btSphereShape.h>
-#include <bullet/BulletCollision/CollisionShapes/btCapsuleShape.h>
-#include <bullet/BulletCollision/CollisionShapes/btCompoundShape.h>
-#include <bullet/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h>
-#include <bullet/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
-#include <bullet/BulletDynamics/Dynamics/btRigidBody.h>
-#include <bullet/LinearMath/btDefaultMotionState.h>
+#include <BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
+#include <BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
+#include <BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>
+#include <BulletCollision/CollisionShapes/btCollisionShape.h>
+#include <BulletCollision/CollisionShapes/btEmptyShape.h>
+#include <BulletCollision/CollisionShapes/btBoxShape.h>
+#include <BulletCollision/CollisionShapes/btSphereShape.h>
+#include <BulletCollision/CollisionShapes/btCapsuleShape.h>
+#include <BulletCollision/CollisionShapes/btCompoundShape.h>
+#include <BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h>
+#include <BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
+#include <BulletDynamics/Dynamics/btRigidBody.h>
+#include <LinearMath/btDefaultMotionState.h>
 
 #include "Common.h"
 #include "Constants.h" // SIMULATION_FREQUENCY, MAX_FRAME_FREQUENCY

@@ -36,14 +36,14 @@ target_link_libraries(apoapsis stbimage
                                inih
                                lua-cjson
                                flextGL
-                               ${OPENGL_gl_LIBRARY}
                                ${LUA_LIBRARY}
-                               ${GLFW3_LIBRARIES}
                                ${OPENAL_LIBRARY}
                                ${ALURE_LIBRARIES}
-                               ${BULLET_COLLISION_LIBRARY}
                                ${BULLET_DYNAMICS_LIBRARY}
+                               ${BULLET_COLLISION_LIBRARY}
                                ${BULLET_MATH_LIBRARY}
-                               ${PhysFS_LIBRARIES})
+                               ${PhysFS_LIBRARIES}
+                               ${GLFW3_LIBRARIES}
+                               ${OPENGL_gl_LIBRARY})
 
 add_subdirectory(tests)
