@@ -1,4 +1,4 @@
-find_package(PythonInterp REQUIRED)
+find_package(PythonInterp 3.0 REQUIRED)
 
 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/flextGL.h"
                           "${CMAKE_CURRENT_BINARY_DIR}/flextGL.c"
