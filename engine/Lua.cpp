@@ -335,7 +335,10 @@ bool RunLuaScript( lua_State* l, const char* vfsPath )
     FileBuffer* buffer = LoadFile(vfsPath);
     if(buffer)
     {
-        LoadInfo loadInfo { buffer, false };
+        LoadInfo loadInfo;
+        loadInfo.buffer = buffer;
+        loadInfo.done = false;
+
         const int loadResult = lua_load(l, ReadLuaChunk, &loadInfo, vfsPath, "t"); // Only allow text chunks
         FreeFile(buffer);
 

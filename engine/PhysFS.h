@@ -14,8 +14,8 @@
 
 struct FileBuffer
 {
-    const int size;
-    const char* data;
+    int size;
+    char* data;
 };
 
 

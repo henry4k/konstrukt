@@ -219,7 +219,10 @@ FileBuffer* LoadFile( const char* vfsPath )
 
     if(bytesRead == size)
     {
-        return new FileBuffer { size, buffer };
+        FileBuffer* file = new FileBuffer;
+        file->size = size;
+        file->data = buffer;
+        return file;
     }
     else
     {

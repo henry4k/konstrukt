@@ -71,8 +71,11 @@ void AppendMeshBuffer( MeshBuffer* buffer, const MeshBuffer* otherBuffer, const 
 
     buffer->indices.reserve(buffer->indices.size()+otherBuffer->indices.size());
     const VertexIndex indexOffset = buffer->vertices.size();
-    for(const VertexIndex& index : otherBuffer->indices)
+    for(int i = 0; i < otherBuffer->indices.size(); i++)
+    {
+        const VertexIndex index = otherBuffer->indices[i];
         buffer->indices.push_back(index+indexOffset);
+    }
 
     const int start = buffer->vertices.size();
     buffer->vertices.insert(
