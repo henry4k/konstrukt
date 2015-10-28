@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
 
-include(CPack)
-
 project(apoapsis)
 
 ### Options:
@@ -48,3 +46,5 @@ add_subdirectory(engine)
 
 install(DIRECTORY core
         DESTINATION "${APOAPSIS_SCRIPT_INSTALL_PATH}")
+
+include(CPack)
