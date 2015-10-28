@@ -2,7 +2,6 @@ find_package(PythonInterp 3.0 REQUIRED)
 
 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/flextGL.h"
                           "${CMAKE_CURRENT_BINARY_DIR}/flextGL.c"
-                          "${CMAKE_CURRENT_BINARY_DIR}/spec/gl.xml"
                   COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/flextGLgen.py"
                             -t "${CMAKE_CURRENT_SOURCE_DIR}/template"
                             -D "${CMAKE_CURRENT_BINARY_DIR}"
