@@ -174,20 +174,12 @@ static const mat4 GetCameraModelTransformation( const Camera* camera )
     return glm::inverse(solidTransformation) * camera->modelTransformation;
 }
 
-template<class CalcFn>
-static void CalcUniform( ShaderProgram* program,
-                         const char* name,
-                         CalcFn calcFn )
-{
-    if(HasUniform(program, name))
-    {
-        const mat4 value = calcFn();
-        SetUniform(program,
-                   name,
-                   MAT4_UNIFORM,
-                   (const UniformValue*)&value);
+#define CALC_UNIFORM(NAME, CALCULATION) \
+    if(HasUniform(program, (NAME))) \
+    { \
+        const mat4 value = (CALCULATION); \
+        SetUniform(program, (NAME), MAT4_UNIFORM, (const UniformValue*)&value); \
     }
-}
 
 void SetCameraUniforms( Camera* camera, ShaderProgram* program )
 {
@@ -199,13 +191,10 @@ void SetCameraUniforms( Camera* camera, ShaderProgram* program )
                MAT4_UNIFORM,
                (const UniformValue*)projection);
 
-    CalcUniform(program, "InverseProjection", [&]{
-        return glm::inverse(*projection);
-    });
-
-    CalcUniform(program, "InverseTransposeProjection", [&]{
-        return glm::inverseTranspose(*projection);
-    });
+    CALC_UNIFORM("InverseProjection",
+                 glm::inverse(*projection));
+    CALC_UNIFORM("InverseTransposeProjection",
+                 glm::inverseTranspose(*projection));
 }
 
 void SetCameraModelUniforms( Camera* camera,
@@ -236,20 +225,16 @@ void SetCameraModelUniforms( Camera* camera,
                (const UniformValue*)&modelViewProjection);
 
     // Same set, but inversed:
-    CalcUniform(program, "InverseModelView", [&]{
-        return glm::inverse(modelView);
-    });
-    CalcUniform(program, "InverseModelViewProjection", [&]{
-        return glm::inverse(modelViewProjection);
-    });
+    CALC_UNIFORM("InverseModelView",
+                 glm::inverse(modelView));
+    CALC_UNIFORM("InverseModelViewProjection",
+                 glm::inverse(modelViewProjection));
 
     // Same set, but inversed and transposed:
-    CalcUniform(program, "InverseTransposeModelView", [&]{
-        return glm::inverseTranspose(modelView);
-    });
-    CalcUniform(program, "InverseTransposeModelViewProjection", [&]{
-        return glm::inverseTranspose(modelViewProjection);
-    });
+    CALC_UNIFORM("InverseTransposeModelView",
+                 glm::inverseTranspose(modelView));
+    CALC_UNIFORM("InverseTransposeModelViewProjection",
+                 glm::inverseTranspose(modelViewProjection));
 }
 
 void DrawCameraView( Camera* camera, ShaderProgramSet* set )

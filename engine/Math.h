@@ -5,7 +5,6 @@
 #include <float.h>
 
 #define GLM_FORCE_RADIANS
-#define GLM_FORCE_CXX11
 #define GLM_FORCE_ONLY_XYZW
 #define GLM_LEFT_HANDED
 #include <glm/glm.hpp>

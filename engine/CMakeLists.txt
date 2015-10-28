@@ -20,8 +20,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Constants.h.in
 
 add_executable(apoapsis ${Sources})
 
-target_compile_features(apoapsis PRIVATE cxx_lambdas)
-
 install(TARGETS apoapsis
         RUNTIME DESTINATION bin)
 
