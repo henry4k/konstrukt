@@ -3,6 +3,12 @@
 #include "OpenGL.h"
 #include "Window.h"
 
+#if defined(WIN32)
+#define CALLBACK_API __attribute__((__stdcall__))
+#else
+#define CALLBACK_API
+#endif
+
 
 /****** Variables *******/
 
@@ -23,21 +29,21 @@ static KeyActionFn         g_KeyActionFn = NULL;
 
 static void OnGLFWError( int code, const char* description );
 #if defined(APOAPSIS_GL_DEBUG_FIX)
-static void OnDebugEvent( GLenum source,
-                          GLenum type,
-                          GLuint id,
-                          GLenum severity,
-                          GLsizei length,
-                          const char* message,
-                          void* userParam );
+CALLBACK_API static void OnDebugEvent( GLenum source,
+                                       GLenum type,
+                                       GLuint id,
+                                       GLenum severity,
+                                       GLsizei length,
+                                       const char* message,
+                                       void* userParam );
 #endif
-static void OnDebugEvent( GLenum source,
-                          GLenum type,
-                          GLuint id,
-                          GLenum severity,
-                          GLsizei length,
-                          const char* message,
-                          const void* userParam );
+CALLBACK_API static void OnDebugEvent( GLenum source,
+                                       GLenum type,
+                                       GLuint id,
+                                       GLenum severity,
+                                       GLsizei length,
+                                       const char* message,
+                                       const void* userParam );
 static void OnWindowResize( GLFWwindow* window, int width, int height );
 static void OnFramebufferResize( GLFWwindow* window, int width, int height );
 static void OnMouseButtonAction( GLFWwindow* window, int button, int action, int mods );
@@ -224,25 +230,25 @@ static void OnGLFWError( int code, const char* description )
 }
 
 #if defined(APOAPSIS_GL_DEBUG_FIX)
-static void OnDebugEvent( GLenum source,
-                          GLenum type,
-                          GLuint id,
-                          GLenum severity,
-                          GLsizei length,
-                          const char* message,
-                          void* userParam )
+CALLBACK_API static void OnDebugEvent( GLenum source,
+                                       GLenum type,
+                                       GLuint id,
+                                       GLenum severity,
+                                       GLsizei length,
+                                       const char* message,
+                                       void* userParam )
 {
     OnDebugEvent(source, type, id, severity, length, message, (const void*)userParam);
 }
 #endif
 
-static void OnDebugEvent( GLenum source,
-                          GLenum type,
-                          GLuint id,
-                          GLenum severity,
-                          GLsizei length,
-                          const char* message,
-                          const void* userParam )
+CALLBACK_API static void OnDebugEvent( GLenum source,
+                                       GLenum type,
+                                       GLuint id,
+                                       GLenum severity,
+                                       GLsizei length,
+                                       const char* message,
+                                       const void* userParam )
 {
     const char* sourceName = "";
     switch(source)
