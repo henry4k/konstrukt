@@ -97,9 +97,12 @@ static int Lua_GetFileInfo( lua_State* l )
         lua_createtable(l, 0, 3); // 3 entries
 
         PHYSFS_File* file = PHYSFS_openRead(vfsPath);
-        lua_pushinteger(l, PHYSFS_fileLength(file));
-        lua_setfield(l, -2, "size");
-        PHYSFS_close(file);
+        if(file)
+        {
+            lua_pushinteger(l, PHYSFS_fileLength(file));
+            lua_setfield(l, -2, "size");
+            PHYSFS_close(file);
+        }
 
         const PHYSFS_sint64 mtime = PHYSFS_getLastModTime(vfsPath);
         if(mtime >= 0)
@@ -127,8 +130,11 @@ static int Lua_GetFileInfo( lua_State* l )
     {
         lua_createtable(l, 0, 5); // 5 entries
 
-        lua_pushinteger(l, statResult.filesize);
-        lua_setfield(l, -2, "size");
+        if(statResult.filesize >= 0)
+        {
+            lua_pushinteger(l, statResult.filesize);
+            lua_setfield(l, -2, "size");
+        }
 
         if(statResult.modtime >= 0)
         {
