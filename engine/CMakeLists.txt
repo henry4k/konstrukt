@@ -1,3 +1,8 @@
+option(APOAPSIS_SELFCONTAINED "Everything is located besides the binary.")
+if(APOAPSIS_SELFCONTAINED)
+    add_definitions(-DAPOAPSIS_SELFCONTAINED)
+endif()
+
 option(APOAPSIS_GL_DEBUG_FIX "Enable if compiler complains about missing OnDebugEvent function.")
 if(APOAPSIS_GL_DEBUG_FIX)
     add_definitions(-DAPOAPSIS_GL_DEBUG_FIX)

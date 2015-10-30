@@ -26,14 +26,15 @@ static void LogPhysFSVersion()
     Log("Linked against PhysFS %d.%d.%d", linked.major, linked.minor, linked.patch);
 }
 
-bool InitPhysFS( const int argc, char const * const * argv )
+#if defined(APOAPSIS_SELFCONTAINED)
+static bool SetupConfig()
 {
-    memset(&UserDataDirectory, 0, sizeof(UserDataDirectory));
-    memset(SearchPaths,        0, sizeof(SearchPaths));
-
-    LogPhysFSVersion();
-    if(PHYSFS_init(argv[0]) &&
-       PHYSFS_setSaneConfig("apoapsis", // Organization
+    return PHYSFS_setWriteDir(PHYSFS_getBaseDir()) == 0;
+}
+#else
+static bool SetupConfig()
+{
+    if(PHYSFS_setSaneConfig("apoapsis", // Organization
                             "apoapsis", // Program name
                             NULL, // Extension of automatically mounted archives
                             0, // Include CD-ROMs
@@ -41,12 +42,31 @@ bool InitPhysFS( const int argc, char const * const * argv )
     {
         // Base path is mounted by PHYSFS_setSaneConfig, but we don't use it.
         PHYSFS_unmount(PHYSFS_getBaseDir());
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+#endif
 
+bool InitPhysFS( const int argc, char const * const * argv )
+{
+    memset(&UserDataDirectory, 0, sizeof(UserDataDirectory));
+    memset(SearchPaths,        0, sizeof(SearchPaths));
+
+    LogPhysFSVersion();
+    if(PHYSFS_init(argv[0]) &&
+       SetupConfig())
+    {
         assert(PHYSFS_getWriteDir() != NULL);
         CopyString(PHYSFS_getWriteDir(), UserDataDirectory, sizeof(UserDataDirectory));
         const int pathLength = strlen(UserDataDirectory);
         if(UserDataDirectory[pathLength-1] == '/' || UserDataDirectory[pathLength-1] == '\\')
             UserDataDirectory[pathLength-1] = '\0'; // Clip the trailing directory separator.
+
+        Log("User data directory is '%s'", UserDataDirectory);
     }
 
     const char* error = PHYSFS_getLastError();

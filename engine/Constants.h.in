@@ -4,6 +4,10 @@
 static const int SIMULATION_FREQUENCY = 20;
 static const int MAX_FRAME_FREQUENCY = 120;
 
+#if defined(APOAPSIS_SELFCONTAINED)
+static const char* DEFAULT_PACKAGE_SEARCH_PATHS = ".";
+#else
 static const char* DEFAULT_PACKAGE_SEARCH_PATHS = "@CMAKE_INSTALL_PREFIX@@SCRIPT_INSTALL_PATH@";
+#endif
 
 #endif
