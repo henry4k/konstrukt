@@ -47,7 +47,7 @@ int RunTests()
     return 0;
 }
 
-#if defined(WIN32)
+#if defined(_WIN32)
 
 #include <direct.h>
 void ChangeDirectory( const char* directory )
@@ -67,7 +67,7 @@ void ChangeDirectory( const char* directory )
 
 void ChangeDirectoryToExecutableOrigin( const char* executablePath )
 {
-#if defined(WIN32)
+#if defined(_WIN32)
     const char seperator = '\\';
 #else
     const char seperator = '/';

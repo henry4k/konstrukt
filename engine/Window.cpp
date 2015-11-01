@@ -3,7 +3,7 @@
 #include "OpenGL.h"
 #include "Window.h"
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #define CALLBACK_API __attribute__((__stdcall__))
 #else
 #define CALLBACK_API
