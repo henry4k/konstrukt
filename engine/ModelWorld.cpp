@@ -147,8 +147,8 @@ void DrawModelWorld( const ModelWorld* world,
         const Model* model = &models[i];
         if(model->active)
         {
-            drawList[i].model = model;
-            drawList[i].program =
+            drawList[drawListSize].model = model;
+            drawList[drawListSize].program =
                 GetShaderProgramByFamilyList(programSet,
                                              model->programFamilyList);
             drawListSize++;
