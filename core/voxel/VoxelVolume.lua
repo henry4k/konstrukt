@@ -1,9 +1,10 @@
-local assert    = assert
-local class     = require 'middleclass'
-local Object    = class.Object
-local Vec       = require 'core/Vector'
-local Voxel     = require 'core/voxel/Voxel'
-local Structure = require 'core/voxel/Structure'
+local assert      = assert
+local class       = require 'middleclass'
+local Object      = class.Object
+local EventSource = require 'core/EventSource'
+local Vec         = require 'core/Vector'
+local Voxel       = require 'core/voxel/Voxel'
+local Structure   = require 'core/voxel/Structure'
 local StructureDictionary = require 'core/voxel/StructureDictionary'
 local SetVoxelVolumeSize  = ENGINE.SetVoxelVolumeSize
 local ReadVoxelData       = ENGINE.ReadVoxelData
@@ -14,6 +15,7 @@ local weakValueMT = { __mode = 'v' }
 
 
 local VoxelVolume = class('core/voxel/VoxelVolume')
+VoxelVolume:include(EventSource)
 
 VoxelVolume.static._singletonExists = false
 
@@ -26,10 +28,13 @@ function VoxelVolume:initialize( size )
            'Size must be passed as 3d vector.')
     SetVoxelVolumeSize(size:unpack(3))
 
+    self:initializeEventSource()
+
     self.structureCache = setmetatable({}, weakValueMT)
 end
 
 function VoxelVolume:destroy()
+    self:destroyEventSource()
 end
 
 --- Returns @{core.voxel.Voxel} or `nil` if something went wrong.
@@ -41,11 +46,19 @@ function VoxelVolume:readVoxel( position )
     end
 end
 
+--- Fired when a voxel has been modified.
+-- @event voxel-modified
+-- @param[type=core.Vector] position
+
 --- Returns whether the operation was successfull.
 function VoxelVolume:writeVoxel( position, voxel )
     assert(Vec:isInstance(position), 'Position must be a vector.')
     assert(Voxel:isInstance(voxel), 'Must be called with a voxel.')
-    return WriteVoxelData(position[1], position[2], position[3], voxel)
+    local result = WriteVoxelData(position[1], position[2], position[3], voxel)
+    if result then
+        self:fireEvent('voxel-modified', position)
+    end
+    return result
 end
 
 function VoxelVolume:getStructureAt( position )

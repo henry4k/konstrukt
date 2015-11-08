@@ -21,9 +21,13 @@ function ChunkManager:initialize( voxelVolume, modelWorld )
     self.chunkSize = 8
     self.chunks = {}
     self.activators = {} -- Defines which chunks need to be active.
+    self.modifiedChunks = {}
+
+    voxelVolume:addEventTarget('voxel-modified', self, self.onVoxelModification)
 end
 
 function ChunkManager:destroy()
+    self.voxelVolume:removeEventTarget('voxel-modified', self)
     for _, chunk in pairs(self.chunks) do
         chunk:destroy()
     end
@@ -45,6 +49,14 @@ function ChunkManager:removeActivator( activator )
         end
     end
     -- TODO: Enhance function behaviour
+end
+
+function ChunkManager:onVoxelModification( position )
+    local x, y, z = self:_voxelToChunkCoordinates(position[1],
+                                                  position[2],
+                                                  position[3])
+    local id = Chunk:idFromChunkCoords(x, y, z)
+    self.modifiedChunks[id] = Vec(x, y, z)
 end
 
 --- Create needed chunks and destroys unneeded ones.
@@ -86,11 +98,20 @@ function ChunkManager:update()
     end
 
     -- Create needed chunks:
+    local modifiedChunks = self.modifiedChunks
     local modelWorld = self.modelWorld
     for chunkId, chunkPosition in pairs(neededChunks) do
         if not chunks[chunkId] then
             local chunk = Chunk()
             chunks[chunkId] = chunk
+            modifiedChunks[chunkId] = chunkPosition
+        end
+    end
+
+    -- Update modified chunks:
+    for chunkId, chunkPosition in pairs(modifiedChunks) do
+        local chunk = chunks[chunkId]
+        if chunk then
             local voxelPosition = self:chunkToVoxelCoordinates(chunkPosition)
             local min = voxelPosition
             local max = voxelPosition + (self.chunkSize-1)
@@ -98,6 +119,7 @@ function ChunkManager:update()
             chunk:update(self.voxelVolume, min, max, modelWorld)
         end
     end
+    self.modifiedChunks = {}
 end
 
 function ChunkManager:_voxelToChunkRange( minVoxel, maxVoxel )
