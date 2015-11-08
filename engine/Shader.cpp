@@ -177,15 +177,16 @@ static Shader* CreateShader( const char* vfsPath, int type )
 
     GLint state;
     glGetShaderiv(shader->handle, GL_COMPILE_STATUS, &state);
-    ShowShaderLog(shader, state);
     if(state)
     {
         Log("Compiled shader successfully: %s", vfsPath);
+        ShowShaderLog(shader, state);
         return shader;
     }
     else
     {
         Error("Error compiling shader %s", vfsPath);
+        ShowShaderLog(shader, state);
         FreeShader(shader);
         return NULL;
     }
@@ -376,15 +377,15 @@ ShaderProgram* LinkShaderProgram( Shader** shaders, int shaderCount )
     {
         GLint state;
         glGetProgramiv(programHandle, GL_LINK_STATUS, &state);
-        ShowShaderProgramLog(program, state);
-
         if(state)
         {
             Log("Linked shader program successfully");
+            ShowShaderProgramLog(program, state);
         }
         else
         {
             Error("Error linking shader program");
+            ShowShaderProgramLog(program, state);
             FreeShaderProgram(program);
             return NULL;
         }
@@ -396,9 +397,15 @@ ShaderProgram* LinkShaderProgram( Shader** shaders, int shaderCount )
         glGetProgramiv(programHandle, GL_VALIDATE_STATUS, &state);
         ShowShaderProgramLog(program, state);
         if(state)
+        {
             Log("Validated shader program successfully");
+            ShowShaderProgramLog(program, state);
+        }
         else
+        {
             Log("Error validating shader program");
+            ShowShaderProgramLog(program, state);
+        }
     }
 
     ReadUniformDefinitions(program);
