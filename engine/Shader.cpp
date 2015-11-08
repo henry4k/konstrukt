@@ -135,7 +135,7 @@ glm::mat4& UniformValue::m4()
 
 static void FreeShader( Shader* shader );
 
-static void ShowShaderLog( Shader* shader )
+static void ShowShaderLog( Shader* shader, bool success )
 {
     GLint length = 0;
     glGetShaderiv(shader->handle, GL_INFO_LOG_LENGTH, &length);
@@ -149,7 +149,10 @@ static void ShowShaderLog( Shader* shader )
 
     if(log)
     {
-        Log("%s", log);
+        if(success)
+            Log("%s", log);
+        else
+            Error("%s", log);
         delete[] log;
     }
 }
@@ -174,8 +177,7 @@ static Shader* CreateShader( const char* vfsPath, int type )
 
     GLint state;
     glGetShaderiv(shader->handle, GL_COMPILE_STATUS, &state);
-    ShowShaderLog(shader);
-
+    ShowShaderLog(shader, state);
     if(state)
     {
         Log("Compiled shader successfully: %s", vfsPath);
@@ -231,13 +233,13 @@ void ReleaseShader( Shader* shader )
 static void FreeShaderProgram( ShaderProgram* program );
 static void ApplyGlobalUniforms( ShaderProgram* program );
 
-static void ShowShaderProgramLog( ShaderProgram* program )
+static void ShowShaderProgramLog( ShaderProgram* program, bool success )
 {
     GLint length = 0;
     glGetProgramiv(program->handle, GL_INFO_LOG_LENGTH, &length);
 
     char* log = NULL;
-    if(length > 1) // See ShowShaderProgramLog
+    if(length > 1) // See ShowShaderLog
     {
         log = new char[length];
         glGetProgramInfoLog(program->handle, length, NULL, log);
@@ -245,7 +247,10 @@ static void ShowShaderProgramLog( ShaderProgram* program )
 
     if(log)
     {
-        Log("%s", log);
+        if(success)
+            Log("%s", log);
+        else
+            Error("%s", log);
         delete[] log;
     }
 }
@@ -371,7 +376,7 @@ ShaderProgram* LinkShaderProgram( Shader** shaders, int shaderCount )
     {
         GLint state;
         glGetProgramiv(programHandle, GL_LINK_STATUS, &state);
-        ShowShaderProgramLog(program);
+        ShowShaderProgramLog(program, state);
 
         if(state)
         {
@@ -389,7 +394,7 @@ ShaderProgram* LinkShaderProgram( Shader** shaders, int shaderCount )
     {
         GLint state;
         glGetProgramiv(programHandle, GL_VALIDATE_STATUS, &state);
-        ShowShaderProgramLog(program);
+        ShowShaderProgramLog(program, state);
         if(state)
             Log("Validated shader program successfully");
         else
