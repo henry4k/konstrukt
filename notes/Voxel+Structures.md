@@ -13,7 +13,8 @@ wo das Script z.B. Entities etc speichert.
 
 #### Wie können Voxel modularer programmiert werden? ####
 
-Voxel haben eine Typ-ID, einen Bereich für Typ-spezifische Daten und die CA-Daten:
+Voxel haben eine Typ-ID, einen Bereich für Typ-spezifische Daten und die
+CA-Daten:
 Fluide, Temperatur, ...
 
 Da zusammenhängende Strukturen gebaut werden können,
@@ -31,16 +32,17 @@ v1:
 Eine Struktur hat einen Kern-Voxel,
 auf welchen alle anderen Voxel der Struktur verweisen.
 Die Verweise sind immer relative Offset-Werte.
-Die Klasse der Struktur, allerdings selber wissen, welche Voxel zu ihr gehören.
-Ansonsten könnten 'Zombie'-Voxel entstehen, welche auf eine nicht existierende
-oder falsche Struktur verweisen.
+Die Klasse der Struktur, allerdings selber wissen, welche Voxel zu ihr
+gehören.  Ansonsten könnten 'Zombie'-Voxel entstehen, welche auf eine nicht
+existierende oder falsche Struktur verweisen.
 
 v2:
 Strukturen sind immer AABBs.
 Der 'Kern-Voxel' ist immer der Ursprung des AABBs.
 Dadurch hat man prinzipiell immernoch die Probleme von v1,
 aber man kann sehr leicht die Integrität prüfen
-und die Implementation ist sehr einfach, wodurch weniger Fehler entstehen sollten.
+und die Implementation ist sehr einfach, wodurch weniger Fehler entstehen
+sollten.
 
 ```
 Voxel:
@@ -104,3 +106,27 @@ Structure:
         und dieser nun die statischen Models aktualisieren muss.
 
     etc.
+
+
+
+------------------------------------------------------------------------------
+
+Overhaul!
+---------
+
+Alles übers Script laufen zu lassen ist tendenziell sehr unperformant.
+Muss also zumindest teilweise nach C ausgelagert werden.
+
+
+v1:  Hybrider Ansatz
+Simple Strukturen wie z.B. Single-Voxel- und vllt. AABB-Strukturen können vom
+C-Modul umgesetzt werden.  Nur komplexe Strukturen müssen dann im Script
+generiert werden.
+
+v2:  Nur AABBs; alles in C
+Meshes und Solids werden komplett in C generiert.  Komplexe Strukturen sind
+also nur indirekt möglich.
+
+v3:  Nur auf Voxel-Ebene
+Das Modul generiert Meshes und Solids auf Voxel-Ebene.  Im Prinzip wird dann
+das gemacht, was man auch in Minecraft tut.
