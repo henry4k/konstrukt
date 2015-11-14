@@ -45,10 +45,9 @@ ChunkGenerator* CreateChunkGenerator();
 void ReferenceChunkGenerator( ChunkGenerator* generator );
 void ReleaseChunkGenerator( ChunkGenerator* generator );
 
-void GenerateChunk( ChunkGenerator* generator,
-                    int x, int y, int z,
-                    int w, int h, int d,
-                    Chunk* chunk );
+Chunk* GenerateChunk( ChunkGenerator* generator,
+                      int x, int y, int z,
+                      int w, int h, int d );
 
 void FreeChunk( Chunk* chunk );
 
@@ -60,7 +59,7 @@ void SetVoxelRepresentationOpeningState( VoxelRepresentation* representation,
 
 void AddMeshToVoxelRepresentation( VoxelRepresentation* representation,
                                    int meshId,
-                                   const MeshBuffer** subMeshBuffers );
+                                   MeshBuffer** subMeshBuffers );
 
 void AddCollisionShapeToVoxelRepresentation( VoxelRepresentation* representation,
                                              CollisionShape* shape );

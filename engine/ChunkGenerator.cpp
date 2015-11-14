@@ -4,6 +4,7 @@
 #include "Mesh.h"
 #include "MeshBuffer.h"
 #include "Reference.h"
+#include "PhysicsManager.h"
 #include "ChunkGenerator.h"
 
 
@@ -31,7 +32,7 @@ struct VoxelRepresentation
 
 struct ChunkGenerator
 {
-    RefCounter refCounter;
+    ReferenceCounter refCounter;
     VoxelRepresentation voxelRepresentations[MAX_VOXEL_REPRESENTATIONS];
     int voxelRepresentationCount;
 };
@@ -52,12 +53,11 @@ ChunkGenerator* CreateChunkGenerator()
 
 static void FreeChunkGenerator( ChunkGenerator* generator )
 {
-    for(int i = 0; i < generator->voxelRepresentationCount)
+    for(int i = 0; i < generator->voxelRepresentationCount; i++)
     {
         VoxelRepresentation* representation =
-            generator->voxelRepresentations[i];
-
-
+            &generator->voxelRepresentations[i];
+        FreeVoxelRepresentation(representation);
     }
     delete generator;
 }
@@ -71,20 +71,33 @@ void ReleaseChunkGenerator( ChunkGenerator* generator )
 {
     Release(&generator->refCounter);
     if(!HasReferences(&generator->refCounter))
-        Freegenerator(generator);
+        FreeChunkGenerator(generator);
 }
 
-void GenerateChunk( ChunkGenerator* generator,
-                    int x, int y, int z,
-                    int w, int h, int d,
-                    Chunk* chunk )
+Chunk* GenerateChunk( ChunkGenerator* generator,
+                      int x, int y, int z,
+                      int w, int h, int d )
 {
+    Chunk* chunk = new Chunk;
+    memset(chunk, 0, sizeof(Chunk));
+
     // TODO
+
+    return chunk;
 }
 
 void FreeChunk( Chunk* chunk )
 {
-    // TODO
+    for(int i = 0; i < chunk->meshCount; i++)
+        ReleaseMesh(chunk->meshes[i]);
+    delete[] chunk->meshes;
+    delete[] chunk->meshIds;
+
+    for(int i = 0; i < chunk->collisionShapeCount; i++)
+        ReleaseCollisionShape(chunk->collisionShapes[i]);
+    delete[] chunk->collisionShapes;
+
+    delete chunk;
 }
 
 
@@ -123,7 +136,7 @@ void SetVoxelRepresentationOpeningState( VoxelRepresentation* representation,
 
 void AddMeshToVoxelRepresentation( VoxelRepresentation* representation,
                                    int meshId,
-                                   const MeshBuffer** subMeshBuffers )
+                                   MeshBuffer** subMeshBuffers )
 {
     if(representation->meshCount < MAX_VOXEL_REPRESENTATION_MESHES)
     {
@@ -135,10 +148,7 @@ void AddMeshToVoxelRepresentation( VoxelRepresentation* representation,
         mesh->id = meshId;
 
         for(int i = 0; i < VOXEL_REPRESENTATION_SUB_MESH_COUNT; i++)
-        {
             mesh->subMeshBuffers[i] = subMeshBuffers[i];
-            ReferenceMeshBuffer(subMeshBuffers[i]);
-        }
     }
     else
     {
@@ -150,7 +160,7 @@ static void FreeVoxelRepresentationMesh( VoxelRepresentationMesh* mesh )
 {
     for(int i = 0; i < VOXEL_REPRESENTATION_SUB_MESH_COUNT; i++)
         if(mesh->subMeshBuffers[i])
-            ReleaseMeshBuffer(mesh->subMeshBuffers[i]);
+            FreeMeshBuffer(mesh->subMeshBuffers[i]);
 }
 
 void AddCollisionShapeToVoxelRepresentation( VoxelRepresentation* representation,
