@@ -6,9 +6,10 @@ local Vec         = require 'core/Vector'
 local Voxel       = require 'core/voxel/Voxel'
 local Structure   = require 'core/voxel/Structure'
 local StructureDictionary = require 'core/voxel/StructureDictionary'
-local SetVoxelVolumeSize  = ENGINE.SetVoxelVolumeSize
-local ReadVoxelData       = ENGINE.ReadVoxelData
-local WriteVoxelData      = ENGINE.WriteVoxelData
+local CreateVoxelVolume  = ENGINE.CreateVoxelVolume
+local DestroyVoxelVolume = ENGINE.DestroyVoxelVolume
+local ReadVoxelData      = ENGINE.ReadVoxelData
+local WriteVoxelData     = ENGINE.WriteVoxelData
 
 
 local weakValueMT = { __mode = 'v' }
@@ -17,16 +18,10 @@ local weakValueMT = { __mode = 'v' }
 local VoxelVolume = class('core/voxel/VoxelVolume')
 VoxelVolume:include(EventSource)
 
-VoxelVolume.static._singletonExists = false
-
 function VoxelVolume:initialize( size )
-    assert(not VoxelVolume.static._singletonExists,
-           'At the moment only one voxel volume is supported!')
-    VoxelVolume.static._singletonExists = true
-
     assert(Vec:isInstance(size) and #size == 3,
            'Size must be passed as 3d vector.')
-    SetVoxelVolumeSize(size:unpack(3))
+    self.handle = CreateVoxelVolume(size:unpack(3))
 
     self:initializeEventSource()
 
@@ -35,12 +30,14 @@ end
 
 function VoxelVolume:destroy()
     self:destroyEventSource()
+    DestroyVoxelVolume(self.handle)
+    self.handle = nil
 end
 
 --- Returns @{core.voxel.Voxel} or `nil` if something went wrong.
 function VoxelVolume:readVoxel( position )
     assert(Vec:isInstance(position), 'Position must be a vector.')
-    local voxelData = ReadVoxelData(position:unpack(3))
+    local voxelData = ReadVoxelData(self.handle, position:unpack(3))
     if voxelData then
         return Voxel(voxelData)
     end
@@ -54,7 +51,7 @@ end
 function VoxelVolume:writeVoxel( position, voxel )
     assert(Vec:isInstance(position), 'Position must be a vector.')
     assert(Voxel:isInstance(voxel), 'Must be called with a voxel.')
-    local result = WriteVoxelData(position[1], position[2], position[3], voxel)
+    local result = WriteVoxelData(self.handle, position[1], position[2], position[3], voxel)
     if result then
         self:fireEvent('voxel-modified', position)
     end

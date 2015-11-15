@@ -4,21 +4,24 @@
 static const int VOXEL_SIZE = 16;
 
 
-bool InitVoxelVolume();
-void DestroyVoxelVolume();
+struct VoxelVolume;
+
 
 /**
- * Recreates the voxel volume with the given size.
+ * Creates a voxel volume with the given size.
  */
-void SetVoxelVolumeSize( int width, int height, int depth );
+VoxelVolume* CreateVoxelVolume( int width, int height, int depth );
+
+void ReferenceVoxelVolume( VoxelVolume* volume );
+void ReleaseVoxelVolume( VoxelVolume* volume );
 
 /**
  * @param destination
- * Reads #VOXEL_SIZE bytes to `destination`.
+ * Writes #VOXEL_SIZE bytes to `destination`.
  *
  * @return whether the read operation was successfull.
  */
-bool ReadVoxelData( int x, int y, int z, void* destination );
+bool ReadVoxelData( VoxelVolume* volume, int x, int y, int z, void* destination );
 
 /**
  * @param source
@@ -26,6 +29,6 @@ bool ReadVoxelData( int x, int y, int z, void* destination );
  *
  * @return whether the write operation was successfull.
  */
-bool WriteVoxelData( int x, int y, int z, const void* source );
+bool WriteVoxelData( VoxelVolume* volume, int x, int y, int z, const void* source );
 
 #endif

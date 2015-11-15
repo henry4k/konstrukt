@@ -7,23 +7,41 @@
 static const int VOXEL_INT32_COUNT = VOXEL_SIZE/4;
 
 
-static int Lua_SetVoxelVolumeSize( lua_State* l )
+static int Lua_CreateVoxelVolume( lua_State* l )
 {
     const int width  = luaL_checkinteger(l, 1);
     const int height = luaL_checkinteger(l, 2);
     const int depth  = luaL_checkinteger(l, 3);
-    SetVoxelVolumeSize(width, height, depth);
+    VoxelVolume* volume = CreateVoxelVolume(width, height, depth);
+    if(volume)
+    {
+        PushPointerToLua(l, volume);
+        ReferenceVoxelVolume(volume);
+        return 1;
+    }
+    else
+    {
+        luaL_error(l, "Failed to create voxel volume!");
+        return 0;
+    }
+}
+
+static int Lua_DestroyVoxelVolume( lua_State* l )
+{
+    VoxelVolume* volume = CheckVoxelVolumeFromLua(l, 1);
+    ReleaseVoxelVolume(volume);
     return 0;
 }
 
 static int Lua_ReadVoxelData( lua_State* l )
 {
-    const int x = luaL_checkinteger(l, 1);
-    const int y = luaL_checkinteger(l, 2);
-    const int z = luaL_checkinteger(l, 3);
+    VoxelVolume* volume = CheckVoxelVolumeFromLua(l, 1);
+    const int x = luaL_checkinteger(l, 2);
+    const int y = luaL_checkinteger(l, 3);
+    const int z = luaL_checkinteger(l, 4);
 
     int32_t voxel[VOXEL_INT32_COUNT];
-    const bool success = ReadVoxelData(x, y, z, voxel);
+    const bool success = ReadVoxelData(volume, x, y, z, voxel);
     if(!success)
     {
         lua_pushnil(l);
@@ -41,20 +59,21 @@ static int Lua_ReadVoxelData( lua_State* l )
 
 static int Lua_WriteVoxelData( lua_State* l )
 {
-    const int x = luaL_checkinteger(l, 1);
-    const int y = luaL_checkinteger(l, 2);
-    const int z = luaL_checkinteger(l, 3);
-    // Voxel data table at index 4
+    VoxelVolume* volume = CheckVoxelVolumeFromLua(l, 1);
+    const int x = luaL_checkinteger(l, 2);
+    const int y = luaL_checkinteger(l, 3);
+    const int z = luaL_checkinteger(l, 4);
+    // Voxel data table at index 5
 
     int32_t voxel[VOXEL_INT32_COUNT];
     for(int i = 0; i < VOXEL_INT32_COUNT; i++)
     {
-        lua_rawgeti(l, 4, i+1);
+        lua_rawgeti(l, 5, i+1);
         voxel[i] = lua_tointeger(l, -1);
         lua_pop(l, 1);
     }
 
-    const bool success = WriteVoxelData(x, y, z, voxel);
+    const bool success = WriteVoxelData(volume, x, y, z, voxel);
     if(!success)
     {
         lua_pushboolean(l, false);
@@ -71,10 +90,21 @@ static int Lua_GetVoxelInt32Count( lua_State* l )
     return 1;
 }
 
+VoxelVolume* GetVoxelVolumeFromLua( lua_State* l, int stackPosition )
+{
+    return (VoxelVolume*)GetPointerFromLua(l, stackPosition);
+}
+
+VoxelVolume* CheckVoxelVolumeFromLua( lua_State* l, int stackPosition )
+{
+    return (VoxelVolume*)CheckPointerFromLua(l, stackPosition);
+}
+
 bool RegisterVoxelVolumeInLua()
 {
     return
-        RegisterFunctionInLua("SetVoxelVolumeSize", Lua_SetVoxelVolumeSize) &&
+        RegisterFunctionInLua("CreateVoxelVolume", Lua_CreateVoxelVolume) &&
+        RegisterFunctionInLua("DestroyVoxelVolume", Lua_DestroyVoxelVolume) &&
         RegisterFunctionInLua("ReadVoxelData", Lua_ReadVoxelData) &&
         RegisterFunctionInLua("WriteVoxelData", Lua_WriteVoxelData) &&
         RegisterFunctionInLua("GetVoxelInt32Count", Lua_GetVoxelInt32Count);

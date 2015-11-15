@@ -15,7 +15,6 @@
 #include "Camera.h"
 #include "Shader.h"
 #include "Time.h"
-#include "VoxelVolume.h"
 #include "Game.h"
 
 #include "lua_bindings/Audio.h"
@@ -97,10 +96,6 @@ bool InitGame( const int argc, char** argv )
     if(!InitDefaultRenderTarget())
         return false;
 
-    Log("--------- Voxel Volume ----------");
-    if(!InitVoxelVolume())
-        return false;
-
     Log("--- Registering Lua modules ----");
     if(!RegisterAllModulesInLua())
         return false;
@@ -137,7 +132,6 @@ static bool RegisterAllModulesInLua()
 static void DestroyGame()
 {
     DestroyLua();
-    DestroyVoxelVolume();
     DestroyDefaultRenderTarget();
     DestroyRenderManager();
     DestroyShader();

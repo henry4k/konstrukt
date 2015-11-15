@@ -1,5 +1,6 @@
-#include <string.h> // memset, memcpy
+#include <string.h> // memset
 #include "Common.h"
+#include "Reference.h"
 #include "VoxelVolume.h"
 
 
@@ -9,67 +10,76 @@ struct Voxel
     char userData[VOXEL_SIZE];
 };
 
-
-static int VoxelVolumeSize[3] = {0, 0, 0};
-static Voxel* VoxelVolume = NULL;
-
-
-bool InitVoxelVolume()
+struct VoxelVolume
 {
-    return true;
+    ReferenceCounter refCounter;
+    int size[3];
+    Voxel* voxels;
+};
+
+
+VoxelVolume* CreateVoxelVolume( int width, int height, int depth )
+{
+    VoxelVolume* volume = new VoxelVolume;
+    memset(volume, 0, sizeof(VoxelVolume));
+    InitReferenceCounter(&volume->refCounter);
+    volume->size[0] = width;
+    volume->size[1] = height;
+    volume->size[2] = depth;
+    volume->voxels = new Voxel[width*height*depth];
+    memset(volume->voxels, 0, sizeof(Voxel)*width*height*depth);
+    return volume;
 }
 
-void DestroyVoxelVolume()
+static void FreeVoxelVolume( VoxelVolume* volume )
 {
-    if(VoxelVolume)
-        delete[] VoxelVolume;
+    delete[] volume->voxels;
+    delete volume;
 }
 
-void SetVoxelVolumeSize( int width, int height, int depth )
+void ReferenceVoxelVolume( VoxelVolume* volume )
 {
-    VoxelVolumeSize[0] = width;
-    VoxelVolumeSize[1] = height;
-    VoxelVolumeSize[2] = depth;
-
-    if(VoxelVolume)
-        delete[] VoxelVolume;
-
-    const int voxelCount = width * height * depth;
-    VoxelVolume = new Voxel[voxelCount];
-    memset(VoxelVolume, 0, sizeof(Voxel)*voxelCount);
+    Reference(&volume->refCounter);
 }
 
-static int GetVoxelIndex( int x, int y, int z )
+void ReleaseVoxelVolume( VoxelVolume* volume )
+{
+    Release(&volume->refCounter);
+    if(!HasReferences(&volume->refCounter))
+        FreeVoxelVolume(volume);
+}
+
+static int GetVoxelIndex( VoxelVolume* volume, int x, int y, int z )
 {
     if(x < 0 || y < 0 || z < 0 ||
-       x >= VoxelVolumeSize[0] ||
-       y >= VoxelVolumeSize[1] ||
-       z >= VoxelVolumeSize[2])
+       x >= volume->size[0] ||
+       y >= volume->size[1] ||
+       z >= volume->size[2])
         return -1;
 
-    return z * VoxelVolumeSize[0] * VoxelVolumeSize[1] +
-           y * VoxelVolumeSize[0] +
+    return z * volume->size[0] * volume->size[1] +
+           y * volume->size[0] +
            x;
 }
 
-bool ReadVoxelData( int x, int y, int z, void* destination )
+bool ReadVoxelData( VoxelVolume* volume, int x, int y, int z, void* destination )
 {
-    const int index = GetVoxelIndex(x,y,z);
+    const int index = GetVoxelIndex(volume, x,y,z);
     if(index < 0)
         return false;
 
-    const Voxel* voxel = &VoxelVolume[index];
+    const Voxel* voxel = &volume->voxels[index];
     memcpy(destination, voxel->userData, VOXEL_SIZE);
     return true;
 }
 
-bool WriteVoxelData( int x, int y, int z, const void* source )
+bool WriteVoxelData( VoxelVolume* volume, int x, int y, int z, const void* source )
 {
-    const int index = GetVoxelIndex(x,y,z);
+    const int index = GetVoxelIndex(volume, x,y,z);
     if(index < 0)
         return false;
 
-    Voxel* voxel = &VoxelVolume[index];
+    Voxel* voxel = &volume->voxels[index];
     memcpy(voxel->userData, source, VOXEL_SIZE);
     return true;
 }
