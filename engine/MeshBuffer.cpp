@@ -6,6 +6,7 @@
 #include "Math.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Reference.h"
 #include "MeshBuffer.h"
 
 using namespace glm;
@@ -13,6 +14,7 @@ using namespace glm;
 
 struct MeshBuffer
 {
+    ReferenceCounter refCounter;
     std::vector<Vertex> vertices;
     std::vector<VertexIndex> indices;
 };
@@ -20,12 +22,27 @@ struct MeshBuffer
 
 MeshBuffer* CreateMeshBuffer()
 {
-    return new MeshBuffer;
+    MeshBuffer* buffer = new MeshBuffer;
+    InitReferenceCounter(&buffer->refCounter);
+    return buffer;
 }
 
-void FreeMeshBuffer( MeshBuffer* buffer )
+static void FreeMeshBuffer( MeshBuffer* buffer )
 {
+    FreeReferenceCounter(&buffer->refCounter);
     delete buffer;
+}
+
+void ReferenceMeshBuffer( MeshBuffer* buffer )
+{
+    Reference(&buffer->refCounter);
+}
+
+void ReleaseMeshBuffer( MeshBuffer* buffer )
+{
+    Release(&buffer->refCounter);
+    if(!HasReferences(&buffer->refCounter))
+        FreeMeshBuffer(buffer);
 }
 
 void AddVertexToMeshBuffer( MeshBuffer* buffer, const Vertex* vertex )

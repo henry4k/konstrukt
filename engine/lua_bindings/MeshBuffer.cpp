@@ -9,14 +9,23 @@ using namespace glm;
 static int Lua_CreateMeshBuffer( lua_State* l )
 {
     MeshBuffer* buffer = CreateMeshBuffer();
-    PushPointerToLua(l, buffer);
-    return 1;
+    if(buffer)
+    {
+        PushPointerToLua(l, buffer);
+        ReferenceMeshBuffer(buffer);
+        return 1;
+    }
+    else
+    {
+        luaL_error(l, "Failed to create mesh buffer!");
+        return 0;
+    }
 }
 
 static int Lua_DestroyMeshBuffer( lua_State* l )
 {
     MeshBuffer* buffer = CheckMeshBufferFromLua(l, 1);
-    FreeMeshBuffer(buffer);
+    ReleaseMeshBuffer(buffer);
     return 0;
 }
 

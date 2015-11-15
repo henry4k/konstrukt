@@ -13,7 +13,7 @@ enum VoxelRepresentationOpeningState
     VOXEL_REPRESENTATION_OPEN
 };
 
-enum VoxelRepresentationSubMesh
+enum BlockVoxelRepresentationSubMesh
 {
     CENTER,
     POSITIVE_X,
@@ -22,13 +22,21 @@ enum VoxelRepresentationSubMesh
     NEGATIVE_Y,
     POSITIVE_Z,
     NEGATIVE_Z,
-    VOXEL_REPRESENTATION_SUB_MESH_COUNT
+    BLOCK_VOXEL_REPRESENTATION_SUB_MESH_COUNT
 };
 
 
+/**
+ * Generates a graphical and physical representation of a voxel set.
+ *
+ * The chunk generator uses voxel representations to determine how
+ * geometry and collision shapes should be created for each voxel.
+ */
 struct ChunkGenerator;
-struct VoxelRepresentation;
 
+/**
+ * Is spat out by #GenerateChunk.
+ */
 struct Chunk
 {
     Mesh** meshes;
@@ -39,29 +47,29 @@ struct Chunk
     int collisionShapeCount;
 };
 
+struct BlockVoxelRepresentationMesh
+{
+    int id;
+    MeshBuffer* buffers[BLOCK_VOXEL_REPRESENTATION_SUB_MESH_COUNT];
+};
+
 
 ChunkGenerator* CreateChunkGenerator();
 
 void ReferenceChunkGenerator( ChunkGenerator* generator );
 void ReleaseChunkGenerator( ChunkGenerator* generator );
 
+bool CreateBlockVoxelRepresentation( ChunkGenerator* generator,
+                                     VoxelRepresentationOpeningState state,
+                                     BlockVoxelRepresentationMesh* meshes,
+                                     int meshCount,
+                                     CollisionShape** collisionShapes,
+                                     int collisionShapeCount );
+
 Chunk* GenerateChunk( ChunkGenerator* generator,
                       int x, int y, int z,
                       int w, int h, int d );
 
 void FreeChunk( Chunk* chunk );
-
-
-VoxelRepresentation* CreateVoxelRepresentation( ChunkGenerator* generator );
-
-void SetVoxelRepresentationOpeningState( VoxelRepresentation* representation,
-                                         VoxelRepresentationOpeningState state );
-
-void AddMeshToVoxelRepresentation( VoxelRepresentation* representation,
-                                   int meshId,
-                                   MeshBuffer** subMeshBuffers );
-
-void AddCollisionShapeToVoxelRepresentation( VoxelRepresentation* representation,
-                                             CollisionShape* shape );
 
 #endif

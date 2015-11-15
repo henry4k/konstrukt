@@ -3,12 +3,9 @@
 
 struct lua_State;
 struct ChunkGenerator;
-struct VoxelRepresentation;
 
 ChunkGenerator* GetChunkGeneratorFromLua( lua_State* l, int stackPosition );
 ChunkGenerator* CheckChunkGeneratorFromLua( lua_State* l, int stackPosition );
-VoxelRepresentation* GetVoxelRepresentationFromLua( lua_State* l, int stackPosition );
-VoxelRepresentation* CheckVoxelRepresentationFromLua( lua_State* l, int stackPosition );
 
 bool RegisterChunkGeneratorInLua();
 

@@ -1,9 +1,6 @@
 #ifndef __APOAPSIS_MESH__
 #define __APOAPSIS_MESH__
 
-#include "OpenGL.h"
-
-
 struct MeshBuffer;
 struct Mesh;
 

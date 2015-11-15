@@ -7,8 +7,6 @@
 #include "ChunkGenerator.h"
 
 
-// ---- ChunkGenerator ----
-
 static int Lua_CreateChunkGenerator( lua_State* l )
 {
     ChunkGenerator* generator = CreateChunkGenerator();
@@ -29,6 +27,69 @@ static int Lua_DestroyChunkGenerator( lua_State* l )
 {
     ChunkGenerator* generator = CheckChunkGeneratorFromLua(l, 1);
     ReleaseChunkGenerator(generator);
+    return 0;
+}
+
+static void GetBlockVoxelRepresentationMeshFromLua( lua_State* l,
+                                                    BlockVoxelRepresentationMesh* mesh )
+{
+    lua_rawgeti(l, -1, 1);
+    mesh->id = luaL_checkinteger(l, -1);
+    lua_pop(l, 1);
+    for(int i = 0; i < BLOCK_VOXEL_REPRESENTATION_SUB_MESH_COUNT; i++)
+    {
+        lua_rawgeti(l, -1, i+2);
+        mesh->buffers[i] = CheckMeshBufferFromLua(l, -1);
+        lua_pop(l, 1);
+    }
+}
+
+static int Lua_CreateBlockVoxelRepresentation( lua_State* l )
+{
+    ChunkGenerator* generator = CheckChunkGeneratorFromLua(l, 1);
+
+    static const char* stateNames[] =
+    {
+        "closed",
+        "transparent",
+        "open",
+        NULL
+    };
+    const VoxelRepresentationOpeningState state =
+        (VoxelRepresentationOpeningState)luaL_checkoption(l, 2, NULL, stateNames);
+
+    const int meshCount = lua_rawlen(l, 3);
+    BlockVoxelRepresentationMesh* meshes =
+        new BlockVoxelRepresentationMesh[meshCount];
+    for(int i = 0; i < meshCount; i++)
+    {
+        lua_rawgeti(l, 3, i+1);
+        GetBlockVoxelRepresentationMeshFromLua(l, &meshes[i]);
+        lua_pop(l, 1);
+    }
+
+    const int collisionShapeCount = lua_rawlen(l, 4);
+    CollisionShape** collisionShapes =
+        new CollisionShape*[collisionShapeCount];
+    for(int i = 0; i < collisionShapeCount; i++)
+    {
+        lua_rawgeti(l, 4, i+1);
+        collisionShapes[i] = CheckCollisionShapeFromLua(l, -1);
+        lua_pop(l, 1);
+    }
+
+    bool result = CreateBlockVoxelRepresentation(generator,
+                                                 state,
+                                                 meshes,
+                                                 meshCount,
+                                                 collisionShapes,
+                                                 collisionShapeCount);
+
+    delete[] meshes;
+    delete[] collisionShapes;
+
+    if(result == false)
+        luaL_error(l, "Can't create block voxel representation!");
     return 0;
 }
 
@@ -79,66 +140,6 @@ static int Lua_GenerateChunk( lua_State* l )
 }
 
 
-// ---- VoxelRepresentation ----
-
-static int Lua_CreateVoxelRepresentation( lua_State* l )
-{
-    ChunkGenerator* generator = CheckChunkGeneratorFromLua(l, 1);
-    VoxelRepresentation* representation = CreateVoxelRepresentation(generator);
-    if(representation)
-    {
-        PushPointerToLua(l, representation);
-        return 1;
-    }
-    else
-    {
-        luaL_error(l, "Failed to create voxel representation!");
-        return 0;
-    }
-}
-
-static int Lua_SetVoxelRepresentationOpeningState( lua_State* l )
-{
-    VoxelRepresentation* representation = CheckVoxelRepresentationFromLua(l, 1);
-
-    static const char* stateNames[] =
-    {
-        "closed",
-        "transparent",
-        "open",
-        NULL
-    };
-    const VoxelRepresentationOpeningState state =
-        (VoxelRepresentationOpeningState)luaL_checkoption(l, 2, NULL, stateNames);
-
-    SetVoxelRepresentationOpeningState(representation, state);
-}
-
-static int Lua_AddMeshToVoxelRepresentation( lua_State* l )
-{
-    VoxelRepresentation* representation = CheckVoxelRepresentationFromLua(l, 1);
-    const int meshId = luaL_checkinteger(l, 2);
-    const int meshBufferCount = lua_gettop(l)-2;
-    MeshBuffer** meshBuffers = new MeshBuffer*[meshBufferCount];
-    for(int i = 0; i < meshBufferCount; i++)
-    {
-        MeshBuffer* meshBuffer = CheckMeshBufferFromLua(l, 3+i);
-        meshBuffers[i] = meshBuffer;
-    }
-    AddMeshToVoxelRepresentation(representation, meshId, meshBuffers);
-    delete[] meshBuffers;
-    return 1;
-}
-
-static int Lua_AddCollisionShapeToVoxelRepresentation( lua_State* l )
-{
-    VoxelRepresentation* representation = CheckVoxelRepresentationFromLua(l, 1);
-    CollisionShape* collisionShape = CheckCollisionShapeFromLua(l, 2);
-    AddCollisionShapeToVoxelRepresentation(representation, collisionShape);
-    return 1;
-}
-
-
 ChunkGenerator* GetChunkGeneratorFromLua( lua_State* l, int stackPosition )
 {
     return (ChunkGenerator*)GetPointerFromLua(l, stackPosition);
@@ -149,24 +150,11 @@ ChunkGenerator* CheckChunkGeneratorFromLua( lua_State* l, int stackPosition )
     return (ChunkGenerator*)CheckPointerFromLua(l, stackPosition);
 }
 
-VoxelRepresentation* GetVoxelRepresentationFromLua( lua_State* l, int stackPosition )
-{
-    return (VoxelRepresentation*)GetPointerFromLua(l, stackPosition);
-}
-
-VoxelRepresentation* CheckVoxelRepresentationFromLua( lua_State* l, int stackPosition )
-{
-    return (VoxelRepresentation*)CheckPointerFromLua(l, stackPosition);
-}
-
 bool RegisterChunkGeneratorInLua()
 {
     return
         RegisterFunctionInLua("CreateChunkGenerator", Lua_CreateChunkGenerator) &&
         RegisterFunctionInLua("DestroyChunkGenerator", Lua_DestroyChunkGenerator) &&
-        RegisterFunctionInLua("GenerateChunk", Lua_GenerateChunk) &&
-        RegisterFunctionInLua("CreateVoxelRepresentation", Lua_CreateVoxelRepresentation) &&
-        RegisterFunctionInLua("SetVoxelRepresentationOpeningState", Lua_SetVoxelRepresentationOpeningState) &&
-        RegisterFunctionInLua("AddMeshToVoxelRepresentation", Lua_AddMeshToVoxelRepresentation) &&
-        RegisterFunctionInLua("AddCollisionShapeToVoxelRepresentation", Lua_AddCollisionShapeToVoxelRepresentation);
+        RegisterFunctionInLua("CreateBlockVoxelRepresentation", Lua_CreateBlockVoxelRepresentation) &&
+        RegisterFunctionInLua("GenerateChunk", Lua_GenerateChunk);
 }

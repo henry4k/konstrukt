@@ -7,7 +7,9 @@
 struct MeshBuffer;
 
 MeshBuffer* CreateMeshBuffer();
-void FreeMeshBuffer( MeshBuffer* buffer );
+
+void ReferenceMeshBuffer( MeshBuffer* buffer );
+void ReleaseMeshBuffer( MeshBuffer* buffer );
 
 void AddVertexToMeshBuffer( MeshBuffer* buffer, const Vertex* vertex );
 void AddIndexToMeshBuffer( MeshBuffer* buffer, VertexIndex index );
