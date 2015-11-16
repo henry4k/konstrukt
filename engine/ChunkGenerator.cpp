@@ -33,6 +33,7 @@ struct BlockVoxelRepresentation
 struct VoxelRepresentation
 {
     VoxelRepresentationType type;
+    int voxelType;
     union data_
     {
         BlockVoxelRepresentation block;
@@ -82,7 +83,8 @@ void ReleaseChunkGenerator( ChunkGenerator* generator )
 }
 
 static void* CreateVoxelRepresentation( ChunkGenerator* generator,
-                                        VoxelRepresentationType type)
+                                        VoxelRepresentationType type,
+                                        int voxelType )
 {
     if(generator->voxelRepresentationCount < MAX_VOXEL_REPRESENTATIONS)
     {
@@ -90,6 +92,7 @@ static void* CreateVoxelRepresentation( ChunkGenerator* generator,
         VoxelRepresentation* representation =
             &generator->voxelRepresentations[i];
         representation->type = type;
+        representation->voxelType = voxelType;
         generator->voxelRepresentationCount++;
         return (void*)&representation->data;
     }
@@ -101,6 +104,7 @@ static void* CreateVoxelRepresentation( ChunkGenerator* generator,
 }
 
 bool CreateBlockVoxelRepresentation( ChunkGenerator* generator,
+                                     int voxelType,
                                      VoxelRepresentationOpeningState state,
                                      BlockVoxelRepresentationMaterial* materials,
                                      int materialCount,
@@ -120,7 +124,7 @@ bool CreateBlockVoxelRepresentation( ChunkGenerator* generator,
     }
 
     BlockVoxelRepresentation* representation =
-        (BlockVoxelRepresentation*)CreateVoxelRepresentation(generator, BLOCK_VOXEL_REPRESENTATION);
+        (BlockVoxelRepresentation*)CreateVoxelRepresentation(generator, BLOCK_VOXEL_REPRESENTATION, voxelType);
     if(representation)
     {
         representation->openingState = state;

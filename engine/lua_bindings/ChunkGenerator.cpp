@@ -48,6 +48,8 @@ static int Lua_CreateBlockVoxelRepresentation( lua_State* l )
 {
     ChunkGenerator* generator = CheckChunkGeneratorFromLua(l, 1);
 
+    const int voxelType = luaL_checkinteger(l, 2);
+
     static const char* stateNames[] =
     {
         "closed",
@@ -56,9 +58,9 @@ static int Lua_CreateBlockVoxelRepresentation( lua_State* l )
         NULL
     };
     const VoxelRepresentationOpeningState state =
-        (VoxelRepresentationOpeningState)luaL_checkoption(l, 2, NULL, stateNames);
+        (VoxelRepresentationOpeningState)luaL_checkoption(l, 3, NULL, stateNames);
 
-    const int meshCount = lua_rawlen(l, 3);
+    const int meshCount = lua_rawlen(l, 4);
     BlockVoxelRepresentationMaterial* meshes =
         new BlockVoxelRepresentationMaterial[meshCount];
     for(int i = 0; i < meshCount; i++)
@@ -68,17 +70,18 @@ static int Lua_CreateBlockVoxelRepresentation( lua_State* l )
         lua_pop(l, 1);
     }
 
-    const int collisionShapeCount = lua_rawlen(l, 4);
+    const int collisionShapeCount = lua_rawlen(l, 5);
     CollisionShape** collisionShapes =
         new CollisionShape*[collisionShapeCount];
     for(int i = 0; i < collisionShapeCount; i++)
     {
-        lua_rawgeti(l, 4, i+1);
+        lua_rawgeti(l, 5, i+1);
         collisionShapes[i] = CheckCollisionShapeFromLua(l, -1);
         lua_pop(l, 1);
     }
 
     bool result = CreateBlockVoxelRepresentation(generator,
+                                                 voxelType,
                                                  state,
                                                  meshes,
                                                  meshCount,

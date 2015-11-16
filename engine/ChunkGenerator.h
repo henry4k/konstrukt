@@ -3,8 +3,6 @@
 
 /* --- TODO ---
 
-submesh / buffer / mesh?
-
 Voxel-Typ-ID in VoxelRepresentation speichern, damit der Generator weiss
 welche VoxelRepresentation zuständig ist.
 
@@ -70,6 +68,7 @@ void ReferenceChunkGenerator( ChunkGenerator* generator );
 void ReleaseChunkGenerator( ChunkGenerator* generator );
 
 bool CreateBlockVoxelRepresentation( ChunkGenerator* generator,
+                                     int voxelType,
                                      VoxelRepresentationOpeningState state,
                                      BlockVoxelRepresentationMaterial* materials,
                                      int materialCount,
