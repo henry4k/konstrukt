@@ -1,6 +1,16 @@
 #ifndef __APOAPSIS_CHUNK_GENERATOR__
 #define __APOAPSIS_CHUNK_GENERATOR__
 
+/* --- TODO ---
+
+submesh / buffer / mesh?
+
+Voxel-Typ-ID in VoxelRepresentation speichern, damit der Generator weiss
+welche VoxelRepresentation zuständig ist.
+
+VoxelRepresentation nutzt erste N Bits des Voxels für Typ-spezifische Daten.
+*/
+
 struct Mesh;
 struct MeshBuffer;
 struct CollisionShape;
@@ -13,7 +23,7 @@ enum VoxelRepresentationOpeningState
     VOXEL_REPRESENTATION_OPEN
 };
 
-enum BlockVoxelRepresentationSubMesh
+enum BlockVoxelRepresentationMaterialBuffers
 {
     CENTER,
     POSITIVE_X,
@@ -22,7 +32,7 @@ enum BlockVoxelRepresentationSubMesh
     NEGATIVE_Y,
     POSITIVE_Z,
     NEGATIVE_Z,
-    BLOCK_VOXEL_REPRESENTATION_SUB_MESH_COUNT
+    BLOCK_VOXEL_REPRESENTATION_MATERIAL_BUFFER_COUNT
 };
 
 
@@ -39,18 +49,18 @@ struct ChunkGenerator;
  */
 struct Chunk
 {
-    Mesh** meshes;
-    int* meshIds;
-    int meshCount;
+    Mesh** materialMeshes;
+    int* materialIds;
+    int materialCount;
 
     CollisionShape** collisionShapes;
     int collisionShapeCount;
 };
 
-struct BlockVoxelRepresentationMesh
+struct BlockVoxelRepresentationMaterial
 {
     int id;
-    MeshBuffer* buffers[BLOCK_VOXEL_REPRESENTATION_SUB_MESH_COUNT];
+    MeshBuffer* buffers[BLOCK_VOXEL_REPRESENTATION_MATERIAL_BUFFER_COUNT];
 };
 
 
@@ -61,8 +71,8 @@ void ReleaseChunkGenerator( ChunkGenerator* generator );
 
 bool CreateBlockVoxelRepresentation( ChunkGenerator* generator,
                                      VoxelRepresentationOpeningState state,
-                                     BlockVoxelRepresentationMesh* meshes,
-                                     int meshCount,
+                                     BlockVoxelRepresentationMaterial* materials,
+                                     int materialCount,
                                      CollisionShape** collisionShapes,
                                      int collisionShapeCount );
 

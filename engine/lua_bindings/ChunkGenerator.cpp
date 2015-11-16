@@ -30,13 +30,13 @@ static int Lua_DestroyChunkGenerator( lua_State* l )
     return 0;
 }
 
-static void GetBlockVoxelRepresentationMeshFromLua( lua_State* l,
-                                                    BlockVoxelRepresentationMesh* mesh )
+static void GetBlockVoxelRepresentationMaterialFromLua( lua_State* l,
+                                                    BlockVoxelRepresentationMaterial* mesh )
 {
     lua_rawgeti(l, -1, 1);
     mesh->id = luaL_checkinteger(l, -1);
     lua_pop(l, 1);
-    for(int i = 0; i < BLOCK_VOXEL_REPRESENTATION_SUB_MESH_COUNT; i++)
+    for(int i = 0; i < BLOCK_VOXEL_REPRESENTATION_MATERIAL_BUFFER_COUNT; i++)
     {
         lua_rawgeti(l, -1, i+2);
         mesh->buffers[i] = CheckMeshBufferFromLua(l, -1);
@@ -59,12 +59,12 @@ static int Lua_CreateBlockVoxelRepresentation( lua_State* l )
         (VoxelRepresentationOpeningState)luaL_checkoption(l, 2, NULL, stateNames);
 
     const int meshCount = lua_rawlen(l, 3);
-    BlockVoxelRepresentationMesh* meshes =
-        new BlockVoxelRepresentationMesh[meshCount];
+    BlockVoxelRepresentationMaterial* meshes =
+        new BlockVoxelRepresentationMaterial[meshCount];
     for(int i = 0; i < meshCount; i++)
     {
         lua_rawgeti(l, 3, i+1);
-        GetBlockVoxelRepresentationMeshFromLua(l, &meshes[i]);
+        GetBlockVoxelRepresentationMaterialFromLua(l, &meshes[i]);
         lua_pop(l, 1);
     }
 
@@ -108,17 +108,17 @@ static int Lua_GenerateChunk( lua_State* l )
                                  w, h, d);
     if(chunk)
     {
-        lua_createtable(l, 0, chunk->meshCount);
-        for(int i = 0; i < chunk->meshCount; i++)
+        lua_createtable(l, 0, chunk->materialCount);
+        for(int i = 0; i < chunk->materialCount; i++)
         {
-            PushPointerToLua(l, chunk->meshes[i]);
+            PushPointerToLua(l, chunk->materialMeshes[i]);
             lua_rawseti(l, -2, i+1);
         }
 
-        lua_createtable(l, 0, chunk->meshCount);
-        for(int i = 0; i < chunk->meshCount; i++)
+        lua_createtable(l, 0, chunk->materialCount);
+        for(int i = 0; i < chunk->materialCount; i++)
         {
-            lua_pushinteger(l, chunk->meshIds[i]);
+            lua_pushinteger(l, chunk->materialIds[i]);
             lua_rawseti(l, -2, i+1);
         }
 

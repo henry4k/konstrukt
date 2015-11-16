@@ -15,7 +15,7 @@ enum VoxelRepresentationType
     BLOCK_VOXEL_REPRESENTATION
 };
 
-static const int MAX_BLOCK_MESHES = 4;
+static const int MAX_BLOCK_MATERIALS = 4;
 static const int MAX_BLOCK_COLLISION_SHAPES = 4;
 
 
@@ -23,8 +23,8 @@ struct BlockVoxelRepresentation
 {
     VoxelRepresentationOpeningState openingState;
 
-    BlockVoxelRepresentationMesh meshes[MAX_BLOCK_MESHES];
-    int meshCount;
+    BlockVoxelRepresentationMaterial materials[MAX_BLOCK_MATERIALS];
+    int materialCount;
 
     CollisionShape* collisionShapes[MAX_BLOCK_COLLISION_SHAPES];
     int collisionShapeCount;
@@ -48,7 +48,6 @@ struct ChunkGenerator
 
 
 static void FreeVoxelRepresentation( VoxelRepresentation* representation );
-//static void FreeVoxelRepresentationMesh( VoxelRepresentationMesh* mesh );
 
 
 ChunkGenerator* CreateChunkGenerator()
@@ -103,14 +102,14 @@ static void* CreateVoxelRepresentation( ChunkGenerator* generator,
 
 bool CreateBlockVoxelRepresentation( ChunkGenerator* generator,
                                      VoxelRepresentationOpeningState state,
-                                     BlockVoxelRepresentationMesh* meshes,
-                                     int meshCount,
+                                     BlockVoxelRepresentationMaterial* materials,
+                                     int materialCount,
                                      CollisionShape** collisionShapes,
                                      int collisionShapeCount )
 {
-    if(meshCount > MAX_BLOCK_MESHES)
+    if(materialCount > MAX_BLOCK_MATERIALS)
     {
-        Error("Too many meshes for a block voxel representation.");
+        Error("Too many materials for a block voxel representation.");
         return false;
     }
 
@@ -126,14 +125,14 @@ bool CreateBlockVoxelRepresentation( ChunkGenerator* generator,
     {
         representation->openingState = state;
 
-        representation->meshCount = meshCount;
-        for(int i = 0; i < meshCount; i++)
+        representation->materialCount = materialCount;
+        for(int i = 0; i < materialCount; i++)
         {
-            representation->meshes[i] = meshes[i];
-            BlockVoxelRepresentationMesh* mesh = &meshes[i];
-            for(int i = 0; i < BLOCK_VOXEL_REPRESENTATION_SUB_MESH_COUNT; i++)
-                if(mesh->buffers[i])
-                    ReferenceMeshBuffer(mesh->buffers[i]);
+            representation->materials[i] = materials[i];
+            BlockVoxelRepresentationMaterial* material = &materials[i];
+            for(int i = 0; i < BLOCK_VOXEL_REPRESENTATION_MATERIAL_BUFFER_COUNT; i++)
+                if(material->buffers[i])
+                    ReferenceMeshBuffer(material->buffers[i]);
         }
 
         representation->collisionShapeCount = collisionShapeCount;
@@ -151,17 +150,17 @@ bool CreateBlockVoxelRepresentation( ChunkGenerator* generator,
     }
 }
 
-static void FreeBlockVoxelRepresentationMesh( BlockVoxelRepresentationMesh* mesh )
+static void FreeBlockVoxelRepresentationMaterial( BlockVoxelRepresentationMaterial* material )
 {
-    for(int i = 0; i < BLOCK_VOXEL_REPRESENTATION_SUB_MESH_COUNT; i++)
-        if(mesh->buffers[i])
-            ReleaseMeshBuffer(mesh->buffers[i]);
+    for(int i = 0; i < BLOCK_VOXEL_REPRESENTATION_MATERIAL_BUFFER_COUNT; i++)
+        if(material->buffers[i])
+            ReleaseMeshBuffer(material->buffers[i]);
 }
 
 static void FreeBlockVoxelRepresentation( BlockVoxelRepresentation* representation )
 {
-    for(int i = 0; i < representation->meshCount; i++)
-        FreeBlockVoxelRepresentationMesh(&representation->meshes[i]);
+    for(int i = 0; i < representation->materialCount; i++)
+        FreeBlockVoxelRepresentationMaterial(&representation->materials[i]);
     for(int i = 0; i < representation->collisionShapeCount; i++)
         ReleaseCollisionShape(representation->collisionShapes[i]);
 }
@@ -191,10 +190,10 @@ Chunk* GenerateChunk( ChunkGenerator* generator,
 
 void FreeChunk( Chunk* chunk )
 {
-    for(int i = 0; i < chunk->meshCount; i++)
-        ReleaseMesh(chunk->meshes[i]);
-    delete[] chunk->meshes;
-    delete[] chunk->meshIds;
+    for(int i = 0; i < chunk->materialCount; i++)
+        ReleaseMesh(chunk->materialMeshes[i]);
+    delete[] chunk->materialMeshes;
+    delete[] chunk->materialIds;
 
     for(int i = 0; i < chunk->collisionShapeCount; i++)
         ReleaseCollisionShape(chunk->collisionShapes[i]);
