@@ -21,10 +21,10 @@
 #include "lua_bindings/Camera.h"
 #include "lua_bindings/Config.h"
 #include "lua_bindings/Controls.h"
-#include "lua_bindings/ChunkGenerator.h"
 #include "lua_bindings/Math.h"
 #include "lua_bindings/Mesh.h"
 #include "lua_bindings/MeshBuffer.h"
+#include "lua_bindings/MeshChunkGenerator.h"
 #include "lua_bindings/RenderManager.h"
 #include "lua_bindings/RenderTarget.h"
 #include "lua_bindings/ModelWorld.h"
@@ -113,10 +113,10 @@ static bool RegisterAllModulesInLua()
         RegisterCameraInLua() &&
         RegisterConfigInLua() &&
         RegisterControlsInLua() &&
-        RegisterChunkGeneratorInLua() &&
         RegisterMathInLua() &&
         RegisterMeshInLua() &&
         RegisterMeshBufferInLua() &&
+        RegisterMeshChunkGeneratorInLua() &&
         RegisterRenderManagerInLua() &&
         RegisterRenderTargetInLua() &&
         RegisterModelWorldInLua() &&

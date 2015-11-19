@@ -95,9 +95,9 @@ static void* CreateVoxelMesh( MeshChunkGenerator* generator,
 
 bool CreateBlockVoxelMesh( MeshChunkGenerator* generator,
                            VoxelOpeningState openingState,
+                           int materialId,
                            const BitCondition* conditions,
                            int conditionCount,
-                           int materialId,
                            MeshBuffer* meshBuffers[BLOCK_VOXEL_MATERIAL_BUFFER_COUNT] )
 {
     BlockVoxelMesh* mesh = (BlockVoxelMesh*)CreateVoxelMesh(generator, BLOCK_VOXEL_MESH);
