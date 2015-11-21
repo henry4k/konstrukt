@@ -1,13 +1,5 @@
-#ifndef __APOAPSIS_CHUNK_GENERATOR_SHARED__
-#define __APOAPSIS_CHUNK_GENERATOR_SHARED__
-
-enum VoxelOpeningState
-{
-    VOXEL_CLOSED,
-    VOXEL_TRANSPARENT,
-    VOXEL_OPEN
-};
-
+#ifndef __APOAPSIS_BIT_CONDITION__
+#define __APOAPSIS_BIT_CONDITION__
 
 struct BitCondition
 {
@@ -29,5 +21,6 @@ int GatherPayloadFromBitField( const BitConditionSolver* solver,
                                const void* bitField,
                                int bitFieldSize,
                                void*** payloadList );
+void FreePayloadList( void** payloadList );
 
 #endif

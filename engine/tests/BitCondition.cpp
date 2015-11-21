@@ -1,4 +1,4 @@
-#include <engine/ChunkGeneratorShared.h>
+#include <engine/BitCondition.h>
 #include "TestTools.h"
 
 static const BitCondition conditionsA[] =

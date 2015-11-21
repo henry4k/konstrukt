@@ -1,7 +1,7 @@
 #ifndef __APOAPSIS_MESH_CHUNK_GENERATOR__
 #define __APOAPSIS_MESH_CHUNK_GENERATOR__
 
-#include "ChunkGeneratorShared.h"
+#include "BitCondition.h"
 
 
 struct VoxelVolume;

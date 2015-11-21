@@ -3,7 +3,7 @@
 #include <stdlib.h> // malloc, free, realloc
 #include <string.h> // memset, memcmp, memcpy
 
-#include "ChunkGeneratorShared.h"
+#include "BitCondition.h"
 
 
 static const int MAX_BIT_CONDITION_BYTES = 2;
@@ -180,9 +180,9 @@ static void FreeBitConditionNodeContents( BitConditionNode* node )
     for(int i = 0; i < node->childCount; i++)
         FreeBitConditionNodeContents(&node->children[i]);
     if(node->children)
-        delete[] node->children;
+        free(node->children);
     if(node->payloadList)
-        delete[] node->payloadList;
+        free(node->payloadList);
 }
 
 void AddBitConditions( BitConditionSolver* solver,
@@ -251,5 +251,15 @@ int GatherPayloadFromBitField( const BitConditionSolver* solver,
                               bitFieldSize,
                               payloadList,
                               &resultCount);
+    if(resultCount == 0)
+        assert(*payloadList == NULL);
+    else
+        assert(*payloadList != NULL);
     return resultCount;
+}
+
+void FreePayloadList( void** payloadList )
+{
+    if(payloadList)
+        free(payloadList);
 }
