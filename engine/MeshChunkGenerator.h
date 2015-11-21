@@ -43,10 +43,10 @@ void ReferenceMeshChunkGenerator( MeshChunkGenerator* generator );
 void ReleaseMeshChunkGenerator( MeshChunkGenerator* generator );
 
 bool CreateBlockVoxelMesh( MeshChunkGenerator* generator,
-                           VoxelOpeningState openingState,
                            int materialId,
                            const BitCondition* conditions,
                            int conditionCount,
+                           bool transparent,
                            MeshBuffer* meshBuffers[BLOCK_VOXEL_MATERIAL_BUFFER_COUNT] );
 
 MeshChunk* GenerateMeshChunk( MeshChunkGenerator* generator,

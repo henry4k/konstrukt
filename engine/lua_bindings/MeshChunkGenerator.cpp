@@ -46,26 +46,18 @@ static int Lua_CreateBlockVoxelMesh( lua_State* l )
 {
     MeshChunkGenerator* generator = CheckMeshChunkGeneratorFromLua(l, 1);
 
-    static const char* stateNames[] =
-    {
-        "closed",
-        "transparent",
-        "open",
-        NULL
-    };
-    const VoxelOpeningState state =
-        (VoxelOpeningState)luaL_checkoption(l, 2, NULL, stateNames);
+    const int materialId = luaL_checkinteger(l, 2);
 
-    const int materialId = luaL_checkinteger(l, 3);
-
-    const int conditionCount = lua_rawlen(l, 4);
+    const int conditionCount = lua_rawlen(l, 3);
     BitCondition* conditions = new BitCondition[conditionCount];
     for(int i = 0; i < conditionCount; i++)
     {
-        lua_rawgeti(l, 4, i+1);
+        lua_rawgeti(l, 3, i+1);
         GetBitConditionFromLua(l, &conditions[i]);
         lua_pop(l, 1);
     }
+
+    const bool transparent = (bool)lua_toboolean(l, 4);
 
     const int meshBufferCount = lua_rawlen(l, 5);
     assert(meshBufferCount == BLOCK_VOXEL_MATERIAL_BUFFER_COUNT);
@@ -79,10 +71,10 @@ static int Lua_CreateBlockVoxelMesh( lua_State* l )
     }
 
     bool result = CreateBlockVoxelMesh(generator,
-                                       state,
                                        materialId,
                                        conditions,
                                        conditionCount,
+                                       transparent,
                                        meshBuffers);
 
     delete[] conditions;
