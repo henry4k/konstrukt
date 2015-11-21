@@ -4,12 +4,6 @@
 #include "VoxelVolume.h"
 
 
-struct Voxel
-{
-    // CA data goes here!
-    char userData[VOXEL_SIZE];
-};
-
 struct VoxelVolume
 {
     ReferenceCounter refCounter;
@@ -62,24 +56,24 @@ static int GetVoxelIndex( VoxelVolume* volume, int x, int y, int z )
            x;
 }
 
-bool ReadVoxelData( VoxelVolume* volume, int x, int y, int z, void* destination )
+bool ReadVoxelData( VoxelVolume* volume, int x, int y, int z, Voxel* destination )
 {
     const int index = GetVoxelIndex(volume, x,y,z);
     if(index < 0)
         return false;
 
     const Voxel* voxel = &volume->voxels[index];
-    memcpy(destination, voxel->userData, VOXEL_SIZE);
+    memcpy(destination, voxel, sizeof(Voxel));
     return true;
 }
 
-bool WriteVoxelData( VoxelVolume* volume, int x, int y, int z, const void* source )
+bool WriteVoxelData( VoxelVolume* volume, int x, int y, int z, const Voxel* source )
 {
     const int index = GetVoxelIndex(volume, x,y,z);
     if(index < 0)
         return false;
 
     Voxel* voxel = &volume->voxels[index];
-    memcpy(voxel->userData, source, VOXEL_SIZE);
+    memcpy(voxel, source, sizeof(Voxel));
     return true;
 }

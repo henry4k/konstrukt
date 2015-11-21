@@ -1,10 +1,12 @@
 #ifndef __APOAPSIS_VOXEL_VOLUME__
 #define __APOAPSIS_VOXEL_VOLUME__
 
-static const int VOXEL_SIZE = 16;
-
-
 struct VoxelVolume;
+
+struct Voxel
+{
+    char data[16];
+};
 
 
 /**
@@ -21,7 +23,7 @@ void ReleaseVoxelVolume( VoxelVolume* volume );
  *
  * @return whether the read operation was successfull.
  */
-bool ReadVoxelData( VoxelVolume* volume, int x, int y, int z, void* destination );
+bool ReadVoxelData( VoxelVolume* volume, int x, int y, int z, Voxel* destination );
 
 /**
  * @param source
@@ -29,6 +31,6 @@ bool ReadVoxelData( VoxelVolume* volume, int x, int y, int z, void* destination 
  *
  * @return whether the write operation was successfull.
  */
-bool WriteVoxelData( VoxelVolume* volume, int x, int y, int z, const void* source );
+bool WriteVoxelData( VoxelVolume* volume, int x, int y, int z, const Voxel* source );
 
 #endif
