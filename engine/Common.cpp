@@ -1,13 +1,17 @@
 #if defined(__WINDOWS__)
     #define WIN32_LEAN_AND_MEAN
     #define NOGDI
-    #include <windows.h>
+    #include <windows.h> // GetFileAttributes
 #else
-    #include <sys/stat.h>
+    #include <sys/stat.h> // stat
     #include <signal.h>
     #include <unistd.h> // isatty
 #endif
 #include <string.h> // strncpy, strcmp
+#include <stdlib.h> // exit
+#include <stdio.h> // printf
+#include <stdarg.h>
+#include <assert.h>
 #include "Config.h"
 #include "Common.h"
 
@@ -139,7 +143,7 @@ void FatalError( const char* format, ... )
 #if defined(__WINDOWS__)
 static LogHandler AutodetectLogHandler()
 {
-    return ColorLogHandler;
+    return SimpleLogHandler;
 }
 #else
 static LogHandler AutodetectLogHandler()
