@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h> // sscanf
 #include "../Common.h"
 #include "../Config.h"
 #include "../OpenGL.h"

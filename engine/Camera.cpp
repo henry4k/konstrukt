@@ -18,13 +18,13 @@ struct Camera
     ModelWorld* world;
     Solid* attachmentTarget;
     int attachmentFlags;
-    glm::mat4 modelTransformation;
-    glm::mat4 viewTransformation;
+    mat4 modelTransformation;
+    mat4 viewTransformation;
 
     float aspect;
     float zNear, zFar;
     bool projectionTransformationNeedsUpdate;
-    glm::mat4 projectionTransformation;
+    mat4 projectionTransformation;
 
     CameraProjectionType projectionType;
     float fieldOfView; // perspective projection
@@ -42,7 +42,7 @@ Camera* CreateCamera( ModelWorld* world )
     ReferenceModelWorld(world);
 
     camera->modelTransformation = mat4(1);
-    camera->viewTransformation = mat4(1);
+    camera->viewTransformation  = mat4(1);
 
     camera->aspect = 1;
     camera->zNear  = 0.1f;
@@ -86,7 +86,7 @@ void SetCameraAttachmentTarget( Camera* camera, Solid* target, int flags )
         ReferenceSolid(camera->attachmentTarget);
 }
 
-void SetCameraModelTransformation( Camera* camera, glm::mat4 transformation )
+void SetCameraModelTransformation( Camera* camera, mat4 transformation )
 {
     camera->modelTransformation = transformation;
 }

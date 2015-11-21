@@ -1,4 +1,5 @@
-#include <string.h>
+#include <assert.h>
+#include <string.h> // memcpy, strlen, strcmp
 #include <vector>
 
 #include "Common.h"

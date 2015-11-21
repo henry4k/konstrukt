@@ -1,5 +1,6 @@
 #include <map>
 #include <string>
+#include <stdlib.h> // atoi, atof
 #include <ini.h>
 
 #include "Common.h"
