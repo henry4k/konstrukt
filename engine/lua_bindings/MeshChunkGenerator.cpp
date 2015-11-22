@@ -101,14 +101,14 @@ static int Lua_GenerateChunk( lua_State* l )
                                          w, h, d);
     if(chunk)
     {
-        lua_createtable(l, 0, chunk->materialCount);
+        lua_createtable(l, chunk->materialCount, 0);
         for(int i = 0; i < chunk->materialCount; i++)
         {
             PushPointerToLua(l, chunk->materialMeshes[i]);
             lua_rawseti(l, -2, i+1);
         }
 
-        lua_createtable(l, 0, chunk->materialCount);
+        lua_createtable(l, chunk->materialCount, 0);
         for(int i = 0; i < chunk->materialCount; i++)
         {
             lua_pushinteger(l, chunk->materialIds[i]);
@@ -116,7 +116,7 @@ static int Lua_GenerateChunk( lua_State* l )
         }
 
         FreeMeshChunk(chunk);
-        return 3;
+        return 2;
     }
     else
     {
