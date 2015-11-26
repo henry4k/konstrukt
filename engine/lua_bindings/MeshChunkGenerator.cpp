@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <string.h> // memset
 
 #include "../Lua.h"
 #include "../MeshChunkGenerator.h"
@@ -59,14 +60,12 @@ static int Lua_CreateBlockVoxelMesh( lua_State* l )
 
     const bool transparent = (bool)lua_toboolean(l, 4);
 
-    const int meshBufferCount = lua_rawlen(l, 5);
-    assert(meshBufferCount == BLOCK_VOXEL_MATERIAL_BUFFER_COUNT);
-
     MeshBuffer* meshBuffers[BLOCK_VOXEL_MATERIAL_BUFFER_COUNT];
+    memset(meshBuffers, 0, sizeof(MeshBuffer*));
     for(int i = 0; i < BLOCK_VOXEL_MATERIAL_BUFFER_COUNT; i++)
     {
         lua_rawgeti(l, 5, i+1);
-        meshBuffers[i] = CheckMeshBufferFromLua(l, -1);
+        meshBuffers[i] = GetMeshBufferFromLua(l, -1);
         lua_pop(l, 1);
     }
 
@@ -84,7 +83,7 @@ static int Lua_CreateBlockVoxelMesh( lua_State* l )
     return 0;
 }
 
-static int Lua_GenerateChunk( lua_State* l )
+static int Lua_GenerateMeshChunk( lua_State* l )
 {
     MeshChunkGenerator* generator = CheckMeshChunkGeneratorFromLua(l, 1);
     VoxelVolume* volume           = CheckVoxelVolumeFromLua(l, 2);
@@ -142,5 +141,5 @@ bool RegisterMeshChunkGeneratorInLua()
         RegisterFunctionInLua("CreateMeshChunkGenerator", Lua_CreateMeshChunkGenerator) &&
         RegisterFunctionInLua("DestroyMeshChunkGenerator", Lua_DestroyMeshChunkGenerator) &&
         RegisterFunctionInLua("CreateBlockVoxelMesh", Lua_CreateBlockVoxelMesh) &&
-        RegisterFunctionInLua("GenerateChunk", Lua_GenerateChunk);
+        RegisterFunctionInLua("GenerateMeshChunk", Lua_GenerateMeshChunk);
 }

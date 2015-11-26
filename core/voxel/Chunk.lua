@@ -6,8 +6,6 @@
 
 local format = string.format
 local class  = require 'middleclass'
-local ChunkBuilder = require 'core/voxel/ChunkBuilder'
-local Mat4   = require 'core/Matrix4'
 
 
 local Chunk = class('core/voxel/Chunk')
@@ -18,29 +16,48 @@ function Chunk.static:idFromChunkCoords( x, y, z )
 end
 
 function Chunk:initialize()
-    self.models = {}
+    self.materialMap = {}
 end
 
 function Chunk:destroy()
     -- destroy created resource here (meshes and models probably)
-    for _, model in pairs(self.models) do
-        model:destroy()
+    for _, entry in pairs(self.materialMap) do
+        entry.model:destroy()
+        entry.mesh:destroy()
     end
-    self.models = nil
+    self.materialMap = nil
 end
 
 --- Updates the chunks world representation
-function Chunk:update( voxelVolume, min, max, modelWorld )
-    local chunkBuilder = ChunkBuilder()
+function Chunk:update( voxelVolume, start, size, modelWorld, meshChunkGenerator )
+    local materialMap = self.materialMap
+    local materialMeshMap =
+        meshChunkGenerator:generateChunk(voxelVolume, start, size)
 
-    local structures = voxelVolume:getStructuresInAABB(min, max)
-    for _, structure in ipairs(structures) do
-        local transformation = Mat4():translate(structure.origin)
-        chunkBuilder:setStructureTransformation(transformation)
-        structure:generateModels(chunkBuilder)
+    -- Create or update models:
+    for material, mesh in pairs(materialMeshMap) do
+        local materialEntry = materialMap[material]
+        if materialEntry then
+            materialEntry.model:setMesh(mesh)
+            materialEntry.mesh:destroy()
+            materialEntry.mesh = mesh
+        else
+            local model = modelWorld:createModel()
+            material:updateModel(model)
+            model:setMesh(mesh)
+            materialMap[material] = { model = model, mesh = mesh }
+        end
     end
 
-    chunkBuilder:updateModels(self.models, modelWorld)
+    -- Destroy unused models:
+    for material, materialEntry in pairs(materialMap) do
+        local mesh = materialMeshMap[material]
+        if not mesh then
+            materialEntry.model:destroy()
+            materialEntry.mesh:destroy()
+            materialMap[material] = nil
+        end
+    end
 end
 
 

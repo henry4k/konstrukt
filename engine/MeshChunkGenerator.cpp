@@ -3,6 +3,7 @@
 
 #include "Common.h"
 #include "Math.h"
+#include "List.h"
 #include "Mesh.h"
 #include "MeshBuffer.h"
 #include "Reference.h"
@@ -54,17 +55,11 @@ struct MeshChunkGenerator
     BitConditionSolver* meshConditions;
 };
 
-struct VoxelMeshList
-{
-    VoxelMesh* meshes;
-    int meshCount;
-};
-
 struct ChunkEnvironment
 {
     int w, h, d;
     const Voxel* voxels;
-    const VoxelMeshList* meshLists;
+    List** meshLists;
     const bool* transparentVoxels;
     const int*  transparentNeighbours;
 
@@ -195,8 +190,14 @@ static bool IsVoxelMeshTransparent( const VoxelMesh* mesh )
 // ----------------------------------------------------------------------
 
 static int Get3DArrayIndex( int x, int y, int z,
-                            int w, int h )
+                            int w, int h, int d )
 {
+    assert(x >= 0 &&
+           y >= 0 &&
+           z >= 0 &&
+           x < w &&
+           y < h &&
+           z < d);
     return z*h*w + y*w + x;
 }
 
@@ -208,47 +209,34 @@ static Voxel* ReadVoxelChunk( VoxelVolume* volume,
     Voxel* voxels = new Voxel[voxelCount];
     memset(voxels, 0, sizeof(Voxel)*voxelCount);
 
-    const int ex = sx+w;
-    const int ey = sy+h;
-    const int ez = sz+d;
-
-    for(int z = sz; z < ez; z++)
-    for(int y = sy; y < ey; y++)
-    for(int x = sx; x < ex; x++)
-        ReadVoxelData(volume, x, y, z, &voxels[Get3DArrayIndex(x,y,z,w,h)]);
+    for(int z = 0; z < d; z++)
+    for(int y = 0; y < h; y++)
+    for(int x = 0; x < w; x++)
+        ReadVoxelData(volume, sx+x, sy+y, sz+z, &voxels[Get3DArrayIndex(x,y,z,w,h,d)]);
 
     return voxels;
 }
 
-static VoxelMeshList GetVoxelMeshList( MeshChunkGenerator* generator,
-                                       const Voxel* voxel )
+static List* GetVoxelMeshList( MeshChunkGenerator* generator,
+                               const Voxel* voxel )
 {
-    VoxelMeshList list;
-    VoxelMesh** meshes = NULL;
-    list.meshCount = GatherPayloadFromBitField(generator->meshConditions,
-                                               voxel,
-                                               sizeof(Voxel),
-                                               (void***)&list.meshes);
-    return list;
+    return GatherPayloadFromBitField(generator->meshConditions,
+                                     voxel,
+                                     sizeof(Voxel));
 }
 
-static void FreeVoxelMeshListContents( const VoxelMeshList* list )
-{
-    FreePayloadList((void**)list->meshes);
-}
-
-static VoxelMeshList* GatherVoxelMeshListsForChunk( MeshChunkGenerator* generator,
-                                                    const Voxel* voxels,
-                                                    int w, int h, int d )
+static List** GatherVoxelMeshListsForChunk( MeshChunkGenerator* generator,
+                                            const Voxel* voxels,
+                                            int w, int h, int d )
 {
     const int voxelCount = w*h*d;
-    VoxelMeshList* meshLists = new VoxelMeshList[voxelCount];
+    List** meshLists = new List*[voxelCount];
 
     for(int z = 0; z < d; z++)
     for(int y = 0; y < h; y++)
     for(int x = 0; x < w; x++)
     {
-        const int index = Get3DArrayIndex(x,y,z,w,h);
+        const int index = Get3DArrayIndex(x,y,z,w,h,d);
         const Voxel* voxel = &voxels[index];
         meshLists[index] = GetVoxelMeshList(generator, voxel);
     }
@@ -256,19 +244,21 @@ static VoxelMeshList* GatherVoxelMeshListsForChunk( MeshChunkGenerator* generato
     return meshLists;
 }
 
-static bool* GatherTransparentVoxelsForChunk( const VoxelMeshList* meshLists,
+static bool* GatherTransparentVoxelsForChunk( List** meshLists,
                                               int w, int h, int d )
 {
     const int voxelCount = w*h*d;
     bool* transparentVoxels = new bool[voxelCount];
     for(int i = 0; i < voxelCount; i++)
     {
-        const VoxelMesh* meshes = meshLists[i].meshes;
-        const int meshCount     = meshLists[i].meshCount;
+        const List* meshList = meshLists[i];
         bool transparent = true;
+        const int meshCount = GetListLength(meshList);
         for(int j = 0; j < meshCount; j++)
         {
-            if(!IsVoxelMeshTransparent(&meshes[j]))
+            const VoxelMesh* mesh =
+                (const VoxelMesh*)GetConstListEntry(meshList, j);
+            if(!IsVoxelMeshTransparent(mesh))
             {
                 transparent = false;
                 break;
@@ -288,7 +278,7 @@ static int GetTransparentMooreNeighbourhood( const bool* transparentVoxels,
     assert(z >= 1 && z <= d-2);
     int transparentNeighbours = 0;
 #define TEST(xo, yo, zo, flag) \
-    if(transparentVoxels[Get3DArrayIndex(x+(xo),y+(yo),z+(zo),w,h)]) \
+    if(transparentVoxels[Get3DArrayIndex(x+(xo),y+(yo),z+(zo),w,h,d)]) \
         transparentNeighbours |= (flag);
     TEST(+1,0,0,MOORE_POSITIVE_X)
     TEST(-1,0,0,MOORE_NEGATIVE_X)
@@ -309,7 +299,7 @@ static int* GatherTransparentNeighboursForChunk( const bool* transparentVoxels,
     for(int z = 1; z < d-1; z++)
     for(int y = 1; y < h-1; y++)
     for(int x = 1; x < w-1; x++)
-        transparentNeighbours[Get3DArrayIndex(x,y,z,w,h)] =
+        transparentNeighbours[Get3DArrayIndex(x,y,z,w,h,d)] =
             GetTransparentMooreNeighbourhood(transparentVoxels,
                                              x, y, z,
                                              w, h, d);
@@ -346,7 +336,7 @@ static void FreeChunkEnvironment( ChunkEnvironment* env )
                            env->h *
                            env->d;
     for(int i = 0; i < voxelCount; i++)
-        FreeVoxelMeshListContents(&env->meshLists[i]);
+        FreeList(env->meshLists[i]);
 
     delete[] env->voxels;
     delete[] env->meshLists;
@@ -463,14 +453,16 @@ static MeshChunk* GenerateMeshChunkWithEnv( ChunkEnvironment* env )
         const int envIndex = Get3DArrayIndex(x+1,
                                              y+1,
                                              z+1,
-                                             w-2,
-                                             h-2);
-        int transparentNeighbours    = env->transparentNeighbours[envIndex];
-        const VoxelMeshList meshList = env->meshLists[envIndex];
+                                             env->w,
+                                             env->h,
+                                             env->d);
+        int transparentNeighbours = env->transparentNeighbours[envIndex];
+        List* meshList = env->meshLists[envIndex];
 
-        for(int i = 0; i < meshList.meshCount; i++)
+        const int meshCount = GetListLength(meshList);
+        for(int i = 0; i < meshCount; i++)
         {
-            VoxelMesh* mesh = &meshList.meshes[i];
+            VoxelMesh* mesh = (VoxelMesh*)GetListEntry(meshList, i);
             ProcessVoxelMesh(env,
                              transparentNeighbours,
                              x, y, z,
@@ -495,7 +487,7 @@ MeshChunk* GenerateMeshChunk( MeshChunkGenerator* generator,
     MeshChunk* chunk = GenerateMeshChunkWithEnv(env);
 
     FreeChunkEnvironment(env);
-    return NULL;
+    return chunk;
 }
 
 void FreeMeshChunk( MeshChunk* chunk )

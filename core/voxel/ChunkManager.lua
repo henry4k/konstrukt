@@ -6,6 +6,7 @@ local Vec         = require 'core/Vector'
 local Chunk       = require 'core/voxel/Chunk'
 local VoxelVolume = require 'core/voxel/VoxelVolume'
 local ModelWorld  = require 'core/graphics/ModelWorld'
+local MeshChunkGenerator = require 'core/voxel/MeshChunkGenerator'
 
 
 --- Manages the static game world, by dividing it into chunks.
@@ -18,6 +19,7 @@ function ChunkManager:initialize( voxelVolume, modelWorld )
            'Must be initialized with a model world.')
     self.voxelVolume = voxelVolume
     self.modelWorld = modelWorld
+    self.meshChunkGenerator = MeshChunkGenerator()
     self.chunkSize = 8
     self.chunks = {}
     self.activators = {} -- Defines which chunks need to be active.
@@ -113,10 +115,15 @@ function ChunkManager:update()
         local chunk = chunks[chunkId]
         if chunk then
             local voxelPosition = self:chunkToVoxelCoordinates(chunkPosition)
-            local min = voxelPosition
-            local max = voxelPosition + (self.chunkSize-1)
-            print(string.format('Updating chunk %s from %s to %s.', chunkId, min, max))
-            chunk:update(self.voxelVolume, min, max, modelWorld)
+            local size = Vec(self.chunkSize,
+                             self.chunkSize,
+                             self.chunkSize)
+            print(string.format('Updating chunk %s at %s with %s voxels.', chunkId, voxelPosition, size))
+            chunk:update(self.voxelVolume,
+                         voxelPosition,
+                         size,
+                         modelWorld,
+                         self.meshChunkGenerator)
         end
     end
     self.modifiedChunks = {}

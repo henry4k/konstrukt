@@ -3,6 +3,7 @@
 #include <stdlib.h> // malloc, free, realloc
 #include <string.h> // memset, memcmp, memcpy
 
+#include "List.h"
 #include "BitCondition.h"
 
 
@@ -23,12 +24,8 @@ struct OptimizedBitCondition
 struct BitConditionNode
 {
     OptimizedBitCondition condition;
-
-    BitConditionNode* children;
-    int childCount;
-
-    void** payloadList;
-    int payloadCount;
+    List* childList;
+    List* payloadList;
 };
 
 struct BitConditionSolver
@@ -37,12 +34,14 @@ struct BitConditionSolver
 };
 
 
+static void InitializeBitConditionNode( BitConditionNode* node );
 static void FreeBitConditionNodeContents( BitConditionNode* node );
 
 BitConditionSolver* CreateBitConditionSolver()
 {
     BitConditionSolver* solver = new BitConditionSolver;
     memset(solver, 0, sizeof(BitConditionSolver));
+    InitializeBitConditionNode(&solver->root);
     return solver;
 }
 
@@ -122,6 +121,13 @@ static bool AreBitConditionsEqual( const OptimizedBitCondition* a,
     return memcmp(a, b, sizeof(BitCondition)) == 0;
 }
 
+static void InitializeBitConditionNode( BitConditionNode* node )
+{
+    memset(node, 0, sizeof(BitConditionNode));
+    node->childList   = CreateList(sizeof(BitConditionNode));
+    node->payloadList = CreateList(sizeof(void*));
+}
+
 static void DepositPayload( BitConditionNode* currentNode,
                             const BitCondition* conditions,
                             int conditionCount,
@@ -129,37 +135,32 @@ static void DepositPayload( BitConditionNode* currentNode,
 {
     if(conditionCount == 0)
     {
-        currentNode->payloadCount++;
-        const int count = currentNode->payloadCount;
-        currentNode->payloadList = (void**)realloc(currentNode->payloadList,
-                                                   sizeof(void*)*count);
-        currentNode->payloadList[count-1] = payload;
+        AppendListEntries(currentNode->payloadList, 1, &payload);
     }
     else
     {
         const OptimizedBitCondition optimizedCondition =
             OptimizeBitCondition(conditions[0]);
-        BitConditionNode* childNode = NULL;
-        for(int i = 0; i < currentNode->childCount; i++)
+        BitConditionNode* nextChild = NULL;
+        const int childCount = GetListLength(currentNode->childList);
+        for(int i = 0; i < childCount; i++)
         {
-            if(AreBitConditionsEqual(&currentNode->children[i].condition,
+            BitConditionNode* child =
+                (BitConditionNode*)GetListEntry(currentNode->childList, i);
+            if(AreBitConditionsEqual(&child->condition,
                                      &optimizedCondition))
             {
-                childNode = &currentNode->children[i];
+                nextChild = child;
                 break;
             }
         }
-        if(!childNode)
+        if(!nextChild)
         {
-            currentNode->childCount++;
-            const int count = currentNode->childCount;
-            currentNode->children =
-                (BitConditionNode*)realloc(currentNode->children,
-                                           sizeof(BitConditionNode)*count);
-
-            childNode = &currentNode->children[count-1];
-            memset(childNode, 0, sizeof(BitConditionNode));
-            childNode->condition = optimizedCondition;
+            BitConditionNode* child =
+                (BitConditionNode*)AppendListEntries(currentNode->childList, 1, NULL);
+            InitializeBitConditionNode(child);
+            child->condition = optimizedCondition;
+            nextChild = child;
         }
 
         const BitCondition* nextCondition;
@@ -168,7 +169,7 @@ static void DepositPayload( BitConditionNode* currentNode,
         else
             nextCondition = &conditions[1];
 
-        DepositPayload(childNode,
+        DepositPayload(nextChild,
                        nextCondition,
                        conditionCount-1,
                        payload);
@@ -177,12 +178,15 @@ static void DepositPayload( BitConditionNode* currentNode,
 
 static void FreeBitConditionNodeContents( BitConditionNode* node )
 {
-    for(int i = 0; i < node->childCount; i++)
-        FreeBitConditionNodeContents(&node->children[i]);
-    if(node->children)
-        free(node->children);
-    if(node->payloadList)
-        free(node->payloadList);
+    const int childCount = GetListLength(node->childList);
+    for(int i = 0; i < childCount; i++)
+    {
+        BitConditionNode* child =
+            (BitConditionNode*)GetListEntry(node->childList, i);
+        FreeBitConditionNodeContents(child);
+    }
+    FreeList(node->childList);
+    FreeList(node->payloadList);
 }
 
 void AddBitConditions( BitConditionSolver* solver,
@@ -215,51 +219,53 @@ static bool IsConditionMatchingBitField( const OptimizedBitCondition* condition,
 static void FindMatchingBitConditions( const BitConditionNode* node,
                                        const void* bitField,
                                        int bitFieldSize,
-                                       void*** results,
-                                       int* resultCount )
+                                       List* resultList );
+
+static void FindMatchingBitConditionsInChilds( const List* childList,
+                                               const void* bitField,
+                                               int bitFieldSize,
+                                               List* resultList )
+{
+    const int childCount = GetListLength(childList);
+    for(int i = 0; i < childCount; i++)
+    {
+        const BitConditionNode* child =
+            (const BitConditionNode*)GetConstListEntry(childList, i);
+        FindMatchingBitConditions(child,
+                                  bitField,
+                                  bitFieldSize,
+                                  resultList);
+    }
+}
+
+static void FindMatchingBitConditions( const BitConditionNode* node,
+                                       const void* bitField,
+                                       int bitFieldSize,
+                                       List* resultList )
 {
     if(IsConditionMatchingBitField(&node->condition,
                                    bitField,
                                    bitFieldSize))
     {
         // Append payloads to result list:
-        const int start = *resultCount;
-        *resultCount += node->payloadCount;
-        *results = (void**)realloc(*results,
-                                   sizeof(void*)*(*resultCount));
-        for(int i = 0; i < node->payloadCount; i++)
-            (*results)[start+i] = node->payloadList[i];
+        AppendListToList(resultList, node->payloadList);
 
         // Try to match child nodes:
-        for(int i = 0; i < node->childCount; i++)
-            FindMatchingBitConditions(&node->children[i],
-                                      bitField,
-                                      bitFieldSize,
-                                      results,
-                                      resultCount);
+        FindMatchingBitConditionsInChilds(node->childList,
+                                          bitField,
+                                          bitFieldSize,
+                                          resultList);
     }
 }
 
-int GatherPayloadFromBitField( const BitConditionSolver* solver,
-                               const void* bitField,
-                               int bitFieldSize,
-                               void*** payloadList )
+List* GatherPayloadFromBitField( const BitConditionSolver* solver,
+                                 const void* bitField,
+                                 int bitFieldSize )
 {
-    int resultCount = 0;
-    FindMatchingBitConditions(&solver->root,
-                              bitField,
-                              bitFieldSize,
-                              payloadList,
-                              &resultCount);
-    if(resultCount == 0)
-        assert(*payloadList == NULL);
-    else
-        assert(*payloadList != NULL);
-    return resultCount;
-}
-
-void FreePayloadList( void** payloadList )
-{
-    if(payloadList)
-        free(payloadList);
+    List* resultList = CreateList(sizeof(void*));
+    FindMatchingBitConditionsInChilds(solver->root.childList,
+                                      bitField,
+                                      bitFieldSize,
+                                      resultList);
+    return resultList;
 }

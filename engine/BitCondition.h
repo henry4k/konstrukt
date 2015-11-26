@@ -1,6 +1,9 @@
 #ifndef __APOAPSIS_BIT_CONDITION__
 #define __APOAPSIS_BIT_CONDITION__
 
+struct List;
+
+
 /**
  * Used to extract and test bits from a bit field.
  */
@@ -33,19 +36,11 @@ void AddBitConditions( BitConditionSolver* solver,
 /**
  * Collect all values (payloads), whose bit conditions match the given bit field.
  *
- * @param payloadList
- * The result list is written to this pointer.
- * Writes `NULL` if there are no results.
- * Use #FreePayloadList to release the list, when you don't need it anymore.
- *
  * @return
- * The result count.
+ * A list which contains the results or `NULL` if something went wrong.
  */
-int GatherPayloadFromBitField( const BitConditionSolver* solver,
-                               const void* bitField,
-                               int bitFieldSize,
-                               void*** payloadList );
-
-void FreePayloadList( void** payloadList );
+List* GatherPayloadFromBitField( const BitConditionSolver* solver,
+                                 const void* bitField,
+                                 int bitFieldSize );
 
 #endif

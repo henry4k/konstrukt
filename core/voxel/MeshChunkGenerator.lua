@@ -51,8 +51,8 @@ end
 --- Generates a #MeshChunk from a section of a voxel volume.
 --
 -- @return[type=table]
--- A list, which contains a mesh for each material encountered during
--- generation.  Each entry has a `mesh` and a `material` key.
+-- A map, which contains a mesh for each material encountered during
+-- generation.
 --
 function MeshChunkGenerator:generateChunk( voxelVolume, start, size )
     assert(Object.isInstanceOf(voxelVolume, VoxelVolume),
@@ -73,8 +73,7 @@ function MeshChunkGenerator:generateChunk( voxelVolume, start, size )
         local id = materialIds[i]
         local material = self.idToMaterial[id]
         assert(material)
-        result[i] = { mesh = meshes[i],
-                      material = material }
+        result[material] = meshes[i]
     end
     return result
 end
