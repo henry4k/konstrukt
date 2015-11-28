@@ -6,6 +6,7 @@
 
 local class       = require 'middleclass'
 local Object      = class.Object
+local Mesh        = require 'core/graphics/Mesh'
 local VoxelMesh   = require 'core/voxel/VoxelMesh'
 local VoxelVolume = require 'core/voxel/VoxelVolume'
 local CreateMeshChunkGenerator  = ENGINE.CreateMeshChunkGenerator
@@ -73,7 +74,7 @@ function MeshChunkGenerator:generateChunk( voxelVolume, start, size )
         local id = materialIds[i]
         local material = self.idToMaterial[id]
         assert(material)
-        result[material] = meshes[i]
+        result[material] = Mesh(meshes[i])
     end
     return result
 end

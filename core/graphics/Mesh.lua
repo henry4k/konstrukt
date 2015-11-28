@@ -32,10 +32,14 @@ function Mesh.static:_load( ... )
     return { value=mesh, destructor=mesh.destroy }
 end
 
-function Mesh:initialize( meshBuffer )
-    assert(Object.isInstanceOf(meshBuffer, MeshBuffer),
-           'Must be initialized with a mesh buffer.')
-    self.handle = CreateMesh(meshBuffer.handle)
+function Mesh:initialize( v )
+    if Object.isInstanceOf(v, MeshBuffer) then
+        self.handle = CreateMesh(v.handle)
+    elseif type(v) == 'userdata' then
+        self.handle = v
+    else
+        error('Must be initialized with a mesh buffer.')
+    end
 end
 
 function Mesh:destroy()

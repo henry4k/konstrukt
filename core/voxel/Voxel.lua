@@ -74,7 +74,9 @@ function Voxel.prototype:write( bitPosition, bitCount, value )
                             value, bitCount, maxValue))
     end
 
+    print('bit32replace', self[index], value, bitOffset, bitCount)
     self[index] = bit32replace(self[index], value, bitOffset, bitCount)
+    print('=', self[index])
 end
 
 function Voxel.mt:__newindex( key, value )

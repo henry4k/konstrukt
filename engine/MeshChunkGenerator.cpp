@@ -62,7 +62,6 @@ struct ChunkEnvironment
     List** meshLists;
     const bool* transparentVoxels;
     const int*  transparentNeighbours;
-
     MeshBuffer** materialMeshBuffers;
     int*         materialIds;
     int          materialCount;
@@ -231,16 +230,8 @@ static List** GatherVoxelMeshListsForChunk( MeshChunkGenerator* generator,
 {
     const int voxelCount = w*h*d;
     List** meshLists = new List*[voxelCount];
-
-    for(int z = 0; z < d; z++)
-    for(int y = 0; y < h; y++)
-    for(int x = 0; x < w; x++)
-    {
-        const int index = Get3DArrayIndex(x,y,z,w,h,d);
-        const Voxel* voxel = &voxels[index];
-        meshLists[index] = GetVoxelMeshList(generator, voxel);
-    }
-
+    for(int i = 0; i < voxelCount; i++)
+        meshLists[i] = GetVoxelMeshList(generator, &voxels[i]);
     return meshLists;
 }
 
@@ -257,7 +248,7 @@ static bool* GatherTransparentVoxelsForChunk( List** meshLists,
         for(int j = 0; j < meshCount; j++)
         {
             const VoxelMesh* mesh =
-                (const VoxelMesh*)GetConstListEntry(meshList, j);
+                *(const VoxelMesh**)GetConstListEntry(meshList, j);
             if(!IsVoxelMeshTransparent(mesh))
             {
                 transparent = false;
@@ -306,51 +297,6 @@ static int* GatherTransparentNeighboursForChunk( const bool* transparentVoxels,
     return transparentNeighbours;
 }
 
-static ChunkEnvironment* CreateChunkEnvironment( MeshChunkGenerator* generator,
-                                                 VoxelVolume* volume,
-                                                 int sx, int sy, int sz,
-                                                 int w, int h, int d )
-{
-    ChunkEnvironment* env = new ChunkEnvironment;
-    memset(env, 0, sizeof(ChunkEnvironment));
-    env->w = w;
-    env->h = h;
-    env->d = d;
-    env->voxels = ReadVoxelChunk(volume,
-                                 sx, sy, sz,
-                                  w,  h,  d);
-    env->meshLists = GatherVoxelMeshListsForChunk(generator,
-                                                  env->voxels,
-                                                  w, h, d);
-    env->transparentVoxels = GatherTransparentVoxelsForChunk(env->meshLists,
-                                                             w, h, d);
-    env->transparentNeighbours =
-        GatherTransparentNeighboursForChunk(env->transparentVoxels,
-                                            w, h, d);
-    return env;
-}
-
-static void FreeChunkEnvironment( ChunkEnvironment* env )
-{
-    const int voxelCount = env->w *
-                           env->h *
-                           env->d;
-    for(int i = 0; i < voxelCount; i++)
-        FreeList(env->meshLists[i]);
-
-    delete[] env->voxels;
-    delete[] env->meshLists;
-    delete[] env->transparentVoxels;
-    delete[] env->transparentNeighbours;
-
-    for(int i = 0; i < env->materialCount; i++)
-        ReleaseMeshBuffer(env->materialMeshBuffers[i]);
-    free(env->materialMeshBuffers);
-    free(env->materialIds);
-
-    delete env;
-}
-
 static MeshBuffer* GetMeshBufferForMaterial( ChunkEnvironment* env,
                                              int materialId )
 {
@@ -375,13 +321,12 @@ static MeshBuffer* GetMeshBufferForMaterial( ChunkEnvironment* env,
 
     // Insert the material:
     MeshBuffer* buffer = CreateMeshBuffer();
+    ReferenceMeshBuffer(buffer);
     env->materialIds[materialCount-1] = materialId;
     env->materialMeshBuffers[materialCount-1] = buffer;
 
     return buffer;
 }
-
-// ----------------------------------------------------------------------
 
 static void ProcessBlockVoxelMesh( ChunkEnvironment* env,
                                    int transparentNeighbours,
@@ -436,11 +381,8 @@ static void ProcessVoxelMesh( ChunkEnvironment* env,
     FatalError("Unknown voxel mesh type.");
 }
 
-static MeshChunk* GenerateMeshChunkWithEnv( ChunkEnvironment* env )
+static void ProcessVoxelMeshes( ChunkEnvironment* env )
 {
-    MeshChunk* chunk = new MeshChunk;
-    memset(chunk, 0, sizeof(MeshChunk));
-
     const int w = env->w-2;
     const int h = env->h-2;
     const int d = env->d-2;
@@ -456,18 +398,85 @@ static MeshChunk* GenerateMeshChunkWithEnv( ChunkEnvironment* env )
                                              env->w,
                                              env->h,
                                              env->d);
-        int transparentNeighbours = env->transparentNeighbours[envIndex];
+        const int transparentNeighbours = env->transparentNeighbours[envIndex];
         List* meshList = env->meshLists[envIndex];
 
         const int meshCount = GetListLength(meshList);
         for(int i = 0; i < meshCount; i++)
         {
-            VoxelMesh* mesh = (VoxelMesh*)GetListEntry(meshList, i);
+            VoxelMesh* mesh = *(VoxelMesh**)GetListEntry(meshList, i);
             ProcessVoxelMesh(env,
                              transparentNeighbours,
                              x, y, z,
                              mesh);
         }
+    }
+}
+
+static ChunkEnvironment* CreateChunkEnvironment( MeshChunkGenerator* generator,
+                                                 VoxelVolume* volume,
+                                                 int sx, int sy, int sz,
+                                                 int w, int h, int d )
+{
+    ChunkEnvironment* env = new ChunkEnvironment;
+    memset(env, 0, sizeof(ChunkEnvironment));
+    env->w = w;
+    env->h = h;
+    env->d = d;
+    env->voxels = ReadVoxelChunk(volume,
+                                 sx, sy, sz,
+                                  w,  h,  d);
+    env->meshLists = GatherVoxelMeshListsForChunk(generator,
+                                                  env->voxels,
+                                                  w, h, d);
+    env->transparentVoxels = GatherTransparentVoxelsForChunk(env->meshLists,
+                                                             w, h, d);
+    env->transparentNeighbours =
+        GatherTransparentNeighboursForChunk(env->transparentVoxels,
+                                            w, h, d);
+    ProcessVoxelMeshes(env);
+    return env;
+}
+
+static void FreeChunkEnvironment( ChunkEnvironment* env )
+{
+    const int voxelCount = env->w *
+                           env->h *
+                           env->d;
+    for(int i = 0; i < voxelCount; i++)
+        FreeList(env->meshLists[i]);
+
+    delete[] env->voxels;
+    delete[] env->meshLists;
+    delete[] env->transparentVoxels;
+    delete[] env->transparentNeighbours;
+
+    for(int i = 0; i < env->materialCount; i++)
+        ReleaseMeshBuffer(env->materialMeshBuffers[i]);
+    free(env->materialMeshBuffers);
+    free(env->materialIds);
+
+    delete env;
+}
+
+// ----------------------------------------------------------------------
+
+static MeshChunk* GenerateMeshChunkWithEnv( ChunkEnvironment* env )
+{
+    MeshChunk* chunk = new MeshChunk;
+    memset(chunk, 0, sizeof(MeshChunk));
+
+    const int materialCount = env->materialCount;
+    chunk->materialCount    = env->materialCount;
+    chunk->materialIds      = new int[materialCount];
+    chunk->materialMeshes   = new Mesh*[materialCount];
+
+    memcpy(chunk->materialIds, env->materialIds, sizeof(int)*materialCount);
+    for(int i = 0; i < materialCount; i++)
+    {
+        Mesh* mesh = CreateMesh(env->materialMeshBuffers[i]);
+        ReferenceMesh(mesh);
+        chunk->materialMeshes[i] = mesh;
     }
 
     return chunk;

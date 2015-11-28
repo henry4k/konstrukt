@@ -16,46 +16,43 @@ function Chunk.static:idFromChunkCoords( x, y, z )
 end
 
 function Chunk:initialize()
-    self.materialMap = {}
+    self.materialModels = {}
 end
 
 function Chunk:destroy()
     -- destroy created resource here (meshes and models probably)
-    for _, entry in pairs(self.materialMap) do
-        entry.model:destroy()
-        entry.mesh:destroy()
+    for _, model in pairs(self.materialModels) do
+        model:destroy()
     end
-    self.materialMap = nil
+    self.materialModels = nil
 end
 
 --- Updates the chunks world representation
 function Chunk:update( voxelVolume, start, size, modelWorld, meshChunkGenerator )
-    local materialMap = self.materialMap
+    local materialModels = self.materialModels
     local materialMeshMap =
         meshChunkGenerator:generateChunk(voxelVolume, start, size)
 
     -- Create or update models:
     for material, mesh in pairs(materialMeshMap) do
-        local materialEntry = materialMap[material]
-        if materialEntry then
-            materialEntry.model:setMesh(mesh)
-            materialEntry.mesh:destroy()
-            materialEntry.mesh = mesh
+        local model = materialModels[material]
+        if model then
+            model:setMesh(mesh)
         else
-            local model = modelWorld:createModel()
+            model = modelWorld:createModel()
             material:updateModel(model)
             model:setMesh(mesh)
-            materialMap[material] = { model = model, mesh = mesh }
+            materialModels[material] = model
         end
+        mesh:destroy() -- Lua doesn't need it anymore - the model references it now.
     end
 
     -- Destroy unused models:
-    for material, materialEntry in pairs(materialMap) do
+    for material, model in pairs(materialModels) do
         local mesh = materialMeshMap[material]
         if not mesh then
-            materialEntry.model:destroy()
-            materialEntry.mesh:destroy()
-            materialMap[material] = nil
+            materialModel:destroy()
+            materialModels[material] = nil
         end
     end
 end
