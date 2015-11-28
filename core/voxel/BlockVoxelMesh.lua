@@ -41,8 +41,7 @@ function BlockVoxelMesh:_addToGenerator( generator )
                          materialId,
                          self.bitConditions,
                          self.isTransparent,
-                         self.meshBuffers,
-                         self.meshBufferTransformations)
+                         self.meshBuffers)
 end
 
 --- Define the geometry used for a cube side.
@@ -65,8 +64,12 @@ function BlockVoxelMesh:setMeshBuffer( name, buffer, transformation )
            Object.isInstanceOf(transformation, Matrix4),
            'Transformation must be a matrix or nil.')
     local index = nameToIndex[name]
-    self.meshBuffers[index] = buffer
-    self.meshBufferTransformations[index] = transformation
+    self.meshBuffers[index] = buffer.handle
+    if transformation then
+        self.meshBufferTransformations[index] = transformation.handle
+    else
+        self.meshBufferTransformations[index] = nil
+    end
 end
 
 

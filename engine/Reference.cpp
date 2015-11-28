@@ -10,7 +10,7 @@ void InitReferenceCounter( ReferenceCounter* counter )
 
 void FreeReferenceCounter( ReferenceCounter* counter )
 {
-    // not needed
+    assert(*counter == 0);
 }
 
 void Reference( ReferenceCounter* counter )

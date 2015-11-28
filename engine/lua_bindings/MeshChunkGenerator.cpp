@@ -2,6 +2,7 @@
 #include <string.h> // memset
 
 #include "../Lua.h"
+#include "../Mesh.h"
 #include "../MeshChunkGenerator.h"
 #include "MeshBuffer.h"
 #include "PhysicsManager.h"
@@ -61,7 +62,7 @@ static int Lua_CreateBlockVoxelMesh( lua_State* l )
     const bool transparent = (bool)lua_toboolean(l, 4);
 
     MeshBuffer* meshBuffers[BLOCK_VOXEL_MATERIAL_BUFFER_COUNT];
-    memset(meshBuffers, 0, sizeof(MeshBuffer*));
+    memset(meshBuffers, 0, sizeof(MeshBuffer*)*BLOCK_VOXEL_MATERIAL_BUFFER_COUNT);
     for(int i = 0; i < BLOCK_VOXEL_MATERIAL_BUFFER_COUNT; i++)
     {
         lua_rawgeti(l, 5, i+1);
@@ -103,7 +104,9 @@ static int Lua_GenerateMeshChunk( lua_State* l )
         lua_createtable(l, chunk->materialCount, 0);
         for(int i = 0; i < chunk->materialCount; i++)
         {
-            PushPointerToLua(l, chunk->materialMeshes[i]);
+            Mesh* mesh = chunk->materialMeshes[i];
+            PushPointerToLua(l, mesh);
+            ReferenceMesh(mesh);
             lua_rawseti(l, -2, i+1);
         }
 
