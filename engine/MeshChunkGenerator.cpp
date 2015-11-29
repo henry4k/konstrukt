@@ -13,6 +13,9 @@
 #include <glm/gtc/matrix_transform.hpp> // translate, rotate
 
 
+using namespace glm;
+
+
 static const int MAX_VOXEL_MESHES = 8;
 
 enum VoxelMeshType
@@ -328,42 +331,71 @@ static MeshBuffer* GetMeshBufferForMaterial( ChunkEnvironment* env,
     return buffer;
 }
 
+static const float HalfPI = (float)(PI/2.0);
+
+
+
 static void ProcessBlockVoxelMesh( ChunkEnvironment* env,
                                    int transparentNeighbours,
                                    MeshBuffer* materialMeshBuffer,
-                                   int x, int y, int z,
+                                   float x, float y, float z,
                                    const BlockVoxelMesh* mesh )
 {
-    const MeshBuffer* const* meshBuffers = &mesh->meshBuffers[0];
+    static const int dirCount = 6;
+    static const int mooreDirs[dirCount] =
+    {
+        MOORE_POSITIVE_X,
+        MOORE_NEGATIVE_X,
+        MOORE_POSITIVE_Y,
+        MOORE_NEGATIVE_Y,
+        MOORE_POSITIVE_Z,
+        MOORE_NEGATIVE_Z
+    };
+    static const int dirs[dirCount] =
+    {
+        POSITIVE_X,
+        NEGATIVE_X,
+        POSITIVE_Y,
+        NEGATIVE_Y,
+        POSITIVE_Z,
+        NEGATIVE_Z
+    };
+    static const mat4 dirTransforms[dirCount] =
+    {
+        rotate(mat4(1), +HalfPI, vec3(0,1,0)), // +x
+        rotate(mat4(1), -HalfPI, vec3(0,1,0)), // -x
+        rotate(mat4(1), +HalfPI, vec3(1,0,0)), // +y
+        rotate(mat4(1), -HalfPI, vec3(1,0,0)), // -y
+        mat4(1), // +z
+        rotate(mat4(1), (float)PI, vec3(0,1,0)) // -z
+    };
 
-    const glm::mat4 transform = translate(glm::mat4(1.f),
-                                          glm::vec3(x, y, z));
+    const MeshBuffer* const* meshBuffers = &mesh->meshBuffers[0];
+    const mat4 voxelTransform = translate(mat4(1), vec3(x, y, z));
 
     if(transparentNeighbours != 0 &&
        meshBuffers[CENTER])
     {
         AppendMeshBuffer(materialMeshBuffer,
                          meshBuffers[CENTER],
-                         &transform);
+                         &voxelTransform);
     }
 
-#define GEN_DIR(dir) \
-    if(transparentNeighbours & MOORE_##dir && meshBuffers[dir]) \
-    { \
-        AppendMeshBuffer(materialMeshBuffer, meshBuffers[dir], &transform); \
+    for(int i = 0; i < dirCount; i++)
+    {
+        if(transparentNeighbours & mooreDirs[i] && meshBuffers[dirs[i]])
+        {
+            const mat4 sideTransform = voxelTransform * dirTransforms[i];
+            AppendMeshBuffer(materialMeshBuffer,
+                             meshBuffers[dirs[i]],
+                             &sideTransform);
+        }
     }
-    GEN_DIR(POSITIVE_X)
-    GEN_DIR(NEGATIVE_X)
-    GEN_DIR(POSITIVE_Y)
-    GEN_DIR(NEGATIVE_Y)
-    GEN_DIR(POSITIVE_Z)
-    GEN_DIR(NEGATIVE_Z)
-#undef GEN_DIR
 }
 
 static void ProcessVoxelMesh( ChunkEnvironment* env,
                               int transparentNeighbours,
-                              int x, int y, int z,
+                              float x, float y, float z,
                               const VoxelMesh* mesh )
 {
     MeshBuffer* materialMeshBuffer =
@@ -388,6 +420,10 @@ static void ProcessVoxelMeshes( ChunkEnvironment* env )
     const int d = env->d-2;
     const int voxelCount = w*h*d;
 
+    const float hw = ((float)w) / 2.f;
+    const float hh = ((float)h) / 2.f;
+    const float hd = ((float)d) / 2.f;
+
     for(int z = 0; z < d; z++)
     for(int y = 0; y < h; y++)
     for(int x = 0; x < w; x++)
@@ -404,10 +440,15 @@ static void ProcessVoxelMeshes( ChunkEnvironment* env )
         const int meshCount = GetListLength(meshList);
         for(int i = 0; i < meshCount; i++)
         {
-            VoxelMesh* mesh = *(VoxelMesh**)GetListEntry(meshList, i);
+            const VoxelMesh* mesh = *(VoxelMesh**)GetListEntry(meshList, i);
+            const float xTranslation = ((float)x) - hw + 0.5f;
+            const float yTranslation = ((float)y) - hh + 0.5f;
+            const float zTranslation = ((float)z) - hd + 0.5f;
             ProcessVoxelMesh(env,
                              transparentNeighbours,
-                             x, y, z,
+                             xTranslation,
+                             yTranslation,
+                             zTranslation,
                              mesh);
         }
     }

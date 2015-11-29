@@ -6,6 +6,7 @@
 
 local format = string.format
 local class  = require 'middleclass'
+local Mat4   = require 'core/Matrix4'
 
 
 local Chunk = class('core/voxel/Chunk')
@@ -40,6 +41,7 @@ function Chunk:update( voxelVolume, start, size, modelWorld, meshChunkGenerator 
             model:setMesh(mesh)
         else
             model = modelWorld:createModel()
+            model:setTransformation(Mat4():translate(start+size*0.5))
             material:updateModel(model)
             model:setMesh(mesh)
             materialModels[material] = model
