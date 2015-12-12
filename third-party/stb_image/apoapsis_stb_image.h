@@ -3,6 +3,8 @@
 
 #define STBI_NO_STDIO
 #define STBI_NO_HDR
+#define STBI_NO_LINEAR
+#define STBI_ONLY_PNG
 #include "stb_image.h"
 
 #endif
