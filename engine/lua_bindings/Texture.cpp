@@ -1,5 +1,7 @@
 #include "../Lua.h"
+#include "../Image.h"
 #include "../Texture.h"
+#include "Image.h"
 #include "Texture.h"
 
 
@@ -33,12 +35,12 @@ static int ReadTextureOptions( lua_State* l, int startArgument )
     return options;
 }
 
-static int Lua_Load2dTexture( lua_State* l )
+static int Lua_Create2dTexture( lua_State* l )
 {
-    const char* vfsPath = luaL_checkstring(l, 1);
+    const Image* image = CheckImageFromLua(l, 1);
     const int options = ReadTextureOptions(l, 2);
 
-    Texture* texture = Load2dTexture(options, vfsPath);
+    Texture* texture = Create2dTexture(image, options);
     if(texture)
     {
         PushPointerToLua(l, texture);
@@ -52,12 +54,18 @@ static int Lua_Load2dTexture( lua_State* l )
     }
 }
 
-static int Lua_LoadCubeTexture( lua_State* l )
+static int Lua_CreateCubeTexture( lua_State* l )
 {
-    const char* vfsPathTemplate = luaL_checkstring(l, 1);
+    const Image* images[6];
+    for(int i = 0; i < 6; i++)
+    {
+        lua_rawgeti(l, 1, i+1);
+        images[i] = CheckImageFromLua(l, -1);
+        lua_pop(l, 1);
+    }
     const int options = ReadTextureOptions(l, 2);
 
-    Texture* texture = LoadCubeTexture(options, vfsPathTemplate);
+    Texture* texture = CreateCubeTexture(images, options);
     if(texture)
     {
         PushPointerToLua(l, texture);
@@ -91,7 +99,7 @@ Texture* CheckTextureFromLua( lua_State* l, int stackPosition )
 bool RegisterTextureInLua()
 {
     return
-        RegisterFunctionInLua("Load2dTexture", Lua_Load2dTexture) &&
-        RegisterFunctionInLua("LoadCubeTexture", Lua_LoadCubeTexture) &&
+        RegisterFunctionInLua("Create2dTexture", Lua_Create2dTexture) &&
+        RegisterFunctionInLua("CreateCubeTexture", Lua_CreateCubeTexture) &&
         RegisterFunctionInLua("DestroyTexture", Lua_DestroyTexture);
 }

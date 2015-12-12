@@ -61,7 +61,7 @@ static Texture* CreateTexture( GLenum target, int options )
     return texture;
 }
 
-static Texture* Create2dTexture( int options, const Image* image )
+Texture* Create2dTexture( const Image* image, int options )
 {
     Texture* texture = CreateTexture(GL_TEXTURE_2D, options);
     if(!texture)
@@ -81,26 +81,7 @@ static Texture* Create2dTexture( int options, const Image* image )
     return texture;
 }
 
-Texture* Load2dTexture( int options, const char* vfsPath )
-{
-    Texture* texture = NULL;
-
-    Image image;
-    if(LoadImage(&image, vfsPath))
-    {
-        texture = Create2dTexture(options, &image);
-        FreeImage(&image);
-    }
-
-    if(texture)
-        Log("Loaded %s", vfsPath);
-    else
-        Error("Failed to load %s", vfsPath);
-
-    return texture;
-}
-
-static Texture* CreateCubeTexture( int options, const Image* images )
+Texture* CreateCubeTexture( const Image** images, int options )
 {
     // Always uses clamp to edge since its the only option that makes sense here.
     options |= TEX_CLAMP;
@@ -115,45 +96,16 @@ static Texture* CreateCubeTexture( int options, const Image* images )
         const GLenum target = GL_TEXTURE_CUBE_MAP_POSITIVE_X+i;
         glTexImage2D(target,
                      0,
-                     images[i].format,
-                     images[i].width,
-                     images[i].height,
+                     images[i]->format,
+                     images[i]->width,
+                     images[i]->height,
                      0,
-                     images[i].format,
-                     images[i].type,
-                     images[i].data);
+                     images[i]->format,
+                     images[i]->type,
+                     images[i]->data);
     }
     glBindTexture(GL_TEXTURE_CUBE_MAP, INVALID_TEXTURE_HANDLE);
 
-    return texture;
-}
-
-Texture* LoadCubeTexture( int options, const char* vfsPathTemplate )
-{
-    // Load cube sides:
-    Image images[6];
-    static const char* names[6] = { "px","nx",
-                                    "py","ny",
-                                    "pz","nz" };
-    for(int i = 0; i < 6; i++)
-    {
-        const char* vfsPath = Format(vfsPathTemplate, names[i]);
-        if(!LoadImage(&images[i], vfsPath))
-        {
-            Error("Failed to load %s", vfsPath);
-            return NULL;
-        }
-    }
-
-    // Create texture form cube sides:
-    Texture* texture = CreateCubeTexture(options, images);
-    for(int i = 0; i < 6; i++)
-        FreeImage(&images[i]);
-
-    if(texture)
-        Log("Loaded %s", Format(vfsPathTemplate, "*"));
-    else
-        Error("Failed to load %s", Format(vfsPathTemplate, "*"));
     return texture;
 }
 

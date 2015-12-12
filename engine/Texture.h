@@ -17,8 +17,9 @@ enum TextureOptions
 };
 
 
-Texture* Load2dTexture( int options, const char* vfsPath );
-Texture* LoadCubeTexture( int options, const char* vfsPathTemplate );
+Texture* Create2dTexture( const Image* image, int options );
+Texture* CreateCubeTexture( const Image** images, int options );
+Texture* CreateDepthTexture( int width, int height, int options );
 
 void BindTexture( const Texture* texture, int unit );
 

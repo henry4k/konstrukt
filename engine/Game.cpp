@@ -21,6 +21,7 @@
 #include "lua_bindings/Camera.h"
 #include "lua_bindings/Config.h"
 #include "lua_bindings/Controls.h"
+#include "lua_bindings/Image.h"
 #include "lua_bindings/Math.h"
 #include "lua_bindings/Mesh.h"
 #include "lua_bindings/MeshBuffer.h"
@@ -113,6 +114,7 @@ static bool RegisterAllModulesInLua()
         RegisterCameraInLua() &&
         RegisterConfigInLua() &&
         RegisterControlsInLua() &&
+        RegisterImageInLua() &&
         RegisterMathInLua() &&
         RegisterMeshInLua() &&
         RegisterMeshBufferInLua() &&

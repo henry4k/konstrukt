@@ -6,9 +6,10 @@
 
 local class    = require 'middleclass'
 local Resource = require 'core/Resource'
-local Load2dTexture   = ENGINE.Load2dTexture
-local LoadCubeTexture = ENGINE.LoadCubeTexture
-local DestroyTexture  = ENGINE.DestroyTexture
+local LoadImage         = ENGINE.LoadImage
+local Create2dTexture   = ENGINE.Create2dTexture
+local CreateCubeTexture = ENGINE.CreateCubeTexture
+local DestroyTexture    = ENGINE.DestroyTexture
 
 
 local Texture = class('core/graphics/Texture')
@@ -42,12 +43,19 @@ function Texture.static:_load( target, fileName, flags )
     return { value=texture, destructor=texture.destroy }
 end
 
+local cubeMapSides = { 'px', 'nx', 'py', 'ny', 'pz', 'nz' }
+
 function Texture:initialize( target, fileName, flags )
     flags = flags or {}
     if target == '2d' then
-        self.handle = Load2dTexture(fileName, table.unpack(flags))
+        local image = LoadImage(fileName)
+        self.handle = Create2dTexture(image, table.unpack(flags))
     elseif target == 'cube' then
-        self.handle = LoadCubeTexture(fileName, table.unpack(flags))
+        local images = {}
+        for i,v in ipairs(cubeMapSides) do
+            images[i] = LoadImage(string.format(fileName, v))
+        end
+        self.handle = CreateCubeTexture(images, table.unpack(flags))
     else
         error('Unknown type: '..target)
     end
