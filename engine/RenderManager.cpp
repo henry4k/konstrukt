@@ -21,7 +21,9 @@ bool InitRenderManager()
     glEnable(GL_CULL_FACE);
     //glDisable(GL_CULL_FACE);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+    glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, // RGB
+                        GL_ONE, GL_ZERO);               // A
     return true;
 }
 

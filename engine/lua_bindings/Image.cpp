@@ -29,6 +29,13 @@ static int Lua_LoadImage( lua_State* l )
     }
 }
 
+static int Lua_MultiplyImageRgbByAlpha( lua_State* l )
+{
+    Image* image = CheckImageFromLua(l, 1);
+    MultiplyImageRgbByAlpha(image);
+    return 0;
+}
+
 Image* GetImageFromLua( lua_State* l, int stackPosition )
 {
     return (Image*)GetUserDataFromLua(l, stackPosition, IMAGE_TYPE);
@@ -43,5 +50,6 @@ bool RegisterImageInLua()
 {
     return
         RegisterUserDataTypeInLua(IMAGE_TYPE, Lua_FreeImage) &&
-        RegisterFunctionInLua("LoadImage", Lua_LoadImage);
+        RegisterFunctionInLua("LoadImage", Lua_LoadImage) &&
+        RegisterFunctionInLua("MultiplyImageRgbByAlpha", Lua_MultiplyImageRgbByAlpha);
 }

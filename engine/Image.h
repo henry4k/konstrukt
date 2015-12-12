@@ -11,6 +11,7 @@ struct Image
 
 bool CreateImage( Image* image, int width, int height, int bpp );
 bool LoadImage( Image* image, const char* vfsPath );
+void MultiplyImageRgbByAlpha( Image* image );
 void FreeImage( const Image* image );
 
 #endif

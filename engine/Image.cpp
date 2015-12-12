@@ -132,6 +132,39 @@ bool LoadImage( Image* image, const char* vfsPath )
     return true;
 }
 
+void MultiplyImageRgbByAlpha( Image* image )
+{
+    assert(image->type == GL_UNSIGNED_BYTE);
+
+    unsigned char* data = (unsigned char*)image->data;
+    const int pixelCount = image->width * image->height;
+
+    switch(image->bpp)
+    {
+        case 2: // luminance + alpha
+            for(int i = 0; i < pixelCount; i++)
+            {
+                unsigned char* pixel = &data[i*2];
+                const float alpha = (float)pixel[1] / 255.f;
+                assert(alpha >= 0.f && alpha <= 1.f);
+                pixel[0] *= alpha;
+            }
+            break;
+
+        case 4: // rgb + alpha
+            for(int i = 0; i < pixelCount; i++)
+            {
+                unsigned char* pixel = &data[i*4];
+                const float alpha = (float)pixel[3] / 255.f;
+                assert(alpha >= 0.f && alpha <= 1.f);
+                pixel[0] *= alpha;
+                pixel[1] *= alpha;
+                pixel[2] *= alpha;
+            }
+            break;
+    }
+}
+
 void FreeImage( const Image* image )
 {
     if(image->data)

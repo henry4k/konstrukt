@@ -7,6 +7,7 @@
 local class    = require 'middleclass'
 local Resource = require 'core/Resource'
 local LoadImage         = ENGINE.LoadImage
+local MultiplyImageRgbByAlpha = ENGINE.MultiplyImageRgbByAlpha
 local Create2dTexture   = ENGINE.Create2dTexture
 local CreateCubeTexture = ENGINE.CreateCubeTexture
 local DestroyTexture    = ENGINE.DestroyTexture
@@ -49,11 +50,13 @@ function Texture:initialize( target, fileName, flags )
     flags = flags or {}
     if target == '2d' then
         local image = LoadImage(fileName)
+        MultiplyImageRgbByAlpha(image)
         self.handle = Create2dTexture(image, table.unpack(flags))
     elseif target == 'cube' then
         local images = {}
         for i,v in ipairs(cubeMapSides) do
             images[i] = LoadImage(string.format(fileName, v))
+            MultiplyImageRgbByAlpha(images[i])
         end
         self.handle = CreateCubeTexture(images, table.unpack(flags))
     else
