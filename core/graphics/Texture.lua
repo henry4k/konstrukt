@@ -29,24 +29,48 @@ Texture:include(Resource)
 --
 -- @param fileName
 --
--- @param[type=table] flags
--- Flags for the texture.
+-- @param[type=boolean] filter
+-- How texture samples are accessed.  See https://www.opengl.org/wiki/Sampler_Object#Filtering
 --
 -- Available are:
 --
--- - `mipmap`:  Creates [mip maps](https://www.opengl.org/wiki/Texture#Mip_maps) for the texture.
--- - `filter`:  Render texture using at least a linear [filter](https://www.opengl.org/wiki/Sampler_Object#Filtering).
+-- - `nearest`:
+-- - `linear`:
+--
+-- Defaults to **linear**.
+--
+-- @param[type=string] wrapMode
+-- How texture sampling outside the coordinate range from 0 to 1 behaves.
+--
+-- Available are:
+--
+-- - `repeat`:
 -- - `clamp`:  Limit texture coordinates to a range between 0 and 1.
 --
-function Texture.static:_load( target, fileName, flags )
-    local texture = Texture(target, fileName, flags)
+-- Defaults to **repeat**.
+--
+function Texture.static:_load( options )
+    local texture = Texture(options)
     return { value=texture, destructor=texture.destroy }
 end
 
 local cubeMapSides = { 'px', 'nx', 'py', 'ny', 'pz', 'nz' }
 
-function Texture:initialize( target, fileName, flags )
-    flags = flags or {}
+function Texture:initialize( options )
+    local target   = options.target or '2d'
+    local fileName = options.fileName
+    local filter   = options.filter or true
+    local wrapMode = options.wrapMode or 'repeat'
+
+    local flags = {}
+    table.insert(flags, 'mipmap') -- Always generate mip maps - for now.
+    if filter then
+        table.insert(flags, 'filter')
+    end
+    if wrapMode == 'clamp' then
+        table.insert(flags, 'clamp')
+    end
+
     if target == '2d' then
         local image = Image:load(fileName)
         image:multiplyRgbByAlpha()
