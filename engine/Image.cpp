@@ -3,6 +3,7 @@
 #include <string.h> // memset
 
 #include <apoapsis_stb_image.h>
+#include <apoapsis_stb_image_resize.h>
 
 #include "Common.h"
 #include "PhysFS.h"
@@ -10,15 +11,15 @@
 #include "Image.h"
 
 
-bool CreateImage( Image* image, int width, int height, int bpp )
+bool CreateImage( Image* image, int width, int height, int channelCount )
 {
     memset(image, 0, sizeof(Image));
 
     image->width = width;
     image->height = height;
-    image->bpp = bpp;
+    image->channelCount = channelCount;
 
-    switch(image->bpp)
+    switch(image->channelCount)
     {
         case 1:
             image->format = GL_LUMINANCE;
@@ -37,13 +38,13 @@ bool CreateImage( Image* image, int width, int height, int bpp )
             break;
 
         default:
-            Error("Can't create image (Unknown BPP -> %d)", image->bpp);
+            Error("Can't create image (Unknown channel count -> %d)", image->channelCount);
             return false;
     }
 
     image->type = GL_UNSIGNED_BYTE;
 
-    image->data = (char*)malloc(width*height*bpp);
+    image->data = malloc(width*height*channelCount);
 
     return true;
 }
@@ -90,12 +91,12 @@ bool LoadImage( Image* image, const char* vfsPath )
 
     stbi_set_flip_vertically_on_load(1);
 
-    image->data = (char*)stbi_load_from_callbacks(&PhysFSCallbacks,
-                                                  file,
-                                                  &image->width,
-                                                  &image->height,
-                                                  &image->bpp,
-                                                  STBI_default);
+    image->data = stbi_load_from_callbacks(&PhysFSCallbacks,
+                                           file,
+                                           &image->width,
+                                           &image->height,
+                                           &image->channelCount,
+                                           STBI_default);
     PHYSFS_close(file);
     if(!image->data)
     {
@@ -103,7 +104,7 @@ bool LoadImage( Image* image, const char* vfsPath )
         return false;
     }
 
-    switch(image->bpp)
+    switch(image->channelCount)
     {
         case 1:
             image->format = GL_LUMINANCE;
@@ -122,7 +123,7 @@ bool LoadImage( Image* image, const char* vfsPath )
             break;
 
         default:
-            Error("Can't load '%s': Unknown BPP -> %d", vfsPath, image->bpp);
+            Error("Can't load '%s': Unknown channel count -> %d", vfsPath, image->channelCount);
             free(image->data);
             return false;
     }
@@ -139,7 +140,7 @@ void MultiplyImageRgbByAlpha( Image* image )
     unsigned char* data = (unsigned char*)image->data;
     const int pixelCount = image->width * image->height;
 
-    switch(image->bpp)
+    switch(image->channelCount)
     {
         case 2: // luminance + alpha
             for(int i = 0; i < pixelCount; i++)
@@ -162,6 +163,63 @@ void MultiplyImageRgbByAlpha( Image* image )
                 pixel[2] *= alpha;
             }
             break;
+    }
+}
+
+bool CreateResizedImage( Image* output,
+                         const Image* input,
+                         int width,
+                         int height )
+{
+    assert(input->type == GL_UNSIGNED_BYTE);
+
+    memset(output, 0, sizeof(Image));
+
+    const int channelCount = input->channelCount;
+
+    output->width  = width;
+    output->height = height;
+    output->channelCount = channelCount;
+    output->format = input->format;
+    output->type   = input->type;
+
+    output->data = malloc(width*height*channelCount);
+
+    const int flags = STBIR_FLAG_ALPHA_PREMULTIPLIED;
+    // ^- Always assume premultiplied color channels and don't treat the alpha
+    // channel specially.
+
+    int alphaChannel;
+    switch(channelCount)
+    {
+        case 2:
+            alphaChannel = 1;
+            break;
+
+        case 4:
+            alphaChannel = 3;
+            break;
+
+        default:
+            alphaChannel = STBIR_ALPHA_CHANNEL_NONE;
+    }
+
+    const unsigned char* inputPixels  = (const unsigned char*)input->data;
+          unsigned char* outputPixels =       (unsigned char*)output->data;
+    if(stbir_resize_uint8_generic( inputPixels,  input->width,  input->height, 0,
+                                  outputPixels, output->width, output->height, 0,
+                                  channelCount, alphaChannel, flags,
+                                  STBIR_EDGE_CLAMP,
+                                  STBIR_FILTER_DEFAULT,
+                                  STBIR_COLORSPACE_LINEAR,
+                                  NULL))
+    {
+        return true;
+    }
+    else
+    {
+        Error("Failed to resize image.");
+        return false;
     }
 }
 

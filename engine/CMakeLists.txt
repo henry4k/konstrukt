@@ -33,9 +33,11 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}"
                     "${PROJECT_SOURCE_DIR}/third-party"
                     "${PROJECT_SOURCE_DIR}/third-party/inih"
                     "${PROJECT_SOURCE_DIR}/third-party/lua-cjson"
+                    "${PROJECT_SOURCE_DIR}/third-party/stb_image_resize"
                     "${PROJECT_SOURCE_DIR}/third-party/stb_image")
 
 target_link_libraries(apoapsis stbimage
+                               stbimageresize
                                inih
                                lua-cjson
                                flextGL
