@@ -6,6 +6,7 @@
 
 local class    = require 'middleclass'
 local Resource = require 'core/Resource'
+local Config   = require 'core/Config'
 local Image    = require 'core/graphics/Image'
 local Create2dTexture   = ENGINE.Create2dTexture
 local CreateCubeTexture = ENGINE.CreateCubeTexture
@@ -56,36 +57,59 @@ end
 
 local cubeMapSides = { 'px', 'nx', 'py', 'ny', 'pz', 'nz' }
 
+Texture.static.defaultOptions =
+{
+    target = '2d',
+    filter = 'linear',
+    wrapMode = 'repeat',
+    mipmap = true,
+    multiplyRgbByAlpha = true
+}
+
 function Texture:initialize( options )
-    local target   = options.target or '2d'
-    local fileName = options.fileName
-    local filter   = options.filter or true
-    local wrapMode = options.wrapMode or 'repeat'
+    setmetatable(options, { __index=Texture.defaultOptions })
 
     local flags = {}
-    table.insert(flags, 'mipmap') -- Always generate mip maps - for now.
-    if filter then
+    if options.mipmap then
+        table.insert(flags, 'mipmap')
+    end
+    if options.filter then
         table.insert(flags, 'filter')
     end
-    if wrapMode == 'clamp' then
+    if options.wrapMode == 'clamp' then
         table.insert(flags, 'clamp')
     end
 
-    if target == '2d' then
-        local image = Image:load(fileName)
-        image:multiplyRgbByAlpha()
+    if options.target == '2d' then
+        local image = self:_loadImage(options.fileName, options)
         self.handle = Create2dTexture(image.handle, table.unpack(flags))
-    elseif target == 'cube' then
+    elseif options.target == 'cube' then
         local images = {}
         for i,v in ipairs(cubeMapSides) do
-            local image = Image:load(string.format(fileName, v))
-            image:multiplyRgbByAlpha()
+            local image = self:_loadImage(string.format(options.fileName, v), options)
             images[i] = image.handle
         end
         self.handle = CreateCubeTexture(images, table.unpack(flags))
     else
-        error('Unknown type: '..target)
+        error('Unknown type: '..options.target)
     end
+end
+
+function Texture:_loadImage( fileName, options )
+    local image = Image:load(fileName)
+    if options.multiplyRgbByAlpha then
+        image:multiplyRgbByAlpha()
+    end
+
+    local quality = Config.get('opengl.texture-quality', 1)
+    assert(math.isInteger(quality) and quality >= 1)
+    if quality > 1 then
+        local scale = 1.0 / quality
+        image = image:createResizedCopy(image.width  * scale,
+                                        image.height * scale)
+    end
+
+    return image
 end
 
 function Texture:destroy()
