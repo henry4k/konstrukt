@@ -10,23 +10,15 @@ local SingleVoxelStructure = require 'core/voxel/SingleVoxelStructure'
 
 local UndefinedStructure = class('core/voxel/UndefinedStructure', SingleVoxelStructure)
 
-function UndefinedStructure:initialize( ... )
-    SingleVoxelStructure.initialize(self, ...)
-end
-
-function UndefinedStructure:destroy()
-    SingleVoxelStructure.destroy()
-end
-
-function UndefinedStructure:create( voxelCreator )
+function UndefinedStructure:create()
     error('Undefined structures may not be created.')
 end
 
-function UndefinedStructure:read( voxelReader )
+function UndefinedStructure:read()
     -- Do nothing here.
 end
 
-function UndefinedStructure:write( voxelWriter )
+function UndefinedStructure:write()
     error('Undefined structures may not be written.')
 end
 

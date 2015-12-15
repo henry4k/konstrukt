@@ -5,14 +5,10 @@
 
 
 local class         = require 'middleclass'
-local WorldObject   = require 'core/world/WorldObject'
 local VoxelAccessor = require 'core/voxel/VoxelAccessor'
-local VoxelCreator  = require 'core/voxel/VoxelCreator'
-local VoxelReader   = require 'core/voxel/VoxelReader'
-local VoxelWriter   = require 'core/voxel/VoxelWriter'
 
 
-local Structure = class('core/voxel/Structure', WorldObject)
+local Structure = class('core/voxel/Structure')
 
 --- Helper function! So you don't need to import the StructureDictionary every time.
 function Structure.static:register()
@@ -29,37 +25,68 @@ function Structure.static:getOrigin( voxel, position )
 end
 
 function Structure:initialize()
-    WorldObject.initialize(self)
-    self.origin = nil
 end
 
 function Structure:destroy()
-    WorldObject.destroy(self)
+end
+
+function Structure:readVoxel( position )
+    assert(self._mayReadVoxels, 'Reading not allowed.')
+    if self:ownsVoxel(position) then
+        local voxel = self._voxelVolume:readVoxel(position)
+        if voxel then
+            return voxel
+        else
+            error('Can\'t read voxel at '..tostring(position)..'.')
+        end
+    else
+        error('Can\'t read voxel at '..tostring(position)..', as it doesn\'t belong to the structure.')
+    end
+end
+
+function Structure:writeVoxel( position, voxel )
+    assert(self._mayWriteVoxels, 'Writing not allowed.')
+    if self:ownsVoxel(position) then
+        local oldStructure = self._voxelVolume:getStructureAt(position)
+        if oldStructure and oldStructure ~= self then
+            -- TODO: Inform structure, which intersects the new area, about its destruction.
+            print(string.format('TODO: Replaced structure %s should be destroyed.', oldStructure.class.name))
+        end
+
+        if not self._voxelVolume:writeVoxel(position, voxel) then
+            error('Can\'t write voxel at '..tostring(position)..'.')
+        end
+    else
+        error('Can\'t write voxel at '..tostring(position)..', as it doesn\'t belong to the structure.')
+    end
 end
 
 function Structure:_create( voxelVolume, origin, ... )
     self.origin = origin
-    local voxelCreator = VoxelCreator(voxelVolume, self)
-    self:create(voxelCreator, ...)
+    self:create(...)
+    self:_write(voxelVolume)
 end
 
 function Structure:_read( voxelVolume, origin )
     self.origin = origin
-    local voxelReader = VoxelReader(voxelVolume, self)
-    assert(voxelReader)
-    self:read(voxelReader)
+    self._voxelVolume = voxelVolume
+    self._mayReadVoxels = true
+    self:read()
+    self._mayReadVoxels = false
 end
 
 function Structure:_write( voxelVolume )
-    local voxelWriter = VoxelWriter(voxelVolume, self)
-    self:write(voxelWriter)
+    self._voxelVolume = voxelVolume
+    self._mayWriteVoxels = true
+    self:write()
+    self._mayWriteVoxels = false
 end
 
 function Structure:ownsVoxel( position )
     error('Implementation missing.')
 end
 
-function Structure:create( voxelCreator )
+function Structure:create()
     -- Dummy function.  This is meant to be overridden in child classes.
 end
 
@@ -68,10 +95,6 @@ function Structure:read( voxelReader )
 end
 
 function Structure:write( voxelWriter )
-    -- Dummy function.  This is meant to be overridden in child classes.
-end
-
-function Structure:generateModels( chunkBuilder )
     -- Dummy function.  This is meant to be overridden in child classes.
 end
 

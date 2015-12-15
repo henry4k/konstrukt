@@ -5,10 +5,7 @@
 
 
 local class         = require 'middleclass'
-local Vec           = require 'core/Vector'
 local Structure     = require 'core/voxel/Structure'
-local Voxel         = require 'core/voxel/Voxel'
-local VoxelAccessor = require 'core/voxel/VoxelAccessor'
 
 
 local SingleVoxelStructure = class('core/voxel/SingleVoxelStructure', Structure)

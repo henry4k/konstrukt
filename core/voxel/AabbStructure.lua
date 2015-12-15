@@ -34,39 +34,20 @@ function AabbStructure.static:getOrigin( voxel, position )
     end
 end
 
-function AabbStructure:initialize( ... )
-    Structure.initialize(self, ...)
-    self.size = nil
-end
-
-function AabbStructure:destroy()
-    Structure.destroy()
-    -- ...
-end
-
 function AabbStructure:ownsVoxel( position )
     return position:componentsGreaterOrEqualTo(self.origin) and
            position:componentsLesserThan(self.origin+self.size)
 end
 
-function AabbStructure:create( voxelCreator, size )
+function AabbStructure:create( size )
     assert(size:componentsGreaterOrEqualTo(minSize) and
            size:componentsLesserOrEqualTo(maxSize))
     self.size = size
-
-    local originVoxel = Voxel()
-    voxelAccessor:write(originVoxel, 'isOrigin', 1)
-    voxelAccessor:write(originVoxel, 'sizeX', size[1])
-    voxelAccessor:write(originVoxel, 'sizeY', size[2])
-    voxelAccessor:write(originVoxel, 'sizeZ', size[3])
-    voxelCreator:writeVoxel(self.origin, originVoxel)
-
-    self:clear(voxelCreator)
 end
 
-function AabbStructure:read( voxelReader )
+function AabbStructure:read()
     self.size = Vec(1,1,1) -- so at least the origin voxel can be accessed
-    local originVoxel = voxelReader:readVoxel(self.origin)
+    local originVoxel = self:readVoxel(self.origin)
     self.size = Vec(voxelAccessor:read(originVoxel, 'sizeX'),
                     voxelAccessor:read(originVoxel, 'sizeY'),
                     voxelAccessor:read(originVoxel, 'sizeZ'))
@@ -74,11 +55,20 @@ function AabbStructure:read( voxelReader )
            self.size:componentsLesserOrEqualto(maxSize))
 end
 
-function AabbStructure:write( voxelWriter )
+function AabbStructure:write()
+    local size = self.size
 
+    local originVoxel = Voxel()
+    voxelAccessor:write(originVoxel, 'isOrigin', 1)
+    voxelAccessor:write(originVoxel, 'sizeX', size[1])
+    voxelAccessor:write(originVoxel, 'sizeY', size[2])
+    voxelAccessor:write(originVoxel, 'sizeZ', size[3])
+    self:writeVoxel(self.origin, originVoxel)
+
+    self:clear()
 end
 
-function AabbStructure:clear( voxelCreator )
+function AabbStructure:clear()
     local size = self.size
     local origin = self.origin
 
@@ -93,7 +83,7 @@ function AabbStructure:clear( voxelCreator )
         voxelAccessor:write(emptyVoxel, 'originOffsetY', offsetY)
         voxelAccessor:write(emptyVoxel, 'originOffsetZ', offsetZ)
         local offset = Vec(offsetX, offsetY, offsetZ)
-        voxelCreator:writeVoxel(origin + offset, emptyVoxel)
+        self:writeVoxel(origin + offset, emptyVoxel)
     end
     end
     end
