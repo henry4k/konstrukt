@@ -1,6 +1,7 @@
 #ifndef __APOAPSIS_MESH_CHUNK_GENERATOR__
 #define __APOAPSIS_MESH_CHUNK_GENERATOR__
 
+#include "Math.h"
 #include "BitCondition.h"
 
 
@@ -68,6 +69,10 @@ void ReleaseMeshChunkGenerator( MeshChunkGenerator* generator );
  * @param meshBuffers
  * A mesh buffer for each cube side defined in #BlockVoxelMeshBuffers.
  *
+ * @param transformations
+ * A transformation which is applied to each cube side defined in
+ * #BlockVoxelMeshBuffers.
+ *
  * @return
  * Whether the voxel mesh has been created successfully.
  */
@@ -76,7 +81,8 @@ bool CreateBlockVoxelMesh( MeshChunkGenerator* generator,
                            const BitCondition* conditions,
                            int conditionCount,
                            bool transparent,
-                           MeshBuffer* meshBuffers[BLOCK_VOXEL_MATERIAL_BUFFER_COUNT] );
+                           MeshBuffer** meshBuffers,
+                           glm::mat4* transformations);
 
 /**
  * Generates a #MeshChunk from a section of a voxel volume.

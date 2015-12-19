@@ -4,6 +4,7 @@
 #include "../Lua.h"
 #include "../Mesh.h"
 #include "../MeshChunkGenerator.h"
+#include "Math.h"
 #include "MeshBuffer.h"
 #include "PhysicsManager.h"
 #include "VoxelVolume.h"
@@ -70,12 +71,23 @@ static int Lua_CreateBlockVoxelMesh( lua_State* l )
         lua_pop(l, 1);
     }
 
+    glm::mat4 transformations[BLOCK_VOXEL_MATERIAL_BUFFER_COUNT];
+    for(int i = 0; i < BLOCK_VOXEL_MATERIAL_BUFFER_COUNT; i++)
+    {
+        lua_rawgeti(l, 6, i+1);
+        const glm::mat4* transformation = GetMatrix4FromLua(l, -1);
+        if(transformation)
+            transformations[i] = *transformation;
+        lua_pop(l, 1);
+    }
+
     bool result = CreateBlockVoxelMesh(generator,
                                        materialId,
                                        conditions,
                                        conditionCount,
                                        transparent,
-                                       meshBuffers);
+                                       meshBuffers,
+                                       transformations);
 
     delete[] conditions;
 

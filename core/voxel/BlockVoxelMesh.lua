@@ -4,7 +4,8 @@
 
 local class      = require 'middleclass'
 local Object     = class.Object
-local Matrix4    = require 'core/Matrix4'
+local Vec        = require 'core/Vector'
+local Mat4       = require 'core/Matrix4'
 local MeshBuffer = require 'core/graphics/MeshBuffer'
 local VoxelMesh  = require 'core/voxel/VoxelMesh'
 local CreateBlockVoxelMesh = ENGINE.CreateBlockVoxelMesh
@@ -19,6 +20,19 @@ local nameToIndex =
     ['-y']     = 5,
     ['+z']     = 6,
     ['-z']     = 7
+}
+
+local halfPi = math.pi / 2.0
+
+local defaultTransformations =
+{
+    ['center'] = Mat4(),
+    ['+x']     = Mat4():rotate( halfPi, Vec(0,1,0)),
+    ['-x']     = Mat4():rotate(-halfPi, Vec(0,1,0)),
+    ['+y']     = Mat4():rotate( halfPi, Vec(1,0,0)),
+    ['-y']     = Mat4():rotate(-halfPi, Vec(1,0,0)),
+    ['+z']     = Mat4(),
+    ['-z']     = Mat4():rotate(math.pi, Vec(0,1,0))
 }
 
 local BlockVoxelMesh = class('core/voxel/BlockVoxelMesh', VoxelMesh)
@@ -41,7 +55,8 @@ function BlockVoxelMesh:_addToGenerator( generator )
                          materialId,
                          self.bitConditions,
                          self.isTransparent,
-                         self.meshBuffers)
+                         self.meshBuffers,
+                         self.meshBufferTransformations)
 end
 
 --- Define the geometry used for a cube side.
@@ -56,19 +71,23 @@ end
 -- - +z: Positive direction on Z axis
 -- - -z: Negative direction on Z axis
 -- - center: Used if any cube side is visible
+--
+-- @param[type=core.Matrix4,opt] transformation
+-- Is applied the buffer.  It defaults to a transformation, which expects each
+-- mesh buffer to be oriented in +Z direction.
 function BlockVoxelMesh:setMeshBuffer( name, buffer, transformation )
     assert(nameToIndex[name], 'Invalid buffer name.')
     assert(Object.isInstanceOf(buffer, MeshBuffer),
            'Must be called with a mesh buffer.')
     assert(not transformation or
-           Object.isInstanceOf(transformation, Matrix4),
+           Object.isInstanceOf(transformation, Mat4),
            'Transformation must be a matrix or nil.')
     local index = nameToIndex[name]
     self.meshBuffers[index] = buffer.handle
     if transformation then
         self.meshBufferTransformations[index] = transformation.handle
     else
-        self.meshBufferTransformations[index] = nil
+        self.meshBufferTransformations[index] = defaultTransformations[name].handle
     end
 end
 
