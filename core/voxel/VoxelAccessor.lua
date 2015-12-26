@@ -30,6 +30,10 @@ function VoxelAccessor:addMask( name, bitCount )
     return self
 end
 
+function VoxelAccessor:getMask( name )
+    return self.masks[name]
+end
+
 function VoxelAccessor:read( voxel, name )
     local mask = self.masks[name]
     assert(mask, 'Requested mask not defined in this accessor!')
