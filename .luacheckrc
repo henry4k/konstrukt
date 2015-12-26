@@ -3,6 +3,7 @@ std = 'min'
 unused_args = false
 read_globals = { 'ENGINE',
                  'cjson',
-                 'ARGS' }
+                 'ARGS',
+                 'here' }
 globals = { '_loadfile',
             '_dofile' }

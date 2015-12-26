@@ -48,6 +48,7 @@ end
 
 _dofile 'core/bootstrap/table.lua'
 _dofile 'core/bootstrap/math.lua'
+_dofile 'core/bootstrap/path.lua'
 _dofile 'core/bootstrap/require.lua'
 
 
