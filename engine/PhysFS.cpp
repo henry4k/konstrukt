@@ -152,7 +152,6 @@ static const char* ResolvePackageNameWithSearchPath( const char* name,
     {
         if(searchPath[i] == PATH_SEPARATOR)
         {
-            const int pathEnd = (i-1);
             const int pathLength = (i-pathStart);
             assert(pathLength >= 0);
             assert(pathLength < MAX_PATH_SIZE-1);

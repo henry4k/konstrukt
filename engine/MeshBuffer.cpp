@@ -61,7 +61,7 @@ static void TransformMeshBufferRange( MeshBuffer* buffer, const glm::mat4* trans
 
     assert(firstVertex >= 0);
     assert(vertexCount >= 0);
-    assert(firstVertex+vertexCount <= buffer->vertices.size());
+    assert(firstVertex+vertexCount <= (int)buffer->vertices.size());
 
     const mat3 rotation(*transformation);
 
@@ -88,7 +88,7 @@ void AppendMeshBuffer( MeshBuffer* buffer, const MeshBuffer* otherBuffer, const 
 
     buffer->indices.reserve(buffer->indices.size()+otherBuffer->indices.size());
     const VertexIndex indexOffset = buffer->vertices.size();
-    for(int i = 0; i < otherBuffer->indices.size(); i++)
+    for(size_t i = 0; i < otherBuffer->indices.size(); i++)
     {
         const VertexIndex index = otherBuffer->indices[i];
         buffer->indices.push_back(index+indexOffset);

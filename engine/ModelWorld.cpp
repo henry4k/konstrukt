@@ -160,12 +160,10 @@ void DrawModelWorld( const ModelWorld* world,
 
     // Render draw list:
     ShaderProgram* currentProgram = NULL;
-    int currentOverlayLevel = 0;
     for(int i = 0; i < drawListSize; i++)
     {
         const Model* model = drawList[i].model;
         ShaderProgram* program = drawList[i].program;
-        int overlayLevel = model->overlayLevel;
 
         if(!ModelIsComplete(model))
         {

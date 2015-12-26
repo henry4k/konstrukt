@@ -364,7 +364,7 @@ bool RunLuaScript( lua_State* l, const char* vfsPath )
 static int FindLuaEventByName( const char* name )
 {
     assert(name != NULL);
-    for(int i = 0; i < g_LuaEvents.size(); i++)
+    for(size_t i = 0; i < g_LuaEvents.size(); i++)
         if(strncmp(name, g_LuaEvents[i].name, MAX_LUA_EVENT_NAME_SIZE-1) == 0)
             return i;
     return -1;
@@ -384,8 +384,8 @@ int RegisterLuaEvent( const char* name )
 
     Log("Registered lua event: %s", name);
 
-    const int id = g_LuaEvents.size()-1;
-    if(id >= 0 || id < g_LuaEvents.size())
+    const int id = (int)g_LuaEvents.size()-1;
+    if(id >= 0)
         return id;
     else
         return INVALID_LUA_EVENT;
@@ -393,7 +393,7 @@ int RegisterLuaEvent( const char* name )
 
 int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues )
 {
-    assert(id >= 0 && id < g_LuaEvents.size());
+    assert(id >= 0 && id < (int)g_LuaEvents.size());
     assert(argumentCount >= 0);
 
     LuaEvent* event = &g_LuaEvents[id];

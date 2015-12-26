@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h> // sscanf
+#include "../Warnings.h"
 #include "../Common.h"
 #include "../Config.h"
 #include "../OpenGL.h"
@@ -36,11 +37,13 @@ static void PrintJoysticks()
         if(!name)
             break;
 
+BEGIN_EXTERNAL_CODE
         int buttonCount = 0;
         const unsigned char* buttons = glfwGetJoystickButtons(i, &buttonCount);
 
         int axisCount = 0;
         const float* axes = glfwGetJoystickAxes(i, &axisCount);
+END_EXTERNAL_CODE
 
         Log("  Joystick %d '%s' with %d buttons and %d axes.",
             i,

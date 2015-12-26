@@ -193,6 +193,7 @@ static bool IsVoxelMeshTransparent( const VoxelMesh* mesh )
             return ((BlockVoxelMesh*)&mesh->data)->transparent;
     }
     FatalError("Unknown voxel mesh type.");
+    return false;
 }
 
 // ----------------------------------------------------------------------
@@ -366,15 +367,6 @@ static void ProcessBlockVoxelMesh( ChunkEnvironment* env,
         POSITIVE_Z,
         NEGATIVE_Z
     };
-    static const mat4 dirTransforms[dirCount] =
-    {
-        rotate(mat4(1), +HalfPI, vec3(0,1,0)), // +x
-        rotate(mat4(1), -HalfPI, vec3(0,1,0)), // -x
-        rotate(mat4(1), +HalfPI, vec3(1,0,0)), // +y
-        rotate(mat4(1), -HalfPI, vec3(1,0,0)), // -y
-        mat4(1), // +z
-        rotate(mat4(1), (float)PI, vec3(0,1,0)) // -z
-    };
 
     const MeshBuffer* const* meshBuffers = &mesh->meshBuffers[0];
     const mat4* transformations = (const mat4*)mesh->transformations;
@@ -428,7 +420,6 @@ static void ProcessVoxelMeshes( ChunkEnvironment* env )
     const int w = env->w-2;
     const int h = env->h-2;
     const int d = env->d-2;
-    const int voxelCount = w*h*d;
 
     const float hw = ((float)w) / 2.f;
     const float hh = ((float)h) / 2.f;

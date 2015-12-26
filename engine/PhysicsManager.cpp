@@ -1,5 +1,8 @@
 #include <string.h> // memset, memcpy
 
+#include "Warnings.h"
+
+BEGIN_EXTERNAL_CODE
 #include <BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
 #include <BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
 #include <BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>
@@ -13,6 +16,7 @@
 #include <BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <LinearMath/btDefaultMotionState.h>
+END_EXTERNAL_CODE
 
 #include "Common.h"
 #include "Constants.h" // SIMULATION_FREQUENCY, MAX_FRAME_FREQUENCY

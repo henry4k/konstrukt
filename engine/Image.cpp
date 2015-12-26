@@ -2,8 +2,12 @@
 #include <stdlib.h> // malloc, free
 #include <string.h> // memset
 
+#include "Warnings.h"
+
+BEGIN_EXTERNAL_CODE
 #include <apoapsis_stb_image.h>
 #include <apoapsis_stb_image_resize.h>
+END_EXTERNAL_CODE
 
 #include "Common.h"
 #include "PhysFS.h"

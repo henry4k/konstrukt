@@ -56,7 +56,7 @@ void UpdateControls( float timeFrame )
 {
     UpdateJoystickControls(timeFrame);
 
-    for(int i = 0; i < g_Controls.size(); ++i)
+    for(size_t i = 0; i < g_Controls.size(); ++i)
     {
         Control* control = &g_Controls[i];
 
@@ -79,7 +79,7 @@ static bool ControlNameIsOkay( const char* name )
         return false;
     }
 
-    for(int i = 0; i < g_Controls.size(); ++i)
+    for(size_t i = 0; i < g_Controls.size(); ++i)
     {
         if(strcmp(name, g_Controls[i].name) == 0)
         {
@@ -150,7 +150,7 @@ bool RegisterControl( const char* name, ControlActionFn callback, void* context 
 
 void HandleControlEvent( int controlIndex, float value )
 {
-    assert(controlIndex < g_Controls.size());
+    assert(controlIndex < (int)g_Controls.size());
     Control* control = &g_Controls[controlIndex];
 
     value *= control->sensitivity;

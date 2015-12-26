@@ -131,18 +131,16 @@ Texture* CreateDepthTexture( int width, int height, int options )
     return texture;
 }
 
-static GLenum CurTextureTargets[MAX_TEXTURE_UNITS];
-
-static int InitTextureUnits()
+static GLenum CurTextureTargets[MAX_TEXTURE_UNITS] =
 {
-    for(int i = 0; i < MAX_TEXTURE_UNITS; i++)
-        CurTextureTargets[i] = INVALID_TEXTURE_HANDLE;
-    return 0;
-}
+    INVALID_TEXTURE_HANDLE,
+    INVALID_TEXTURE_HANDLE,
+    INVALID_TEXTURE_HANDLE,
+    INVALID_TEXTURE_HANDLE
+};
 
 void BindTexture( const Texture* texture, int unit )
 {
-    static int unused = InitTextureUnits();
     glActiveTexture(GL_TEXTURE0+unit);
     if(CurTextureTargets[unit] && (CurTextureTargets[unit] != texture->target))
     {
