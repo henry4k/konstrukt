@@ -1,7 +1,6 @@
 #include <string.h> // memset, memcpy
 
 #include "Warnings.h"
-
 BEGIN_EXTERNAL_CODE
 #include <BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
 #include <BulletCollision/CollisionDispatch/btCollisionDispatcher.h>

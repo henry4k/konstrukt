@@ -4,8 +4,6 @@
 
 #include "Common.h"
 #include "Math.h"
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include "Reference.h"
 #include "MeshBuffer.h"
 

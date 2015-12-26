@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <string.h> // strlen, memset, memcpy
+
 #include "Common.h" // CopyString
 #include "Constants.h" // DEFAULT_PACKAGE_SEARCH_PATHS
 #include "Config.h"

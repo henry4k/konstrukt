@@ -1,8 +1,11 @@
 #include <assert.h>
+
 #include "OpenGL.h"
 #include "Vertex.h"
 
+
 using namespace glm;
+
 
 enum
 {

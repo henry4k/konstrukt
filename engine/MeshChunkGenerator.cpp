@@ -3,13 +3,12 @@
 
 #include "Common.h"
 #include "List.h"
+#include "Math.h"
 #include "Mesh.h"
 #include "MeshBuffer.h"
 #include "Reference.h"
 #include "VoxelVolume.h"
 #include "MeshChunkGenerator.h"
-
-#include <glm/gtc/matrix_transform.hpp> // translate, rotate
 
 
 using namespace glm;

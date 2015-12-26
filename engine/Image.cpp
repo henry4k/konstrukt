@@ -3,7 +3,6 @@
 #include <string.h> // memset
 
 #include "Warnings.h"
-
 BEGIN_EXTERNAL_CODE
 #include <apoapsis_stb_image.h>
 #include <apoapsis_stb_image_resize.h>

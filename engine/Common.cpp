@@ -12,8 +12,10 @@
 #include <stdio.h> // printf
 #include <stdarg.h>
 #include <assert.h>
+
 #include "Config.h"
 #include "Common.h"
+
 
 const char* Format( const char* format, ... )
 {

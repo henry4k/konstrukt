@@ -2,16 +2,16 @@
 #include <string.h> // memcpy, strlen, strcmp
 #include <vector>
 
-#include "Common.h"
-#include "PhysFS.h"
-#include "Lua.h"
-
 extern "C"
 {
 #define LUA_LIB
 #include <lualib.h>
 #include <lua_cjson.h>
 }
+
+#include "Common.h"
+#include "PhysFS.h"
+#include "Lua.h"
 
 
 static const int MAX_LUA_EVENT_NAME_SIZE = 32;

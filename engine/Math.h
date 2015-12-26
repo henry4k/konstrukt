@@ -4,12 +4,18 @@
 #include <math.h>
 #include <float.h>
 
+#include "Warnings.h"
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_ONLY_XYZW
 #define GLM_LEFT_HANDED
+BEGIN_EXTERNAL_CODE
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
+#include <glm/gtx/projection.hpp>
+END_EXTERNAL_CODE
 
 
 #ifndef M_PI

@@ -1,4 +1,5 @@
 #include <string.h> // memset
+
 #include "Common.h"
 #include "Reference.h"
 #include "VoxelVolume.h"

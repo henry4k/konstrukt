@@ -1,8 +1,6 @@
 #include <string.h> // memset
 
 #include "Math.h"
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/matrix_inverse.hpp>
 #include "Reference.h"
 #include "ModelWorld.h"
 #include "PhysicsManager.h"
