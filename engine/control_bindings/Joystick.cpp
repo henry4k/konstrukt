@@ -37,13 +37,15 @@ static void PrintJoysticks()
         if(!name)
             break;
 
-BEGIN_EXTERNAL_CODE
         int buttonCount = 0;
-        const unsigned char* buttons = glfwGetJoystickButtons(i, &buttonCount);
+        int axisCount   = 0;
 
-        int axisCount = 0;
-        const float* axes = glfwGetJoystickAxes(i, &axisCount);
-END_EXTERNAL_CODE
+        BEGIN_EXTERNAL_CODE
+        {
+            const unsigned char* buttons = glfwGetJoystickButtons(i, &buttonCount);
+            const float* axes = glfwGetJoystickAxes(i, &axisCount);
+        }
+        END_EXTERNAL_CODE
 
         Log("  Joystick %d '%s' with %d buttons and %d axes.",
             i,
@@ -72,15 +74,19 @@ bool InitJoystickBindings()
 
 
         int buttonCount = 0;
-        const unsigned char* buttons = glfwGetJoystickButtons(i, &buttonCount);
+        int axisCount   = 0;
+
+        BEGIN_EXTERNAL_CODE
+        {
+            const unsigned char* buttons = glfwGetJoystickButtons(i, &buttonCount);
+            const float* axes = glfwGetJoystickAxes(i, &axisCount);
+        }
+        END_EXTERNAL_CODE
+
 
         data->buttonCount = buttonCount;
         data->buttons = new JoystickControlBinding[buttonCount];
         memset(data->buttons, 0, sizeof(JoystickControlBinding)*buttonCount);
-
-
-        int axisCount = 0;
-        const float* axes = glfwGetJoystickAxes(i, &axisCount);
 
         data->axisCount = axisCount;
         data->axes = new JoystickControlBinding[axisCount];
@@ -89,6 +95,7 @@ bool InitJoystickBindings()
 
     return true;
 }
+END_EXTERNAL_CODE
 
 void DestroyJoystickBindings()
 {
