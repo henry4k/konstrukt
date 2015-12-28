@@ -85,6 +85,7 @@ local Scenario = require 'core/Scenario'
 local interactive = false
 local packages = {}
 
+-- luacheck: globals ARGS
 for _, argument in ipairs(ARGS) do
     if argument:match('-.*') then
         if argument == '-i' then
