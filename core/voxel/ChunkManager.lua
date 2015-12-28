@@ -1,4 +1,3 @@
-local assert      = assert
 local floor       = math.floor
 local class       = require 'middleclass'
 local Object      = class.Object

@@ -13,10 +13,8 @@
 -- end
 
 
-local class = require 'middleclass'
-local CreateTimer      = ENGINE.CreateTimer
-local DestroyTimer     = ENGINE.DestroyTimer
-local SetEventCallback = ENGINE.SetEventCallback
+local engine = require 'engine'
+local class  = require 'middleclass'
 
 
 local timerHandleToInstanceMap = {}
@@ -31,7 +29,7 @@ local function onTimerTriggered( timer, timeDelta )
         timerInstance.callback(timeDelta, timerInstance, timeDelta)
     end
 end
-SetEventCallback('TimerTriggered', onTimerTriggered)
+engine.SetEventCallback('TimerTriggered', onTimerTriggered)
 
 
 local Timer = class('core/Timer')
@@ -54,7 +52,7 @@ local Timer = class('core/Timer')
 function Timer:initialize( minDelay, target, callback )
     self.target = target
     self.callback = callback
-    self.handle = CreateTimer(minDelay)
+    self.handle = engine.CreateTimer(minDelay)
     timerHandleToInstanceMap[self.handle] = self
 end
 
@@ -62,7 +60,7 @@ end
 -- It's safe to call this inside a timer callback.
 function Timer:destroy()
     assert(self.handle)
-    DestroyTimer(self.handle)
+    engine.DestroyTimer(self.handle)
     timerHandleToInstanceMap[self.handle] = nil
     self.handle = nil
 end

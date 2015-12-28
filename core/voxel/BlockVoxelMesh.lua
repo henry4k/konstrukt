@@ -2,13 +2,13 @@
 --- A voxel mesh, which defines geometry for each side of a cube.
 
 
+local engine     = require 'engine'
 local class      = require 'middleclass'
 local Object     = class.Object
 local Vec        = require 'core/Vector'
 local Mat4       = require 'core/Matrix4'
 local MeshBuffer = require 'core/graphics/MeshBuffer'
 local VoxelMesh  = require 'core/voxel/VoxelMesh'
-local CreateBlockVoxelMesh = ENGINE.CreateBlockVoxelMesh
 
 
 local nameToIndex =
@@ -51,12 +51,12 @@ end
 
 function BlockVoxelMesh:_addToGenerator( generator )
     local materialId = generator:_getMaterialId(self.material)
-    CreateBlockVoxelMesh(generator.handle,
-                         materialId,
-                         self.bitConditions,
-                         self.isTransparent,
-                         self.meshBuffers,
-                         self.meshBufferTransformations)
+    engine.CreateBlockVoxelMesh(generator.handle,
+                                materialId,
+                                self.bitConditions,
+                                self.isTransparent,
+                                self.meshBuffers,
+                                self.meshBufferTransformations)
 end
 
 --- Define the geometry used for a cube side.

@@ -8,13 +8,11 @@
 -- the attachment targets position has been applied.
 
 
-local assert = assert
+local engine = require 'engine'
 local class  = require 'middleclass'
 local Object = class.Object
 local Solid  = require 'core/physics/Solid'
 local Mat4   = require 'core/Matrix4'
-local SetAudioListenerAttachmentTarget = ENGINE.SetAudioListenerAttachmentTarget
-local SetAudioListenerTransformation   = ENGINE.SetAudioListenerTransformation
 
 
 local AudioListener = {}
@@ -29,7 +27,7 @@ local AudioListener = {}
 function AudioListener.setAttachmentTarget( solid, flags )
     assert(Object.isInstanceOf(solid, Solid), 'Attachment target must be a solid.')
     flags = flags or 'rt'
-    SetAudioListenerAttachmentTarget(solid.handle, flags)
+    engine.SetAudioListenerAttachmentTarget(solid.handle, flags)
 end
 
 --- Change the transformation matrix.
@@ -38,7 +36,7 @@ end
 --
 function AudioListener.setTransformation( matrix )
     assert(Object.isInstanceOf(matrix, Mat4), 'Transformation must be an matrix.')
-    SetAudioListenerTransformation(matrix.handle)
+    engine.SetAudioListenerTransformation(matrix.handle)
 end
 
 

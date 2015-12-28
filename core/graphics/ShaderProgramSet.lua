@@ -11,13 +11,10 @@
 -- @see core.graphics.ShaderProgram
 
 
-local assert = assert
+local engine = require 'engine'
 local class  = require 'middleclass'
 local Object = class.Object
-local ShaderProgram           = require 'core/graphics/ShaderProgram'
-local CreateShaderProgramSet  = ENGINE.CreateShaderProgramSet
-local DestroyShaderProgramSet = ENGINE.DestroyShaderProgramSet
-local SetShaderProgramFamily  = ENGINE.SetShaderProgramFamily
+local ShaderProgram = require 'core/graphics/ShaderProgram'
 
 
 local ShaderProgramSet = class('core/graphics/ShaderProgramSet')
@@ -30,11 +27,11 @@ local ShaderProgramSet = class('core/graphics/ShaderProgramSet')
 function ShaderProgramSet:initialize( defaultShaderProgram )
     assert(Object.isInstanceOf(defaultShaderProgram, ShaderProgram),
            'Must be initialized with a default shader program.')
-    self.handle = CreateShaderProgramSet(defaultShaderProgram.handle)
+    self.handle = engine.CreateShaderProgramSet(defaultShaderProgram.handle)
 end
 
 function ShaderProgramSet:destroy()
-    DestroyShaderProgramSet(self.handle)
+    engine.DestroyShaderProgramSet(self.handle)
     self.handle = nil
 end
 
@@ -42,7 +39,7 @@ end
 function ShaderProgramSet:setFamily( name, shaderProgram )
     assert(Object.isInstanceOf(shaderProgram, ShaderProgram),
            'Must be called with a shader program.')
-    SetShaderProgramFamily(self.handle, name, shaderProgram.handle)
+    engine.SetShaderProgramFamily(self.handle, name, shaderProgram.handle)
 end
 
 

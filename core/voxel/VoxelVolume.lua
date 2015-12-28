@@ -1,4 +1,4 @@
-local assert      = assert
+local engine      = require 'engine'
 local class       = require 'middleclass'
 local Object      = class.Object
 local EventSource = require 'core/EventSource'
@@ -6,10 +6,6 @@ local Vec         = require 'core/Vector'
 local Voxel       = require 'core/voxel/Voxel'
 local Structure   = require 'core/voxel/Structure'
 local StructureDictionary = require 'core/voxel/StructureDictionary'
-local CreateVoxelVolume  = ENGINE.CreateVoxelVolume
-local DestroyVoxelVolume = ENGINE.DestroyVoxelVolume
-local ReadVoxelData      = ENGINE.ReadVoxelData
-local WriteVoxelData     = ENGINE.WriteVoxelData
 
 
 local weakValueMT = { __mode = 'v' }
@@ -21,7 +17,7 @@ VoxelVolume:include(EventSource)
 function VoxelVolume:initialize( size )
     assert(Vec:isInstance(size) and #size == 3,
            'Size must be passed as 3d vector.')
-    self.handle = CreateVoxelVolume(size:unpack(3))
+    self.handle = engine.CreateVoxelVolume(size:unpack(3))
 
     self:initializeEventSource()
 
@@ -30,14 +26,14 @@ end
 
 function VoxelVolume:destroy()
     self:destroyEventSource()
-    DestroyVoxelVolume(self.handle)
+    engine.DestroyVoxelVolume(self.handle)
     self.handle = nil
 end
 
 --- Returns @{core.voxel.Voxel} or `nil` if something went wrong.
 function VoxelVolume:readVoxel( position )
     assert(Vec:isInstance(position), 'Position must be a vector.')
-    local voxelData = ReadVoxelData(self.handle, position:unpack(3))
+    local voxelData = engine.ReadVoxelData(self.handle, position:unpack(3))
     if voxelData then
         return Voxel(voxelData)
     end
@@ -51,7 +47,7 @@ end
 function VoxelVolume:writeVoxel( position, voxel )
     assert(Vec:isInstance(position), 'Position must be a vector.')
     assert(Voxel:isInstance(voxel), 'Must be called with a voxel.')
-    local result = WriteVoxelData(self.handle, position[1], position[2], position[3], voxel)
+    local result = engine.WriteVoxelData(self.handle, position[1], position[2], position[3], voxel)
     if result then
         self:fireEvent('voxel-modified', position)
     end

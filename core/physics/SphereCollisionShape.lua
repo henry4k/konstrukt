@@ -4,9 +4,9 @@
 -- Extends @{core.physics.CollisionShape}.
 
 
+local engine         = require 'engine'
 local class          = require 'middleclass'
 local CollisionShape = require 'core/physics/CollisionShape'
-local CreateSphereCollisionShape = ENGINE.CreateSphereCollisionShape
 
 
 local SphereCollisionShape = class('core/physics/SphereCollisionShape', CollisionShape)
@@ -15,7 +15,7 @@ local SphereCollisionShape = class('core/physics/SphereCollisionShape', Collisio
 -- @param radius
 --
 function SphereCollisionShape:initialize( radius )
-    CollisionShape.initialize(self, CreateSphereCollisionShape(radius))
+    CollisionShape.initialize(self, engine.CreateSphereCollisionShape(radius))
 end
 
 

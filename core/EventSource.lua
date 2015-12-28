@@ -7,9 +7,6 @@
 -- that have no further references.
 
 
-local assert = assert
-
-
 local EventSource = {}
 
 --- Must be called by the including class in its constructor.

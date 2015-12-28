@@ -4,13 +4,11 @@
 -- Includes @{core.Resource}.
 
 
+local engine   = require 'engine'
 local class    = require 'middleclass'
 local Resource = require 'core/Resource'
 local Config   = require 'core/Config'
 local Image    = require 'core/graphics/Image'
-local Create2dTexture   = ENGINE.Create2dTexture
-local CreateCubeTexture = ENGINE.CreateCubeTexture
-local DestroyTexture    = ENGINE.DestroyTexture
 
 
 local Texture = class('core/graphics/Texture')
@@ -82,14 +80,14 @@ function Texture:initialize( options )
 
     if options.target == '2d' then
         local image = self:_loadImage(options.fileName, options)
-        self.handle = Create2dTexture(image.handle, table.unpack(flags))
+        self.handle = engine.Create2dTexture(image.handle, table.unpack(flags))
     elseif options.target == 'cube' then
         local images = {}
         for i,v in ipairs(cubeMapSides) do
             local image = self:_loadImage(string.format(options.fileName, v), options)
             images[i] = image.handle
         end
-        self.handle = CreateCubeTexture(images, table.unpack(flags))
+        self.handle = engine.CreateCubeTexture(images, table.unpack(flags))
     else
         error('Unknown type: '..options.target)
     end
@@ -113,7 +111,7 @@ function Texture:_loadImage( fileName, options )
 end
 
 function Texture:destroy()
-    DestroyTexture(self.handle)
+    engine.DestroyTexture(self.handle)
     self.handle = nil
 end
 

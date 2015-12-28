@@ -27,6 +27,7 @@ struct LuaEvent
 static lua_State* g_LuaState = NULL;
 static std::vector<LuaEvent> g_LuaEvents;
 static int g_LuaErrorFunction = LUA_NOREF;
+static int g_LuaFunctionTable = LUA_NOREF;
 static int g_LuaShutdownEvent = INVALID_LUA_EVENT;
 
 static int Lua_SetErrorFunction( lua_State* l );
@@ -63,7 +64,10 @@ bool InitLua()
     luaL_requiref(l, "cjson",         luaopen_cjson,     true);
 
     lua_createtable(l, 0, 0);
-    lua_setglobal(l, "ENGINE");
+    g_LuaFunctionTable = luaL_ref(l, LUA_REGISTRYINDEX);
+
+    lua_rawgeti(l, LUA_REGISTRYINDEX, g_LuaFunctionTable);
+    lua_setglobal(l, "_engine");
 
     RegisterFunctionInLua("SetErrorFunction", Lua_SetErrorFunction);
     RegisterFunctionInLua("SetEventCallback", Lua_SetEventCallback);
@@ -81,6 +85,7 @@ void DestroyLua()
     FireLuaEvent(g_LuaState, g_LuaShutdownEvent, 0, false);
 
     luaL_unref(g_LuaState, LUA_REGISTRYINDEX, g_LuaErrorFunction);
+    luaL_unref(g_LuaState, LUA_REGISTRYINDEX, g_LuaFunctionTable);
 
     lua_close(g_LuaState);
     g_LuaState = NULL;
@@ -114,7 +119,7 @@ void UpdateLua()
 
 bool RegisterFunctionInLua( const char* name, lua_CFunction fn )
 {
-    lua_getglobal(g_LuaState, "ENGINE");
+    lua_rawgeti(g_LuaState, LUA_REGISTRYINDEX, g_LuaFunctionTable);
     lua_pushcfunction(g_LuaState, fn);
     lua_setfield(g_LuaState, -2, name);
     lua_pop(g_LuaState, 1);

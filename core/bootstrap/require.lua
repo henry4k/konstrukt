@@ -1,8 +1,9 @@
 --- @script core.bootstrap.require
 --- Implements @{require} because Apoapsis doesn't access the file system directly.
 
--- luacheck: globals require
+-- luacheck: globals require cjson _engine
 
+local engine = _engine
 local ResourceManager = _dofile 'core/ResourceManager.lua'
 
 local searchPaths = {
@@ -13,7 +14,7 @@ local searchPaths = {
 ResourceManager.registerLoader('module', function( moduleName )
     for _, searchPath in ipairs(searchPaths) do
         local path = string.format(searchPath, moduleName)
-        if ENGINE.FileExists(path) then
+        if engine.FileExists(path) then
             local module = _dofile(path)
             assert(module, 'Module at '..path..' did not return anything.')
             return { value=module }
@@ -23,6 +24,10 @@ ResourceManager.registerLoader('module', function( moduleName )
 end)
 
 ResourceManager._put({ value=ResourceManager }, 'module', 'core/ResourceManager')
+ResourceManager._put({ value=cjson },           'module', 'cjson')
+ResourceManager._put({ value=engine },          'module', 'engine')
+cjson  = nil
+_engine = nil
 
 function require( moduleName )
     local module = ResourceManager.get('module', moduleName) or

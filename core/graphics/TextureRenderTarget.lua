@@ -4,12 +4,11 @@
 -- Extends @{core.graphics.RenderTarget}.
 
 
-local assert = assert
+local engine = require 'engine'
 local class  = require 'middleclass'
 local Object = class.Object
 local RenderTarget = require 'core/graphics/RenderTarget'
 local Texture      = require 'core/graphics/Texture'
-local CreateTextureRenderTarget = ENGINE.CreateTextureRenderTarget
 
 
 local TextureRenderTarget = class('core/graphics/TextureRenderTarget', RenderTarget)
@@ -20,7 +19,7 @@ local TextureRenderTarget = class('core/graphics/TextureRenderTarget', RenderTar
 function TextureRenderTarget:initialize( texture )
     assert(Object.isInstanceOf(texture, Texture),
            'Must be initialized with a texture.')
-    local handle = CreateTextureRenderTarget(texture.handle)
+    local handle = engine.CreateTextureRenderTarget(texture.handle)
     RenderTarget.initialize(self, handle)
 end
 

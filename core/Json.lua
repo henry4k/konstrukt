@@ -2,9 +2,8 @@
 --- Utility functions for working with JSON encoded files.
 
 
+local cjson = require 'cjson'
 local FS = require 'core/FileSystem'
-local _Encode = cjson.encode
-local _Decode = cjson.decode
 
 
 local Json = {}
@@ -13,14 +12,14 @@ local Json = {}
 -- @return
 -- The encoded JSON string or `nil` if it failed.
 function Json.encodeToString( value )
-    return _Encode(value)
+    return cjson.encode(value)
 end
 
 --- Decode a JSON string to its value.
 -- @return
 -- The decoded JSON object or nil it failed.
 function Json.decodeFromString( jsonString )
-    return _Decode(jsonString)
+    return cjson.decode(jsonString)
 end
 
 --- Try to write a JSON file.

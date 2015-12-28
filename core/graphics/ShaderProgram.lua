@@ -10,17 +10,13 @@
 -- Includes @{core.Resource}.
 
 
-local assert   = assert
+local engine   = require 'engine'
 local class    = require 'middleclass'
 local Object   = class.Object
 local Vec      = require 'core/Vector'
 local Mat4     = require 'core/Matrix4'
 local Shader   = require 'core/graphics/Shader'
 local Resource = require 'core/Resource'
-local LinkShaderProgram    = ENGINE.LinkShaderProgram
-local DestroyShaderProgram = ENGINE.DestroyShaderProgram
-local SetGlobalUniform     = ENGINE.SetGlobalUniform
-local UnsetGlobalUniform   = ENGINE.UnsetGlobalUniform
 
 
 local ShaderProgram = class('core/graphics/ShaderProgram')
@@ -54,11 +50,11 @@ function ShaderProgram:initialize( ... )
     for i,v in ipairs(shaders) do
         shaderHandles[i] = v.handle
     end
-    self.handle = LinkShaderProgram(table.unpack(shaderHandles))
+    self.handle = engine.LinkShaderProgram(table.unpack(shaderHandles))
 end
 
 function ShaderProgram:destroy()
-    DestroyShaderProgram(self.handle)
+    engine.DestroyShaderProgram(self.handle)
     self.handle = nil
 end
 
@@ -72,13 +68,13 @@ end
 function ShaderProgram.static:setGlobalUniform( name, value, type )
     if class.Object.isInstanceOf(value, Mat4) then
         assert(not type, 'Type argument is ignored, when called with a matrix.')
-        SetGlobalUniform(name, 'mat4', value.handle)
+        engine.SetGlobalUniform(name, 'mat4', value.handle)
     elseif class.Object.isInstanceOf(value, Vec) then
         assert(not type, 'Type argument is ignored, when called with a vector.')
-        SetGlobalUniform(name, 'vec'..#value, value:unpack())
+        engine.SetGlobalUniform(name, 'vec'..#value, value:unpack())
     else
         assert(type, 'Type is missing.')
-        SetGlobalUniform(name, type, value)
+        engine.SetGlobalUniform(name, type, value)
     end
 end
 
@@ -87,7 +83,7 @@ end
 -- Note that the uniform may still be set in some shader programs.
 --
 function ShaderProgram.static:unsetGlobalUniform( name )
-    UnsetGlobalUniform(name)
+    engine.UnsetGlobalUniform(name)
 end
 
 

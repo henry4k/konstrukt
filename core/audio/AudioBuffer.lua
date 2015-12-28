@@ -4,10 +4,9 @@
 -- Includes @{core.Resource}.
 
 
+local engine   = require 'engine'
 local class    = require 'middleclass'
 local Resource = require 'core/Resource'
-local LoadAudioBuffer    = ENGINE.LoadAudioBuffer
-local DestroyAudioBuffer = ENGINE.DestroyAudioBuffer
 
 
 local AudioBuffer = class('core/audio/AudioBuffer')
@@ -25,11 +24,11 @@ function AudioBuffer.static:_load( fileName )
 end
 
 function AudioBuffer:initialize( fileName )
-    self.handle = LoadAudioBuffer(fileName)
+    self.handle = engine.LoadAudioBuffer(fileName)
 end
 
 function AudioBuffer:destroy()
-    DestroyAudioBuffer(self.handle)
+    engine.DestroyAudioBuffer(self.handle)
     self.handle = nil
 end
 

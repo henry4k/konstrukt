@@ -7,11 +7,9 @@
 -- velocity. They are applied in each simulation step until you 'destroy' them.
 
 
-local assert = assert
+local engine = require 'engine'
 local class  = require 'middleclass'
 local Vec    = require 'core/Vector'
-local DestroyForce = ENGINE.DestroyForce
-local SetForce     = ENGINE.SetForce
 
 
 local Force = class('core/physics/Force')
@@ -23,7 +21,7 @@ function Force:initialize( handle )
 end
 
 function Force:destroy()
-    DestroyForce(self.handle)
+    engine.DestroyForce(self.handle)
     self.handle = nil
 end
 
@@ -43,14 +41,14 @@ function Force:set( value, relativePosition, useLocalCoordinates )
     relativePosition    = relativePosition or Vec(0,0,0)
     assert(Vec:isInstance(relativePosition), 'Relative position must be vector.')
     useLocalCoordinates = useLocalCoordinates or false
-    SetForce(self.handle,
-             value[1],
-             value[2],
-             value[3],
-             relativePosition[1],
-             relativePosition[2],
-             relativePosition[3],
-             useLocalCoordinates)
+    engine.SetForce(self.handle,
+                    value[1],
+                    value[2],
+                    value[3],
+                    relativePosition[1],
+                    relativePosition[2],
+                    relativePosition[3],
+                    useLocalCoordinates)
 end
 
 

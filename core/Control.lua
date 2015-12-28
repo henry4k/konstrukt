@@ -27,12 +27,10 @@
 -- that control receives the event.
 
 
-local assert = assert
-local class  = require 'middleclass'
-local Object = class.Object
-local Controllable     = require 'core/Controllable'
-local RegisterControl  = ENGINE.RegisterControl
-local SetEventCallback = ENGINE.SetEventCallback
+local engine       = require 'engine'
+local class        = require 'middleclass'
+local Object       = class.Object
+local Controllable = require 'core/Controllable'
 
 
 local Control = {
@@ -41,7 +39,7 @@ local Control = {
 
 --- Register a control, which can then be used by @{core.Controllable}s.
 function Control.register( name )
-    RegisterControl(name)
+    engine.RegisterControl(name)
 end
 
 --- Places a controllable on top of the stack.
@@ -85,7 +83,7 @@ local function onControlAction( name, absolute, delta )
         i = i - 1
     end
 end
-SetEventCallback('ControlAction', onControlAction)
+engine.SetEventCallback('ControlAction', onControlAction)
 
 
 return Control

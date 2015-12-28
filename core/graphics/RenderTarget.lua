@@ -2,15 +2,11 @@
 --- (aka framebuffer)
 
 
-local assert = assert
-local isInteger = math.isInteger
+local engine = require 'engine'
 local class  = require 'middleclass'
 local Object = class.Object
 local Camera = require 'core/graphics/Camera'
 local ShaderProgramSet = require 'core/graphics/ShaderProgramSet'
-local DestroyRenderTarget             = ENGINE.DestroyRenderTarget
-local SetRenderTargetCamera           = ENGINE.SetRenderTargetCamera
-local SetRenderTargetShaderProgramSet = ENGINE.SetRenderTargetShaderProgramSet
 
 
 local RenderTarget = class('core/graphics/RenderTarget')
@@ -33,7 +29,7 @@ function RenderTarget:initialize( handle )
 end
 
 function RenderTarget:destroy()
-    DestroyRenderTarget(self.handle)
+    engine.DestroyRenderTarget(self.handle)
     self.handle = nil
 end
 
@@ -44,11 +40,11 @@ end
 -- scene.
 --
 function RenderTarget:setCamera( layer, name, camera )
-    assert(isInteger(layer), 'Layer must be an integer.')
+    assert(math.isInteger(layer), 'Layer must be an integer.')
     assert(layer >= 0, 'Layer must be positive.')
     assert(type(name) == 'string', 'Name must be a string.')
     assert(Object.isInstanceOf(camera, Camera), 'Must be called with a camera.')
-    SetRenderTargetCamera(self.handle, camera.handle, layer)
+    engine.SetRenderTargetCamera(self.handle, camera.handle, layer)
     self.camerasByLayer[layer] = camera
     self.camerasByName[name] = camera
 end
@@ -68,7 +64,7 @@ end
 function RenderTarget:setShaderProgramSet( shaderProgramSet )
     assert(Object.isInstanceOf(shaderProgramSet, ShaderProgramSet),
            'Must be called with a shader program set.')
-    SetRenderTargetShaderProgramSet(self.handle, shaderProgramSet.handle)
+    engine.SetRenderTargetShaderProgramSet(self.handle, shaderProgramSet.handle)
     self.shaderProgramSet = shaderProgramSet
 end
 

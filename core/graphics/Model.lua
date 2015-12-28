@@ -4,8 +4,7 @@
 -- Includes @{core.HasTransformation} and @{core.physics.HasAttachmentTarget}.
 
 
-local assert  = assert
-local isInteger = math.isInteger
+local engine  = require 'engine'
 local class   = require 'middleclass'
 local Object  = class.Object
 local Vec     = require 'core/Vector'
@@ -14,15 +13,6 @@ local Mesh    = require 'core/graphics/Mesh'
 local Texture = require 'core/graphics/Texture'
 local HasTransformation   = require 'core/HasTransformation'
 local HasAttachmentTarget = require 'core/physics/HasAttachmentTarget'
-local DestroyModel              = ENGINE.DestroyModel
-local SetModelAttachmentTarget  = ENGINE.SetModelAttachmentTarget
-local SetModelTransformation    = ENGINE.SetModelTransformation
-local SetModelOverlayLevel      = ENGINE.SetModelOverlayLevel
-local SetModelMesh              = ENGINE.SetModelMesh
-local SetModelTexture           = ENGINE.SetModelTexture
-local SetModelProgramFamilyList = ENGINE.SetModelProgramFamilyList
-local SetModelUniform           = ENGINE.SetModelUniform
-local UnsetModelUniform         = ENGINE.UnsetModelUniform
 
 
 local Model = class('core/graphics/Model')
@@ -39,14 +29,14 @@ function Model:initialize( handle )
 end
 
 function Model:destroy()
-    DestroyModel(self.handle)
+    engine.DestroyModel(self.handle)
     self.handle = nil
 end
 
 --- Changes a models mesh.
 function Model:setMesh( mesh )
     assert(Object.isInstanceOf(mesh, Mesh), 'Must be called with a mesh.')
-    SetModelMesh(self.handle, mesh.handle)
+    engine.SetModelMesh(self.handle, mesh.handle)
     self.mesh = mesh
 end
 
@@ -56,24 +46,24 @@ function Model:getMesh()
 end
 
 function Model:setOverlayLevel( level )
-    assert(isInteger(level), 'Overlay level must be an integer.')
-    SetModelOverlayLevel(self.handle, level)
+    assert(math.isInteger(level), 'Overlay level must be an integer.')
+    engine.SetModelOverlayLevel(self.handle, level)
 end
 
 --- Changes a texture unit.
 -- @param[type=number] unit
 -- @param[type=core.graphics.Texture] texture
 function Model:setTexture( unit, texture )
-    assert(isInteger(unit), 'Unit must be an integer.')
+    assert(math.isInteger(unit), 'Unit must be an integer.')
     assert(unit >= 0, 'Unit must be positive.')
     assert(Object.isInstanceOf(texture, Texture), 'Must be called with a texture.')
-    SetModelTexture(self.handle, unit, texture.handle)
+    engine.SetModelTexture(self.handle, unit, texture.handle)
     self.activeTextures[unit] = true
 end
 
 function Model:unsetAllTextures()
     for unit, _ in pairs(self.activeTextures) do
-        SetModelTexture(self.handle, unit, nil)
+        engine.SetModelTexture(self.handle, unit, nil)
         self.activeTextures[unit] = nil
     end
 end
@@ -88,7 +78,7 @@ end
 --
 function Model:setProgramFamily( family, ... )
     local families = {family, ...}
-    SetModelProgramFamilyList(self.handle, table.concat(families, ','))
+    engine.SetModelProgramFamilyList(self.handle, table.concat(families, ','))
 end
 
 --- Changes a model specific uniform.
@@ -101,20 +91,20 @@ end
 function Model:setUniform( name, value, type )
     if Object.isInstanceOf(value, Mat4) then
         assert(not type, 'Type argument is ignored, when called with a matrix.')
-        SetModelUniform(self.handle, name, 'mat4', value.handle)
+        engine.SetModelUniform(self.handle, name, 'mat4', value.handle)
     elseif Vec:isInstance(value) then
         assert(not type, 'Type argument is ignored, when called with a vector.')
-        SetModelUniform(self.handle, name, 'vec'..#value, value:unpack())
+        engine.SetModelUniform(self.handle, name, 'vec'..#value, value:unpack())
     else
         assert(type, 'Type is missing.')
-        SetModelUniform(self.handle, name, type, value)
+        engine.SetModelUniform(self.handle, name, type, value)
     end
     self.activeUniforms[name] = true
 end
 
 --- Remove a uniform.
 function Model:unsetUniform( name )
-    UnsetModelUniform(self.handle, name)
+    engine.UnsetModelUniform(self.handle, name)
     self.activeUniforms[name] = nil
 end
 
@@ -125,11 +115,11 @@ function Model:unsetAllUniforms()
 end
 
 function Model:_setTransformation( matrix )
-    SetModelTransformation(self.handle, matrix.handle)
+    engine.SetModelTransformation(self.handle, matrix.handle)
 end
 
 function Model:_setAttachmentTarget( solidHandle, flags )
-    SetModelAttachmentTarget(self.handle, solidHandle, flags)
+    engine.SetModelAttachmentTarget(self.handle, solidHandle, flags)
 end
 
 

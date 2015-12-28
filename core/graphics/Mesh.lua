@@ -6,13 +6,11 @@
 -- Includes @{core.Resource}.
 
 
-local assert      = assert
+local engine      = require 'engine'
 local class       = require 'middleclass'
 local Object      = class.Object
 local Resource    = require 'core/Resource'
 local MeshBuffer  = require 'core/graphics/MeshBuffer'
-local CreateMesh  = ENGINE.CreateMesh
-local DestroyMesh = ENGINE.DestroyMesh
 
 
 local Mesh = class('core/graphics/Mesh')
@@ -34,7 +32,7 @@ end
 
 function Mesh:initialize( v )
     if Object.isInstanceOf(v, MeshBuffer) then
-        self.handle = CreateMesh(v.handle)
+        self.handle = engine.CreateMesh(v.handle)
     elseif type(v) == 'userdata' then
         self.handle = v
     else
@@ -43,7 +41,7 @@ function Mesh:initialize( v )
 end
 
 function Mesh:destroy()
-    DestroyMesh(self.handle)
+    engine.DestroyMesh(self.handle)
     self.handle = nil
 end
 

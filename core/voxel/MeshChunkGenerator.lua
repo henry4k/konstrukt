@@ -4,20 +4,18 @@
 -- each voxel needs.
 
 
+local engine      = require 'engine'
 local class       = require 'middleclass'
 local Object      = class.Object
 local Mesh        = require 'core/graphics/Mesh'
 local VoxelMesh   = require 'core/voxel/VoxelMesh'
 local VoxelVolume = require 'core/voxel/VoxelVolume'
-local CreateMeshChunkGenerator  = ENGINE.CreateMeshChunkGenerator
-local DestroyMeshChunkGenerator = ENGINE.DestroyMeshChunkGenerator
-local GenerateMeshChunk         = ENGINE.GenerateMeshChunk
 
 
 local MeshChunkGenerator = class('core/voxel/MeshChunkGenerator')
 
 function MeshChunkGenerator:initialize()
-    self.handle = CreateMeshChunkGenerator()
+    self.handle = engine.CreateMeshChunkGenerator()
     self.nextMaterialId = 1
     self.materialToId = {}
     self.idToMaterial = {}
@@ -25,7 +23,7 @@ end
 
 function MeshChunkGenerator:destroy()
     assert(self.handle)
-    DestroyMeshChunkGenerator(self.handle)
+    engine.DestroyMeshChunkGenerator(self.handle)
     self.handle = nil
 end
 
@@ -60,14 +58,14 @@ function MeshChunkGenerator:generateChunk( voxelVolume, start, size )
            'Must be called with a voxel volume.')
     assert(#start == 3 and #size == 3,
            'Start and size vectors must have 3 components.')
-    local meshes, materialIds = GenerateMeshChunk(self.handle,
-                                                  voxelVolume.handle,
-                                                  start[1],
-                                                  start[2],
-                                                  start[3],
-                                                  size[1],
-                                                  size[2],
-                                                  size[3])
+    local meshes, materialIds = engine.GenerateMeshChunk(self.handle,
+                                                         voxelVolume.handle,
+                                                         start[1],
+                                                         start[2],
+                                                         start[3],
+                                                         size[1],
+                                                         size[2],
+                                                         size[3])
     assert(#meshes == #materialIds)
     local result = {}
     for i = 1, #meshes do

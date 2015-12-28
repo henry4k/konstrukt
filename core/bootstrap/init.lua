@@ -1,17 +1,20 @@
 --- @script core.bootstrap.init
 --- Executed during engine initialization.
 
+-- luacheck: globals _engine
+local engine = _engine
+
 
 -- Setup error handling
 
-ENGINE.SetErrorFunction(function( message )
+engine.SetErrorFunction(function( message )
     return debug.traceback(message, 2)
 end)
 
 
 -- Initialize random generator
 
-math.randomseed(ENGINE.GetTime())
+math.randomseed(engine.GetTime())
 
 
 -- Reimplement some functions
@@ -22,7 +25,7 @@ function print( ... )
     for i, arg in ipairs(args) do
         args[i] = tostring(arg)
     end
-    ENGINE.Log(table.concat(args, '\t'))
+    engine.Log(table.concat(args, '\t'))
 end
 
 function loadfile( fileName, ... )
@@ -34,7 +37,7 @@ function dofile( fileName )
 end
 
 function _loadfile( fileName, ... )
-    local data = ENGINE.ReadFile(fileName)
+    local data = engine.ReadFile(fileName)
     return load(data, '@'..fileName, ...)
 end
 
@@ -63,14 +66,14 @@ Control.pushControllable(GlobalControls())
 -- @control exit
 GlobalControls:mapControl('exit', function( self, absolute, delta )
     if delta > 0 then
-        ENGINE.StopGameLoop()
+        engine.StopGameLoop()
     end
 end)
 
 
 -- Fire global event on engine shutdown
 local GlobalEventSource = require 'core/GlobalEventSource'
-ENGINE.SetEventCallback('Shutdown', function()
+engine.SetEventCallback('Shutdown', function()
     GlobalEventSource:fireEvent('shutdown')
 end)
 
@@ -102,5 +105,5 @@ end
 
 if interactive then
     debug.debug()
-    ENGINE.StopGameLoop()
+    engine.StopGameLoop()
 end

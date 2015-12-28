@@ -2,7 +2,7 @@
 --- Read configuration values.
 
 
-local GetConfigValue = ENGINE.GetConfigValue
+local engine = require 'engine'
 
 
 local Config = {}
@@ -18,7 +18,7 @@ local Config = {}
 -- The keys value or the default value, if the key was not configurated.
 --
 function Config.get( key, default )
-    return GetConfigValue(key, default)
+    return engine.GetConfigValue(key, default)
 end
 
 return Config

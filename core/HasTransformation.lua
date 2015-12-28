@@ -3,7 +3,6 @@
 -- TODO: This class is obsolete.
 
 
-local assert  = assert
 local class   = require 'middleclass'
 local Object  = class.Object
 local Mat4    = require 'core/Matrix4'

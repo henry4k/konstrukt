@@ -4,8 +4,8 @@
 -- Extends @{core.voxel.Structure}.
 
 
-local class         = require 'middleclass'
-local Structure     = require 'core/voxel/Structure'
+local class     = require 'middleclass'
+local Structure = require 'core/voxel/Structure'
 
 
 local SingleVoxelStructure = class('core/voxel/SingleVoxelStructure', Structure)

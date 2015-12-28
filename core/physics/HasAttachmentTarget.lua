@@ -4,10 +4,9 @@
 -- @see core.physics.Solid
 
 
-local assert  = assert
+local Solid   = require 'core/physics/Solid'
 local class   = require 'middleclass'
 local Object  = class.Object
-local Solid   = require 'core/physics/Solid'
 
 
 local HasAttachmentTarget = {}

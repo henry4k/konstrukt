@@ -4,16 +4,16 @@
 -- Extends @{core.graphics.RenderTarget}.
 
 
+local engine       = require 'engine'
 local class        = require 'middleclass'
 local RenderTarget = require 'core/graphics/RenderTarget'
-local GetDefaultRenderTarget = ENGINE.GetDefaultRenderTarget
 
 
 local DefaultRenderTarget = class('core/graphics/DefaultRenderTarget', RenderTarget)
 
 function DefaultRenderTarget:initialize()
     assert(not DefaultRenderTarget.instance, 'Use DefaultRenderTarget:get() instead.')
-    RenderTarget.initialize(self, GetDefaultRenderTarget())
+    RenderTarget.initialize(self, engine.GetDefaultRenderTarget())
 end
 
 function DefaultRenderTarget:destroy()

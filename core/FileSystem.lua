@@ -2,16 +2,8 @@
 --- Provides file access to the mounted packages and the user directory.
 
 
+local engine = require 'engine'
 local Config = require 'core/Config'
-local MountPackage        = ENGINE.MountPackage
-local UnmountPackage      = ENGINE.UnmountPackage
-local ReadFile            = ENGINE.ReadFile
-local WriteFile           = ENGINE.WriteFile
-local DeleteFile          = ENGINE.DeleteFile
-local FileExists          = ENGINE.FileExists
-local GetFileInfo         = ENGINE.GetFileInfo
-local MakeDirectory       = ENGINE.MakeDirectory
-local GetDirectoryEntries = ENGINE.GetDirectoryEntries
 
 
 local function assertIsPackageName( packageName )
@@ -51,7 +43,7 @@ end
 --- Mounts the package and returns its metadata on success.
 function FileSystem.mountPackage( packageName )
     assertIsPackageName(packageName)
-    if MountPackage(packageName) then
+    if engine.MountPackage(packageName) then
         local meta = FileSystem._loadPackageMetadata(packageName) or {}
         FileSystem.mountedPackages[packageName] = meta
         return meta
@@ -69,7 +61,7 @@ end
 function FileSystem.unmountPackage( packageName )
     assertIsPackageName(packageName)
     FileSystem.mountedPackages[packageName] = nil
-    return UnmountPackage(packageName)
+    return engine.UnmountPackage(packageName)
 end
 
 --- Returns the metadata of a mounted package.
@@ -82,7 +74,7 @@ end
 -- @return[type=string]
 function FileSystem.readFile( filePath )
     assertIsFilePath(filePath)
-    return ReadFile(filePath)
+    return engine.ReadFile(filePath)
 end
 
 --- Create or replace a regular file with the given content.
@@ -91,7 +83,7 @@ end
 function FileSystem.writeFile( filePath, content )
     assertIsFilePath(filePath)
     assert(type(content) == 'string', 'File content must be a string.')
-    WriteFile(filePath, content)
+    engine.WriteFile(filePath, content)
 end
 
 --- Delete a file.
@@ -107,13 +99,13 @@ function FileSystem.deleteFile( filePath, recursive )
     assertIsFilePath(filePath)
     assert(not recursive, 'Recursive deleting is not supported yet.')
     -- TODO: Implement recursive delete
-    DeleteFile(filePath)
+    engine.DeleteFile(filePath)
 end
 
 --- Tests whether a file exists at the given path.
 function FileSystem.fileExists( filePath )
     assertIsFilePath(filePath)
-    return FileExists(filePath)
+    return engine.FileExists(filePath)
 end
 
 --- Retrieves file attributes.
@@ -129,7 +121,7 @@ end
 --
 function FileSystem.getFileInfo( filePath )
     assertIsFilePath(filePath)
-    return GetFileInfo(filePath)
+    return engine.GetFileInfo(filePath)
 end
 
 --- Create a direcotry.
@@ -138,7 +130,7 @@ end
 --
 function FileSystem.makeDirectory( filePath )
     assertIsFilePath(filePath)
-    MakeDirectory(filePath)
+    engine.MakeDirectory(filePath)
 end
 
 local function buildEntryComparision( directory, directoriesFirst )
@@ -218,7 +210,7 @@ function FileSystem.getDirectoryEntries( filePath, sortMethod )
     local sortFn = sortFunctions[sortMethod]
     assert(sortFn, 'Unknown sort method: '..sortMethod)
 
-    local entries = GetDirectoryEntries(filePath)
+    local entries = engine.GetDirectoryEntries(filePath)
     sortFn(filePath, entries)
     return entries
 end

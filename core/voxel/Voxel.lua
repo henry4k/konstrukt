@@ -2,16 +2,16 @@ local assert       = assert
 local error        = error
 local setmetatable = setmetatable
 local getmetatable = getmetatable
-local unpack       = unpack
+local unpack       = table.unpack
 local max          = math.max
 local pow          = math.pow
 local floor        = math.floor
 local isBetween    = math.isBetween
 local bit32extract = bit32.extract
 local bit32replace = bit32.replace
-local GetVoxelInt32Count = ENGINE.GetVoxelInt32Count
+local engine       = require 'engine'
 
-local voxelValueCount = GetVoxelInt32Count()
+local voxelValueCount = engine.GetVoxelInt32Count()
 
 
 local Voxel =

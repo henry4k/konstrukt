@@ -5,8 +5,8 @@
 -- constructor function.
 
 
+local engine = require 'engine'
 local class  = require 'middleclass'
-local DestroyCollisionShape = ENGINE.DestroyCollisionShape
 
 
 local CollisionShape = class('core/physics/CollisionShape')
@@ -23,7 +23,7 @@ function CollisionShape:initialize( handle )
 end
 
 function CollisionShape:destroy()
-    DestroyCollisionShape(self.handle)
+    engine.DestroyCollisionShape(self.handle)
     self.handle = nil
 end
 

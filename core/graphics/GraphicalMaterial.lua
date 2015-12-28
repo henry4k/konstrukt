@@ -1,5 +1,3 @@
-local assert    = assert
-local isInteger = math.isInteger
 local class     = require 'middleclass'
 local Object    = class.Object
 local Vec       = require 'core/Vector'
@@ -18,12 +16,12 @@ function Material:initialize()
 end
 
 function Material:setOverlayLevel( level )
-    assert(isInteger(level), 'Overlay level must be an integer.')
+    assert(math.isInteger(level), 'Overlay level must be an integer.')
     self.overlayLevel = level
 end
 
 function Material:setTexture( unit, texture )
-    assert(isInteger(unit), 'Unit must be an integer.')
+    assert(math.isInteger(unit), 'Unit must be an integer.')
     assert(unit >= 0, 'Unit must be positive.')
     assert(Object.isInstanceOf(texture, Texture), 'Must be called with a texture.')
     self.textures[unit] = texture

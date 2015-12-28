@@ -13,10 +13,9 @@
 -- @see core.graphics.ShaderProgram
 
 
+local engine   = require 'engine'
 local class    = require 'middleclass'
 local Resource = require 'core/Resource'
-local LoadShader    = ENGINE.LoadShader
-local DestroyShader = ENGINE.DestroyShader
 
 
 local Shader = class('core/graphics/Shader')
@@ -34,11 +33,11 @@ function Shader.static:_load( fileName )
 end
 
 function Shader:initialize( fileName )
-    self.handle = LoadShader(fileName)
+    self.handle = engine.LoadShader(fileName)
 end
 
 function Shader:destroy()
-    DestroyShader(self.handle)
+    engine.DestroyShader(self.handle)
     self.handle = nil
 end
 

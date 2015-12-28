@@ -4,21 +4,12 @@
 -- Includes @{core.Resource}.
 
 
-local assert   = assert
+local engine   = require 'engine'
 local class    = require 'middleclass'
 local Object   = class.Object
 local Mat4     = require 'core/Matrix4'
 local Json     = require 'core/Json'
 local Resource = require 'core/Resource'
-local CreateMeshBuffer         = ENGINE.CreateMeshBuffer
-local DestroyMeshBuffer        = ENGINE.DestroyMeshBuffer
-local TransformMeshBuffer      = ENGINE.TransformMeshBuffer
-local IndexMeshBuffer          = ENGINE.IndexMeshBuffer
-local CalcMeshBufferNormals    = ENGINE.CalcMeshBufferNormals
-local CalcMeshBufferTangents   = ENGINE.CalcMeshBufferTangents
-local AppendMeshBuffer         = ENGINE.AppendMeshBuffer
-local AppendIndexToMeshBuffer  = ENGINE.AppendIndexToMeshBuffer
-local AppendVertexToMeshBuffer = ENGINE.AppendVertexToMeshBuffer
 
 
 local GetEntryByPath = function( table, path, delimiters )
@@ -59,12 +50,12 @@ function MeshBuffer.static:_load( sceneFileName, objectPath )
 end
 
 function MeshBuffer:initialize()
-    self.handle = CreateMeshBuffer()
+    self.handle = engine.CreateMeshBuffer()
     self.locked = false
 end
 
 function MeshBuffer:destroy()
-    DestroyMeshBuffer(self.handle)
+    engine.DestroyMeshBuffer(self.handle)
     self.handle = nil
 end
 
@@ -84,26 +75,26 @@ end
 function MeshBuffer:transform( transformation )
     assert(not self.locked, 'Mesh buffer is write protected.')
     assert(Object.isInstanceOf(transformation, Mat4), 'Transformation must be an matrix.')
-    TransformMeshBuffer(self.handle, transformation.handle)
+    engine.TransformMeshBuffer(self.handle, transformation.handle)
 end
 
 --- Build index buffer from scratch.
 function MeshBuffer:index()
     assert(not self.locked, 'Mesh buffer is write protected.')
-    IndexMeshBuffer(self.handle)
+    engine.IndexMeshBuffer(self.handle)
 end
 
 --- Calculate normals from scratch.
 function MeshBuffer:calcNormals()
     assert(not self.locked, 'Mesh buffer is write protected.')
-    CalcMeshBufferNormals(self.handle)
+    engine.CalcMeshBufferNormals(self.handle)
 end
 
 --- Calculate tangents from scratch.
 -- Make sure that the mesh has normals and texture coordinates.
 function MeshBuffer:calcTangents()
     assert(not self.locked, 'Mesh buffer is write protected.')
-    CalcMeshBufferTangents(self.handle)
+    engine.CalcMeshBufferTangents(self.handle)
 end
 
 --- Append vertices from another buffer.
@@ -118,9 +109,9 @@ function MeshBuffer:appendMeshBuffer( other, transformation )
     assert(Object.isInstanceOf(other, MeshBuffer), 'Must be called with another mesh buffer.')
     if transformation then
         assert(Object.isInstanceOf(transformation, Mat4), 'Transformation must be an matrix.')
-        AppendMeshBuffer(self.handle, other.handle, transformation.handle)
+        engine.AppendMeshBuffer(self.handle, other.handle, transformation.handle)
     else
-        AppendMeshBuffer(self.handle, other.handle)
+        engine.AppendMeshBuffer(self.handle, other.handle)
     end
 end
 
@@ -129,7 +120,7 @@ end
 function MeshBuffer:appendIndex( index )
     assert(not self.locked, 'Mesh buffer is write protected.')
     assert(index >= 0, 'Index must be positive.')
-    AppendIndexToMeshBuffer(self.handle, index)
+    engine.AppendIndexToMeshBuffer(self.handle, index)
 end
 
 --- Add a new vertex.
@@ -146,7 +137,7 @@ end
 function MeshBuffer:appendVertex( vertex )
     assert(not self.locked, 'Mesh buffer is write protected.')
     local v = vertex
-    AppendVertexToMeshBuffer(
+    engine.AppendVertexToMeshBuffer(
         self.handle,
 
         -- position
