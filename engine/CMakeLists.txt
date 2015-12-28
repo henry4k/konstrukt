@@ -56,7 +56,7 @@ if(APOAPSIS_STRICT_COMPILER)
     if(MSVC)
         target_compile_options(apoapsis PRIVATE /W4 /WX)
     else()
-        target_compile_options(apoapsis PRIVATE -Wall -Wpedantic -Werror)
+        target_compile_options(apoapsis PRIVATE -std=c++98 -Wall -Wpedantic -Werror)
     endif()
 endif()
 
