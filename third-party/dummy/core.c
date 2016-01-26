@@ -184,7 +184,8 @@ bool dummyRunTest( int index )
         strncpy(test->abortReason, abortReason, DUMMY_MAX_MESSAGE_LENGTH);
     test->status = DUMMY_TEST_COMPLETED;
 
-    for(int i = 0; i < test->cleanupStackSize; i++)
+    int i = 0;
+    for(; i < test->cleanupStackSize; i++)
     {
         dummyCleanup* cleanup = &test->cleanupStack[i];
         cleanup->fn(cleanup->data);
