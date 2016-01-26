@@ -4,9 +4,6 @@
 #include "Vertex.h"
 
 
-using namespace glm;
-
-
 enum
 {
     VERTEX_POSITION = 1, // begins with 1 because 0 is an invalid/reserved attribute name
@@ -51,16 +48,16 @@ void SetVertexAttributePointers( const void* data )
 #undef AttribPointer
 }
 
-static void CalcVertexTangents( vec3 p1, // position B-A
-                                vec3 p2, // position C-A
-                                vec2 t1, // texcoord B-A
-                                vec2 t2, // texcoord C-A
-                                vec3* tangent,
-                                vec3* bitangent )
+static void CalcVertexTangents( Vec3 p1, // position B-A
+                                Vec3 p2, // position C-A
+                                Vec2 t1, // texcoord B-A
+                                Vec2 t2, // texcoord C-A
+                                Vec3* tangent,
+                                Vec3* bitangent )
 {
-    const float coef = 1.0f / (t1[0]*t2[1] - t1[1]*t2[0]);
-    *bitangent = (p1*t2[0] - p2*t1[0])*coef;
-    *tangent   = (p1*t2[1] - p2*t1[1])*coef;
+    const float coef = 1.f / (t1._[0]*t2._[1] - t1._[1]*t2._[0]);
+    REPEAT(3,i) { bitangent->_[i] = (p1._[i]*t2._[0] - p2._[i]*t1._[0])*coef; }
+    REPEAT(3,i) {   tangent->_[i] = (p1._[i]*t2._[1] - p2._[i]*t1._[1])*coef; }
 
     // Gram–Schmidt orthogonalization:
     //const vec3 normal = cross(p2, p1);
@@ -68,36 +65,47 @@ static void CalcVertexTangents( vec3 p1, // position B-A
     //*tangent   = normalize(  *tangent - normal * dot(normal,   *tangent));
 }
 
+#define ADD_TO_VEC3(T,S) REPEAT(3,i) { (T)._[i] += (S)._[i]; }
+
 void CalcTriangleTangents( Vertex* a, Vertex* b, Vertex* c )
 {
-    vec3 tangent;
-    vec3 bitangent;
+    Vec3 tangent;
+    Vec3 bitangent;
 
-    CalcVertexTangents(b->position - a->position,
-                       c->position - a->position,
-                       b->texCoord - a->texCoord,
-                       c->texCoord - a->texCoord,
+    Vec3 baPosDelta;
+    Vec3 caPosDelta;
+    Vec2 baTexDelta;
+    Vec2 caTexDelta;
+    REPEAT(3,i) { baPosDelta._[i] = b->position._[i] - a->position._[i]; }
+    REPEAT(3,i) { caPosDelta._[i] = c->position._[i] - a->position._[i]; }
+    REPEAT(2,i) { baTexDelta._[i] = b->texCoord._[i] - a->texCoord._[i]; }
+    REPEAT(2,i) { caTexDelta._[i] = c->texCoord._[i] - a->texCoord._[i]; }
+
+    CalcVertexTangents(baPosDelta,
+                       caPosDelta,
+                       baTexDelta,
+                       caTexDelta,
                        &tangent,
                        &bitangent);
 
-    a->tangent += tangent;
-    b->tangent += tangent;
-    c->tangent += tangent;
+    ADD_TO_VEC3(a->tangent, tangent)
+    ADD_TO_VEC3(b->tangent, tangent)
+    ADD_TO_VEC3(c->tangent, tangent)
 
-    a->bitangent += bitangent;
-    b->bitangent += bitangent;
-    c->bitangent += bitangent;
+    ADD_TO_VEC3(a->bitangent, bitangent)
+    ADD_TO_VEC3(b->bitangent, bitangent)
+    ADD_TO_VEC3(c->bitangent, bitangent)
 }
 
 void CalcTriangleNormal( Vertex* a, Vertex* b, Vertex* c )
 {
-    const vec3 p1 = b->position - a->position;
-    const vec3 p2 = c->position - a->position;
+    Vec3 p1, p2;
+    REPEAT(3,i) { p1._[i] = b->position._[i] - a->position._[i]; }
+    REPEAT(3,i) { p2._[i] = c->position._[i] - a->position._[i]; }
 
-    //const vec3 normal = cross(p1, p2);
-    const vec3 normal = cross(p2, p1);
+    const Vec3 normal = CrossProductOfVec3(p2, p1);
 
-    a->normal += normal;
-    b->normal += normal;
-    c->normal += normal;
+    ADD_TO_VEC3(a->normal, normal)
+    ADD_TO_VEC3(b->normal, normal)
+    ADD_TO_VEC3(c->normal, normal)
 }

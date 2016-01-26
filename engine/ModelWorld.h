@@ -44,7 +44,7 @@ void ReferenceModel( Model* model );
 void ReleaseModel( Model* model );
 
 void SetModelAttachmentTarget( Model* model, Solid* target, int flags );
-void SetModelTransformation( Model* model, glm::mat4 transformation );
+void SetModelTransformation( Model* model, Mat4 transformation );
 void SetModelOverlayLevel( Model* model, int level );
 void SetModelMesh( Model* model, Mesh* mesh );
 void SetModelTexture( Model* model, int unit, Texture* texture );

@@ -3,8 +3,6 @@
 #include "Math.h"
 #include "MeshBuffer.h"
 
-using namespace glm;
-
 
 static int Lua_CreateMeshBuffer( lua_State* l )
 {
@@ -32,9 +30,9 @@ static int Lua_DestroyMeshBuffer( lua_State* l )
 static int Lua_TransformMeshBuffer( lua_State* l )
 {
     MeshBuffer* buffer = CheckMeshBufferFromLua(l, 1);
-    const mat4* transformation = CheckMatrix4FromLua(l, 2);
+    const Mat4* transformation = CheckMatrix4FromLua(l, 2);
 
-    TransformMeshBuffer(buffer, transformation);
+    TransformMeshBuffer(buffer, *transformation);
     return 0;
 }
 
@@ -64,7 +62,7 @@ static int Lua_AppendMeshBuffer( lua_State* l )
     MeshBuffer* targetBuffer = CheckMeshBufferFromLua(l, 1);
     const MeshBuffer* sourceBuffer = CheckMeshBufferFromLua(l, 2);
 
-    const mat4* transformation = NULL;
+    const Mat4* transformation = NULL;
     if(lua_gettop(l) >= 3)
         transformation = CheckMatrix4FromLua(l, 3);
 
@@ -87,23 +85,23 @@ static int Lua_AppendVertexToMeshBuffer( lua_State* l )
     int i = 2;
     Vertex vertex;
 
-    vertex.position[0] = luaL_checknumber(l, i++);
-    vertex.position[1] = luaL_checknumber(l, i++);
-    vertex.position[2] = luaL_checknumber(l, i++);
+    vertex.position._[0] = luaL_checknumber(l, i++);
+    vertex.position._[1] = luaL_checknumber(l, i++);
+    vertex.position._[2] = luaL_checknumber(l, i++);
 
-    vertex.color[0] = luaL_checknumber(l, i++);
-    vertex.color[1] = luaL_checknumber(l, i++);
-    vertex.color[2] = luaL_checknumber(l, i++);
+    vertex.color._[0] = luaL_checknumber(l, i++);
+    vertex.color._[1] = luaL_checknumber(l, i++);
+    vertex.color._[2] = luaL_checknumber(l, i++);
 
-    vertex.texCoord[0] = luaL_checknumber(l, i++);
-    vertex.texCoord[1] = luaL_checknumber(l, i++);
+    vertex.texCoord._[0] = luaL_checknumber(l, i++);
+    vertex.texCoord._[1] = luaL_checknumber(l, i++);
 
-    vertex.normal[0] = luaL_checknumber(l, i++);
-    vertex.normal[1] = luaL_checknumber(l, i++);
-    vertex.normal[2] = luaL_checknumber(l, i++);
+    vertex.normal._[0] = luaL_checknumber(l, i++);
+    vertex.normal._[1] = luaL_checknumber(l, i++);
+    vertex.normal._[2] = luaL_checknumber(l, i++);
 
-    vertex.tangent   = vec3(0,0,0);
-    vertex.bitangent = vec3(0,0,0);
+    vertex.tangent   = Vec3Zero;
+    vertex.bitangent = Vec3Zero;
 
     AddVertexToMeshBuffer(targetBuffer, &vertex);
     return 0;

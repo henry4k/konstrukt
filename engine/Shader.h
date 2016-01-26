@@ -56,25 +56,15 @@ enum UniformType
     MAT4_UNIFORM
 };
 
-struct UniformValue
+typedef union
 {
-    union
-    {
-        int i;
-        float f;
-        float data[4*4];
-    };
-
-    const glm::vec3& v3() const;
-    const glm::vec4& v4() const;
-    const glm::mat3& m3() const;
-    const glm::mat4& m4() const;
-
-    glm::vec3& v3();
-    glm::vec4& v4();
-    glm::mat3& m3();
-    glm::mat4& m4();
-};
+    int i;
+    float f;
+    Vec3 vec3;
+    Vec4 vec4;
+    Mat3 mat3;
+    Mat4 mat4;
+} UniformValue;
 
 
 bool InitShader();

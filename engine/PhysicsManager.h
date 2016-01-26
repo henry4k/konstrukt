@@ -38,9 +38,9 @@ struct Collision
 {
     Solid* a;
     Solid* b;
-    glm::vec3 pointOnA;
-    glm::vec3 pointOnB;
-    glm::vec3 normalOnB;
+    Vec3 pointOnA;
+    Vec3 pointOnB;
+    Vec3 normalOnB;
     float impulse;
 };
 
@@ -53,24 +53,24 @@ bool InitPhysicsManager();
 void DestroyPhysicsManager();
 void UpdatePhysicsManager( double timeDelta );
 void SetCollisionCallback( CollisionCallback callback );
-void SetGravity( glm::vec3 force );
+void SetGravity( Vec3 force );
 
 
 CollisionShape* CreateEmptyCollisionShape();
-CollisionShape* CreateBoxCollisionShape( glm::vec3 halfWidth );
+CollisionShape* CreateBoxCollisionShape( Vec3 halfWidth );
 CollisionShape* CreateSphereCollisionShape( float radius );
 CollisionShape* CreateCapsuleCollisionShape( float radius, float height );
 CollisionShape* CreateCompoundCollisionShape( int shapeCount,
                                               CollisionShape** shapes,
-                                              glm::vec3* positions );
+                                              Vec3* positions );
 
 void ReferenceCollisionShape( CollisionShape* shape );
 void ReleaseCollisionShape( CollisionShape* shape );
 
 
 Solid* CreateSolid( float mass,
-                    glm::vec3 position,
-                    glm::quat rotation,
+                    Vec3 position,
+                    Quat rotation,
                     CollisionShape* shape );
 
 void ReferenceSolid( Solid* solid );
@@ -92,9 +92,9 @@ void SetSolidFriction( const Solid* solid, float friction );
  */
 void SetSolidCollisionThreshold( Solid* solid, float threshold );
 
-glm::vec3 GetSolidPosition( const Solid* solid );
+Vec3 GetSolidPosition( const Solid* solid );
 
-glm::quat GetSolidRotation( const Solid* solid );
+Quat GetSolidRotation( const Solid* solid );
 
 /**
  * Writes a solids transformation in the matrix `target`.
@@ -105,17 +105,23 @@ glm::quat GetSolidRotation( const Solid* solid );
  * @param copyFlags
  * Any flag combination, that is valid for #GetTransformation.
  */
-void GetSolidTransformation( const Solid* solid, int copyFlags, glm::mat4* target );
+Mat4 GetSolidTransformation( const Solid* solid, int copyFlags );
+
+/**
+ * Like #GetSolidTransformation, but returns an identity matrix if solid is
+ * `NULL`.
+ */
+Mat4 TryToGetSolidTransformation( const Solid* solid, int copyFlags );
 
 /**
  * Velocity at which the solid moves through space.
  */
-glm::vec3 GetSolidLinearVelocity( const Solid* solid );
+Vec3 GetSolidLinearVelocity( const Solid* solid );
 
 /**
  * Velocity at which the solid rotates around itself.
  */
-glm::vec3 GetSolidAngularVelocity( const Solid* solid );
+Vec3 GetSolidAngularVelocity( const Solid* solid );
 
 
 /**
@@ -140,8 +146,8 @@ void EnableGravityForSolid( const Solid* solid, bool enable );
  * If set direction and position will be relative to the solids orientation.
  */
 void ApplySolidImpulse( const Solid* solid,
-                        glm::vec3 impulse,
-                        glm::vec3 relativePosition,
+                        Vec3 impulse,
+                        Vec3 relativePosition,
                         bool useLocalCoordinates );
 
 /**
@@ -165,8 +171,8 @@ Force* CreateForce( Solid* solid );
  * If set direction and position will be relative to the solids orientation.
  */
 void SetForce( Force* force,
-               glm::vec3 value,
-               glm::vec3 relativePosition,
+               Vec3 value,
+               Vec3 relativePosition,
                bool useLocalCoordinates );
 
 void DestroyForce( Force* force );

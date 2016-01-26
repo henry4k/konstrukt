@@ -1,9 +1,9 @@
 #include <string.h> // strcmp
-#include <engine/Common.h>
+#include "../Common.h"
 #include "TestTools.h"
 
 
-InlineTest("Format() works correct.", dummySignalSandbox)
+void FormatTest()
 {
     Require(strcmp(Format("foo"), "foo") == 0);
     Require(strcmp(Format("bar%d",1), "bar1") == 0);
@@ -18,7 +18,7 @@ InlineTest("Format() works correct.", dummySignalSandbox)
 LogHandler OriginalLogHandler;
 int CallCount;
 
-InlineTest("Log handler can handle log lines.", dummySignalSandbox)
+void LogHandlerTest()
 {
     OriginalLogHandler = GetLogHandler();
     dummyAddCleanup(
@@ -77,7 +77,7 @@ InlineTest("Log handler can handle log lines.", dummySignalSandbox)
 }
 
 
-InlineTest("CopyString() is correct.", dummySignalSandbox)
+void CopyStringTest()
 {
     static const int maxLength = 7;
     char destination[maxLength+1];
@@ -101,5 +101,8 @@ InlineTest("CopyString() is correct.", dummySignalSandbox)
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
+    AddTest("Format() works correct.", FormatTest);
+    AddTest("Log handler can handle log lines.", LogHandlerTest);
+    AddTest("CopyString() is correct.", CopyStringTest);
     return RunTests();
 }

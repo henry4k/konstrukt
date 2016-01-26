@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <string.h> // memset
 
 #include "Math.h"
@@ -7,8 +8,6 @@
 #include "Shader.h"
 #include "Camera.h"
 
-using glm::mat4;
-
 
 struct Camera
 {
@@ -16,13 +15,13 @@ struct Camera
     ModelWorld* world;
     Solid* attachmentTarget;
     int attachmentFlags;
-    mat4 modelTransformation;
-    mat4 viewTransformation;
+    Mat4 modelTransformation;
+    Mat4 viewTransformation;
 
     float aspect;
     float zNear, zFar;
     bool projectionTransformationNeedsUpdate;
-    mat4 projectionTransformation;
+    Mat4 projectionTransformation;
 
     CameraProjectionType projectionType;
     float fieldOfView; // perspective projection
@@ -39,8 +38,8 @@ Camera* CreateCamera( ModelWorld* world )
     camera->world = world;
     ReferenceModelWorld(world);
 
-    camera->modelTransformation = mat4(1);
-    camera->viewTransformation  = mat4(1);
+    camera->modelTransformation = Mat4Identity;
+    camera->viewTransformation  = Mat4Identity;
 
     camera->aspect = 1;
     camera->zNear  = 0.1f;
@@ -84,12 +83,12 @@ void SetCameraAttachmentTarget( Camera* camera, Solid* target, int flags )
         ReferenceSolid(camera->attachmentTarget);
 }
 
-void SetCameraModelTransformation( Camera* camera, mat4 transformation )
+void SetCameraModelTransformation( Camera* camera, Mat4 transformation )
 {
     camera->modelTransformation = transformation;
 }
 
-void SetCameraViewTransformation( Camera* camera, mat4 transformation )
+void SetCameraViewTransformation( Camera* camera, Mat4 transformation )
 {
     camera->viewTransformation = transformation;
 }
@@ -138,10 +137,10 @@ static void UpdateCameraProjection( Camera* camera )
         {
             case CAMERA_PERSPECTIVE_PROJECTION:
                 camera->projectionTransformation =
-                    glm::perspective(camera->fieldOfView,
-                                     camera->aspect,
-                                     camera->zNear,
-                                     camera->zFar);
+                    PerspectivicProjection(camera->fieldOfView,
+                                           camera->aspect,
+                                           camera->zNear,
+                                           camera->zFar);
                 break;
 
             case CAMERA_ORTHOGRAPHIC_PROJECTION:
@@ -150,39 +149,39 @@ static void UpdateCameraProjection( Camera* camera )
                 const float halfWidth  = aspect * scale * 0.5f;
                 const float halfHeight =          scale * 0.5f;
                 camera->projectionTransformation =
-                    glm::ortho(halfWidth, // left
-                               halfWidth, // right
-                               halfHeight, // bottom
-                               halfHeight, // top
-                               camera->zNear,
-                               camera->zFar);
+                    OrthographicProjection(halfWidth, // left
+                                           halfWidth, // right
+                                           halfHeight, // bottom
+                                           halfHeight, // top
+                                           camera->zNear,
+                                           camera->zFar);
                 break;
         }
         camera->projectionTransformationNeedsUpdate = false;
     }
 }
 
-static const mat4 GetCameraModelTransformation( const Camera* camera )
+static const Mat4 GetCameraModelTransformation( const Camera* camera )
 {
-    mat4 solidTransformation;
-    if(camera->attachmentTarget)
-        GetSolidTransformation(camera->attachmentTarget,
-                               camera->attachmentFlags,
-                               &solidTransformation);
-    return glm::inverse(solidTransformation) * camera->modelTransformation;
+    const Mat4 solidTransformation =
+        TryToGetSolidTransformation(camera->attachmentTarget,
+                                    camera->attachmentFlags);
+    return MulMat4(InverseMat4(solidTransformation),
+                   camera->modelTransformation);
 }
 
 #define CALC_UNIFORM(NAME, CALCULATION) \
     if(HasUniform(program, (NAME))) \
     { \
-        const mat4 value = (CALCULATION); \
+        Mat4 value; \
+        (CALCULATION); \
         SetUniform(program, (NAME), MAT4_UNIFORM, (const UniformValue*)&value); \
     }
 
 void SetCameraUniforms( Camera* camera, ShaderProgram* program )
 {
     UpdateCameraProjection(camera);
-    const mat4* projection = &camera->projectionTransformation;
+    const Mat4* projection = &camera->projectionTransformation;
 
     SetUniform(program,
                "Projection",
@@ -190,23 +189,23 @@ void SetCameraUniforms( Camera* camera, ShaderProgram* program )
                (const UniformValue*)projection);
 
     CALC_UNIFORM("InverseProjection",
-                 glm::inverse(*projection));
+                 value = InverseMat4(*projection));
     CALC_UNIFORM("InverseTransposeProjection",
-                 glm::inverseTranspose(*projection));
+                 value = InverseMat4(TransposeMat4(*projection)));
 }
 
 void SetCameraModelUniforms( Camera* camera,
                              ShaderProgram* program,
-                             const mat4* modelTransformation )
+                             const Mat4* modelTransformation )
 {
     UpdateCameraProjection(camera);
-    const mat4* projection = &camera->projectionTransformation;
-    const mat4* view = &camera->viewTransformation;
-    const mat4  model = GetCameraModelTransformation(camera) *
-                        *modelTransformation;
+    const Mat4* projection = &camera->projectionTransformation;
+    const Mat4* view = &camera->viewTransformation;
+    const Mat4  model = MulMat4(GetCameraModelTransformation(camera),
+                                *modelTransformation);
 
-    const mat4 modelView = *view * model;
-    const mat4 modelViewProjection = *projection * modelView;
+    const Mat4 modelView = MulMat4(*view, model);
+    const Mat4 modelViewProjection = MulMat4(*projection, modelView);
 
     // These are almost always used:
     SetUniform(program,
@@ -224,15 +223,15 @@ void SetCameraModelUniforms( Camera* camera,
 
     // Same set, but inversed:
     CALC_UNIFORM("InverseModelView",
-                 glm::inverse(modelView));
+                 value = InverseMat4(modelView));
     CALC_UNIFORM("InverseModelViewProjection",
-                 glm::inverse(modelViewProjection));
+                 value = InverseMat4(modelViewProjection));
 
     // Same set, but inversed and transposed:
     CALC_UNIFORM("InverseTransposeModelView",
-                 glm::inverseTranspose(modelView));
+                 value = InverseMat4(TransposeMat4(modelView)));
     CALC_UNIFORM("InverseTransposeModelViewProjection",
-                 glm::inverseTranspose(modelViewProjection));
+                 value = InverseMat4(TransposeMat4(modelViewProjection)));
 }
 
 void DrawCameraView( Camera* camera, ShaderProgramSet* set )

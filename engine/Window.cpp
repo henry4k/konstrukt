@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "Common.h"
 #include "Config.h"
 #include "OpenGL.h"
@@ -179,9 +181,10 @@ void* GetGLFWwindow()
     return g_Window;
 }
 
-glm::ivec2 GetFramebufferSize()
+void GetFramebufferSize( int* width, int* height )
 {
-    return glm::ivec2(g_FramebufferWidth, g_FramebufferHeight);
+    *width  = g_FramebufferWidth;
+    *height = g_FramebufferHeight;
 }
 
 

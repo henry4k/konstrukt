@@ -88,49 +88,6 @@ static bool StringEndsWith( const char* target, const char* end )
 }
 
 
-// ----- UniformValue ------
-
-const glm::vec3& UniformValue::v3() const
-{
-    return *(const glm::vec3*)data;
-}
-
-const glm::vec4& UniformValue::v4() const
-{
-    return *(const glm::vec4*)data;
-}
-
-const glm::mat3& UniformValue::m3() const
-{
-    return *(const glm::mat3*)data;
-}
-
-const glm::mat4& UniformValue::m4() const
-{
-    return *(const glm::mat4*)data;
-}
-
-glm::vec3& UniformValue::v3()
-{
-    return *(glm::vec3*)data;
-}
-
-glm::vec4& UniformValue::v4()
-{
-    return *(glm::vec4*)data;
-}
-
-glm::mat3& UniformValue::m3()
-{
-    return *(glm::mat3*)data;
-}
-
-glm::mat4& UniformValue::m4()
-{
-    return *(glm::mat4*)data;
-}
-
-
 // ----- Shader ------
 
 static void FreeShader( Shader* shader );
@@ -260,16 +217,16 @@ static UniformType GLToUniformType( GLenum glType )
 {
     switch(glType)
     {
-        case GL_INT: return INT_UNIFORM;
-        case GL_SAMPLER_1D: return INT_UNIFORM;
-        case GL_SAMPLER_2D: return INT_UNIFORM;
-        case GL_SAMPLER_3D: return INT_UNIFORM;
+        case GL_INT:          return INT_UNIFORM;
+        case GL_SAMPLER_1D:   return INT_UNIFORM;
+        case GL_SAMPLER_2D:   return INT_UNIFORM;
+        case GL_SAMPLER_3D:   return INT_UNIFORM;
         case GL_SAMPLER_CUBE: return INT_UNIFORM;
-        case GL_FLOAT: return FLOAT_UNIFORM;
-        case GL_FLOAT_VEC3: return VEC3_UNIFORM;
-        case GL_FLOAT_VEC4: return VEC4_UNIFORM;
-        case GL_FLOAT_MAT3: return MAT3_UNIFORM;
-        case GL_FLOAT_MAT4: return MAT4_UNIFORM;
+        case GL_FLOAT:        return FLOAT_UNIFORM;
+        case GL_FLOAT_VEC3:   return VEC3_UNIFORM;
+        case GL_FLOAT_VEC4:   return VEC4_UNIFORM;
+        case GL_FLOAT_MAT3:   return MAT3_UNIFORM;
+        case GL_FLOAT_MAT4:   return MAT4_UNIFORM;
 
         default:
             FatalError("Unsupported gl constant!");
@@ -281,17 +238,15 @@ int GetUniformSize( UniformType type )
 {
     switch(type)
     {
-        case INT_UNIFORM: return sizeof(int);
+        case INT_UNIFORM:   return sizeof(int);
         case FLOAT_UNIFORM: return sizeof(float);
-        case VEC3_UNIFORM: return sizeof(float)*3;
-        case VEC4_UNIFORM: return sizeof(float)*4;
-        case MAT3_UNIFORM: return sizeof(float)*3*3;
-        case MAT4_UNIFORM: return sizeof(float)*4*4;
-
-        default:
-            FatalError("Unsupported gl constant!");
-            return 0;
+        case VEC3_UNIFORM:  return sizeof(Vec3);
+        case VEC4_UNIFORM:  return sizeof(Vec4);
+        case MAT3_UNIFORM:  return sizeof(Mat3);
+        case MAT4_UNIFORM:  return sizeof(Mat4);
     }
+    FatalError("Unknown UniformType!");
+    return 0;
 }
 
 static void ReadUniformDefinitions( ShaderProgram* program )

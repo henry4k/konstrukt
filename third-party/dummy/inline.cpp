@@ -1,7 +1,7 @@
 #include <stddef.h> // NULL
 #include <stdlib.h> // malloc, free
 
-#include "inline.h"
+#include "inline.hpp"
 
 
 typedef struct InlineTest_

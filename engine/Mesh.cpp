@@ -131,24 +131,25 @@ void ReleaseMesh( Mesh* mesh )
 
 #if defined(APOAPSIS_DEBUG_MESH)
 const int DebugVerticesPerVertex = 6;
+const Vec3 Red   = {{1,0,0}};
+const Vec3 Green = {{0,1,0}};
+const Vec3 Blue  = {{0,0,1}};
 
 static void CalcDebugVertices( const Vertex* input, Vertex* outputs )
 {
-    using namespace glm;
-
     const float scale = 0.03f;
 
     outputs[0].position = input->position;
-    outputs[1].position = input->position + input->normal * scale;
-    outputs[1].color = vec3(0,0,1);
+    REPEAT(3,i) { outputs[1].position._[i] = input->position._[i] + input->normal._[i]    * scale; }
+    outputs[1].color = Blue;
 
     outputs[2].position = input->position;
-    outputs[3].position = input->position + input->tangent * scale;
-    outputs[3].color = vec3(1,0,0);
+    REPEAT(3,i) { outputs[3].position._[i] = input->position._[i] + input->tangent._[i]   * scale; }
+    outputs[3].color = Red;
 
     outputs[4].position = input->position;
-    outputs[5].position = input->position + input->bitangent * scale;
-    outputs[5].color = vec3(0,1,0);
+    REPEAT(3,i) { outputs[5].position._[i] = input->position._[i] + input->bitangent._[i] * scale; }
+    outputs[5].color = Green;
 }
 
 static void BuildDebugMesh( const MeshBuffer* buffer, Mesh* mesh )

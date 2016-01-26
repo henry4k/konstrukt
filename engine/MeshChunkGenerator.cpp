@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <string.h> // memset
 #include <stdlib.h> // realloc, free
 
@@ -9,9 +10,6 @@
 #include "Reference.h"
 #include "VoxelVolume.h"
 #include "MeshChunkGenerator.h"
-
-
-using namespace glm;
 
 
 static const int MAX_VOXEL_MESHES = 8;
@@ -36,9 +34,7 @@ struct BlockVoxelMesh
 {
     bool transparent;
     MeshBuffer* meshBuffers[BLOCK_VOXEL_MATERIAL_BUFFER_COUNT];
-    char    transformations[BLOCK_VOXEL_MATERIAL_BUFFER_COUNT*sizeof(mat4)];
-    // TODO: mat4 is a class, which would prevent this to be used in unions.
-    // Therefore we need to use this dirty hack here.  :/
+    Mat4    transformations[BLOCK_VOXEL_MATERIAL_BUFFER_COUNT];
 };
 
 struct VoxelMesh
@@ -138,7 +134,7 @@ bool CreateBlockVoxelMesh( MeshChunkGenerator* generator,
                            int conditionCount,
                            bool transparent,
                            MeshBuffer** meshBuffers,
-                           mat4* transformations)
+                           const Mat4* transformations)
 {
     BlockVoxelMesh* mesh = (BlockVoxelMesh*)CreateVoxelMesh(generator,
                                                             BLOCK_VOXEL_MESH,
@@ -153,7 +149,7 @@ bool CreateBlockVoxelMesh( MeshChunkGenerator* generator,
                sizeof(MeshBuffer*) * BLOCK_VOXEL_MATERIAL_BUFFER_COUNT);
 
         memcpy(mesh->transformations, transformations,
-               sizeof(mat4) * BLOCK_VOXEL_MATERIAL_BUFFER_COUNT);
+               sizeof(Mat4) * BLOCK_VOXEL_MATERIAL_BUFFER_COUNT);
 
         for(int i = 0; i < BLOCK_VOXEL_MATERIAL_BUFFER_COUNT; i++)
             if(mesh->meshBuffers[i])
@@ -368,14 +364,16 @@ static void ProcessBlockVoxelMesh( ChunkEnvironment* env,
     };
 
     const MeshBuffer* const* meshBuffers = &mesh->meshBuffers[0];
-    const mat4* transformations = (const mat4*)mesh->transformations;
-    const mat4 voxelTransformation = translate(mat4(1), vec3(x, y, z));
+    const Mat4* transformations = mesh->transformations;
+    const Vec3 translationVector = {{x,y,z}};
+    const Mat4 voxelTransformation = TranslateMat4(Mat4Identity,
+                                                   translationVector);
 
     if(transparentNeighbours != 0 &&
        meshBuffers[CENTER])
     {
-        const mat4 transformation = voxelTransformation *
-                                    transformations[CENTER];
+        const Mat4 transformation = MulMat4(voxelTransformation,
+                                            transformations[CENTER]);
         AppendMeshBuffer(materialMeshBuffer,
                          meshBuffers[CENTER],
                          &transformation);
@@ -385,8 +383,8 @@ static void ProcessBlockVoxelMesh( ChunkEnvironment* env,
     {
         if(transparentNeighbours & mooreDirs[i] && meshBuffers[dirs[i]])
         {
-            const mat4 transformation = voxelTransformation *
-                                        transformations[dirs[i]];
+            const Mat4 transformation = MulMat4(voxelTransformation,
+                                                transformations[dirs[i]]);
             AppendMeshBuffer(materialMeshBuffer,
                              meshBuffers[dirs[i]],
                              &transformation);

@@ -1,13 +1,12 @@
 #include <vector>
 #include <assert.h>
+#include <stddef.h> // size_t
 #include <math.h> // fabsf
 
 #include "Common.h"
 #include "Math.h"
 #include "Reference.h"
 #include "MeshBuffer.h"
-
-using namespace glm;
 
 
 struct MeshBuffer
@@ -53,33 +52,31 @@ void AddIndexToMeshBuffer( MeshBuffer* buffer, VertexIndex index )
     buffer->indices.push_back(index);
 }
 
-static void TransformMeshBufferRange( MeshBuffer* buffer, const glm::mat4* transformation, int firstVertex, int vertexCount )
+static void TransformMeshBufferRange( MeshBuffer* buffer, Mat4 transformation, int firstVertex, int vertexCount )
 {
-    using namespace glm;
-
     assert(firstVertex >= 0);
     assert(vertexCount >= 0);
     assert(firstVertex+vertexCount <= (int)buffer->vertices.size());
 
-    const mat3 rotation(*transformation);
+    const Mat4 rotation = ClipTranslationOfMat4(transformation);
 
     Vertex* vertex = &buffer->vertices[firstVertex];
     const Vertex* end = &buffer->vertices[firstVertex+vertexCount];
     for(; vertex != end; ++vertex)
     {
-        vertex->position  = vec3( *transformation * vec4(vertex->position, 1) );
-        vertex->normal    = normalize(rotation * vertex->normal);
-        vertex->tangent   = normalize(rotation * vertex->tangent);
-        vertex->bitangent = normalize(rotation * vertex->bitangent);
+        vertex->position  = MulMat4ByVec3(transformation, vertex->position);
+        vertex->normal    = NormalizeVec3(MulMat4ByVec3(rotation, vertex->normal));
+        vertex->tangent   = NormalizeVec3(MulMat4ByVec3(rotation, vertex->tangent));
+        vertex->bitangent = NormalizeVec3(MulMat4ByVec3(rotation, vertex->bitangent));
     }
 }
 
-void TransformMeshBuffer( MeshBuffer* buffer, const glm::mat4* transformation )
+void TransformMeshBuffer( MeshBuffer* buffer, Mat4 transformation )
 {
     TransformMeshBufferRange(buffer, transformation, 0, buffer->vertices.size());
 }
 
-void AppendMeshBuffer( MeshBuffer* buffer, const MeshBuffer* otherBuffer, const glm::mat4* transformation )
+void AppendMeshBuffer( MeshBuffer* buffer, const MeshBuffer* otherBuffer, const Mat4* transformation )
 {
     // TODO: Raise error if target buffer doesn't use indices, but source buffer does.
     // TODO: Generate indices if target buffer uses them, but source buffer doesn't.
@@ -99,7 +96,7 @@ void AppendMeshBuffer( MeshBuffer* buffer, const MeshBuffer* otherBuffer, const 
         otherBuffer->vertices.end()
     );
     if(transformation)
-        TransformMeshBufferRange(buffer, transformation, start, otherBuffer->vertices.size());
+        TransformMeshBufferRange(buffer, *transformation, start, otherBuffer->vertices.size());
 }
 
 int GetMeshBufferVertexCount( const MeshBuffer* buffer )
@@ -133,17 +130,17 @@ static bool IsNearlyEqual( float a, float b )
     return delta <= Epsilon;
 }
 
-static bool IsNearlyEqualVec2( vec2 a, vec2 b )
+static bool IsNearlyEqualVec2( Vec2 a, Vec2 b )
 {
-    return IsNearlyEqual(a[0], b[0]) &&
-           IsNearlyEqual(a[1], b[1]);
+    return IsNearlyEqual(a._[0], b._[0]) &&
+           IsNearlyEqual(a._[1], b._[1]);
 }
 
-static bool IsNearlyEqualVec3( vec3 a, vec3 b )
+static bool IsNearlyEqualVec3( Vec3 a, Vec3 b )
 {
-    return IsNearlyEqual(a[0], b[0]) &&
-           IsNearlyEqual(a[1], b[1]) &&
-           IsNearlyEqual(a[2], b[2]);
+    return IsNearlyEqual(a._[0], b._[0]) &&
+           IsNearlyEqual(a._[1], b._[1]) &&
+           IsNearlyEqual(a._[2], b._[2]);
 }
 
 static int FindSimilarVertex( const Vertex* vertices,
@@ -179,8 +176,8 @@ static void IndexVertex( const Vertex* vertex,
         *newIndexCount = *newIndexCount + 1;
 
         // Average tangents:
-        newVertices[index].tangent   += vertex->tangent;
-        newVertices[index].bitangent += vertex->bitangent;
+        REPEAT(3,i) { newVertices[index].tangent._[i]   += vertex->tangent._[i]; }
+        REPEAT(3,i) { newVertices[index].bitangent._[i] += vertex->bitangent._[i]; }
     }
     else
     {
@@ -291,12 +288,12 @@ static void ModifyTriangles( MeshBuffer* buffer,
 
 static void ResetVertexNormal( Vertex* vertex )
 {
-    vertex->normal = vec3(0,0,0);
+    vertex->normal = Vec3Zero;
 }
 
 static void NormalizeVertexNormal( Vertex* vertex )
 {
-    vertex->normal = normalize(vertex->normal);
+    vertex->normal = NormalizeVec3(vertex->normal);
 }
 
 void CalcMeshBufferNormals( MeshBuffer* buffer )
@@ -311,14 +308,14 @@ void CalcMeshBufferNormals( MeshBuffer* buffer )
 
 static void ResetVertexTangents( Vertex* vertex )
 {
-    vertex->tangent   = vec3(0,0,0);
-    vertex->bitangent = vec3(0,0,0);
+    vertex->tangent   = Vec3Zero;
+    vertex->bitangent = Vec3Zero;
 }
 
 static void NormalizeVertexTangents( Vertex* vertex )
 {
-    vertex->tangent   = normalize(vertex->tangent);
-    vertex->bitangent = normalize(vertex->bitangent);
+    vertex->tangent   = NormalizeVec3(vertex->tangent);
+    vertex->bitangent = NormalizeVec3(vertex->bitangent);
 }
 
 void CalcMeshBufferTangents( MeshBuffer* buffer )

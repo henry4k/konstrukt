@@ -1,4 +1,9 @@
 option(APOAPSIS_BUILD_TESTS "Build native tests")
 if(APOAPSIS_BUILD_TESTS)
-    add_executable(Common.t Common.cpp TestTools.cpp) # TODO
+    macro(AddTest TestName)
+        add_executable(${TestName}.t ${TestName}.cpp TestTools.cpp)
+        target_link_libraries(${TestName}.t apoapsislib dummy)
+    endmacro()
+    AddTest(Common)
+    AddTest(Math)
 endif()

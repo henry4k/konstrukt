@@ -23,8 +23,8 @@ void ReferenceCamera( Camera* camera );
 void ReleaseCamera( Camera* camera );
 
 void SetCameraAttachmentTarget( Camera* camera, Solid* target, int flags);
-void SetCameraModelTransformation( Camera* camera, glm::mat4 transformation );
-void SetCameraViewTransformation( Camera* camera, glm::mat4 transformation );
+void SetCameraModelTransformation( Camera* camera, Mat4 transformation );
+void SetCameraViewTransformation( Camera* camera, Mat4 transformation );
 void SetCameraAspect( Camera* camera, float aspect );
 void SetCameraNearAndFarPlanes( Camera* camera, float zNear, float zFar );
 void SetCameraProjectionType( Camera* camera, CameraProjectionType type );
@@ -54,7 +54,7 @@ void SetCameraUniforms( Camera* camera, ShaderProgram* program );
  */
 void SetCameraModelUniforms( Camera* camera,
                              ShaderProgram* program,
-                             const glm::mat4* modelTransformation );
+                             const Mat4* modelTransformation );
 
 void DrawCameraView( Camera* camera, ShaderProgramSet* set );
 

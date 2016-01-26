@@ -1,13 +1,12 @@
+#include <assert.h>
 #include <string.h> // strrchr, strncpy
 #include <stdio.h> // stdout
 #include <dummy/tap_reporter.h>
 
-#include <engine/Common.h>
+#include "../Common.h"
 
 #include "TestTools.h"
 
-
-static LogHandler g_OriginalLogHandler = NULL;
 
 void ChangeDirectoryToExecutableOrigin( const char* executablePath );
 
@@ -32,18 +31,13 @@ void TestLogHandler( LogLevel level, const char* line )
 void InitTests( int argc, char const * const * argv )
 {
     ChangeDirectoryToExecutableOrigin(argv[0]);
-    g_OriginalLogHandler = GetLogHandler();
     SetLogHandler(TestLogHandler);
     dummyInit(dummyGetTAPReporter(stdout));
-    dummyAddInlineTests();
 }
 
 int RunTests()
 {
-    const int failedTests = dummyRunTests();
-    if(g_OriginalLogHandler)
-        SetLogHandler(g_OriginalLogHandler);
-    //return failedTests; // TODO: prove marks failed tests as doubious, with this line
+    dummyRunTests();
     return 0;
 }
 

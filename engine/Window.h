@@ -1,9 +1,6 @@
 #ifndef __APOAPSIS_WINDOW__
 #define __APOAPSIS_WINDOW__
 
-#include "Math.h"
-
-
 // Callback functions
 typedef void (*FramebufferResizeFn)( int width, int height );
 typedef void (*CursorMoveFn)( double x, double y );
@@ -18,7 +15,7 @@ void FlagWindowForClose();
 bool WindowShouldClose();
 void SwapBuffers();
 void* GetGLFWwindow();
-glm::ivec2 GetFramebufferSize();
+void GetFramebufferSize( int* width, int* height );
 
 // Input
 void SetCursorMode( int mode );

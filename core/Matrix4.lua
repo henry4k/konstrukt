@@ -36,28 +36,10 @@ function Matrix4.static:lookAt( eye, center, up )
                                              up[3]))
 end
 
---- Add another matrix.
-function Matrix4:__add( other )
-    assert(Object.isInstanceOf(other, Matrix4), 'Must be called with a matrix.')
-    return Matrix4(engine.Matrix4Op(self.handle, other.handle, '+'))
-end
-
---- Substract another matrix.
-function Matrix4:__sub( other )
-    assert(Object.isInstanceOf(other, Matrix4), 'Must be called with a matrix.')
-    return Matrix4(engine.Matrix4Op(self.handle, other.handle, '-'))
-end
-
 --- Multiply with another matrix.
 function Matrix4:__mul( other )
     assert(Object.isInstanceOf(other, Matrix4), 'Must be called with a matrix.')
     return Matrix4(engine.Matrix4Op(self.handle, other.handle, '*'))
-end
-
---- Divide by another matrix.
-function Matrix4:__div( other )
-    assert(Object.isInstanceOf(other, Matrix4), 'Must be called with a matrix.')
-    return Matrix4(engine.Matrix4Op(self.handle, other.handle, '/'))
 end
 
 --- Translate along the given vector.
@@ -103,15 +85,14 @@ function Matrix4:transform( vec )
     return Vec(engine.Matrix4TransformVector(self.handle,
                                              vec[1],
                                              vec[2],
-                                             vec[3],
-                                             vec[4]))
+                                             vec[3]))
 end
 
 --- Creates a rotation matrix.
 -- This simply strips the translation and skew components.
 -- @return[type=core.Matrix4]
-function Matrix4:toRotationMatrix()
-    return Matrix4(engine.MakeRotationMatrix(self.handle))
+function Matrix4:clipTranslation()
+    return Matrix4(engine.ClipTranslationOfMatrix4(self.handle))
 end
 
 

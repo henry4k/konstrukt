@@ -17,7 +17,7 @@ static int Lua_SetAudioListenerAttachmentTarget( lua_State* l )
 
 static int Lua_SetAudioListenerTransformation( lua_State* l )
 {
-    const glm::mat4* transformation = CheckMatrix4FromLua(l, 1);
+    const Mat4* transformation = CheckMatrix4FromLua(l, 1);
     SetAudioListenerTransformation(*transformation);
     return 0;
 }
@@ -136,7 +136,7 @@ static int Lua_SetAudioSourceAttachmentTarget( lua_State* l )
 static int Lua_SetAudioSourceTransformation( lua_State* l )
 {
     AudioSource* source = CheckAudioSourceFromLua(l, 1);
-    const glm::mat4* transformation = CheckMatrix4FromLua(l, 2);
+    const Mat4* transformation = CheckMatrix4FromLua(l, 2);
     SetAudioSourceTransformation(source, *transformation);
     return 0;
 }

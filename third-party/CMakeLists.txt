@@ -1,3 +1,4 @@
+add_subdirectory(dummy)
 add_subdirectory(flextGL)
 add_subdirectory(inih)
 add_subdirectory(lua-cjson)

@@ -148,8 +148,6 @@ static void DestroyGame()
 
 void RunGame()
 {
-    using namespace glm;
-
     double lastTime = glfwGetTime();
     while(!WindowShouldClose())
     {

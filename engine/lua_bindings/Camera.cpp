@@ -41,7 +41,7 @@ static int Lua_SetCameraAttachmentTarget( lua_State* l )
 static int Lua_SetCameraModelTransformation( lua_State* l )
 {
     Camera* camera = CheckCameraFromLua(l, 1);
-    const glm::mat4* transformation = CheckMatrix4FromLua(l, 2);
+    const Mat4* transformation = CheckMatrix4FromLua(l, 2);
     SetCameraModelTransformation(camera, *transformation);
     return 0;
 }
@@ -49,7 +49,7 @@ static int Lua_SetCameraModelTransformation( lua_State* l )
 static int Lua_SetCameraViewTransformation( lua_State* l )
 {
     Camera* camera = CheckCameraFromLua(l, 1);
-    const glm::mat4* transformation = CheckMatrix4FromLua(l, 2);
+    const Mat4* transformation = CheckMatrix4FromLua(l, 2);
     SetCameraViewTransformation(camera, *transformation);
     return 0;
 }

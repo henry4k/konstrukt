@@ -11,8 +11,6 @@
 #include "Camera.h"
 #include "ModelWorld.h"
 
-using glm::mat4;
-
 
 static const int MAX_LOCAL_UNIFORMS = 8;
 static const int MAX_MODELS = 64;
@@ -32,7 +30,7 @@ struct Model
 {
     bool active;
     ReferenceCounter refCounter;
-    mat4 transformation;
+    Mat4 transformation;
     Mesh* mesh;
     Texture* textures[MAX_TEXTURE_UNITS];
     char programFamilyList[MAX_PROGRAM_FAMILY_LIST_SIZE];
@@ -194,23 +192,19 @@ void DrawModelWorld( const ModelWorld* world,
     SetOverlayLevel(0);
 }
 
-static mat4 CalculateModelTransformation( const Model* model )
+static Mat4 CalculateModelTransformation( const Model* model )
 {
-    mat4 solidTransformation;
-    if(model->attachmentTarget)
-        GetSolidTransformation(model->attachmentTarget,
-                               model->attachmentFlags,
-                               &solidTransformation);
-
-    return solidTransformation *
-           model->transformation;
+    const Mat4 solidTransformation =
+        TryToGetSolidTransformation(model->attachmentTarget,
+                                    model->attachmentFlags);
+    return MulMat4(solidTransformation, model->transformation);
 }
 
 static void SetModelUniforms( const Model* model,
                               ShaderProgram* program,
                               Camera* camera )
 {
-    const mat4 modelTransformation = CalculateModelTransformation(model);
+    const Mat4 modelTransformation = CalculateModelTransformation(model);
     SetCameraModelUniforms(camera, program, &modelTransformation);
 
     for(int i = 0; i < MAX_LOCAL_UNIFORMS; i++)
@@ -280,7 +274,7 @@ Model* CreateModel( ModelWorld* world )
         memset(model, 0, sizeof(Model));
         model->active = true;
         InitReferenceCounter(&model->refCounter);
-        model->transformation = mat4();
+        model->transformation = Mat4Identity;
         return model;
     }
     else
@@ -325,7 +319,7 @@ void SetModelAttachmentTarget( Model* model, Solid* target, int flags )
         ReferenceSolid(model->attachmentTarget);
 }
 
-void SetModelTransformation( Model* model, mat4 transformation )
+void SetModelTransformation( Model* model, Mat4 transformation )
 {
     model->transformation = transformation;
 }

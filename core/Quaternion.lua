@@ -84,16 +84,10 @@ function Quat:__unm()
     return Quat(engine.InvertQuaternion(self.handle))
 end
 
---- Add another quaternion.
-function Quat:__add( other )
-    assert(Object.isInstanceOf(other, Quat), 'Must be called with an quaternion.')
-    return Quat(engine.QuaternionOp(self.handle, other.handle, '+'))
-end
-
 --- Multiply with another quaternion.
 function Quat:__mul( other )
     assert(Object.isInstanceOf(other, Quat), 'Must be called with a quaternion.')
-    return Quat(engine.QuaternionOp(self.handle, other.handle, '*'))
+    return Quat(engine.MultiplyQuaternion(self.handle, other.handle))
 end
 
 --- Multiply with a vector.

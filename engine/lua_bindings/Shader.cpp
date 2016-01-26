@@ -112,17 +112,17 @@ static int Lua_SetGlobalUniform( lua_State* l )
             break;
 
         case VEC3_UNIFORM:
-            value.data[0] = luaL_checknumber(l, 3);
-            value.data[1] = luaL_checknumber(l, 4);
-            value.data[2] = luaL_checknumber(l, 5);
+            value.vec3._[0] = luaL_checknumber(l, 3);
+            value.vec3._[1] = luaL_checknumber(l, 4);
+            value.vec3._[2] = luaL_checknumber(l, 5);
             SetGlobalUniform(name, type, &value);
             break;
 
         case VEC4_UNIFORM:
-            value.data[0] = luaL_checknumber(l, 3);
-            value.data[1] = luaL_checknumber(l, 4);
-            value.data[2] = luaL_checknumber(l, 5);
-            value.data[3] = luaL_checknumber(l, 6);
+            value.vec4._[0] = luaL_checknumber(l, 3);
+            value.vec4._[1] = luaL_checknumber(l, 4);
+            value.vec4._[2] = luaL_checknumber(l, 5);
+            value.vec4._[3] = luaL_checknumber(l, 6);
             SetGlobalUniform(name, type, &value);
             break;
 
@@ -130,7 +130,7 @@ static int Lua_SetGlobalUniform( lua_State* l )
             return luaL_argerror(l, 2, "mat3 is not support by the Lua api.");
 
         case MAT4_UNIFORM:
-            const glm::mat4* m = CheckMatrix4FromLua(l, 3);
+            const Mat4* m = CheckMatrix4FromLua(l, 3);
             SetGlobalUniform(name, type, (const UniformValue*)&m);
             break;
     }

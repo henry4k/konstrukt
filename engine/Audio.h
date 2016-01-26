@@ -67,7 +67,7 @@ void SetAudioGain( float gain );
  */
 void SetAudioListenerAttachmentTarget( Solid* target, int flags );
 
-void SetAudioListenerTransformation( glm::mat4 transformation );
+void SetAudioListenerTransformation( Mat4 transformation );
 
 
 /**
@@ -109,7 +109,7 @@ void SetAudioSourceGain( AudioSource* source, float gain );
 
 void SetAudioSourceAttachmentTarget( AudioSource* source, Solid* target, int flags );
 
-void SetAudioSourceTransformation( AudioSource* source, glm::mat4 transformation );
+void SetAudioSourceTransformation( AudioSource* source, Mat4 transformation );
 
 // TODO: Should store references correctly? Or does that OpenAL already?
 void EnqueueAudioBuffer( AudioSource* source, AudioBuffer* buffer );

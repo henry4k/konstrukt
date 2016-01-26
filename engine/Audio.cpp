@@ -31,7 +31,7 @@ struct AudioSource
     bool active;
     Solid* attachmentTarget;
     int attachmentFlags;
-    glm::mat4 transformation;
+    Mat4 transformation;
 };
 
 
@@ -49,7 +49,7 @@ static float MaxAudioSourceDistance = 0;
 static float AudioSourceReferenceDistance = 0;
 static Solid* ListenerAttachmentTarget = NULL;
 static int ListenerAttachmentFlags = 0;
-static glm::mat4 ListenerTransformation;
+static Mat4 ListenerTransformation;
 
 
 // --- Global ---
@@ -145,34 +145,38 @@ void SetAudioListenerAttachmentTarget( Solid* target, int flags )
         ReferenceSolid(ListenerAttachmentTarget);
 }
 
-void SetAudioListenerTransformation( glm::mat4 transformation )
+void SetAudioListenerTransformation( Mat4 transformation )
 {
     ListenerTransformation = transformation;
 }
 
+const Vec3 Forward = {{0,0,1}};
+const Vec3 Up      = {{0,1,0}};
+
 static void UpdateAudioListener()
 {
-    using namespace glm;
+    const Mat4 targetTransformation =
+        TryToGetSolidTransformation(ListenerAttachmentTarget,
+                                    ListenerAttachmentFlags);
 
-    mat4 targetTransformation;
+    const Mat4 finalTransformation = MulMat4(targetTransformation,
+                                             ListenerTransformation);
+    const Vec3 position  = MulMat4ByVec3(finalTransformation, Vec3Zero);
+
+    const Mat4 rotation = ClipTranslationOfMat4(finalTransformation);
+    const Vec3 direction = MulMat4ByVec3(rotation, Forward);
+    const Vec3 up        = MulMat4ByVec3(rotation, Up);
+
+    Vec3 velocity = Vec3Zero;
     if(ListenerAttachmentTarget)
-        GetSolidTransformation(ListenerAttachmentTarget,
-                               ListenerAttachmentFlags,
-                               &targetTransformation);
-    const mat4 finalTransformation = targetTransformation *
-                                     ListenerTransformation;
-
-    const vec3 position(finalTransformation * vec4());
-    const vec3 velocity;
-    const vec3 direction(0,0,1);
-    const vec3 up(0,1,0);
+        velocity = GetSolidLinearVelocity(ListenerAttachmentTarget);
 
     float orientation[6];
-    memcpy(orientation,   glm::value_ptr(direction), sizeof(float)*3);
-    memcpy(orientation+3, glm::value_ptr(up),        sizeof(float)*3);
+    memcpy(orientation,   direction._, sizeof(float)*3);
+    memcpy(orientation+3, up._,        sizeof(float)*3);
 
-    alListenerfv(AL_POSITION, glm::value_ptr(position));
-    alListenerfv(AL_VELOCITY, glm::value_ptr(velocity));
+    alListenerfv(AL_POSITION, position._);
+    alListenerfv(AL_VELOCITY, velocity._);
     alListenerfv(AL_ORIENTATION, orientation);
 }
 
@@ -242,7 +246,7 @@ AudioSource* CreateAudioSource()
 
         memset(source, 0, sizeof(AudioSource));
         source->handle = handle;
-        source->transformation = glm::mat4();
+        source->transformation = Mat4Identity;
 
         alSourcef(handle, AL_MAX_DISTANCE, MaxAudioSourceDistance);
         alSourcef(handle, AL_REFERENCE_DISTANCE, AudioSourceReferenceDistance);
@@ -309,7 +313,7 @@ void SetAudioSourceAttachmentTarget( AudioSource* source, Solid* target, int fla
         ReferenceSolid(source->attachmentTarget);
 }
 
-void SetAudioSourceTransformation( AudioSource* source, glm::mat4 transformation )
+void SetAudioSourceTransformation( AudioSource* source, Mat4 transformation )
 {
     source->transformation = transformation;
 }
@@ -320,28 +324,24 @@ static void UpdateAudioSource( AudioSource* source )
     alGetSourcei(source->handle, AL_SOURCE_STATE, &state);
     if(state == AL_PLAYING)
     {
-        using namespace glm;
+        Mat4 targetTransformation =
+            TryToGetSolidTransformation(source->attachmentTarget,
+                                        source->attachmentFlags);
+        const Mat4 finalTransformation = MulMat4(targetTransformation,
+                                                 source->transformation);
 
-        mat4 targetTransformation;
-        if(source->attachmentTarget)
-            GetSolidTransformation(source->attachmentTarget,
-                                   source->attachmentFlags,
-                                   &targetTransformation);
-        const mat4 finalTransformation = targetTransformation *
-                                         source->transformation;
-
-        const vec3 position(finalTransformation * vec4());
-        alSourcefv(source->handle, AL_POSITION, glm::value_ptr(position));
+        const Vec3 position = MulMat4ByVec3(finalTransformation, Vec3Zero);
+        alSourcefv(source->handle, AL_POSITION, position._);
 
         if(source->attachmentTarget)
         {
-            // TODO: Retrieve velocity and orientation.
+            const Vec3 velocity = GetSolidLinearVelocity(source->attachmentTarget);
 
-            const vec3 velocity;
-            const vec3 direction(0,0,1);
+            const Mat4 rotation  = ClipTranslationOfMat4(finalTransformation);
+            const Vec3 direction = MulMat4ByVec3(rotation, Vec3Zero);
 
-            alSourcefv(source->handle, AL_VELOCITY, glm::value_ptr(velocity));
-            alSourcefv(source->handle, AL_DIRECTION, glm::value_ptr(direction));
+            alSourcefv(source->handle, AL_VELOCITY,  velocity._);
+            alSourcefv(source->handle, AL_DIRECTION, direction._);
         }
 
         if(!source->active)

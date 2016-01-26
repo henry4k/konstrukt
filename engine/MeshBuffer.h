@@ -13,8 +13,8 @@ void ReleaseMeshBuffer( MeshBuffer* buffer );
 
 void AddVertexToMeshBuffer( MeshBuffer* buffer, const Vertex* vertex );
 void AddIndexToMeshBuffer( MeshBuffer* buffer, VertexIndex index );
-void TransformMeshBuffer( MeshBuffer* buffer, const glm::mat4* transformation );
-void AppendMeshBuffer( MeshBuffer* buffer, const MeshBuffer* otherBuffer, const glm::mat4* transformation );
+void TransformMeshBuffer( MeshBuffer* buffer, Mat4 transformation );
+void AppendMeshBuffer( MeshBuffer* buffer, const MeshBuffer* otherBuffer, const Mat4* transformation );
 void IndexMeshBuffer( MeshBuffer* buffer );
 void CalcMeshBufferNormals( MeshBuffer* buffer );
 void CalcMeshBufferTangents( MeshBuffer* buffer );

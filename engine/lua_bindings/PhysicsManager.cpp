@@ -6,11 +6,21 @@
 #include "PhysicsManager.h"
 
 
+// To suppress this C++11 warning:
+// narrowing conversion of ‘luaL_checknumber(l, 2)’ from
+// ‘lua_Number {aka double}’ to ‘float’ inside { } is ill-formed in C++11
+static Vec3 CreateVec3( float x, float y, float z )
+{
+    Vec3 r = {{x,y,z}};
+    return r;
+}
+
+
 static int Lua_SetGravity( lua_State* l )
 {
-    const glm::vec3 force(luaL_checknumber(l, 1),
-                          luaL_checknumber(l, 2),
-                          luaL_checknumber(l, 3));
+    const Vec3 force = CreateVec3(luaL_checknumber(l, 1),
+                                  luaL_checknumber(l, 2),
+                                  luaL_checknumber(l, 3));
     SetGravity(force);
     return 0;
 }
@@ -47,9 +57,9 @@ static int Lua_CreateEmptyCollisionShape( lua_State* l )
 
 static int Lua_CreateBoxCollisionShape( lua_State* l )
 {
-    const glm::vec3 halfWidth(luaL_checknumber(l, 1),
-                              luaL_checknumber(l, 2),
-                              luaL_checknumber(l, 3));
+    const Vec3 halfWidth = CreateVec3(luaL_checknumber(l, 1),
+                                      luaL_checknumber(l, 2),
+                                      luaL_checknumber(l, 3));
     return CreateLuaCollisionShape(l, CreateBoxCollisionShape(halfWidth));
 }
 
@@ -112,12 +122,12 @@ static int Lua_DestroyForce( lua_State* l )
 static int Lua_SetForce( lua_State* l )
 {
     Force* force = CheckForceFromLua(l, 1);
-    const glm::vec3 value(luaL_checknumber(l, 2),
-                          luaL_checknumber(l, 3),
-                          luaL_checknumber(l, 4));
-    const glm::vec3 relativePosition(luaL_checknumber(l, 5),
-                                     luaL_checknumber(l, 6),
-                                     luaL_checknumber(l, 7));
+    const Vec3 value = CreateVec3(luaL_checknumber(l, 2),
+                                  luaL_checknumber(l, 3),
+                                  luaL_checknumber(l, 4));
+    const Vec3 relativePosition = CreateVec3(luaL_checknumber(l, 5),
+                                             luaL_checknumber(l, 6),
+                                             luaL_checknumber(l, 7));
     const bool useLocalCoordinates = (bool)lua_toboolean(l, 8);
     SetForce(force, value, relativePosition, useLocalCoordinates);
     return 0;
@@ -139,10 +149,10 @@ Force* CheckForceFromLua( lua_State* l, int stackPosition )
 static int Lua_CreateSolid( lua_State* l )
 {
     const float mass = luaL_checknumber(l, 1);
-    const glm::vec3 position(luaL_checknumber(l, 2),
-                             luaL_checknumber(l, 3),
-                             luaL_checknumber(l, 4));
-    const glm::quat rotation = *CheckQuaternionFromLua(l, 5);
+    const Vec3 position = CreateVec3(luaL_checknumber(l, 2),
+                                     luaL_checknumber(l, 3),
+                                     luaL_checknumber(l, 4));
+    const Quat rotation = *CheckQuaternionFromLua(l, 5);
     CollisionShape* shape = CheckCollisionShapeFromLua(l, 6);
 
     Solid* solid = CreateSolid(mass, position, rotation, shape);
@@ -209,17 +219,17 @@ static int Lua_SetSolidCollisionThreshold( lua_State* l )
 static int Lua_GetSolidPosition( lua_State* l )
 {
     const Solid* solid = CheckSolidFromLua(l, 1);
-    const glm::vec3 position = GetSolidPosition(solid);
-    lua_pushnumber(l, position[0]);
-    lua_pushnumber(l, position[1]);
-    lua_pushnumber(l, position[2]);
+    const Vec3 position = GetSolidPosition(solid);
+    lua_pushnumber(l, position._[0]);
+    lua_pushnumber(l, position._[1]);
+    lua_pushnumber(l, position._[2]);
     return 3;
 }
 
 static int Lua_GetSolidRotation( lua_State* l )
 {
     const Solid* solid = CheckSolidFromLua(l, 1);
-    glm::quat* rotation = CreateQuaternionInLua(l);
+    Quat* rotation = CreateQuaternionInLua(l);
     *rotation = GetSolidRotation(solid);
     return 1;
 }
@@ -227,20 +237,20 @@ static int Lua_GetSolidRotation( lua_State* l )
 static int Lua_GetSolidLinearVelocity( lua_State* l )
 {
     const Solid* solid = CheckSolidFromLua(l, 1);
-    const glm::vec3 linearVelocity = GetSolidLinearVelocity(solid);
-    lua_pushnumber(l, linearVelocity[0]);
-    lua_pushnumber(l, linearVelocity[1]);
-    lua_pushnumber(l, linearVelocity[2]);
+    const Vec3 linearVelocity = GetSolidLinearVelocity(solid);
+    lua_pushnumber(l, linearVelocity._[0]);
+    lua_pushnumber(l, linearVelocity._[1]);
+    lua_pushnumber(l, linearVelocity._[2]);
     return 3;
 }
 
 static int Lua_GetSolidAngularVelocity( lua_State* l )
 {
     const Solid* solid = CheckSolidFromLua(l, 1);
-    const glm::vec3 angularVelocity = GetSolidAngularVelocity(solid);
-    lua_pushnumber(l, angularVelocity[0]);
-    lua_pushnumber(l, angularVelocity[1]);
-    lua_pushnumber(l, angularVelocity[2]);
+    const Vec3 angularVelocity = GetSolidAngularVelocity(solid);
+    lua_pushnumber(l, angularVelocity._[0]);
+    lua_pushnumber(l, angularVelocity._[1]);
+    lua_pushnumber(l, angularVelocity._[2]);
     return 3;
 }
 
@@ -255,12 +265,12 @@ static int Lua_EnableGravityForSolid( lua_State* l )
 static int Lua_ApplySolidImpulse( lua_State* l )
 {
     const Solid* solid = CheckSolidFromLua(l, 1);
-    const glm::vec3 impulse(luaL_checknumber(l, 2),
-                            luaL_checknumber(l, 3),
-                            luaL_checknumber(l, 4));
-    const glm::vec3 relativePosition(luaL_checknumber(l, 5),
-                                     luaL_checknumber(l, 6),
-                                     luaL_checknumber(l, 7));
+    const Vec3 impulse = CreateVec3(luaL_checknumber(l, 2),
+                                    luaL_checknumber(l, 3),
+                                    luaL_checknumber(l, 4));
+    const Vec3 relativePosition = CreateVec3(luaL_checknumber(l, 5),
+                                             luaL_checknumber(l, 6),
+                                             luaL_checknumber(l, 7));
     const bool useLocalCoordinates = (bool)lua_toboolean(l, 8);
     ApplySolidImpulse(solid, impulse, relativePosition, useLocalCoordinates);
     return 0;
@@ -289,15 +299,15 @@ static void LuaCollisionCallback( const Collision* collision )
 
     PushPointerToLua(l, collision->a); // 1
     PushPointerToLua(l, collision->b); // 2
-    lua_pushnumber(l, collision->pointOnA[0]); // 3
-    lua_pushnumber(l, collision->pointOnA[1]);
-    lua_pushnumber(l, collision->pointOnA[2]);
-    lua_pushnumber(l, collision->pointOnB[0]); // 6
-    lua_pushnumber(l, collision->pointOnB[1]);
-    lua_pushnumber(l, collision->pointOnB[2]);
-    lua_pushnumber(l, collision->normalOnB[0]); // 9
-    lua_pushnumber(l, collision->normalOnB[1]);
-    lua_pushnumber(l, collision->normalOnB[2]);
+    lua_pushnumber(l, collision->pointOnA._[0]); // 3
+    lua_pushnumber(l, collision->pointOnA._[1]);
+    lua_pushnumber(l, collision->pointOnA._[2]);
+    lua_pushnumber(l, collision->pointOnB._[0]); // 6
+    lua_pushnumber(l, collision->pointOnB._[1]);
+    lua_pushnumber(l, collision->pointOnB._[2]);
+    lua_pushnumber(l, collision->normalOnB._[0]); // 9
+    lua_pushnumber(l, collision->normalOnB._[1]);
+    lua_pushnumber(l, collision->normalOnB._[2]);
     lua_pushnumber(l, collision->impulse); // 12
 
     FireLuaEvent(l, CollisionEvent, 12, false);

@@ -44,8 +44,8 @@ struct CollisionShape
 struct Force
 {
     Solid* solid;
-    glm::vec3 value;
-    glm::vec3 relativePosition;
+    Vec3 value;
+    Vec3 relativePosition;
     bool useLocalCoordinates;
 };
 
@@ -76,14 +76,15 @@ static void WorldTickCallback( btDynamicsWorld* world, btScalar timeDelta );
 static void HandleCollisions();
 static void ApplyForces( float timeDelta );
 
-static inline btVector3 BulletFromGlmVec( const glm::vec3& v )
+static inline btVector3 ToBulletVec( const Vec3& v )
 {
-    return btVector3(v[0], v[1], v[2]);
+    return btVector3(v._[0], v._[1], v._[2]);
 }
 
-static inline glm::vec3 GlmFromBulletVec( const btVector3& v )
+static inline Vec3 FromBulletVec( const btVector3& v )
 {
-    return glm::vec3(v.getX(), v.getY(), v.getZ());
+    const Vec3 r = {{v.getX(), v.getY(), v.getZ()}};
+    return r;
 }
 
 bool InitPhysicsManager()
@@ -121,9 +122,9 @@ void UpdatePhysicsManager( double timeDelta )
     ApplyForces(timeDelta);
 }
 
-void SetGravity( glm::vec3 force )
+void SetGravity( Vec3 force )
 {
-    World->setGravity(BulletFromGlmVec(force));
+    World->setGravity(ToBulletVec(force));
 }
 
 static void WorldTickCallback( btDynamicsWorld* world, btScalar timeDelta )
@@ -147,10 +148,10 @@ CollisionShape* CreateEmptyCollisionShape()
                                 new btEmptyShape());
 }
 
-CollisionShape* CreateBoxCollisionShape( glm::vec3 halfWidth )
+CollisionShape* CreateBoxCollisionShape( Vec3 halfWidth )
 {
     return CreateCollisionShape(BOX_SHAPE,
-                                new btBoxShape(BulletFromGlmVec(halfWidth)));
+                                new btBoxShape(ToBulletVec(halfWidth)));
 }
 
 CollisionShape* CreateSphereCollisionShape( float radius )
@@ -165,13 +166,13 @@ CollisionShape* CreateCapsuleCollisionShape( float radius, float height )
                                 new btCapsuleShape(radius, height));
 }
 
-CollisionShape* CreateCompoundCollisionShape( int shapeCount, CollisionShape** shapes, glm::vec3* positions )
+CollisionShape* CreateCompoundCollisionShape( int shapeCount, CollisionShape** shapes, const Vec3* positions )
 {
     btCompoundShape* bulletInstance = new btCompoundShape(false);
     for(int i = 0; i < shapeCount; i++)
     {
         const btTransform transform(btQuaternion(),
-                                    btVector3(BulletFromGlmVec(positions[i])));
+                                    btVector3(ToBulletVec(positions[i])));
         bulletInstance->addChildShape(transform, shapes[i]->bulletInstance);
     }
     return CreateCollisionShape(COMPOUND_SHAPE, bulletInstance);
@@ -206,7 +207,7 @@ void ReleaseCollisionShape( CollisionShape* shape )
         FreeCollisionShape(shape);
 }
 
-Solid* CreateSolid( float mass, glm::vec3 position, glm::quat rotation, CollisionShape* shape )
+Solid* CreateSolid( float mass, Vec3 position, Quat rotation, CollisionShape* shape )
 {
     Solid* solid = new Solid;
     memset(solid, 0, sizeof(Solid));
@@ -224,11 +225,11 @@ Solid* CreateSolid( float mass, glm::vec3 position, glm::quat rotation, Collisio
     }
 
     btMotionState* motionState =
-        new btDefaultMotionState(btTransform(btQuaternion(rotation[0],
-                                                          rotation[1],
-                                                          rotation[2],
-                                                          rotation[3]),
-                                             BulletFromGlmVec(position)));
+        new btDefaultMotionState(btTransform(btQuaternion(rotation._[0],
+                                                          rotation._[1],
+                                                          rotation._[2],
+                                                          rotation._[3]),
+                                             ToBulletVec(position)));
 
     btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass,
                                                          motionState,
@@ -305,50 +306,57 @@ void SetSolidCollisionThreshold( Solid* solid, float threshold )
         solid->collisionThreshold = INFINITE_COLLISION_THRESHOLD;
 }
 
-glm::vec3 GetSolidPosition( const Solid* solid )
+Vec3 GetSolidPosition( const Solid* solid )
 {
     btTransform transform;
     solid->rigidBody->getMotionState()->getWorldTransform(transform);
     const btVector3& position = transform.getOrigin();
-    return GlmFromBulletVec(position);
+    return FromBulletVec(position);
 }
 
-glm::quat GetSolidRotation( const Solid* solid )
+Quat GetSolidRotation( const Solid* solid )
 {
     btTransform transform;
     solid->rigidBody->getMotionState()->getWorldTransform(transform);
     const btQuaternion& rotation = transform.getRotation();
-    return glm::quat(rotation.getX(),
+    const Quat r = {{rotation.getX(),
                      rotation.getY(),
                      rotation.getZ(),
-                     rotation.getW());
+                     rotation.getW()}};
+    return r;
 }
 
-void GetSolidTransformation( const Solid* solid, int copyFlags, glm::mat4* target )
+Mat4 GetSolidTransformation( const Solid* solid, int copyFlags )
 {
-    btTransform transform;
-    solid->rigidBody->getMotionState()->getWorldTransform(transform);
+    btTransform bulletTransform;
+    solid->rigidBody->getMotionState()->getWorldTransform(bulletTransform);
 #if defined(BT_USE_SSE_IN_API)
-    ATTRIBUTE_ALIGNED16(glm::mat4) alignedTarget;
-    memcpy(&alignedTarget, target, sizeof(alignedTarget));
-    transform.getOpenGLMatrix((float*)&alignedTarget);
-    memcpy(target, &alignedTarget, sizeof(alignedTarget));
+    ATTRIBUTE_ALIGNED16(Mat4) transform;
 #else
-    transform.getOpenGLMatrix((float*)target);
+    Mat4 transform;
 #endif
-    *target = GetTransformation(*target, copyFlags);
+    bulletTransform.getOpenGLMatrix(transform._);
+    return FilterMat4(transform, copyFlags);
 }
 
-glm::vec3 GetSolidLinearVelocity( const Solid* solid )
+Mat4 TryToGetSolidTransformation( const Solid* solid, int copyFlags )
+{
+    if(solid)
+        return GetSolidTransformation(solid, copyFlags);
+    else
+        return Mat4Identity;
+}
+
+Vec3 GetSolidLinearVelocity( const Solid* solid )
 {
     const btVector3& velocity = solid->rigidBody->getLinearVelocity();
-    return GlmFromBulletVec(velocity);
+    return FromBulletVec(velocity);
 }
 
-glm::vec3 GetSolidAngularVelocity( const Solid* solid )
+Vec3 GetSolidAngularVelocity( const Solid* solid )
 {
     const btVector3& velocity = solid->rigidBody->getAngularVelocity();
-    return GlmFromBulletVec(velocity);
+    return FromBulletVec(velocity);
 }
 
 void EnableGravityForSolid( const Solid* solid, bool enable )
@@ -360,34 +368,29 @@ void EnableGravityForSolid( const Solid* solid, bool enable )
         solid->rigidBody->setFlags(flags | BT_DISABLE_WORLD_GRAVITY);
 }
 
-static const glm::vec3 centralPosition(0,0,0);
-
 void ApplySolidImpulse( const Solid* solid,
-                        glm::vec3 impulse,
-                        glm::vec3 relativePosition,
+                        Vec3 impulse,
+                        Vec3 relativePosition,
                         bool useLocalCoordinates )
 {
-    const bool isCentral = relativePosition == centralPosition;
+    const bool isCentral = ArraysAreEqual(relativePosition._,
+                                          Vec3Zero._,
+                                          3);
     if(useLocalCoordinates)
     {
-        using namespace glm;
-        mat4 rotation;
-        GetSolidTransformation(solid,
-                               COPY_ROTATION,
-                               &rotation);
-
-        impulse          = vec3(rotation * vec4(impulse, 1));
-        relativePosition = vec3(rotation * vec4(relativePosition, 1));
+        const Mat4 rotation = GetSolidTransformation(solid, COPY_ROTATION);
+        impulse          = MulMat4ByVec3(rotation, impulse);
+        relativePosition = MulMat4ByVec3(rotation, relativePosition);
     }
 
     if(isCentral)
     {
-        solid->rigidBody->applyCentralImpulse(BulletFromGlmVec(impulse));
+        solid->rigidBody->applyCentralImpulse(ToBulletVec(impulse));
     }
     else
     {
-        solid->rigidBody->applyImpulse(BulletFromGlmVec(impulse),
-                                       BulletFromGlmVec(relativePosition));
+        solid->rigidBody->applyImpulse(ToBulletVec(impulse),
+                                       ToBulletVec(relativePosition));
     }
 }
 
@@ -430,8 +433,8 @@ Force* CreateForce( Solid* solid )
 }
 
 void SetForce( Force* force,
-               glm::vec3 value,
-               glm::vec3 relativePosition,
+               Vec3 value,
+               Vec3 relativePosition,
                bool useLocalCoordinates )
 {
     force->value = value;
@@ -451,31 +454,29 @@ static void ApplyForces( float timeDelta )
         const Force* force = &Forces[i];
         if(force->solid)
         {
-            using namespace glm;
+            Vec3 value;
+            REPEAT(3,i) { value._[i] = force->value._[i] * timeDelta; }
+            Vec3 relativePosition = force->relativePosition;
 
-            vec3 value = force->value * timeDelta;
-            vec3 relativePosition = force->relativePosition;
-            const bool isCentral = relativePosition == centralPosition;
+            const bool isCentral = ArraysAreEqual(relativePosition._,
+                                                  Vec3Zero._,
+                                                  3);
 
             if(force->useLocalCoordinates)
             {
-                mat4 rotation;
-                GetSolidTransformation(force->solid,
-                                       COPY_ROTATION,
-                                       &rotation);
-
-                value            = vec3(rotation * vec4(value, 1));
-                relativePosition = vec3(rotation * vec4(relativePosition, 1));
+                const Mat4 rotation = GetSolidTransformation(force->solid, COPY_ROTATION);
+                value            = MulMat4ByVec3(rotation, value);
+                relativePosition = MulMat4ByVec3(rotation, relativePosition);
             }
 
             if(isCentral)
             {
-                force->solid->rigidBody->applyCentralForce(BulletFromGlmVec(value));
+                force->solid->rigidBody->applyCentralForce(ToBulletVec(value));
             }
             else
             {
-                force->solid->rigidBody->applyForce(BulletFromGlmVec(value),
-                                                    BulletFromGlmVec(relativePosition));
+                force->solid->rigidBody->applyForce(ToBulletVec(value),
+                                                    ToBulletVec(relativePosition));
             }
         }
     }
@@ -530,9 +531,9 @@ static void HandleCollisions()
                     Collision collision;
                     collision.a = solidA;
                     collision.b = solidB;
-                    collision.pointOnA  = GlmFromBulletVec(pointOnA);
-                    collision.pointOnB  = GlmFromBulletVec(pointOnB);
-                    collision.normalOnB = GlmFromBulletVec(normalOnB);
+                    collision.pointOnA  = FromBulletVec(pointOnA);
+                    collision.pointOnB  = FromBulletVec(pointOnB);
+                    collision.normalOnB = FromBulletVec(normalOnB);
                     collision.impulse = point.m_appliedImpulse;
 
                     CurrentCollisionCallback(&collision);

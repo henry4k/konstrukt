@@ -82,7 +82,7 @@ bool CreateBlockVoxelMesh( MeshChunkGenerator* generator,
                            int conditionCount,
                            bool transparent,
                            MeshBuffer** meshBuffers,
-                           glm::mat4* transformations);
+                           const Mat4* transformations);
 
 /**
  * Generates a #MeshChunk from a section of a voxel volume.

@@ -85,7 +85,7 @@ static int Lua_SetModelAttachmentTarget( lua_State* l )
 static int Lua_SetModelTransformation( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
-    const glm::mat4* transformation = CheckMatrix4FromLua(l, 2);
+    const Mat4* transformation = CheckMatrix4FromLua(l, 2);
     SetModelTransformation(model, *transformation);
     return 0;
 }
@@ -154,25 +154,25 @@ static int Lua_SetModelUniform( lua_State* l )
             break;
 
         case VEC3_UNIFORM:
-            value.data[0] = luaL_checknumber(l, 4);
-            value.data[1] = luaL_checknumber(l, 5);
-            value.data[2] = luaL_checknumber(l, 6);
+            value.vec3._[0] = luaL_checknumber(l, 4);
+            value.vec3._[1] = luaL_checknumber(l, 5);
+            value.vec3._[2] = luaL_checknumber(l, 6);
             SetModelUniform(model, name, type, &value);
             break;
 
         case VEC4_UNIFORM:
-            value.data[0] = luaL_checknumber(l, 4);
-            value.data[1] = luaL_checknumber(l, 5);
-            value.data[2] = luaL_checknumber(l, 6);
-            value.data[3] = luaL_checknumber(l, 7);
+            value.vec4._[0] = luaL_checknumber(l, 4);
+            value.vec4._[1] = luaL_checknumber(l, 5);
+            value.vec4._[2] = luaL_checknumber(l, 6);
+            value.vec4._[3] = luaL_checknumber(l, 7);
             SetModelUniform(model, name, type, &value);
             break;
 
         case MAT3_UNIFORM:
-            return luaL_argerror(l, 3, "mat3 is not support by the Lua api.");
+            return luaL_argerror(l, 3, "Mat3 is not supported by the Lua API.");
 
         case MAT4_UNIFORM:
-            const glm::mat4* m = CheckMatrix4FromLua(l, 4);
+            const Mat4* m = CheckMatrix4FromLua(l, 4);
             SetModelUniform(model, name, type, (const UniformValue*)&m);
             break;
     }

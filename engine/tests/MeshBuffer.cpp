@@ -1,17 +1,16 @@
 #include <string.h> // memset
 #include <engine/MeshBuffer.h>
-#include <glm/gtc/matrix_transform.hpp>
 #include "TestTools.h"
-
-using namespace glm;
 
 
 Vertex* CreateVertex( float x, float y, float z )
 {
     static Vertex v;
     memset(&v, 0, sizeof(v));
-    v.position = vec3(x,y,z);
-    v.normal = vec3(0,1,0);
+    Vec3 position = {{x,y,z}};
+    Vec3 normal   = {{0,1,0}};
+    v.position = position;
+    v.normal   = normal;
     return &v;
 }
 
@@ -39,13 +38,15 @@ int main( int argc, char** argv )
             AddVertexToMeshBuffer(buffer, CreateVertex(0,1,0));
             AddIndexToMeshBuffer(buffer, 1);
 
-            mat4 m(1); // identity matrix
-            m = translate(m, vec3(1,0,0));
-            TransformMeshBuffer(buffer, &m);
+            const Vec3 v = {{1,0,0}};
+            const Mat4 m = TranslateMat4(Mat4Identity, v);
+            TransformMeshBuffer(buffer, m);
 
             const Vertex* vertices = GetMeshBufferVertices(buffer);
-            Require(vertices[0].position == vec3(1,0,0));
-            Require(vertices[1].position == vec3(1,1,0));
+            const Vec3 v1 = {{1,0,0}};
+            const Vec3 v2 = {{1,1,0}};
+            Require(vertices[0].position == v1);
+            Require(vertices[1].position == v2);
             // TODO: Test if normal and tangent are transformed correctly.
 
             FreeMeshBuffer(buffer);
@@ -69,12 +70,14 @@ int main( int argc, char** argv )
 
             AppendMeshBuffer(a, b, NULL);
 
-            const Vertex* vertices = GetMeshBufferVertices(a);
+            const Vertex* vertices     = GetMeshBufferVertices(a);
             const VertexIndex* indices = GetMeshBufferIndices(a);
 
             Require(GetMeshBufferVertexCount(a) == 4);
-            Require(vertices[2].position == vec3(2,3,4));
-            Require(vertices[3].position == vec3(5,6,7));
+            const Vec3 v2 = {{2,3,4}};
+            const Vec3 v3 = {{5,6,7}};
+            Require(vertices[2].position == v2);
+            Require(vertices[3].position == v3);
             Require(GetMeshBufferIndexCount(a) == 4);
             Require(indices[2] == 2);
             Require(indices[3] == 3);
@@ -99,17 +102,19 @@ int main( int argc, char** argv )
             AddVertexToMeshBuffer(b, CreateVertex(5,6,7));
             AddIndexToMeshBuffer(b, 1);
 
-            mat4 m(1); // identity matrix
-            m = translate(m, vec3(1,0,0));
+            const Vec3 v = {{1,0,0}};
+            const Mat4 m = TranslateMat4(Mat4Identity, v);
 
             AppendMeshBuffer(a, b, &m);
 
-            const Vertex* vertices = GetMeshBufferVertices(a);
+            const Vertex* vertices     = GetMeshBufferVertices(a);
             const VertexIndex* indices = GetMeshBufferIndices(a);
 
             Require(GetMeshBufferVertexCount(a) == 4);
-            Require(vertices[2].position == vec3(3,3,4));
-            Require(vertices[3].position == vec3(6,6,7));
+            const Vec3 v2 = {{3,3,4}};
+            const Vec3 v3 = {{6,6,7}};
+            Require(vertices[2].position == v2);
+            Require(vertices[3].position == v3);
             Require(GetMeshBufferIndexCount(a) == 4);
             Require(indices[2] == 2);
             Require(indices[3] == 3);

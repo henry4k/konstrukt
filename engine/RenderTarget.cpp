@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <string.h> // memset
 
 #include "Common.h"
@@ -122,9 +123,9 @@ void ReleaseRenderTarget( RenderTarget* target )
 
 static void UpdateDefaultRenderTargetCameraProjection()
 {
-    const glm::ivec2 framebufferSize = GetFramebufferSize();
-    const float aspect = float(framebufferSize[0]) /
-                         float(framebufferSize[1]);
+    int width, height;
+    GetFramebufferSize(&width, &height);
+    const float aspect = (float)width / (float)height;
 
     RenderTarget* renderTarget = GetDefaultRenderTarget();
     for(int i = 0; i < MAX_CAMERAS; i++)

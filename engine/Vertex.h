@@ -9,12 +9,12 @@ typedef unsigned short VertexIndex;
 
 struct Vertex
 {
-    glm::vec3 position;
-    glm::vec3 color;
-    glm::vec2 texCoord;
-    glm::vec3 normal;
-    glm::vec3 tangent;
-    glm::vec3 bitangent;
+    Vec3 position;
+    Vec3 color;
+    Vec2 texCoord;
+    Vec3 normal;
+    Vec3 tangent;
+    Vec3 bitangent;
 };
 
 
