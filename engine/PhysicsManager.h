@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_PHYSICS_MANAGER__
-#define __APOAPSIS_PHYSICS_MANAGER__
+#ifndef __KONSTRUKT_PHYSICS_MANAGER__
+#define __KONSTRUKT_PHYSICS_MANAGER__
 
 #include <float.h> // FLOAT_MAX
 #include "Math.h"

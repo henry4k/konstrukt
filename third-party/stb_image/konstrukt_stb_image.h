@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_STB_IMAGE__
-#define __APOAPSIS_STB_IMAGE__
+#ifndef __KONSTRUKT_STB_IMAGE__
+#define __KONSTRUKT_STB_IMAGE__
 
 #define STBI_NO_STDIO
 #define STBI_NO_HDR

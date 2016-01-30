@@ -1,5 +1,5 @@
 --- @script core.bootstrap.require
---- Implements @{require} because Apoapsis doesn't access the file system directly.
+--- Implements @{require} because Konstrukt doesn't access the file system directly.
 
 -- luacheck: globals require cjson _engine
 

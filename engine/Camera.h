@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_CAMERA__
-#define __APOAPSIS_CAMERA__
+#ifndef __KONSTRUKT_CAMERA__
+#define __KONSTRUKT_CAMERA__
 
 #include "Math.h"
 

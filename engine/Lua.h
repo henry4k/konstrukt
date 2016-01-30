@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_LUA__
-#define __APOAPSIS_LUA__
+#ifndef __KONSTRUKT_LUA__
+#define __KONSTRUKT_LUA__
 
 extern "C"
 {

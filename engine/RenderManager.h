@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_RENDER_MANAGER__
-#define __APOAPSIS_RENDER_MANAGER__
+#ifndef __KONSTRUKT_RENDER_MANAGER__
+#define __KONSTRUKT_RENDER_MANAGER__
 
 bool InitRenderManager();
 void DestroyRenderManager();

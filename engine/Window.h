@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_WINDOW__
-#define __APOAPSIS_WINDOW__
+#ifndef __KONSTRUKT_WINDOW__
+#define __KONSTRUKT_WINDOW__
 
 // Callback functions
 typedef void (*FramebufferResizeFn)( int width, int height );

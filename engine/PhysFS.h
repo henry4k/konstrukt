@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_PHYSFS__
-#define __APOAPSIS_PHYSFS__
+#ifndef __KONSTRUKT_PHYSFS__
+#define __KONSTRUKT_PHYSFS__
 
 #include <physfs.h>
 

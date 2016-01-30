@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_LUA_BINDINGS_CAMERA__
-#define __APOAPSIS_LUA_BINDINGS_CAMERA__
+#ifndef __KONSTRUKT_LUA_BINDINGS_CAMERA__
+#define __KONSTRUKT_LUA_BINDINGS_CAMERA__
 
 struct lua_State;
 struct Camera;

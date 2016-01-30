@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_COMMON__
-#define __APOAPSIS_COMMON__
+#ifndef __KONSTRUKT_COMMON__
+#define __KONSTRUKT_COMMON__
 
 enum LogLevel
 {

@@ -9,7 +9,7 @@ collision=false
 [window]
 width=800
 height=600
-title=Apoapsis
+title=Konstrukt
 
 [opengl]
 vsync=true

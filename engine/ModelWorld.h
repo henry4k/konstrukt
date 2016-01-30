@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_MODEL_WORLD__
-#define __APOAPSIS_MODEL_WORLD__
+#ifndef __KONSTRUKT_MODEL_WORLD__
+#define __KONSTRUKT_MODEL_WORLD__
 
 #include "Math.h"
 #include "Shader.h" // UniformType

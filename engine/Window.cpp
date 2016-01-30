@@ -30,7 +30,7 @@ static KeyActionFn         g_KeyActionFn = NULL;
 /****** General *******/
 
 static void OnGLFWError( int code, const char* description );
-#if defined(APOAPSIS_GL_DEBUG_FIX)
+#if defined(KONSTRUKT_GL_DEBUG_FIX)
 CALLBACK_API static void OnDebugEvent( GLenum source,
                                        GLenum type,
                                        GLuint id,
@@ -57,7 +57,7 @@ bool InitWindow()
 {
     const int width  = GetConfigInt("window.width",  640);
     const int height = GetConfigInt("window.height", 480);
-    const char* title = GetConfigString("window.title", "Apoapsis");
+    const char* title = GetConfigString("window.title", "Konstrukt");
 
     const bool debug = GetConfigBool("opengl.debug", false);
     const bool vsync = GetConfigBool("opengl.vsync", true);
@@ -232,7 +232,7 @@ static void OnGLFWError( int code, const char* description )
     Error("GLFW error %d: %s", code, description);
 }
 
-#if defined(APOAPSIS_GL_DEBUG_FIX)
+#if defined(KONSTRUKT_GL_DEBUG_FIX)
 CALLBACK_API static void OnDebugEvent( GLenum source,
                                        GLenum type,
                                        GLuint id,

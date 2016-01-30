@@ -11,7 +11,7 @@ Packages can be mounted and unmounted in the virtual file system.
 Mounted packages are accessible under their basename.  This also prevents that a
 package is being mounted multiple times.
 
-E.g. the package `example` is stored on disk under `/usr/share/apoapsis/packages/example.zip`.
+E.g. the package `example` is stored on disk under `/usr/share/konstrukt/packages/example.zip`.
 Once mounted, its contents are available under `example/...`.
 
 
@@ -22,13 +22,13 @@ The physical locations of packages are resolved using a list of search paths,
 separated by semicolons.
 
 For instance if the list looks like that:
-`/home/nick/.apoapsis/packages;/usr/share/apoapsis/packages` and the user wants
+`/home/nick/.konstrukt/packages;/usr/share/apoapsis/packages` and the user wants
 to mount a package called `example`, the following paths are tried:
 
-1. `/home/nick/.apoapsis/packages/example`
-2. `/home/nick/.apoapsis/packages/example.zip`
-3. `/usr/share/apoapsis/packages/example`
-4. `/usr/share/apoapsis/packages/example.zip`
+1. `/home/nick/.konstrukt/packages/example`
+2. `/home/nick/.konstrukt/packages/example.zip`
+3. `/usr/share/konstrukt/packages/example`
+4. `/usr/share/konstrukt/packages/example.zip`
 
 The first path that exists is mounted.
 
@@ -82,5 +82,5 @@ main module called `init.lua`, which must export a function called `start`.
 The start function is called after all packages have been initialized.
 It could be called like this:  `require scenarioName..'/init'.start()`
 
-Note:  Only the first package passed as start argument to Apoapsis, can be used
+Note:  Only the first package passed as start argument to Konstrukt, can be used
 as scenario.

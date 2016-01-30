@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_MESH__
-#define __APOAPSIS_MESH__
+#ifndef __KONSTRUKT_MESH__
+#define __KONSTRUKT_MESH__
 
 struct MeshBuffer;
 struct Mesh;

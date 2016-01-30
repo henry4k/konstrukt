@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_LUA_BINDINGS_MATH__
-#define __APOAPSIS_LUA_BINDINGS_MATH__
+#ifndef __KONSTRUKT_LUA_BINDINGS_MATH__
+#define __KONSTRUKT_LUA_BINDINGS_MATH__
 
 #include "../Math.h"
 

@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_RENDER_TARGET__
-#define __APOAPSIS_RENDER_TARGET__
+#ifndef __KONSTRUKT_RENDER_TARGET__
+#define __KONSTRUKT_RENDER_TARGET__
 
 struct Camera;
 struct ShaderProgramSet;

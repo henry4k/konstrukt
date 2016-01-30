@@ -14,14 +14,14 @@ struct Mesh
     GLuint indexBuffer;
     int primitiveType;
     int size;
-#if defined(APOAPSIS_DEBUG_MESH)
+#if defined(KONSTRUKT_DEBUG_MESH)
     GLuint debugVertexBuffer;
     int debugVertexCount;
 #endif
 };
 
 
-#if defined(APOAPSIS_DEBUG_MESH)
+#if defined(KONSTRUKT_DEBUG_MESH)
 static void BuildDebugMesh( const MeshBuffer* buffer, Mesh* mesh );
 static void DrawDebugMesh( const Mesh* mesh );
 #endif
@@ -67,7 +67,7 @@ Mesh* CreateMesh( const MeshBuffer* buffer )
         mesh->size = vertexCount;
     }
 
-#if defined(APOAPSIS_DEBUG_MESH)
+#if defined(KONSTRUKT_DEBUG_MESH)
     BuildDebugMesh(buffer, mesh);
 #endif
 
@@ -99,7 +99,7 @@ void DrawMesh( const Mesh* mesh )
     else
         glDrawArrays(mesh->primitiveType, 0, mesh->size);
 
-#if defined(APOAPSIS_DEBUG_MESH)
+#if defined(KONSTRUKT_DEBUG_MESH)
     DrawDebugMesh(mesh);
 #endif
 }
@@ -129,7 +129,7 @@ void ReleaseMesh( Mesh* mesh )
 }
 
 
-#if defined(APOAPSIS_DEBUG_MESH)
+#if defined(KONSTRUKT_DEBUG_MESH)
 const int DebugVerticesPerVertex = 6;
 const Vec3 Red   = {{1,0,0}};
 const Vec3 Green = {{0,1,0}};

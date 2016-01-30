@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_MATH__
-#define __APOAPSIS_MATH__
+#ifndef __KONSTRUKT_MATH__
+#define __KONSTRUKT_MATH__
 
 
 static const double PI = 3.14159265358979323846;

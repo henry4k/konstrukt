@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_OPENGL__
-#define __APOAPSIS_OPENGL__
+#ifndef __KONSTRUKT_OPENGL__
+#define __KONSTRUKT_OPENGL__
 
 #define GLFW_INCLUDE_NONE
 #include <flextGL/flextGL.h>

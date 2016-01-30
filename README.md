@@ -1,14 +1,13 @@
-Apoapsis
-========
+Konstrukt
+=========
 
-A game about the solitude and survival in a high-tech lump 400 thousand meters
-above the earth.
+A 3D game engine.
 
 The project is still very WIP!
 
 This repository contains the engine and the core package.
 ... which is pretty useless for itself.  Take a look at the example package
-at https://github.com/henry4k/apoapsis-example to see how it can be used.
+at https://github.com/henry4k/konstrukt-example to see how it can be used.
 
 
 ## Dependencies
@@ -35,7 +34,7 @@ Compile time depencencies:
 ## Issues
 
 If the compiler complains about a missing `OnDebugEvent` function, then enable
-the `APOAPSIS_GL_DEBUG_FIX` in CMake.  The problem occurs, when the OpenGL
+the `KONSTRUKT_GL_DEBUG_FIX` in CMake.  The problem occurs, when the OpenGL
 `ARB_debug_output` extension defines its callback syntax with a slightly
 different parameter set.  If you know why this happens, it would be great if
 you could send me a short note. :)
@@ -53,7 +52,7 @@ The tests are located in `engine/tests` and `core-test`.
 
 Copyright © Henry Kielmann
 
-Apoapsis is licensed under the MIT license, which can be found in the
+Konstrukt is licensed under the MIT license, which can be found in the
 `LICENSE` file.
 
 The project comes bundled with a number of dependencies, each with its own license.

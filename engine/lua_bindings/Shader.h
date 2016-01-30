@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_LUA_BINDINGS_SHADER__
-#define __APOAPSIS_LUA_BINDINGS_SHADER__
+#ifndef __KONSTRUKT_LUA_BINDINGS_SHADER__
+#define __KONSTRUKT_LUA_BINDINGS_SHADER__
 
 struct lua_State;
 struct Shader;

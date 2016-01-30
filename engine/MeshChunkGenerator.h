@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_MESH_CHUNK_GENERATOR__
-#define __APOAPSIS_MESH_CHUNK_GENERATOR__
+#ifndef __KONSTRUKT_MESH_CHUNK_GENERATOR__
+#define __KONSTRUKT_MESH_CHUNK_GENERATOR__
 
 #include "Math.h"
 #include "BitCondition.h"

@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_LIST__
-#define __APOAPSIS_LIST__
+#ifndef __KONSTRUKT_LIST__
+#define __KONSTRUKT_LIST__
 
 struct List;
 

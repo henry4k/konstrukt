@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_SHADER__
-#define __APOAPSIS_SHADER__
+#ifndef __KONSTRUKT_SHADER__
+#define __KONSTRUKT_SHADER__
 
 #include "Math.h"
 

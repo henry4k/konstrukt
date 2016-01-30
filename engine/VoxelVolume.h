@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_VOXEL_VOLUME__
-#define __APOAPSIS_VOXEL_VOLUME__
+#ifndef __KONSTRUKT_VOXEL_VOLUME__
+#define __KONSTRUKT_VOXEL_VOLUME__
 
 struct VoxelVolume;
 

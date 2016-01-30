@@ -2,13 +2,13 @@ Coordinates
 ===========
 
 A short excursion on how to work with coordinates in graphics programming and
-what needs to be remembered when working with these in Apoapsis:
+what needs to be remembered when working with these in Konstrukt:
 
 
 Handedness
 ----------
 
-Apoapsis uses a left handed coordinate system.
+Konstrukt uses a left handed coordinate system.
 
 That means:
 Given your actor stands at the worlds origin, with no rotation or whatsoever.

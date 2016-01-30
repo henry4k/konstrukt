@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_IMAGE__
-#define __APOAPSIS_IMAGE__
+#ifndef __KONSTRUKT_IMAGE__
+#define __KONSTRUKT_IMAGE__
 
 struct Image
 {

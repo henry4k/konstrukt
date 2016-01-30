@@ -1,11 +1,12 @@
 -- vim: set filetype=lua:
-project = 'Apoapsis'
+project = 'Konstrukt'
 title = 'Reference'
 description = 'Scripting API'
 format = 'markdown'
 topics = { 'README.md',
            'documentation/Packages.md',
-           'documentation/Structure.md' }
+           'documentation/Coordinates.md',
+           'documentation/Static World.md' }
 package = 'core'
 file = 'core'
 not_luadoc = true

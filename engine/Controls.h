@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_CONTROLS__
-#define __APOAPSIS_CONTROLS__
+#ifndef __KONSTRUKT_CONTROLS__
+#define __KONSTRUKT_CONTROLS__
 
 // TODO: Nur delta uebermitteln?
 typedef void (*ControlActionFn)( const char* name, float absolute, float delta, void* context );

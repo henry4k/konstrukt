@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_LUA_BINDINGS_TEXTURE__
-#define __APOAPSIS_LUA_BINDINGS_TEXTURE__
+#ifndef __KONSTRUKT_LUA_BINDINGS_TEXTURE__
+#define __KONSTRUKT_LUA_BINDINGS_TEXTURE__
 
 struct lua_State;
 struct Texture;

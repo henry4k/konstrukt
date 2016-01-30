@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_LUA_BINDINGS_AUDIO__
-#define __APOAPSIS_LUA_BINDINGS_AUDIO__
+#ifndef __KONSTRUKT_LUA_BINDINGS_AUDIO__
+#define __KONSTRUKT_LUA_BINDINGS_AUDIO__
 
 struct lua_State;
 struct AudioBuffer;

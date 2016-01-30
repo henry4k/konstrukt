@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_TEST_TOOLS__
-#define __APOAPSIS_TEST_TOOLS__
+#ifndef __KONSTRUKT_TEST_TOOLS__
+#define __KONSTRUKT_TEST_TOOLS__
 
 #include <dummy/core.h>
 #include <dummy/signal_sandbox.h>

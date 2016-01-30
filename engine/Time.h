@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_TIME__
-#define __APOAPSIS_TIME__
+#ifndef __KONSTRUKT_TIME__
+#define __KONSTRUKT_TIME__
 
 /**
  * Repeatedly calls a function after a given timeframe has been simulated by

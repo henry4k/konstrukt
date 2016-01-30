@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_BIT_CONDITION__
-#define __APOAPSIS_BIT_CONDITION__
+#ifndef __KONSTRUKT_BIT_CONDITION__
+#define __KONSTRUKT_BIT_CONDITION__
 
 struct List;
 

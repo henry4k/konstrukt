@@ -28,7 +28,7 @@ static void LogPhysFSVersion()
     Log("Linked against PhysFS %d.%d.%d", linked.major, linked.minor, linked.patch);
 }
 
-#if defined(APOAPSIS_SELFCONTAINED)
+#if defined(KONSTRUKT_SELFCONTAINED)
 static bool SetupConfig()
 {
     return PHYSFS_setWriteDir(PHYSFS_getBaseDir()) == 0;
@@ -36,8 +36,8 @@ static bool SetupConfig()
 #else
 static bool SetupConfig()
 {
-    if(PHYSFS_setSaneConfig("apoapsis", // Organization
-                            "apoapsis", // Program name
+    if(PHYSFS_setSaneConfig("konstrukt", // Organization
+                            "konstrukt", // Program name
                             NULL, // Extension of automatically mounted archives
                             0, // Include CD-ROMs
                             0)) // Prepend automatically found archives

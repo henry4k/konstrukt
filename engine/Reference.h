@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_REFERENCE__
-#define __APOAPSIS_REFERENCE__
+#ifndef __KONSTRUKT_REFERENCE__
+#define __KONSTRUKT_REFERENCE__
 
 
 typedef int ReferenceCounter;

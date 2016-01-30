@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_VERTEX__
-#define __APOAPSIS_VERTEX__
+#ifndef __KONSTRUKT_VERTEX__
+#define __KONSTRUKT_VERTEX__
 
 #include "Math.h"
 

@@ -1,4 +1,4 @@
-#ifndef __APOAPSIS_WARNINGS__
+#ifndef __KONSTRUKT_WARNINGS__
 
 #if defined(_MSC_VER)
 #    define BEGIN_EXTERNAL_CODE __pragma(warning(push,1))

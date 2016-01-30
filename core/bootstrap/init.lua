@@ -29,11 +29,11 @@ function print( ... )
 end
 
 function loadfile( fileName, ... )
-    error('loadfile is not available in Apoapsis, you must use Lua modules instead.')
+    error('loadfile is not available in Konstrukt, you must use Lua modules instead.')
 end
 
 function dofile( fileName )
-    error('dofile is not available in Apoapsis, you must use Lua modules instead.')
+    error('dofile is not available in Konstrukt, you must use Lua modules instead.')
 end
 
 function _loadfile( fileName, ... )

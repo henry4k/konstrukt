@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_TEXTURE__
-#define __APOAPSIS_TEXTURE__
+#ifndef __KONSTRUKT_TEXTURE__
+#define __KONSTRUKT_TEXTURE__
 
 #include "OpenGL.h"
 

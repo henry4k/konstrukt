@@ -1,5 +1,5 @@
-#ifndef __APOAPSIS_LUA_BINDINGS_IMAGE__
-#define __APOAPSIS_LUA_BINDINGS_IMAGE__
+#ifndef __KONSTRUKT_LUA_BINDINGS_IMAGE__
+#define __KONSTRUKT_LUA_BINDINGS_IMAGE__
 
 struct lua_State;
 struct Image;
