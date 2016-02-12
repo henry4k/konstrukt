@@ -3,9 +3,9 @@ local class       = require 'middleclass'
 local Object      = class.Object
 local EventSource = require 'core/EventSource'
 local Vec         = require 'core/Vector'
+local VoxelData   = require 'core/voxel/VoxelData'
 local Voxel       = require 'core/voxel/Voxel'
-local Structure   = require 'core/voxel/Structure'
-local StructureDictionary = require 'core/voxel/StructureDictionary'
+local VoxelDictionary = require 'core/voxel/VoxelDictionary'
 
 
 local weakValueMT = { __mode = 'v' }
@@ -21,7 +21,7 @@ function VoxelVolume:initialize( size )
 
     self:initializeEventSource()
 
-    self.structureCache = setmetatable({}, weakValueMT)
+    self.voxelCache = setmetatable({}, weakValueMT)
 end
 
 function VoxelVolume:destroy()
@@ -30,12 +30,12 @@ function VoxelVolume:destroy()
     self.handle = nil
 end
 
---- Returns @{core.voxel.Voxel} or `nil` if something went wrong.
-function VoxelVolume:readVoxel( position )
+--- Returns @{core.voxel.VoxelData} or `nil` if something went wrong.
+function VoxelVolume:_readVoxelData( position )
     assert(Vec:isInstance(position), 'Position must be a vector.')
     local voxelData = engine.ReadVoxelData(self.handle, position:unpack(3))
     if voxelData then
-        return Voxel(voxelData)
+        return VoxelData(voxelData)
     end
 end
 
@@ -44,89 +44,88 @@ end
 -- @param[type=core.Vector] position
 
 --- Returns whether the operation was successfull.
-function VoxelVolume:writeVoxel( position, voxel )
+function VoxelVolume:_writeVoxelData( position, voxelData )
     assert(Vec:isInstance(position), 'Position must be a vector.')
-    assert(Voxel:isInstance(voxel), 'Must be called with a voxel.')
-    local result = engine.WriteVoxelData(self.handle, position[1], position[2], position[3], voxel)
+    assert(VoxelData:isInstance(voxelData), 'Must be called with a voxel data object.')
+    local result = engine.WriteVoxelData(self.handle, position[1], position[2], position[3], voxelData)
     if result then
         self:fireEvent('voxel-modified', position)
     end
     return result
 end
 
-function VoxelVolume:getStructureAt( position )
+--- Creates a new voxel at the given position.
+function VoxelVolume:createVoxelAt( position, voxelClass, _voxelData )
     assert(Vec:isInstance(position), 'Position must be a vector.')
+    assert(Object.isSubclassOf(voxelClass, Voxel), 'Voxel class must inherit from the voxel base class.')
+    assert(voxelClass.id,
+           'The voxels class has no ID.  Forgot to register it in the VoxelDictionary?  Or hasn\'t assignIds() been called yet?')
 
+    local voxel = voxelClass()
+    voxel._voxelData = _voxelData or VoxelData()
+    voxel:setAttribute('id', voxelClass.id)
+
+    --local positionHash = tostring(position)
+    --self.voxelCache[positionHash] = voxel
+
+    -- TODO: Check whether position is writable.
+    -- TODO: VoxelEntity gets its position here.
+
+    return voxel
+end
+
+--- Write voxel to position.
+-- Returns whether the operation was successfull.
+function VoxelVolume:setVoxelAt( position, voxel )
+    assert(Vec:isInstance(position), 'Position must be a vector.')
+    assert(Object.isInstanceOf(voxel, Voxel),
+           'Voxel must be a class inheriting voxel base class.')
+    -- TODO: Copy voxel entity if entity.voxelPosition ~= position.
+    local success = self:_writeVoxelData(position, voxel._voxelData)
+    if success then
+        local positionHash = tostring(position)
+        self.voxelCache[positionHash] = voxel
+    end
+    return success
+end
+
+--- Returns @{core.voxel.Voxel} or `nil` if something went wrong.
+function VoxelVolume:getVoxelAt( position )
+    assert(Vec:isInstance(position), 'Position must be a vector.')
     local positionHash = tostring(position)
-    local structureCache = self.structureCache
-    local structure = structureCache[positionHash]
-
-    if not structure then
-        local voxel = self:readVoxel(position)
-        if not voxel then
-            return
-        end
-
-        local id = Structure.voxelAccessor:read(voxel, 'id')
-        -- TODO: Optimize voxelAccessor as a local?
-        local structureClass = StructureDictionary.getClassFromId(id)
-
-        local origin = structureClass:getOrigin(voxel, position)
-
-        structure = structureClass()
-        structure:_read(self, origin)
-
-        structureCache[positionHash] = structure
-        if origin ~= position then
-            local originHash = tostring(origin)
-            structureCache[originHash] = structure
+    local voxel = self.voxelCache[positionHash]
+    if not voxel then
+        local voxelData = self:_readVoxelData(position)
+        if voxelData then
+            local voxelClassId = voxelData:read(0, Voxel.static.idBitCount)
+            local voxelClass = VoxelDictionary.getClassFromId(voxelClassId)
+            voxel = self:createVoxelAt(position, voxelClass, voxelData)
         end
     end
-
-    return structure
+    return voxel
 end
 
-function VoxelVolume:createStructure( structureClass, origin, ... )
-    assert(Object.isSubclassOf(structureClass, Structure),
-           'Structure class must inherit the structure base class.')
-    assert(structureClass.id,
-           'Structure class has no ID.  Forgot to register it in the StructureDictionary?  Or hasn\'t assignIds() been called yet?')
-
-    local structure = structureClass()
-    structure:_create(self, origin, ...)
-
-    local originHash = tostring(origin)
-    self.structureCache[originHash] = structure
-
-    return structure
-end
-
-function VoxelVolume:getStructuresInAABB( min, max )
+function VoxelVolume:getVoxelsInAABB( min, max )
     assert(Vec:isInstance(min) and
            Vec:isInstance(max), 'Min and max must be vectors.')
     assert(min:componentsLesserOrEqualTo(max), 'Min must be smaller than max.')
 
-    local uniqueStructures = {}
+    local voxels = {}
 
     for z = min[3], max[3] do
     for y = min[2], max[2] do
     for x = min[1], max[1] do
         local position = Vec(x, y, z)
-        local structure = self:getStructureAt(position)
-        if structure then
-            uniqueStructures[structure] = true
+        local voxel = self:getVoxelAt(position)
+        if voxel then
+            table.insert(voxels, voxel)
         end
     end
     end
     end
 
-    local structures = {}
-    for structure, _ in pairs(uniqueStructures) do
-        table.insert(structures, structure)
-    end
-    return structures
+    return voxels
 end
 
 
 return VoxelVolume
-

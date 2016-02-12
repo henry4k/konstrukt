@@ -12,7 +12,7 @@
 #include "MeshChunkGenerator.h"
 
 
-static const int MAX_VOXEL_MESHES = 8;
+static const int MAX_VOXEL_MESHES = 64;
 
 enum VoxelMeshType
 {

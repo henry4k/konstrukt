@@ -1,113 +1,84 @@
-local assert       = assert
-local error        = error
-local setmetatable = setmetatable
-local getmetatable = getmetatable
-local unpack       = table.unpack
-local max          = math.max
-local pow          = math.pow
-local floor        = math.floor
-local isBetween    = math.isBetween
-local bit32extract = bit32.extract
-local bit32replace = bit32.replace
-local engine       = require 'engine'
-
-local voxelValueCount = engine.GetVoxelInt32Count()
+--- @classmod core.voxel.Voxel
+--- Static world objects, which are made from voxels use this as their base class.
 
 
-local Voxel =
-{
-    mt = {},
-    prototype = {}
-}
-Voxel.mt.__index = Voxel.prototype
-setmetatable(Voxel.prototype, Voxel.prototype)
-setmetatable(Voxel, Voxel)
+local class = require 'middleclass'
 
 
-function Voxel:__call( data )
-    local instance = data or {}
+local Voxel = class('core/voxel/Voxel')
 
-    if #instance ~= voxelValueCount then
-        if #instance == 0 then
-            -- initialize with zeros
-            for i = 1, voxelValueCount do
-                instance[i] = 0
-            end
-        else
-            error('Voxel needs to be initialized with exactly '..voxelValueCount..' integer values.')
+-- Voxel._voxelData
+
+local function GatherVoxelClassHieracy( voxelClass, out )
+    if voxelClass ~= Voxel then
+        GatherVoxelClassHieracy(voxelClass.super, out)
+    end
+    table.insert(out, voxelClass)
+end
+
+function Voxel.static:addAttribute( name, bitCount )
+    if not rawget(self.static, '_attributes') then
+        self.static._attributes = {}
+    end
+    table.insert(self.static._attributes, { name = name,
+                                            bitCount = bitCount })
+end
+
+Voxel.static.idBitCount = 10
+Voxel:addAttribute('id', Voxel.static.idBitCount)
+
+function Voxel.static:_createAttributeMap()
+    local attributeMap = {}
+    local classHieracy = {}
+    GatherVoxelClassHieracy(self, classHieracy)
+    local bitPosition = 0
+    for _, voxelClass in ipairs(classHieracy) do
+        for _, attribute in ipairs(voxelClass.static._attributes) do
+            assert(not attributeMap[attribute.name],
+                   'Attribute has already been defined.')
+            attributeMap[attribute.name] = { bitPosition = bitPosition,
+                                             bitCount = attribute.bitCount }
+            bitPosition = bitPosition + attribute.bitCount
         end
     end
-
-    return setmetatable(instance, self.mt)
+    self._attributeMap = attributeMap
 end
 
-function Voxel:isInstance( v )
-    return getmetatable(v) == self.mt
+function Voxel.static:getAttributeMask( name )
+    return self._attributeMap[name]
 end
 
-function Voxel.prototype:clone()
-    return Voxel(unpack(self))
+function Voxel.static:_register()
+    local dict = require 'core/voxel/VoxelDictionary'
+    dict.registerClass(self)
 end
 
-local function checkBitRange( voxel, bitPosition, bitCount )
-    local index = floor(bitPosition / 32) + 1
-    assert(isBetween(index, 1, #voxel), 'Bit position is out of range.')
-
-    local bitOffset = bitPosition - (index-1)*32
-    assert(isBetween(bitOffset+bitCount, 1, 32), 'Bit count is out of range.')
-
-    return index, bitOffset
+function Voxel.static:addVoxelMeshes( meshChunkGenerator )
+    -- meant to be overridden in sub classes
 end
 
-function Voxel.prototype:read( bitPosition, bitCount )
-    local index, bitOffset = checkBitRange(self, bitPosition, bitCount)
-    return bit32extract(self[index], bitOffset, bitCount)
+-- Prepare voxel to be used by voxel volumes.
+function Voxel.static:makeInstantiable()
+    self:_createAttributeMap()
+    self:_register()
 end
 
-function Voxel.prototype:write( bitPosition, bitCount, value )
-    local index, bitOffset = checkBitRange(self, bitPosition, bitCount)
-
-    assert(value >= 0, 'Value must be positive.')
-    local maxValue = pow(2, bitCount)
-    if value > maxValue then
-        error(string.format('Value %d is too big.  %d bits can store at most %d.',
-                            value, bitCount, maxValue))
-    end
-
-    self[index] = bit32replace(self[index], value, bitOffset, bitCount)
+function Voxel:initialize()
 end
 
-function Voxel.mt:__newindex( key, value )
-    error('Can\'t create new voxel fields.')
+function Voxel:getAttribute( name )
+    local attribute = self.class._attributeMap[name]
+    assert(attribute, 'No such attribute.')
+    return self._voxelData:read(attribute.bitPosition,
+                                attribute.bitCount)
 end
 
-function Voxel.mt:__eq( other )
-    for i = 1, max(#self, #other) do
-        if self[i] ~= other[i] then
-            return false
-        end
-    end
-    return true
+function Voxel:setAttribute( name, value )
+    local attribute = self.class._attributeMap[name]
+    assert(attribute, 'No such attribute.')
+    self._voxelData:write(attribute.bitPosition,
+                          attribute.bitCount,
+                          value)
 end
-
-local function formatBlobAsHex( int32Values )
-    local charactersPer32Bit = 32/4
-
-    local strings = {}
-    for i, v in ipairs(int32Values) do
-        local valueString = string.format('%X', v)
-        local fillString = string.rep('0', charactersPer32Bit - #valueString)
-
-        -- reverse order to display it as one big number
-        strings[#int32Values - i] = fillString .. valueString
-    end
-
-    return table.concat(strings, ' ')
-end
-
-function Voxel.mt:__tostring()
-    return formatBlobAsHex(self)
-end
-
 
 return Voxel

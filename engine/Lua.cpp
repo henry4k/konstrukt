@@ -176,10 +176,7 @@ void* GetUserDataFromLua( lua_State* l, int stackPosition, const char* typeName 
 {
     void* data = lua_touserdata(l, stackPosition);
     if(!data)
-    {
-        Error("not userdata");
         return NULL;
-    }
 
     const bool dataHasMetatable = lua_getmetatable(l, stackPosition);
     if(!dataHasMetatable)

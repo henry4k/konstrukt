@@ -78,3 +78,45 @@ end
 function table.shuffle( target )
     return sortByWeight(target, randomWeight)
 end
+
+--- Gather all keys in a table and return them as a list.
+function table.listKeys( kvTable )
+    local result = {}
+    local i = 1
+    for k, v in pairs(kvTable) do
+        result[i] = k
+        i = i + 1
+    end
+    return result
+end
+
+--- Use a generator/iterator to create a key/value table.
+function table.generate( ... )
+    local result = {}
+    for key, value in ... do
+        result[key] = value
+    end
+    return result
+end
+
+--- Use a generator/iterator to create a list.
+function table.generateValues( ... )
+    local result = {}
+    local i = 1
+    for value in ... do
+        result[i] = value
+        i = i + 1
+    end
+    return result
+end
+
+--- Generate a list like you could with a numeric for statement.
+function table.generateRange( startValue, endValue, step )
+    local result = {}
+    local i = 1
+    for value = startValue, endValue, step or 1 do
+        result[i] = value
+        i = i + 1
+    end
+    return result
+end
