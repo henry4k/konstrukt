@@ -5,6 +5,7 @@ local Vec         = require 'core/Vector'
 local Chunk       = require 'core/voxel/Chunk'
 local VoxelVolume = require 'core/voxel/VoxelVolume'
 local ModelWorld  = require 'core/graphics/ModelWorld'
+local VoxelDictionary = require 'core/voxel/VoxelDictionary'
 local MeshChunkGenerator = require 'core/voxel/MeshChunkGenerator'
 
 
@@ -23,6 +24,11 @@ function ChunkManager:initialize( voxelVolume, modelWorld )
     self.chunks = {}
     self.activators = {} -- Defines which chunks need to be active.
     self.modifiedChunks = {}
+
+    -- Setup mesh chunk generator:
+    for _, voxelClass in ipairs(VoxelDictionary.classes) do
+        voxelClass:addVoxelMeshes(self.meshChunkGenerator)
+    end
 
     voxelVolume:addEventTarget('voxel-modified', self, self.onVoxelModification)
 end
