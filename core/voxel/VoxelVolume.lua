@@ -61,9 +61,10 @@ function VoxelVolume:createVoxelAt( position, voxelClass, _voxelData )
     assert(voxelClass.id,
            'The voxels class has no ID.  Forgot to register it in the VoxelDictionary?  Or hasn\'t assignIds() been called yet?')
 
-    local voxel = voxelClass()
+    local voxel = voxelClass:allocate()
     voxel._voxelData = _voxelData or VoxelData()
     voxel:setAttribute('id', voxelClass.id)
+    voxel:initialize()
 
     --local positionHash = tostring(position)
     --self.voxelCache[positionHash] = voxel
