@@ -19,14 +19,14 @@ enum VoxelMeshType
     BLOCK_VOXEL_MESH
 };
 
-enum MooreNeighbourhood
+enum Neighborhood
 {
-    MOORE_POSITIVE_X = 1<<0,
-    MOORE_NEGATIVE_X = 1<<1,
-    MOORE_POSITIVE_Y = 1<<2,
-    MOORE_NEGATIVE_Y = 1<<3,
-    MOORE_POSITIVE_Z = 1<<4,
-    MOORE_NEGATIVE_Z = 1<<5
+    NEIGHBOR_POSITIVE_X = 1<<0,
+    NEIGHBOR_NEGATIVE_X = 1<<1,
+    NEIGHBOR_POSITIVE_Y = 1<<2,
+    NEIGHBOR_NEGATIVE_Y = 1<<3,
+    NEIGHBOR_POSITIVE_Z = 1<<4,
+    NEIGHBOR_NEGATIVE_Z = 1<<5
 };
 
 
@@ -61,7 +61,7 @@ struct ChunkEnvironment
     const Voxel* voxels;
     List** meshLists;
     const bool* transparentVoxels;
-    const int*  transparentNeighbours;
+    const int*  transparentNeighbors;
     MeshBuffer** materialMeshBuffers;
     int*         materialIds;
     int          materialCount;
@@ -265,41 +265,41 @@ static bool* GatherTransparentVoxelsForChunk( List** meshLists,
     return transparentVoxels;
 }
 
-static int GetTransparentMooreNeighbourhood( const bool* transparentVoxels,
-                                             int x, int y, int z,
-                                             int w, int h, int d )
+static int GetTransparentNeighborhood( const bool* transparentVoxels,
+                                       int x, int y, int z,
+                                       int w, int h, int d )
 {
     assert(x >= 1 && x <= w-2);
     assert(y >= 1 && y <= h-2);
     assert(z >= 1 && z <= d-2);
-    int transparentNeighbours = 0;
+    int transparentNeighbors = 0;
 #define TEST(xo, yo, zo, flag) \
     if(transparentVoxels[Get3DArrayIndex(x+(xo),y+(yo),z+(zo),w,h,d)]) \
-        transparentNeighbours |= (flag);
-    TEST(+1,0,0,MOORE_POSITIVE_X)
-    TEST(-1,0,0,MOORE_NEGATIVE_X)
-    TEST(0,+1,0,MOORE_POSITIVE_Y)
-    TEST(0,-1,0,MOORE_NEGATIVE_Y)
-    TEST(0,0,+1,MOORE_POSITIVE_Z)
-    TEST(0,0,-1,MOORE_NEGATIVE_Z)
+        transparentNeighbors |= (flag);
+    TEST(+1,0,0,NEIGHBOR_POSITIVE_X)
+    TEST(-1,0,0,NEIGHBOR_NEGATIVE_X)
+    TEST(0,+1,0,NEIGHBOR_POSITIVE_Y)
+    TEST(0,-1,0,NEIGHBOR_NEGATIVE_Y)
+    TEST(0,0,+1,NEIGHBOR_POSITIVE_Z)
+    TEST(0,0,-1,NEIGHBOR_NEGATIVE_Z)
 #undef TEST
-    return transparentNeighbours;
+    return transparentNeighbors;
 }
 
-static int* GatherTransparentNeighboursForChunk( const bool* transparentVoxels,
+static int* GatherTransparentNeighborsForChunk( const bool* transparentVoxels,
                                                  int w, int h, int d )
 {
     const int voxelCount = w*h*d;
-    int* transparentNeighbours = new int[voxelCount];
-    memset(transparentNeighbours, 0, sizeof(int)*voxelCount);
+    int* transparentNeighbors = new int[voxelCount];
+    memset(transparentNeighbors, 0, sizeof(int)*voxelCount);
     for(int z = 1; z < d-1; z++)
     for(int y = 1; y < h-1; y++)
     for(int x = 1; x < w-1; x++)
-        transparentNeighbours[Get3DArrayIndex(x,y,z,w,h,d)] =
-            GetTransparentMooreNeighbourhood(transparentVoxels,
-                                             x, y, z,
-                                             w, h, d);
-    return transparentNeighbours;
+        transparentNeighbors[Get3DArrayIndex(x,y,z,w,h,d)] =
+            GetTransparentNeighborhood(transparentVoxels,
+                                       x, y, z,
+                                       w, h, d);
+    return transparentNeighbors;
 }
 
 static MeshBuffer* GetMeshBufferForMaterial( ChunkEnvironment* env,
@@ -338,20 +338,20 @@ static const float HalfPI = (float)(PI/2.0);
 
 
 static void ProcessBlockVoxelMesh( ChunkEnvironment* env,
-                                   int transparentNeighbours,
+                                   int transparentNeighbors,
                                    MeshBuffer* materialMeshBuffer,
                                    float x, float y, float z,
                                    const BlockVoxelMesh* mesh )
 {
     static const int dirCount = 6;
-    static const int mooreDirs[dirCount] =
+    static const int neighborDirs[dirCount] =
     {
-        MOORE_POSITIVE_X,
-        MOORE_NEGATIVE_X,
-        MOORE_POSITIVE_Y,
-        MOORE_NEGATIVE_Y,
-        MOORE_POSITIVE_Z,
-        MOORE_NEGATIVE_Z
+        NEIGHBOR_POSITIVE_X,
+        NEIGHBOR_NEGATIVE_X,
+        NEIGHBOR_POSITIVE_Y,
+        NEIGHBOR_NEGATIVE_Y,
+        NEIGHBOR_POSITIVE_Z,
+        NEIGHBOR_NEGATIVE_Z
     };
     static const BlockVoxelMeshBuffers dirs[dirCount] =
     {
@@ -369,7 +369,7 @@ static void ProcessBlockVoxelMesh( ChunkEnvironment* env,
     const Mat4 voxelTransformation = TranslateMat4(Mat4Identity,
                                                    translationVector);
 
-    if(transparentNeighbours != 0 &&
+    if(transparentNeighbors != 0 &&
        meshBuffers[CENTER])
     {
         const Mat4 transformation = MulMat4(voxelTransformation,
@@ -381,7 +381,7 @@ static void ProcessBlockVoxelMesh( ChunkEnvironment* env,
 
     for(int i = 0; i < dirCount; i++)
     {
-        if(transparentNeighbours & mooreDirs[i] && meshBuffers[dirs[i]])
+        if(transparentNeighbors & neighborDirs[i] && meshBuffers[dirs[i]])
         {
             const Mat4 transformation = MulMat4(voxelTransformation,
                                                 transformations[dirs[i]]);
@@ -393,7 +393,7 @@ static void ProcessBlockVoxelMesh( ChunkEnvironment* env,
 }
 
 static void ProcessVoxelMesh( ChunkEnvironment* env,
-                              int transparentNeighbours,
+                              int transparentNeighbors,
                               float x, float y, float z,
                               const VoxelMesh* mesh )
 {
@@ -403,7 +403,7 @@ static void ProcessVoxelMesh( ChunkEnvironment* env,
     {
         case BLOCK_VOXEL_MESH:
             ProcessBlockVoxelMesh(env,
-                                  transparentNeighbours,
+                                  transparentNeighbors,
                                   materialMeshBuffer,
                                   x, y, z,
                                   (BlockVoxelMesh*)&mesh->data);
@@ -432,7 +432,7 @@ static void ProcessVoxelMeshes( ChunkEnvironment* env )
                                              env->w,
                                              env->h,
                                              env->d);
-        const int transparentNeighbours = env->transparentNeighbours[envIndex];
+        const int transparentNeighbors = env->transparentNeighbors[envIndex];
         List* meshList = env->meshLists[envIndex];
 
         const int meshCount = GetListLength(meshList);
@@ -443,7 +443,7 @@ static void ProcessVoxelMeshes( ChunkEnvironment* env )
             const float yTranslation = ((float)y) - hh + 0.5f;
             const float zTranslation = ((float)z) - hd + 0.5f;
             ProcessVoxelMesh(env,
-                             transparentNeighbours,
+                             transparentNeighbors,
                              xTranslation,
                              yTranslation,
                              zTranslation,
@@ -470,9 +470,9 @@ static ChunkEnvironment* CreateChunkEnvironment( MeshChunkGenerator* generator,
                                                   w, h, d);
     env->transparentVoxels = GatherTransparentVoxelsForChunk(env->meshLists,
                                                              w, h, d);
-    env->transparentNeighbours =
-        GatherTransparentNeighboursForChunk(env->transparentVoxels,
-                                            w, h, d);
+    env->transparentNeighbors =
+        GatherTransparentNeighborsForChunk(env->transparentVoxels,
+                                           w, h, d);
     ProcessVoxelMeshes(env);
     return env;
 }
@@ -488,7 +488,7 @@ static void FreeChunkEnvironment( ChunkEnvironment* env )
     delete[] env->voxels;
     delete[] env->meshLists;
     delete[] env->transparentVoxels;
-    delete[] env->transparentNeighbours;
+    delete[] env->transparentNeighbors;
 
     for(int i = 0; i < env->materialCount; i++)
         ReleaseMeshBuffer(env->materialMeshBuffers[i]);
