@@ -27,8 +27,8 @@ local halfPi = math.pi / 2.0
 local defaultTransformations =
 {
     ['center'] = Mat4(),
-    ['+x']     = Mat4():rotate( halfPi, Vec(0,1,0)),
-    ['-x']     = Mat4():rotate(-halfPi, Vec(0,1,0)),
+    ['+x']     = Mat4():rotate(-halfPi, Vec(0,1,0)),
+    ['-x']     = Mat4():rotate( halfPi, Vec(0,1,0)),
     ['+y']     = Mat4():rotate( halfPi, Vec(1,0,0)),
     ['-y']     = Mat4():rotate(-halfPi, Vec(1,0,0)),
     ['+z']     = Mat4(),

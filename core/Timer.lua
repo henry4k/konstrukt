@@ -26,7 +26,7 @@ local function onTimerTriggered( timer, timeDelta )
     if target then
         timerInstance.callback(target, timeDelta, timerInstance)
     else
-        timerInstance.callback(timeDelta, timerInstance, timeDelta)
+        timerInstance.callback(timeDelta, timerInstance)
     end
 end
 engine.SetEventCallback('TimerTriggered', onTimerTriggered)

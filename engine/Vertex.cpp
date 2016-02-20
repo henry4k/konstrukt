@@ -56,13 +56,29 @@ static void CalcVertexTangents( Vec3 p1, // position B-A
                                 Vec3* bitangent )
 {
     const float coef = 1.f / (t1._[0]*t2._[1] - t1._[1]*t2._[0]);
-    REPEAT(3,i) { bitangent->_[i] = (p1._[i]*t2._[0] - p2._[i]*t1._[0])*coef; }
     REPEAT(3,i) {   tangent->_[i] = (p1._[i]*t2._[1] - p2._[i]*t1._[1])*coef; }
+    REPEAT(3,i) { bitangent->_[i] = (p2._[i]*t1._[0] - p1._[i]*t2._[0])*coef; }
+}
+
+static void PostprocessVertexTangents( Vertex* v )
+{
+    const Vec3* normal    = &v->normal;
+          Vec3* tangent   = &v->tangent;
+          Vec3* bitangent = &v->bitangent;
 
     // Gram–Schmidt orthogonalization:
-    //const vec3 normal = cross(p2, p1);
-    //*bitangent = normalize(*bitangent - normal * dot(normal, *bitangent));
-    //*tangent   = normalize(  *tangent - normal * dot(normal,   *tangent));
+    const float nDotT = DotProductOfVec3(*normal, *tangent);
+    const float nDotB = DotProductOfVec3(*normal, *bitangent);
+    REPEAT(3,i) {   tangent->_[i] =   tangent->_[i] - normal->_[i] * nDotT; }
+    REPEAT(3,i) { bitangent->_[i] = bitangent->_[i] - normal->_[i] * nDotB; }
+
+    // Calculate handedness:
+    //if(DotProductOfVec3(CrossProductOfVec3(*normal, *tangent), *bitangent) < 0)
+    //    REPEAT(3,i) { tangent->_[i] = -tangent->_[i]; }
+    // See: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
+    // But it currently doesn't seem to work.  Probably because the tutorial
+    // uses a right handed coordinate system and we use a left handed one.
+    // TODO: Investigate as soon as problems arise.
 }
 
 #define ADD_TO_VEC3(T,S) REPEAT(3,i) { (T)._[i] += (S)._[i]; }
@@ -95,6 +111,10 @@ void CalcTriangleTangents( Vertex* a, Vertex* b, Vertex* c )
     ADD_TO_VEC3(a->bitangent, bitangent)
     ADD_TO_VEC3(b->bitangent, bitangent)
     ADD_TO_VEC3(c->bitangent, bitangent)
+
+    PostprocessVertexTangents(a);
+    PostprocessVertexTangents(b);
+    PostprocessVertexTangents(c);
 }
 
 void CalcTriangleNormal( Vertex* a, Vertex* b, Vertex* c )

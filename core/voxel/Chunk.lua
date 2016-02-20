@@ -21,7 +21,7 @@ function Chunk:initialize()
 end
 
 function Chunk:destroy()
-    -- destroy created resource here (meshes and models probably)
+    -- destroy created resource here (models probably)
     for _, model in pairs(self.materialModels) do
         model:destroy()
     end
@@ -53,7 +53,7 @@ function Chunk:update( voxelVolume, start, size, modelWorld, meshChunkGenerator 
     for material, model in pairs(materialModels) do
         local mesh = materialMeshMap[material]
         if not mesh then
-            materialModel:destroy()
+            model:destroy()
             materialModels[material] = nil
         end
     end
