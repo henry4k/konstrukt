@@ -6,10 +6,18 @@
 
 // --- Shader ---
 
-static int Lua_LoadShader( lua_State* l )
+static int Lua_CreateShader( lua_State* l )
 {
-    const char* vfsPath = luaL_checkstring(l, 1);
-    Shader* shader = LoadShader(vfsPath);
+    static const char* types[] =
+    {
+        "vertex",
+        "fragment",
+        NULL
+    };
+    const ShaderType type = (ShaderType)luaL_checkoption(l, 1, NULL, types);
+
+    const char* source = luaL_checkstring(l, 2);
+    Shader* shader = CreateShader(type, source);
 
     if(shader)
     {
@@ -19,7 +27,7 @@ static int Lua_LoadShader( lua_State* l )
     }
     else
     {
-        return luaL_error(l, "Can't load shader '%s'", vfsPath);
+        return luaL_error(l, "Can't create shader.");
     }
 }
 
@@ -207,7 +215,7 @@ ShaderProgramSet* CheckShaderProgramSetFromLua( lua_State* l, int stackPosition 
 bool RegisterShaderInLua()
 {
     return
-        RegisterFunctionInLua("LoadShader", Lua_LoadShader) &&
+        RegisterFunctionInLua("CreateShader", Lua_CreateShader) &&
         RegisterFunctionInLua("DestroyShader", Lua_DestroyShader) &&
 
         RegisterFunctionInLua("LinkShaderProgram", Lua_LinkShaderProgram) &&

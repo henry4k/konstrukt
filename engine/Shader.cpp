@@ -2,7 +2,6 @@
 #include <string.h> // strncmp, strlen, memcmp, memset
 
 #include "Common.h"
-#include "PhysFS.h"
 #include "OpenGL.h"
 #include "Vertex.h"
 #include "Reference.h"
@@ -74,20 +73,6 @@ void DestroyShader()
 }
 
 
-// ----- Tools ------
-
-static bool StringEndsWith( const char* target, const char* end )
-{
-    const int targetLength = strlen(target);
-    const int endLength = strlen(end);
-
-    if(targetLength > endLength)
-        return memcmp(&target[targetLength - endLength], end, endLength) == 0;
-    else
-        return false;
-}
-
-
 // ----- Shader ------
 
 static void FreeShader( Shader* shader );
@@ -114,21 +99,24 @@ static void ShowShaderLog( Shader* shader, bool success )
     }
 }
 
-static Shader* CreateShader( const char* vfsPath, int type )
+static int ShaderTypeToGL( ShaderType type )
 {
-    FileBuffer* buffer = LoadFile(vfsPath);
-    if(!buffer)
+    switch(type)
     {
-        Error("Failed to read shader source %s", vfsPath);
-        return NULL;
+        case VERTEX_SHADER:   return GL_VERTEX_SHADER;
+        case FRAGMENT_SHADER: return GL_FRAGMENT_SHADER;
     }
+    FatalError("Unknown shader type %d", type);
+    return 0;
+}
 
+Shader* CreateShader( ShaderType type, const char* source )
+{
     Shader* shader = new Shader;
     InitReferenceCounter(&shader->refCounter);
-    shader->handle = glCreateShader(type);
+    shader->handle = glCreateShader(ShaderTypeToGL(type));
 
-    glShaderSource(shader->handle, 1, &buffer->data, &buffer->size);
-    FreeFile(buffer);
+    glShaderSource(shader->handle, 1, &source, NULL);
 
     glCompileShader(shader->handle);
 
@@ -136,32 +124,15 @@ static Shader* CreateShader( const char* vfsPath, int type )
     glGetShaderiv(shader->handle, GL_COMPILE_STATUS, &state);
     if(state)
     {
-        Log("Compiled shader successfully: %s", vfsPath);
+        Log("Shader compiled successfully.");
         ShowShaderLog(shader, state);
         return shader;
     }
     else
     {
-        Error("Error compiling shader %s", vfsPath);
+        Error("Error compiling shader:");
         ShowShaderLog(shader, state);
         FreeShader(shader);
-        return NULL;
-    }
-}
-
-Shader* LoadShader( const char* vfsPath )
-{
-    if(StringEndsWith(vfsPath, ".vert"))
-    {
-        return CreateShader(vfsPath, GL_VERTEX_SHADER);
-    }
-    else if(StringEndsWith(vfsPath, ".frag"))
-    {
-        return CreateShader(vfsPath, GL_FRAGMENT_SHADER);
-    }
-    else
-    {
-        Error("Can't determine shader type of file %s", vfsPath);
         return NULL;
     }
 }

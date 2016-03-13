@@ -22,23 +22,30 @@ local Resource = require 'core/Resource'
 local ShaderProgram = class('core/graphics/ShaderProgram')
 ShaderProgram:include(Resource)
 
---- Creates a shader program by loading and linking the given shader sources.
+--- Creates a shader program by linking the given shaders.
 --
 -- @function static:load( ... )
 --
--- @param[type=string] ...
--- Multiple shader sources that are then loaded, compiled and linked into the
--- program.
+-- @param[type=Shader] ...
+-- Multiple shaders which will be linked into the program.
 --
 function ShaderProgram.static:_load( ... )
-    local shaders = {...}
-    for i,shader in ipairs(shaders) do
-        if type(shader) == 'string' then
-            shaders[i] = Shader:load(shader)
+    local shaders = {}
+
+    for _, arg in ipairs({...}) do
+        if Object.isInstanceOf(arg, Shader) then
+            table.insert(shaders, arg)
         else
-            assert(Object.isInstanceOf(shader, Shader))
+            for _, shader in ipairs(arg) do
+                table.insert(shaders, shader)
+            end
         end
     end
+
+    for _, shader in ipairs(shaders) do
+        assert(Object.isInstanceOf(shader, Shader))
+    end
+
     local shaderProgram = ShaderProgram(table.unpack(shaders))
     return { value=shaderProgram, destructor=shaderProgram.destroy }
 end

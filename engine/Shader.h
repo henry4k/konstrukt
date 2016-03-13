@@ -46,6 +46,12 @@ struct ShaderProgram;
  */
 struct ShaderProgramSet;
 
+enum ShaderType
+{
+    VERTEX_SHADER,
+    FRAGMENT_SHADER
+};
+
 enum UniformType
 {
     INT_UNIFORM,
@@ -73,14 +79,12 @@ void DestroyShader();
 int GetUniformSize( UniformType type );
 
 /**
- * Creates a shader by reading the given `vfsPath`.
- * The shader type is determined by the file extension automatically.
+ * Creates a shader with the given `source` code.
  *
  * @return
- * May return `NULL` if the type could not be determined or
- * if the shader source was erroneous.
+ * May return `NULL` e.g. if the shader source was erroneous.
  */
-Shader* LoadShader( const char* vfsPath );
+Shader* CreateShader( ShaderType type, const char* source );
 
 void ReferenceShader( Shader* shader );
 void ReleaseShader( Shader* shader );
