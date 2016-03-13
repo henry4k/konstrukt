@@ -40,6 +40,9 @@ function MeshBuffer.static:_load( sceneFileName, objectPath )
     local sceneGraph = Json.decodeFromFile(sceneFileName)
     if sceneGraph then
         local definition = GetEntryByPath(sceneGraph, objectPath, './')
+        if not definition then
+            error(('%s not found in %s'):format(objectPath, sceneFileName))
+        end
         local meshBuffer = MeshBuffer()
         meshBuffer:readDefinition(definition)
         meshBuffer:lock()

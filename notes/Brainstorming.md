@@ -50,6 +50,11 @@ Silent Scream
 
 Derelict (treibendes Wrack)
 
+XYZ Device (weil Engine)
+XYZ Apparatus
+
+Strange Device
+
 
 ## KABOOSH!
 

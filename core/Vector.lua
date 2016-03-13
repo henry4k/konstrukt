@@ -79,6 +79,14 @@ function Vector.prototype:operate( other, operationFn )
     return r
 end
 
+function Vector.prototype:dot( other )
+    local r = 0
+    for i = 1, max(#self, #other) do
+        r = r + self[i] * other[i]
+    end
+    return r
+end
+
 function Vector.prototype:cross( other )
     assert(#self == 3 and #other == 3, 'The cross product needs exactly 3 components.')
     return Vector(self[2]*other[3] - self[3]*other[2],

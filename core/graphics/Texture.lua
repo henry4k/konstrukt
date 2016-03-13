@@ -68,10 +68,10 @@ function Texture:initialize( options )
     setmetatable(options, { __index=Texture.defaultOptions })
 
     local flags = {}
-    if options.mipmap then
+    if options.mipmap == true then
         table.insert(flags, 'mipmap')
     end
-    if options.filter then
+    if options.filter == 'linear' then
         table.insert(flags, 'filter')
     end
     if options.wrapMode == 'clamp' then
