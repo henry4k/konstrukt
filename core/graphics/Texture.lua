@@ -48,6 +48,20 @@ Texture:include(Resource)
 --
 -- Defaults to **repeat**.
 --
+-- @param[type=string] colorSpace
+-- Which color space has been used to encode the pixel values.
+--
+-- Available are:
+--
+-- - `linear`
+-- - `srgb`
+--
+-- Images whose pixel values don't describe a color,
+-- should always use the linear color space.
+-- E.g. normal and metallic maps
+--
+-- Defaults to **linear**.
+--
 function Texture.static:_load( options )
     local texture = Texture(options)
     return { value=texture, destructor=texture.destroy }
@@ -61,6 +75,7 @@ Texture.static.defaultOptions =
     filter = 'linear',
     wrapMode = 'repeat',
     mipmap = true,
+    colorSpace = 'linear',
     multiplyRgbByAlpha = true
 }
 
@@ -76,6 +91,11 @@ function Texture:initialize( options )
     end
     if options.wrapMode == 'clamp' then
         table.insert(flags, 'clamp')
+    end
+    if options.colorSpace == 'srgb' then
+        table.insert(flags, 'srgb')
+    else
+        assert(options.colorSpace == 'linear')
     end
 
     if options.target == '2d' then

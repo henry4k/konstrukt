@@ -22,29 +22,6 @@ bool CreateImage( Image* image, int width, int height, int channelCount )
     image->height = height;
     image->channelCount = channelCount;
 
-    switch(image->channelCount)
-    {
-        case 1:
-            image->format = GL_LUMINANCE;
-            break;
-
-        case 2:
-            image->format = GL_LUMINANCE_ALPHA;
-            break;
-
-        case 3:
-            image->format = GL_RGB;
-            break;
-
-        case 4:
-            image->format = GL_RGBA;
-            break;
-
-        default:
-            Error("Can't create image (Unknown channel count -> %d)", image->channelCount);
-            return false;
-    }
-
     image->type = GL_UNSIGNED_BYTE;
 
     image->data = malloc(width*height*channelCount);
@@ -107,30 +84,6 @@ bool LoadImage( Image* image, const char* vfsPath )
         return false;
     }
 
-    switch(image->channelCount)
-    {
-        case 1:
-            image->format = GL_LUMINANCE;
-            break;
-
-        case 2:
-            image->format = GL_LUMINANCE_ALPHA;
-            break;
-
-        case 3:
-            image->format = GL_RGB;
-            break;
-
-        case 4:
-            image->format = GL_RGBA;
-            break;
-
-        default:
-            Error("Can't load '%s': Unknown channel count -> %d", vfsPath, image->channelCount);
-            free(image->data);
-            return false;
-    }
-
     image->type = GL_UNSIGNED_BYTE;
 
     return true;
@@ -183,7 +136,6 @@ bool CreateResizedImage( Image* output,
     output->width  = width;
     output->height = height;
     output->channelCount = channelCount;
-    output->format = input->format;
     output->type   = input->type;
 
     output->data = malloc(width*height*channelCount);

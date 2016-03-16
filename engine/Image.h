@@ -5,7 +5,7 @@ struct Image
 {
     int width, height;
     int channelCount;
-    int format, type;
+    int type;
     void* data;
 };
 

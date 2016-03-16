@@ -12,6 +12,7 @@ static int ReadTextureOption( lua_State* l, int stackPosition )
         "mipmap",
         "filter",
         "clamp",
+        "srgb",
         NULL
     };
 
@@ -19,7 +20,8 @@ static int ReadTextureOption( lua_State* l, int stackPosition )
     {
         TEX_MIPMAP,
         TEX_FILTER,
-        TEX_CLAMP
+        TEX_CLAMP,
+        TEX_SRGB
     };
 
     const int index = luaL_checkoption(l, stackPosition, NULL, optionNames);

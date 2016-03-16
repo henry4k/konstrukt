@@ -9,6 +9,24 @@
 
 static const GLuint INVALID_TEXTURE_HANDLE = 0;
 
+static const int MAX_CHANNEL_COUNT = 4;
+
+static const int ChannelCountToFormat[MAX_CHANNEL_COUNT] =
+{
+    GL_LUMINANCE,
+    GL_LUMINANCE_ALPHA,
+    GL_RGB,
+    GL_RGBA
+};
+
+static const int ChannelCountToSRGBFormat[MAX_CHANNEL_COUNT] =
+{
+    GL_SLUMINANCE,
+    GL_SLUMINANCE_ALPHA,
+    GL_SRGB,
+    GL_SRGB_ALPHA
+};
+
 
 struct Texture
 {
@@ -17,6 +35,20 @@ struct Texture
     GLuint handle;
 };
 
+
+static int GetImageFormat( int channelCount, bool useSRGB )
+{
+    if(channelCount < 1 || channelCount > MAX_CHANNEL_COUNT)
+    {
+        FatalError("Unsupported channel count: %d", channelCount);
+        return 0;
+    }
+
+    if(useSRGB)
+        return ChannelCountToSRGBFormat[channelCount-1];
+    else
+        return ChannelCountToFormat[channelCount-1];
+}
 
 static void SetTextureOptions( int target, int options )
 {
@@ -68,13 +100,15 @@ Texture* Create2dTexture( const Image* image, int options )
         return NULL;
 
     glBindTexture(GL_TEXTURE_2D, texture->handle);
+    const int internalFormat = GetImageFormat(image->channelCount, options & TEX_SRGB);
+    const int format         = GetImageFormat(image->channelCount, false);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 image->format,
+                 internalFormat,
                  image->width,
                  image->height,
                  0,
-                 image->format,
+                 format,
                  image->type,
                  image->data);
     glBindTexture(GL_TEXTURE_2D, INVALID_TEXTURE_HANDLE);
@@ -93,16 +127,19 @@ Texture* CreateCubeTexture( const Image** images, int options )
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture->handle);
     for(int i = 0; i < 6; i++)
     {
+        const Image* image = images[i];
         const GLenum target = GL_TEXTURE_CUBE_MAP_POSITIVE_X+i;
+        const int internalFormat = GetImageFormat(image->channelCount, options & TEX_SRGB);
+        const int format         = GetImageFormat(image->channelCount, false);
         glTexImage2D(target,
                      0,
-                     images[i]->format,
-                     images[i]->width,
-                     images[i]->height,
+                     internalFormat,
+                     image->width,
+                     image->height,
                      0,
-                     images[i]->format,
-                     images[i]->type,
-                     images[i]->data);
+                     format,
+                     image->type,
+                     image->data);
     }
     glBindTexture(GL_TEXTURE_CUBE_MAP, INVALID_TEXTURE_HANDLE);
 

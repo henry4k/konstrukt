@@ -11,9 +11,10 @@ static const int MAX_TEXTURE_UNITS = 8;
 
 enum TextureOptions
 {
-    TEX_MIPMAP    = (1 << 0),
-    TEX_FILTER    = (1 << 1),
-    TEX_CLAMP     = (1 << 2)
+    TEX_MIPMAP = (1 << 0),
+    TEX_FILTER = (1 << 1),
+    TEX_CLAMP  = (1 << 2),
+    TEX_SRGB   = (1 << 3)
 };
 
 
