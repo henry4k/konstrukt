@@ -1,5 +1,5 @@
 #include <assert.h>
-#include <string.h> // strncmp, strlen, memcmp, memset
+#include <string.h> // strncmp, strlen, strncpy, memcmp, memset, memcpy
 
 #include "Common.h"
 #include "PhysFS.h"
@@ -249,6 +249,52 @@ int GetUniformSize( UniformType type )
     return 0;
 }
 
+static int CountUniforms( const ShaderProgram* program )
+{
+    static char name[MAX_UNIFORM_NAME_SIZE];
+
+    int count = 0;
+    int activeUniformCount = 0;
+    glGetProgramiv(program->handle, GL_ACTIVE_UNIFORMS, &activeUniformCount);
+    for(int i = 0; i < activeUniformCount; ++i)
+    {
+        int size = 0;
+        GLenum glType = GL_ZERO;
+
+        glGetActiveUniform(
+            program->handle,
+            i,
+            MAX_UNIFORM_NAME_SIZE-1,
+            NULL,
+            &size,
+            &glType,
+            name
+        );
+
+        count += size; // treat array elements as full uniforms
+    }
+    return count;
+}
+
+static void AddUniformDefinition( ShaderProgram* program,
+                                  int* index,
+                                  const char* name,
+                                  int location,
+                                  UniformType type )
+{
+    assert(*index < program->uniformCount);
+    UniformDefinition* def = &program->uniformDefinitions[*index];
+
+    const int nameLength = strlen(name);
+    assert(nameLength <= MAX_UNIFORM_NAME_SIZE-1);
+
+    strncpy(def->name, name, nameLength);
+    def->location = location;
+    def->type     = type;
+
+    (*index)++;
+}
+
 static void ReadUniformDefinitions( ShaderProgram* program )
 {
     if(program->uniformDefinitions)
@@ -263,16 +309,17 @@ static void ReadUniformDefinitions( ShaderProgram* program )
         program->currentUniformValues = NULL;
     }
 
-    int count = 0;
-    glGetProgramiv(program->handle, GL_ACTIVE_UNIFORMS, &count);
-
+    int count = CountUniforms(program);
     program->uniformCount = count;
-
     program->uniformDefinitions = new UniformDefinition[count];
-    for(int i = 0; i < count; ++i)
-    {
-        UniformDefinition* def = &program->uniformDefinitions[i];
 
+    // See CountUniforms:
+    int index = 0;
+    static char name[MAX_UNIFORM_NAME_SIZE];
+    int activeUniformCount = 0;
+    glGetProgramiv(program->handle, GL_ACTIVE_UNIFORMS, &activeUniformCount);
+    for(int i = 0; i < activeUniformCount; ++i)
+    {
         int nameLength = 0;
         int size = 0;
         GLenum glType = GL_ZERO;
@@ -284,13 +331,32 @@ static void ReadUniformDefinitions( ShaderProgram* program )
             &nameLength,
             &size,
             &glType,
-            def->name
+            name
         );
-        def->name[MAX_UNIFORM_NAME_SIZE-1] = '\0';
-        assert(nameLength > 0);
 
-        def->location = glGetUniformLocation(program->handle, def->name);
-        def->type = GLToUniformType(glType);
+        assert(nameLength > 0);
+        assert(nameLength <= MAX_UNIFORM_NAME_SIZE-1);
+        name[MAX_UNIFORM_NAME_SIZE-1] = '\0';
+
+        const int location = glGetUniformLocation(program->handle, name);
+        const UniformType type = GLToUniformType(glType);
+
+        assert(size >= 1);
+        if(size > 1) // array:
+        {
+            assert(StringEndsWith(name, "[0]"));
+            name[nameLength-3] = '\0';
+
+            for(int j = 0; j < size; j++)
+            {
+                const char* elementName = Format("%s[%d]", name, j);
+                AddUniformDefinition(program, &index, elementName, location+j, type);
+            }
+        }
+        else
+        {
+            AddUniformDefinition(program, &index, name, location, type);
+        }
     }
 
     program->currentUniformValues = new UniformValue[count];
@@ -449,11 +515,11 @@ static void SetUniform( ShaderProgram* program, int index, const UniformValue* v
         switch(def->type)
         {
             case INT_UNIFORM:
-                glUniform1i(def->location, value->i);
+                glUniform1iv(def->location, 1, (const int*)value);
                 break;
 
             case FLOAT_UNIFORM:
-                glUniform1f(def->location, value->f);
+                glUniform1fv(def->location, 1, (const float*)value);
                 break;
 
             case VEC3_UNIFORM:
