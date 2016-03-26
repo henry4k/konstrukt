@@ -27,7 +27,6 @@ function ResourceManager.registerLoader( type, loader )
         error('A loader for "'..type..'" has already been registered.')
     else
         ResourceManager.loaders[type] = loader
-        print('Registered '..type..' loader.')
     end
 end
 
@@ -89,7 +88,6 @@ function ResourceManager.load( type, ... )
                 resourceValue = resource.value
                 assert(resourceValue)
                 ResourceManager.resources[id] = resource
-                print('Loaded resource "'..id..'".')
             else
                 print('Resource "'..id..'" doesn\'t exist.')
             end

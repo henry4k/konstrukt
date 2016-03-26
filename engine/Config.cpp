@@ -16,7 +16,6 @@ static map<string,string> g_ConfigValues;
 
 static void SetConfigValue( const char* key, const char* value )
 {
-    Log("%s = %s", key, value);
     g_ConfigValues[key] = value;
 }
 

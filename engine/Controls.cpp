@@ -130,11 +130,7 @@ bool RegisterControl( const char* name, ControlActionFn callback, void* context 
     const char* bindingName = GetConfigString(Format("control.%s", name), NULL);
     if(bindingName)
     {
-        if(CreateControlBindingFromString(bindingName, controlIndex))
-        {
-            Log("Control '%s' is bound to '%s'.", name, bindingName);
-        }
-        else
+        if(!CreateControlBindingFromString(bindingName, controlIndex))
         {
             Error("Failed to create binding for '%s'.", bindingName);
             return false;
