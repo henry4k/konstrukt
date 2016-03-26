@@ -63,7 +63,7 @@ end
 -- @param name
 -- @param[type=number|core.Vector|core.Matrix4] value
 -- @param[opt] type
--- Is needed for number unifroms.  Either `integer` or `float` are applicable.
+-- Is needed for number unifroms.  Either `int` or `float` are applicable.
 --
 function ShaderProgram.static:setGlobalUniform( name, value, type )
     if class.Object.isInstanceOf(value, Mat4) then

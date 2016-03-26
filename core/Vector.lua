@@ -54,6 +54,7 @@ end
 -- Return exactly `componentCount` components.
 --
 function Vector.prototype:unpack( componentCount )
+    componentCount = componentCount or #self
     if #self == componentCount then
         return unpack(self)
     else

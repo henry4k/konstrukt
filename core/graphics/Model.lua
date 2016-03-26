@@ -86,7 +86,7 @@ end
 -- @param name
 -- @param[type=number|Vector|Matrix4] value
 -- @param[opt] type
--- Is needed for number unifroms.  Either `integer` or `float` are applicable.
+-- Is needed for number unifroms.  Either `int` or `float` are applicable.
 --
 function Model:setUniform( name, value, type )
     if Object.isInstanceOf(value, Mat4) then

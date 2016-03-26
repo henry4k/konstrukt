@@ -10,7 +10,7 @@
 
 
 static const GLuint INVALID_SHADER_HANDLE = 0;
-static const int MAX_GLOBAL_UNIFORMS = 16;
+static const int MAX_GLOBAL_UNIFORMS = 32;
 static const int MAX_SHADER_PROGRAM_SET_ENTRIES = 16;
 
 
@@ -288,6 +288,7 @@ static void AddUniformDefinition( ShaderProgram* program,
     const int nameLength = strlen(name);
     assert(nameLength <= MAX_UNIFORM_NAME_SIZE-1);
 
+    memset(def->name, 0, MAX_UNIFORM_NAME_SIZE);
     strncpy(def->name, name, nameLength);
     def->location = location;
     def->type     = type;
@@ -336,7 +337,6 @@ static void ReadUniformDefinitions( ShaderProgram* program )
 
         assert(nameLength > 0);
         assert(nameLength <= MAX_UNIFORM_NAME_SIZE-1);
-        name[MAX_UNIFORM_NAME_SIZE-1] = '\0';
 
         const int location = glGetUniformLocation(program->handle, name);
         const UniformType type = GLToUniformType(glType);

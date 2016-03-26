@@ -12,7 +12,7 @@
 #include "ModelWorld.h"
 
 
-static const int MAX_LOCAL_UNIFORMS = 8;
+static const int MAX_LOCAL_UNIFORMS = 32;
 static const int MAX_MODELS = 64;
 
 static const float DEFAULT_ZNEAR =   0.1;
