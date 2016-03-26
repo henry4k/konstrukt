@@ -3,8 +3,14 @@
 #include "RenderManager.h"
 
 
+static int Lua_GetFrameTime( lua_State* l )
+{
+    lua_pushnumber(l, GetFrameTime());
+    return 1;
+}
+
 bool RegisterRenderManagerInLua()
 {
-    // Temporarily unused.
-    return true;
+    return
+        RegisterFunctionInLua("GetFrameTime", Lua_GetFrameTime);
 }

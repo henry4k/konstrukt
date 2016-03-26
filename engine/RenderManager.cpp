@@ -1,5 +1,5 @@
 #include "Math.h"
-#include "OpenGL.h"
+#include "OpenGL.h" // glfwGetTime
 #include "Vertex.h"
 #include "Reference.h"
 #include "PhysicsManager.h"
@@ -10,6 +10,10 @@
 #include "RenderTarget.h"
 #include "Window.h" // SwapBuffers
 #include "RenderManager.h"
+
+
+static double LastFrameTimestamp;
+static double FrameTime;
 
 
 bool InitRenderManager()
@@ -40,6 +44,9 @@ void RenderScene()
     UpdateRenderTarget(defaultRenderTarget);
 
     SwapBuffers();
+    const double curTimestamp = glfwGetTime();
+    FrameTime = curTimestamp - LastFrameTimestamp;
+    LastFrameTimestamp = curTimestamp;
 
     /*
     // Render shadow map
@@ -62,4 +69,9 @@ void RenderScene()
     glClear(GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     */
+}
+
+double GetFrameTime()
+{
+    return FrameTime;
 }

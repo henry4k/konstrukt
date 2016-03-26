@@ -1,6 +1,7 @@
 #include "../Common.h"
 #include "../Lua.h"
 #include "../PhysFS.h"
+#include "PhysFS.h"
 
 
 static int Lua_MountPackage( lua_State* l )

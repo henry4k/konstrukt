@@ -4,5 +4,6 @@
 bool InitRenderManager();
 void DestroyRenderManager();
 void RenderScene();
+double GetFrameTime();
 
 #endif

@@ -113,6 +113,10 @@ bool InitWindow()
         else
             glfwSwapInterval(1); // enable vsync
     }
+    else
+    {
+        glfwSwapInterval(0); // disable vsync
+    }
 
     glfwSetInputMode(g_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     glfwSetInputMode(g_Window, GLFW_STICKY_KEYS, GL_FALSE);
