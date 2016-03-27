@@ -1,6 +1,8 @@
 #include <stdlib.h> // NULL
+#include <float.h> // FLT_MAX
 
 #include "Common.h"
+#include "Config.h"
 #include "OpenGL.h"
 #include "Image.h"
 #include "Reference.h"
@@ -50,6 +52,23 @@ static int GetImageFormat( int channelCount, bool useSRGB )
         return ChannelCountToFormat[channelCount-1];
 }
 
+static float GetMaxAnisotropy()
+{
+    if(FLEXT_EXT_texture_filter_anisotropic)
+    {
+        const float user = GetConfigFloat("opengl.anisotropy", FLT_MAX);
+
+        float limit = 0;
+        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &limit);
+
+        return user>limit ? limit : user;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 static void SetTextureOptions( int target, int options )
 {
     const int wrapMode = (options & TEX_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
@@ -77,6 +96,10 @@ static void SetTextureOptions( int target, int options )
 
     if(options & TEX_MIPMAP)
         glTexParameteri(target, GL_GENERATE_MIPMAP, GL_TRUE);
+
+    const float maxAnisotropy = GetMaxAnisotropy();
+    if(maxAnisotropy > 0)
+        glTexParameterf(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropy);
 }
 
 static Texture* CreateTexture( GLenum target, int options )
