@@ -125,12 +125,6 @@ bool InitWindow()
     glfwSetInputMode(g_Window, GLFW_STICKY_KEYS, GL_FALSE);
     glfwSetInputMode(g_Window, GLFW_STICKY_MOUSE_BUTTONS, GL_FALSE);
 
-    if(FLEXT_ARB_seamless_cube_map)
-    {
-        Log("Seamless cubemap filtering supported");
-        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-    }
-
     if(debug)
     {
         if(FLEXT_ARB_debug_output)
