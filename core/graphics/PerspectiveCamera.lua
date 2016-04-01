@@ -10,8 +10,8 @@ local Camera = require 'core/graphics/Camera'
 
 local PerspectiveCamera = class('core/graphics/PerspectiveCamera', Camera)
 
-function PerspectiveCamera:initialize( modelWorld )
-    Camera.initialize(self, modelWorld, 'perspective')
+function PerspectiveCamera:initialize( modelWorld, lightWorld )
+    Camera.initialize(self, modelWorld, lightWorld, 'perspective')
 end
 
 --- Changes the cameras field of view.

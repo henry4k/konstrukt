@@ -4,6 +4,7 @@
 #include "Math.h"
 #include "Reference.h"
 #include "ModelWorld.h"
+#include "LightWorld.h"
 #include "PhysicsManager.h"
 #include "Shader.h"
 #include "Camera.h"
@@ -12,7 +13,8 @@
 struct Camera
 {
     ReferenceCounter refCounter;
-    ModelWorld* world;
+    ModelWorld* modelWorld;
+    LightWorld* lightWorld;
     Solid* attachmentTarget;
     int attachmentFlags;
     Mat4 modelTransformation;
@@ -29,14 +31,18 @@ struct Camera
 };
 
 
-Camera* CreateCamera( ModelWorld* world )
+Camera* CreateCamera( ModelWorld* modelWorld,
+                      LightWorld* lightWorld )
 {
     Camera* camera = new Camera;
     memset(camera, 0, sizeof(Camera));
 
     InitReferenceCounter(&camera->refCounter);
-    camera->world = world;
-    ReferenceModelWorld(world);
+    camera->modelWorld = modelWorld;
+    ReferenceModelWorld(modelWorld);
+    camera->lightWorld = lightWorld;
+    if(camera->lightWorld)
+        ReferenceLightWorld(lightWorld);
 
     camera->modelTransformation = Mat4Identity;
     camera->viewTransformation  = Mat4Identity;
@@ -55,7 +61,9 @@ Camera* CreateCamera( ModelWorld* world )
 
 static void FreeCamera( Camera* camera )
 {
-    ReleaseModelWorld(camera->world);
+    ReleaseModelWorld(camera->modelWorld);
+    if(camera->lightWorld)
+        ReleaseLightWorld(camera->lightWorld);
     if(camera->attachmentTarget)
         ReleaseSolid(camera->attachmentTarget);
     delete camera;
@@ -236,9 +244,22 @@ void SetCameraModelUniforms( Camera* camera,
                  value = InverseMat4(TransposeMat4(modelView)));
     CALC_UNIFORM("InverseTransposeModelViewProjection",
                  value = InverseMat4(TransposeMat4(modelViewProjection)));
+
+    if(camera->lightWorld)
+    {
+        Vec3 position = MulMat4ByVec3(*modelTransformation, Vec3Zero);
+        SetLightUniforms(camera->lightWorld,
+                         program,
+                         position,
+                         1); // TODO: Pass a proper object radius.
+    }
 }
 
 void DrawCameraView( Camera* camera, ShaderProgramSet* set )
 {
-    DrawModelWorld(camera->world, set, camera);
+    // TODO: Light world could be used by multiple cameras, so UpdateLights
+    // could be called needlessly multiple times a frame.
+    if(camera->lightWorld)
+        UpdateLights(camera->lightWorld);
+    DrawModelWorld(camera->modelWorld, set, camera);
 }

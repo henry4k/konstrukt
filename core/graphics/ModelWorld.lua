@@ -21,7 +21,11 @@ end
 --- Creates a new model in this model world.
 -- @return[type=core.graphics.Model]
 function ModelWorld:createModel()
-    return Model(engine.CreateModel(self.handle))
+    local handle = engine.CreateModel(self.handle)
+    local instance = Model:allocate()
+    instance.handle = handle
+    instance:initialize()
+    return instance
 end
 
 

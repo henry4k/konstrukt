@@ -20,8 +20,8 @@ Model:include(HasTransformation)
 Model:include(HasAttachmentTarget)
 
 --- Can't be instanciated directly, use @{core.graphics.ModelWorld:createModel} instead.
-function Model:initialize( handle )
-    self.handle = handle
+function Model:initialize()
+    assert(self.handle, 'Can\'t be instanciated directly, use ModelWorld:createModel instead.')
     self.attachmentTarget = nil
     self.mesh = nil
     self.activeTextures = {}

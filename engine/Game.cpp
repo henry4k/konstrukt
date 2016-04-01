@@ -29,6 +29,7 @@
 #include "lua_bindings/RenderManager.h"
 #include "lua_bindings/RenderTarget.h"
 #include "lua_bindings/ModelWorld.h"
+#include "lua_bindings/LightWorld.h"
 #include "lua_bindings/PhysFS.h"
 #include "lua_bindings/PhysicsManager.h"
 #include "lua_bindings/Shader.h"
@@ -122,6 +123,7 @@ static bool RegisterAllModulesInLua()
         RegisterRenderManagerInLua() &&
         RegisterRenderTargetInLua() &&
         RegisterModelWorldInLua() &&
+        RegisterLightWorldInLua() &&
         RegisterPhysFSInLua() &&
         RegisterPhysicsManagerInLua() &&
         RegisterShaderInLua() &&

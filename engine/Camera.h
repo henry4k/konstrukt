@@ -5,6 +5,7 @@
 
 
 struct ModelWorld;
+struct LightWorld;
 struct Solid;
 struct Camera;
 struct ShaderProgram;
@@ -17,7 +18,12 @@ enum CameraProjectionType
 };
 
 
-Camera* CreateCamera( ModelWorld* world );
+/**
+ * @param lightWorld
+ * Optional! May be `NULL`.
+ */
+Camera* CreateCamera( ModelWorld* modelWorld,
+                      LightWorld* lightWorld );
 
 void ReferenceCamera( Camera* camera );
 void ReleaseCamera( Camera* camera );

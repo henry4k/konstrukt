@@ -15,9 +15,6 @@
 static const int MAX_LOCAL_UNIFORMS = 32;
 static const int MAX_MODELS = 64;
 
-static const float DEFAULT_ZNEAR =   0.1;
-static const float DEFAULT_ZFAR  = 100.0;
-
 
 struct LocalUniform
 {
@@ -75,7 +72,7 @@ static void FreeModelWorld( ModelWorld* world )
         Model* model = &world->models[i];
         if(model->active)
         {
-            Error("Model #%d (%p) was still active when the manager was destroyed.",
+            Error("Model #%d (%p) was still active when the world was destroyed.",
                   i, model);
             FreeModel(model);
         }
@@ -377,7 +374,7 @@ void SetModelUniform( Model* model,
     if(!uniform)
         uniform = FindFreeUniform(model);
     if(!uniform)
-        FatalError("Too many local uniforms for model %p.", model);
+        FatalError("Too many uniforms for model %p.", model);
 
     memset(uniform, 0, sizeof(LocalUniform));
 

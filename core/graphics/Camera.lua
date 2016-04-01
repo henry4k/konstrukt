@@ -9,6 +9,7 @@ local class  = require 'middleclass'
 local Object = class.Object
 local Mat4   = require 'core/Matrix4'
 local ModelWorld          = require 'core/graphics/ModelWorld'
+local LightWorld          = require 'core/graphics/LightWorld'
 local HasAttachmentTarget = require 'core/physics/HasAttachmentTarget'
 
 
@@ -17,11 +18,17 @@ Camera:include(HasAttachmentTarget)
 
 --- Abstract class.
 -- Use @{core.graphics.PerspectiveCamera} or @{core.graphics.OrthographicCamera} instead.
-function Camera:initialize( modelWorld, projectionType )
+function Camera:initialize( modelWorld, lightWorld, projectionType )
     assert(self.class ~= Camera, 'Camera is an abstract class and not meant to be instanciated directly.')
     assert(Object.isInstanceOf(modelWorld, ModelWorld), 'Must be initialized with a model world.')
-    self.handle = engine.CreateCamera(modelWorld.handle)
+    local lightWorldHandle
+    if lightWorld then
+        assert(Object.isInstanceOf(lightWorld, LightWorld), 'Must be initialized with a light world.')
+        lightWorldHandle = lightWorld.handle
+    end
+    self.handle = engine.CreateCamera(modelWorld.handle, lightWorldHandle)
     self.modelWorld = modelWorld
+    self.lightWorld = lightWorld
     engine.SetCameraProjectionType(self.handle, projectionType)
 end
 
@@ -33,6 +40,11 @@ end
 --- Retrieve @{core.graphics.ModelWorld} used by the camera.
 function Camera:getModelWorld()
     return self.modelWorld
+end
+
+--- Retrieve @{core.graphics.LightWorld} used by the camera.
+function Camera:getLightWorld()
+    return self.lightWorld
 end
 
 --- Change the cameras view transformation matrix.

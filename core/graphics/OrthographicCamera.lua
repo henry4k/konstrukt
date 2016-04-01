@@ -11,8 +11,8 @@ local Camera = require 'core/graphics/Camera'
 
 local OrthographicCamera = class('core/graphics/OrthographicCamera', Camera)
 
-function OrthographicCamera:initialize( modelWorld )
-    Camera.initialize(self, modelWorld, 'orthographic')
+function OrthographicCamera:initialize( modelWorld, lightWorld )
+    Camera.initialize(self, modelWorld, lightWorld, 'orthographic')
 end
 
 --- Change the visible area.

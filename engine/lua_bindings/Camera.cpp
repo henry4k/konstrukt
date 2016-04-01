@@ -3,13 +3,15 @@
 #include "Math.h"
 #include "PhysicsManager.h"
 #include "ModelWorld.h"
+#include "LightWorld.h"
 #include "Camera.h"
 
 
 static int Lua_CreateCamera( lua_State* l )
 {
-    ModelWorld* world = CheckModelWorldFromLua(l, 1);
-    Camera* camera = CreateCamera(world);
+    ModelWorld* modelWorld = CheckModelWorldFromLua(l, 1);
+    LightWorld* lightWorld = GetLightWorldFromLua(l, 2);
+    Camera* camera = CreateCamera(modelWorld, lightWorld);
     if(camera)
     {
         PushPointerToLua(l, camera);
