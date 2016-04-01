@@ -16,6 +16,10 @@ enum
 
 void EnableVertexArrays()
 {
+    unsigned int vertexArray = 0;
+    glGenVertexArrays(1, &vertexArray);
+    glBindVertexArray(vertexArray);
+
     glEnableVertexAttribArray(VERTEX_POSITION);
     glEnableVertexAttribArray(VERTEX_COLOR);
     glEnableVertexAttribArray(VERTEX_TEXCOORD);

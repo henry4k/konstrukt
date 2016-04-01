@@ -15,16 +15,16 @@ static const int MAX_CHANNEL_COUNT = 4;
 
 static const int ChannelCountToFormat[MAX_CHANNEL_COUNT] =
 {
-    GL_LUMINANCE,
-    GL_LUMINANCE_ALPHA,
+    GL_RED,
+    GL_RG,
     GL_RGB,
     GL_RGBA
 };
 
 static const int ChannelCountToSRGBFormat[MAX_CHANNEL_COUNT] =
 {
-    GL_SLUMINANCE,
-    GL_SLUMINANCE_ALPHA,
+    0,
+    0,
     GL_SRGB,
     GL_SRGB_ALPHA
 };
@@ -47,9 +47,16 @@ static int GetImageFormat( int channelCount, bool useSRGB )
     }
 
     if(useSRGB)
-        return ChannelCountToSRGBFormat[channelCount-1];
+    {
+        const int format = ChannelCountToSRGBFormat[channelCount-1];
+        if(!format)
+            FatalError("Unsupported channel count: %d (for sRGB textures)", channelCount);
+        return format;
+    }
     else
+    {
         return ChannelCountToFormat[channelCount-1];
+    }
 }
 
 static float GetMaxAnisotropy()
@@ -94,9 +101,6 @@ static void SetTextureOptions( int target, int options )
 
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, (options & TEX_FILTER) ? GL_LINEAR : GL_NEAREST);
 
-    if(options & TEX_MIPMAP)
-        glTexParameteri(target, GL_GENERATE_MIPMAP, GL_TRUE);
-
     const float maxAnisotropy = GetMaxAnisotropy();
     if(maxAnisotropy > 0)
         glTexParameterf(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropy);
@@ -134,6 +138,8 @@ Texture* Create2dTexture( const Image* image, int options )
                  format,
                  image->type,
                  image->data);
+    if(options & TEX_MIPMAP)
+        glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, INVALID_TEXTURE_HANDLE);
     return texture;
 }
@@ -164,6 +170,8 @@ Texture* CreateCubeTexture( const Image** images, int options )
                      image->type,
                      image->data);
     }
+    if(options & TEX_MIPMAP)
+        glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
     glBindTexture(GL_TEXTURE_CUBE_MAP, INVALID_TEXTURE_HANDLE);
 
     return texture;
@@ -176,7 +184,6 @@ Texture* CreateDepthTexture( int width, int height, int options )
         return NULL;
 
     glBindTexture(GL_TEXTURE_2D, texture->handle);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
     const float* data = NULL; // TODO: Sure that NULL works here?
     glTexImage2D(GL_TEXTURE_2D,
                  0,
@@ -187,6 +194,8 @@ Texture* CreateDepthTexture( int width, int height, int options )
                  GL_DEPTH_COMPONENT,
                  GL_FLOAT,
                  data);
+    if(options & TEX_MIPMAP)
+        glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, INVALID_TEXTURE_HANDLE);
     return texture;
 }
