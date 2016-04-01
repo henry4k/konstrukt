@@ -184,6 +184,7 @@ Texture* CreateDepthTexture( int width, int height, int options )
         return NULL;
 
     glBindTexture(GL_TEXTURE_2D, texture->handle);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
     const float* data = NULL; // TODO: Sure that NULL works here?
     glTexImage2D(GL_TEXTURE_2D,
                  0,
