@@ -113,7 +113,7 @@ bool InitWindow()
 
     if(vsync)
     {
-        if(glfwExtensionSupported("GLX_EXT_swap_control_tear") |
+        if(glfwExtensionSupported("GLX_EXT_swap_control_tear") ||
            glfwExtensionSupported("WGL_EXT_swap_control_tear"))
             glfwSwapInterval(-1); // enable vsync (allow the driver to swap even if a frame arrives a little bit late)
         else
