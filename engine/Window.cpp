@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdlib.h> // NULL
 
 #include "Common.h"
 #include "Config.h"
@@ -79,6 +80,7 @@ bool InitWindow()
     glfwWindowHint(GLFW_DEPTH_BITS, GetConfigInt("opengl.depth-bits", 24));
     glfwWindowHint(GLFW_STENCIL_BITS, 0);
     glfwWindowHint(GLFW_SAMPLES, GetConfigInt("opengl.samples", 0));
+    glfwWindowHint(GLFW_SRGB_CAPABLE, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, debug ? GL_TRUE : GL_FALSE);
 
     g_Window = glfwCreateWindow(width, height, title, NULL, NULL);
