@@ -91,7 +91,6 @@ static int Lua_SetGlobalUniform( lua_State* l )
         "int",
         "float",
         "vec3",
-        "vec4",
         "mat3",
         "mat4",
         NULL
@@ -101,6 +100,7 @@ static int Lua_SetGlobalUniform( lua_State* l )
     UniformValue value;
     switch(type)
     {
+        case SAMPLER_UNIFORM:
         case INT_UNIFORM:
             value.i = (int)luaL_checknumber(l, 3);
             SetGlobalUniform(name, type, &value);
@@ -115,14 +115,6 @@ static int Lua_SetGlobalUniform( lua_State* l )
             value.vec3._[0] = luaL_checknumber(l, 3);
             value.vec3._[1] = luaL_checknumber(l, 4);
             value.vec3._[2] = luaL_checknumber(l, 5);
-            SetGlobalUniform(name, type, &value);
-            break;
-
-        case VEC4_UNIFORM:
-            value.vec4._[0] = luaL_checknumber(l, 3);
-            value.vec4._[1] = luaL_checknumber(l, 4);
-            value.vec4._[2] = luaL_checknumber(l, 5);
-            value.vec4._[3] = luaL_checknumber(l, 6);
             SetGlobalUniform(name, type, &value);
             break;
 

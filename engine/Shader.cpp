@@ -1,7 +1,11 @@
 #include <assert.h>
 #include <string.h> // strncmp, strlen, strncpy, memcmp, memset, memcpy
+#include <stdlib.h> // qsort
+#include <stdint.h> // uintptr_t
 
 #include "Common.h"
+#include "Crc32.h"
+#include "Texture.h"
 #include "PhysFS.h"
 #include "OpenGL.h"
 #include "Vertex.h"
@@ -13,6 +17,13 @@ static const GLuint INVALID_SHADER_HANDLE = 0;
 static const int MAX_GLOBAL_UNIFORMS = 32;
 static const int MAX_SHADER_PROGRAM_SET_ENTRIES = 16;
 
+enum ShaderVariableType
+{
+    UNIFORM_VARIABLE,
+    TEXTURE_VARIABLE,
+    UNIFORM_BUFFER_VARIABLE
+};
+
 
 struct Shader
 {
@@ -22,6 +33,7 @@ struct Shader
 
 struct UniformDefinition
 {
+    uint32_t nameHash;
     char name[MAX_UNIFORM_NAME_SIZE];
     int location;
     UniformType type;
@@ -39,6 +51,8 @@ struct ShaderProgram
     int uniformCount;
     UniformDefinition* uniformDefinitions;
     UniformValue* currentUniformValues;
+
+    ShaderVariableSet* variableSet;
 };
 
 struct ShaderProgramSetEntry
@@ -61,16 +75,63 @@ struct GlobalUniform
     UniformValue value;
 };
 
+struct UniformBuffer
+{
+    ReferenceCounter refCounter;
+
+    GLuint handle;
+
+    // TODO: layout info goes here
+
+    int size;
+    char* data;
+
+    bool dirty;
+};
+
+struct ShaderVariable
+{
+    uint32_t nameHash;
+    char name[MAX_UNIFORM_NAME_SIZE];
+
+    ShaderVariableType type;
+    union
+    {
+        union
+        {
+            UniformType  type;
+            UniformValue value;
+        } uniform;
+        Texture*       texture;
+        UniformBuffer* uniformBuffer;
+    } value;
+};
+
+struct ShaderVariableSet
+{
+    ShaderVariable entries[MAX_SHADER_VARIABLE_SET_ENTRIES];
+};
+
+
+static ShaderVariableSet* GlobalShaderVariableSet = NULL;
 static GlobalUniform GlobalUniforms[MAX_GLOBAL_UNIFORMS];
+
 
 bool InitShader()
 {
+    GlobalShaderVariableSet = CreateShaderVariableSet();
     memset(GlobalUniforms, 0, sizeof(GlobalUniforms));
     return true;
 }
 
 void DestroyShader()
 {
+    FreeShaderVariableSet(GlobalShaderVariableSet);
+}
+
+ShaderVariableSet* GetGlobalShaderVariableSet()
+{
+    return GlobalShaderVariableSet;
 }
 
 
@@ -226,13 +287,12 @@ static UniformType GLToUniformType( GLenum glType )
     switch(glType)
     {
         case GL_INT:          return INT_UNIFORM;
-        case GL_SAMPLER_1D:   return INT_UNIFORM;
-        case GL_SAMPLER_2D:   return INT_UNIFORM;
-        case GL_SAMPLER_3D:   return INT_UNIFORM;
-        case GL_SAMPLER_CUBE: return INT_UNIFORM;
+        case GL_SAMPLER_1D:
+        case GL_SAMPLER_2D:
+        case GL_SAMPLER_3D:
+        case GL_SAMPLER_CUBE: return SAMPLER_UNIFORM;
         case GL_FLOAT:        return FLOAT_UNIFORM;
         case GL_FLOAT_VEC3:   return VEC3_UNIFORM;
-        case GL_FLOAT_VEC4:   return VEC4_UNIFORM;
         case GL_FLOAT_MAT3:   return MAT3_UNIFORM;
         case GL_FLOAT_MAT4:   return MAT4_UNIFORM;
 
@@ -246,12 +306,12 @@ int GetUniformSize( UniformType type )
 {
     switch(type)
     {
-        case INT_UNIFORM:   return sizeof(int);
-        case FLOAT_UNIFORM: return sizeof(float);
-        case VEC3_UNIFORM:  return sizeof(Vec3);
-        case VEC4_UNIFORM:  return sizeof(Vec4);
-        case MAT3_UNIFORM:  return sizeof(Mat3);
-        case MAT4_UNIFORM:  return sizeof(Mat4);
+        case SAMPLER_UNIFORM:
+        case INT_UNIFORM:     return sizeof(int);
+        case FLOAT_UNIFORM:   return sizeof(float);
+        case VEC3_UNIFORM:    return sizeof(Vec3);
+        case MAT3_UNIFORM:    return sizeof(Mat3);
+        case MAT4_UNIFORM:    return sizeof(Mat4);
     }
     FatalError("Unknown UniformType!");
     return 0;
@@ -264,7 +324,7 @@ static int CountUniforms( const ShaderProgram* program )
     int count = 0;
     int activeUniformCount = 0;
     glGetProgramiv(program->handle, GL_ACTIVE_UNIFORMS, &activeUniformCount);
-    for(int i = 0; i < activeUniformCount; ++i)
+    REPEAT(activeUniformCount, i)
     {
         int size = 0;
         GLenum glType = GL_ZERO;
@@ -296,6 +356,7 @@ static void AddUniformDefinition( ShaderProgram* program,
     const int nameLength = strlen(name);
     assert(nameLength <= MAX_UNIFORM_NAME_SIZE-1);
 
+    def->nameHash = CalcCrc32ForString(name);
     memset(def->name, 0, MAX_UNIFORM_NAME_SIZE);
     strncpy(def->name, name, nameLength);
     def->location = location;
@@ -336,7 +397,7 @@ static void ReadUniformDefinitions( ShaderProgram* program )
         glGetActiveUniform(
             program->handle,
             i,
-            MAX_UNIFORM_NAME_SIZE-1,
+            MAX_UNIFORM_NAME_SIZE,
             &nameLength,
             &size,
             &glType,
@@ -348,6 +409,9 @@ static void ReadUniformDefinitions( ShaderProgram* program )
 
         const int location = glGetUniformLocation(program->handle, name);
         const UniformType type = GLToUniformType(glType);
+
+        if(location == -1)
+            continue;
 
         assert(size >= 1);
         if(size > 1) // array:
@@ -369,6 +433,66 @@ static void ReadUniformDefinitions( ShaderProgram* program )
 
     program->currentUniformValues = new UniformValue[count];
     memset(program->currentUniformValues, 0, sizeof(UniformValue)*count);
+}
+
+static void ReadUniformBlockDefinitions( ShaderProgram* program )
+{
+    static char name[MAX_UNIFORM_NAME_SIZE];
+
+    int blockCount = 0;
+    glGetProgramiv(program->handle, GL_ACTIVE_UNIFORM_BLOCKS, &blockCount);
+    REPEAT(blockCount, i)
+    {
+        int nameLength = 0;
+        int size = 0;
+        int uniformCount = 0;
+        glGetActiveUniformBlockName(program->handle,
+                                    i,
+                                    MAX_UNIFORM_NAME_SIZE,
+                                    &nameLength,
+                                    name);
+        glGetActiveUniformBlockiv(program->handle,
+                                  i,
+                                  GL_UNIFORM_BLOCK_DATA_SIZE,
+                                  &size);
+        glGetActiveUniformBlockiv(program->handle,
+                                  i,
+                                  GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS,
+                                  &uniformCount);
+        Log("BLOCK: %d %s size=%d uniforms=%d", i, name, size, uniformCount);
+
+        int* uniformIndices_ = new int[uniformCount];
+        GLuint* uniformIndices = new GLuint[uniformCount];
+        glGetActiveUniformBlockiv(program->handle,
+                                  i,
+                                  GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES,
+                                  uniformIndices_);
+        REPEAT(uniformCount, j)
+            uniformIndices[j] = uniformIndices_[j];
+        delete[] uniformIndices_;
+        int* uniformOffset = new int[uniformCount];
+        int* uniformArrStride = new int[uniformCount];
+        int* uniformMatStride = new int[uniformCount];
+        glGetActiveUniformsiv(program->handle, uniformCount, uniformIndices, GL_UNIFORM_OFFSET, uniformOffset);
+        glGetActiveUniformsiv(program->handle, uniformCount, uniformIndices, GL_UNIFORM_ARRAY_STRIDE, uniformArrStride);
+        glGetActiveUniformsiv(program->handle, uniformCount, uniformIndices, GL_UNIFORM_MATRIX_STRIDE, uniformMatStride);
+        REPEAT(uniformCount, j)
+            Log("  %d location=%d offset=%d arrStride=%d matStride=%d",
+                j, uniformIndices[j], uniformOffset[j], uniformArrStride[j], uniformMatStride[j]);
+        delete[] uniformIndices;
+        delete[] uniformOffset;
+        delete[] uniformArrStride;
+        delete[] uniformMatStride;
+
+        // uniformOffset:
+        // offset, in basic machine units, relative to the beginning of the uniform block
+        //
+        // uniformArrStride:
+        // difference, in basic machine units, of consecutive elements in an array
+        //
+        // uniformMatStride:
+        // stride between columns of a column-major matrix or rows of a row-major matrix, in basic machine units
+    }
 }
 
 ShaderProgram* LinkShaderProgram( Shader** shaders, int shaderCount )
@@ -393,6 +517,7 @@ ShaderProgram* LinkShaderProgram( Shader** shaders, int shaderCount )
     program->shaderCount = shaderCount;
     program->shaders = new Shader*[shaderCount];
     memcpy(program->shaders, shaders, sizeof(Shader*)*shaderCount);
+    program->variableSet = CreateShaderVariableSet();
 
     for(int i = 0; i < shaderCount; i++)
     {
@@ -433,6 +558,7 @@ ShaderProgram* LinkShaderProgram( Shader** shaders, int shaderCount )
     }
 
     ReadUniformDefinitions(program);
+    ReadUniformBlockDefinitions(program);
 
     BindVertexAttributes(program->handle);
 
@@ -454,6 +580,8 @@ static void FreeShaderProgram( ShaderProgram* program )
 
     if(program->currentUniformValues)
         delete[] program->currentUniformValues;
+
+    FreeShaderVariableSet(program->variableSet);
 
     delete program;
 }
@@ -482,6 +610,11 @@ void BindShaderProgram( ShaderProgram* program )
     }
 }
 
+ShaderVariableSet* GetShaderProgramShaderVariableSet( ShaderProgram* program )
+{
+    return program->variableSet;
+}
+
 static int GetUniformIndex( const ShaderProgram* program, const char* name )
 {
     for(int i = 0; i < program->uniformCount; i++)
@@ -505,10 +638,8 @@ static bool UniformValuesAreEqual( const UniformDefinition* definition,
 
 static void SetUniform( ShaderProgram* program, int index, const UniformValue* value )
 {
-    assert(program);
     assert(index >= 0);
     assert(index < program->uniformCount);
-    assert(value);
 
     const UniformDefinition* def = &program->uniformDefinitions[index];
     const UniformValue* curValue = &program->currentUniformValues[index];
@@ -518,6 +649,7 @@ static void SetUniform( ShaderProgram* program, int index, const UniformValue* v
         switch(def->type)
         {
             case INT_UNIFORM:
+            case SAMPLER_UNIFORM:
                 glUniform1iv(def->location, 1, (const int*)value);
                 break;
 
@@ -527,10 +659,6 @@ static void SetUniform( ShaderProgram* program, int index, const UniformValue* v
 
             case VEC3_UNIFORM:
                 glUniform3fv(def->location, 1, (const float*)value);
-                break;
-
-            case VEC4_UNIFORM:
-                glUniform4fv(def->location, 1, (const float*)value);
                 break;
 
             case MAT3_UNIFORM:
@@ -664,7 +792,7 @@ static ShaderProgramSetEntry* FindShaderProgramSetEntry( ShaderProgramSet* set,
 }
 
 static const ShaderProgramSetEntry* FindShaderProgramSetEntry( const ShaderProgramSet* set,
-                                                         const char* family )
+                                                               const char* family )
 {
     for(int i = 0; i < MAX_SHADER_PROGRAM_SET_ENTRIES; i++)
     {
@@ -743,4 +871,285 @@ ShaderProgram* GetShaderProgramByFamilyList( const ShaderProgramSet* set,
         return entry->program;
     else
         return NULL;
+}
+
+// ---- UniformBuffer ----
+
+UniformBuffer* CreateUniformBuffer()
+{
+    return NULL; // TODO
+}
+
+void ReferenceUniformBuffer( UniformBuffer* buffer )
+{
+    // TODO
+}
+
+void ReleaseUniformBuffer( UniformBuffer* buffer )
+{
+    // TODO
+}
+
+
+
+// ---- ShaderVariableSet ----
+
+static void FreeShaderVariable( ShaderVariable* var );
+
+ShaderVariableSet* CreateShaderVariableSet()
+{
+    ShaderVariableSet* set = new ShaderVariableSet;
+    memset(set, 0, sizeof(ShaderVariableSet));
+    return set;
+}
+
+void FreeShaderVariableSet( ShaderVariableSet* set )
+{
+    REPEAT(MAX_SHADER_VARIABLE_SET_ENTRIES, i)
+        FreeShaderVariable(&set->entries[i]);
+    delete set;
+}
+
+static ShaderVariable* FindShaderVariableByNameHash( ShaderVariableSet* set,
+                                                     uint32_t nameHash )
+{
+    REPEAT(MAX_SHADER_VARIABLE_SET_ENTRIES, i)
+        if(set->entries[i].nameHash == nameHash)
+            return &set->entries[i];
+    return NULL;
+}
+
+static ShaderVariable* FindShaderVariableInSetsByNameHash( ShaderVariableSet** set,
+                                                           int setCount,
+                                                           uint32_t nameHash )
+{
+    REPEAT(setCount, i)
+    {
+        ShaderVariable* var = FindShaderVariableByNameHash(set[i], nameHash);
+        if(var)
+            return var;
+    }
+    return NULL;
+}
+
+static void FreeShaderVariable( ShaderVariable* var )
+{
+    //var->nameHash = 0;
+    switch(var->type)
+    {
+        case UNIFORM_VARIABLE:
+            break;
+
+        case TEXTURE_VARIABLE:
+            if(var->value.texture)
+                ReleaseTexture(var->value.texture);
+            break;
+
+        case UNIFORM_BUFFER_VARIABLE:
+            if(var->value.uniformBuffer)
+                ReleaseUniformBuffer(var->value.uniformBuffer);
+            break;
+    }
+
+    // TODO: Shouldn't be needed:
+    memset(var, 0, sizeof(ShaderVariable));
+}
+
+static ShaderVariable* PrepareNewShaderVariable( ShaderVariableSet* set,
+                                                 const char* name,
+                                                 ShaderVariableType type )
+{
+    uint32_t nameHash = CalcCrc32ForString(name);
+    ShaderVariable* var = FindShaderVariableByNameHash(set, nameHash);
+    if(!var)
+    {
+        var = FindShaderVariableByNameHash(set, 0);
+        if(!var)
+            FatalError("Too many entries for shader variable set %p.", set);
+    }
+    FreeShaderVariable(var);
+
+    var->nameHash = nameHash;
+    CopyString(name, var->name, sizeof(var->name));
+    var->type = type;
+
+    return var;
+}
+
+static void SetUniformVariable( ShaderVariableSet* set,
+                                const char* name,
+                                UniformType type,
+                                const void* value )
+{
+    ShaderVariable* var = PrepareNewShaderVariable(set, name, UNIFORM_VARIABLE);
+    var->value.uniform.type = type;
+    memcpy(&var->value.uniform.value, value, GetUniformSize(type));
+}
+
+void SetIntUniform( ShaderVariableSet* set, const char* name, int value )
+{
+    SetUniformVariable(set, name, INT_UNIFORM, &value);
+}
+
+void SetFloatUniform( ShaderVariableSet* set, const char* name, float value )
+{
+    SetUniformVariable(set, name, FLOAT_UNIFORM, &value);
+}
+
+void SetVec3Uniform( ShaderVariableSet* set, const char* name, Vec3 value )
+{
+    SetUniformVariable(set, name, VEC3_UNIFORM, &value);
+}
+
+void SetMat3Uniform( ShaderVariableSet* set, const char* name, Mat3 value )
+{
+    SetUniformVariable(set, name, MAT3_UNIFORM, &value);
+}
+
+void SetMat4Uniform( ShaderVariableSet* set, const char* name, Mat4 value )
+{
+    SetUniformVariable(set, name, MAT4_UNIFORM, &value);
+}
+
+void SetTexture( ShaderVariableSet* set, const char* name, Texture* texture )
+{
+    ShaderVariable* var = PrepareNewShaderVariable(set, name, TEXTURE_VARIABLE);
+    ReferenceTexture(texture);
+    var->value.texture = texture;
+}
+
+void SetUniformBuffer( ShaderVariableSet* set, const char* name, UniformBuffer* buffer )
+{
+    ShaderVariable* var = PrepareNewShaderVariable(set, name, UNIFORM_BUFFER_VARIABLE);
+    ReferenceUniformBuffer(buffer);
+    var->value.uniformBuffer = buffer;
+}
+
+void UnsetShaderVariable( ShaderVariableSet* set, const char* name )
+{
+    uint32_t nameHash = CalcCrc32ForString(name);
+    ShaderVariable* entry = FindShaderVariableByNameHash(set, nameHash);
+    if(entry)
+        FreeShaderVariable(entry);
+}
+
+static void AddTextureBinding( UniformBindings* bindings,
+                               Texture* texture )
+{
+    // Don't add a texture twice
+    REPEAT(bindings->textureCount, i)
+        if(bindings->textures[i] == texture)
+            return;
+
+    if(bindings->textureCount < MAX_TEXTURE_UNITS)
+    {
+        bindings->textures[bindings->textureCount] = texture;
+        bindings->textureCount++;
+    }
+    else
+    {
+        Error("Can\'t bind any more textures!");
+    }
+}
+
+static int Compare( uintptr_t a, uintptr_t b )
+{
+    if(a == b)
+        return 0;
+    else if(a < b)
+        return -1;
+    else
+        return 1;
+}
+
+static int CompareTextures( const void* a_, const void* b_ )
+{
+    const Texture* a = (const Texture*)a_;
+    const Texture* b = (const Texture*)b_;
+    return Compare((uintptr_t)a,
+                   (uintptr_t)b);
+}
+
+void GatherShaderVariableBindings( const ShaderProgram* program,
+                                   UniformBindings* bindings,
+                                   ShaderVariableSet** variableSets,
+                                   int variableSetCount )
+{
+    memset(bindings, 0, sizeof(UniformBindings));
+    REPEAT(program->uniformCount, i)
+    {
+        const UniformDefinition* definition = &program->uniformDefinitions[i];
+        if(definition->type == SAMPLER_UNIFORM)
+        {
+            const ShaderVariable* var =
+                FindShaderVariableInSetsByNameHash(variableSets,
+                                                   variableSetCount,
+                                                   definition->nameHash);
+            if(var)
+            {
+                assert(var->type == TEXTURE_VARIABLE);
+                AddTextureBinding(bindings,
+                                  var->value.texture);
+            }
+            else
+            {
+                Error("Can\'t bind uniform %s:  Not available in any uniform set.", definition->name);
+            }
+        }
+    }
+
+    // Sort texture bindings:
+    qsort(bindings->textures,
+          bindings->textureCount,
+          sizeof(Texture*),
+          CompareTextures);
+}
+
+static int GetTextureUnit( const UniformBindings* bindings,
+                           const ShaderVariable* var )
+{
+    REPEAT(bindings->textureCount, i)
+        if(bindings->textures[i] == var->value.texture)
+            return i;
+    FatalError("No binding was generated for texture %p from uniform %s.",
+               var->value.texture,
+               var->name);
+    return 0;
+}
+
+void SetShaderProgramUniforms( ShaderProgram* program,
+                               ShaderVariableSet** variableSets,
+                               int variableSetCount,
+                               const UniformBindings* bindings )
+{
+    REPEAT(program->uniformCount, i)
+    {
+        const UniformDefinition* definition = &program->uniformDefinitions[i];
+        const ShaderVariable* var =
+            FindShaderVariableInSetsByNameHash(variableSets,
+                                               variableSetCount,
+                                               definition->nameHash);
+        if(var)
+        {
+            switch(var->type)
+            {
+                case UNIFORM_VARIABLE:
+                    SetUniform(program, i, &var->value.uniform.value);
+                    break;
+
+                case TEXTURE_VARIABLE:
+                    UniformValue v;
+                    v.i = GetTextureUnit(bindings, var);
+                    SetUniform(program, i, &v);
+                    break;
+
+                case UNIFORM_BUFFER_VARIABLE:
+                    FatalError("Uniform blocks are no uniforms.");
+            }
+        }
+        else
+        {
+            Error("Can\'t set uniform %s:  Not available in any uniform set.", definition->name);
+        }
+    }
 }

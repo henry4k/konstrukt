@@ -32,6 +32,7 @@ struct Model
     Texture* textures[MAX_TEXTURE_UNITS];
     char programFamilyList[MAX_PROGRAM_FAMILY_LIST_SIZE];
     LocalUniform uniforms[MAX_LOCAL_UNIFORMS];
+    //UniformSet* uniformSet;
     Solid* attachmentTarget;
     int attachmentFlags;
     int overlayLevel;
@@ -47,6 +48,7 @@ struct ModelDrawEntry
 {
     const Model* model;
     ShaderProgram* program;
+    //Texture* textures[MAX_TEXTURE_UNITS];
 };
 
 
@@ -67,7 +69,7 @@ ModelWorld* CreateModelWorld()
 
 static void FreeModelWorld( ModelWorld* world )
 {
-    for(int i = 0; i < MAX_MODELS; i++)
+    REPEAT(MAX_MODELS, i)
     {
         Model* model = &world->models[i];
         if(model->active)
@@ -120,9 +122,7 @@ static void SetOverlayLevel( int level )
     }
 
     if(level != 0)
-    {
         glPolygonOffset(0.0, -level);
-    }
 
     CurrentOverlayLevel = level;
 }
@@ -137,15 +137,17 @@ void DrawModelWorld( const ModelWorld* world,
     int drawListSize = 0;
 
     // Fill draw list:
-    for(int i = 0; i < MAX_MODELS; i++)
+    REPEAT(MAX_MODELS, i)
     {
         const Model* model = &models[i];
         if(model->active)
         {
-            drawList[drawListSize].model = model;
-            drawList[drawListSize].program =
-                GetShaderProgramByFamilyList(programSet,
-                                             model->programFamilyList);
+            ModelDrawEntry* entry = &drawList[drawListSize];
+            entry->model = model;
+            entry->program = GetShaderProgramByFamilyList(programSet,
+                                                          model->programFamilyList);
+            //entry->textures =
+            // TODO
             drawListSize++;
         }
     }
@@ -155,7 +157,7 @@ void DrawModelWorld( const ModelWorld* world,
 
     // Render draw list:
     ShaderProgram* currentProgram = NULL;
-    for(int i = 0; i < drawListSize; i++)
+    REPEAT(drawListSize, i)
     {
         const Model* model = drawList[i].model;
         ShaderProgram* program = drawList[i].program;
@@ -174,7 +176,7 @@ void DrawModelWorld( const ModelWorld* world,
         }
 
         // Texture optimization is handled by the texture module already.
-        for(int i = 0; i < MAX_TEXTURE_UNITS; i++)
+        REPEAT(MAX_TEXTURE_UNITS, i)
             if(model->textures[i])
                 BindTexture(model->textures[i], i);
 
@@ -244,6 +246,8 @@ static int CompareModelDrawEntries( const void* a_, const void* b_ )
     if(r != 0)
         return r;
 
+    //r = Compare((uintptr_t)a->textures[0],
+    //            (uintptr_t)b->textures[0]);
     r = Compare((uintptr_t)a->model->textures[0],
                 (uintptr_t)b->model->textures[0]);
     if(r != 0)
@@ -254,7 +258,7 @@ static int CompareModelDrawEntries( const void* a_, const void* b_ )
 
 static Model* FindInactiveModel( ModelWorld* world )
 {
-    for(int i = 0; i < MAX_MODELS; i++)
+    REPEAT(MAX_MODELS, i)
     {
         Model* model = &world->models[i];
         if(!model->active)
@@ -272,6 +276,7 @@ Model* CreateModel( ModelWorld* world )
         model->active = true;
         InitReferenceCounter(&model->refCounter);
         model->transformation = Mat4Identity;
+        //model->uniformSet = CreateUniformSet();
         return model;
     }
     else
@@ -285,9 +290,10 @@ static void FreeModel( Model* model )
 {
     model->active = false;
     FreeReferenceCounter(&model->refCounter);
-    for(int i = 0; i < MAX_TEXTURE_UNITS; i++)
+    REPEAT(MAX_TEXTURE_UNITS, i)
         if(model->textures[i])
             ReleaseTexture(model->textures[i]);
+    //FreeUniformSet(model->uniformSet);
     if(model->mesh)
         ReleaseMesh(model->mesh);
     if(model->attachmentTarget)
@@ -350,6 +356,11 @@ void SetModelProgramFamilyList( Model* model, const char* familyList )
                model->programFamilyList,
                sizeof(model->programFamilyList));
 }
+
+//UniformSet* GetModelUniformSet( Model* model )
+//{
+//    return model->uniformSet;
+//}
 
 static LocalUniform* FindUniform( Model* model, const char* name )
 {

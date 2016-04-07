@@ -145,7 +145,7 @@ void SetLightUniforms( LightWorld* world,
 {
     const int maxCount = world->maxActiveLightCount;
     int count = 0;
-    ActiveLight* activeLights = new ActiveLight[maxCount];
+    ActiveLight* activeLights = new ActiveLight[maxCount]; // TODO: Optimize
 
     ActiveLight* leastImportantActiveLight = NULL;
 

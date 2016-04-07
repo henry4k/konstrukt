@@ -2,14 +2,14 @@
 #define __KONSTRUKT_SHADER__
 
 #include "Math.h"
-
-struct Texture;
+#include "Texture.h"
 
 
 static const int INVALID_UNIFORM_INDEX = -1;
 static const int MAX_UNIFORM_NAME_SIZE = 32;
 static const int MAX_PROGRAM_FAMILY_SIZE = 32;
 static const int MAX_PROGRAM_FAMILY_LIST_SIZE = 128;
+static const int MAX_SHADER_VARIABLE_SET_ENTRIES = 16;
 
 
 /**
@@ -46,12 +46,25 @@ struct ShaderProgram;
  */
 struct ShaderProgramSet;
 
+/**
+ * Stores uniform variables.
+ *
+ * This is just a brief summary, the complete documentation is available at
+ * https://www.opengl.org/wiki/Uniform_Buffer_Object
+ */
+struct UniformBuffer;
+
+/**
+ *
+ */
+struct ShaderVariableSet;
+
 enum UniformType
 {
     INT_UNIFORM,
+    SAMPLER_UNIFORM,
     FLOAT_UNIFORM,
     VEC3_UNIFORM,
-    VEC4_UNIFORM,
     MAT3_UNIFORM,
     MAT4_UNIFORM
 };
@@ -61,16 +74,24 @@ typedef union
     int i;
     float f;
     Vec3 vec3;
-    Vec4 vec4;
     Mat3 mat3;
     Mat4 mat4;
 } UniformValue;
+
+struct UniformBindings
+{
+    int textureCount;
+    Texture* textures[MAX_TEXTURE_UNITS];
+};
 
 
 bool InitShader();
 void DestroyShader();
 
+ShaderVariableSet* GetGlobalShaderVariableSet();
+
 int GetUniformSize( UniformType type );
+
 
 /**
  * Creates a shader by reading the given `vfsPath`.
@@ -100,6 +121,8 @@ void ReleaseShaderProgram( ShaderProgram* program );
  * Use the given program for future render operations.
  */
 void BindShaderProgram( ShaderProgram* program );
+
+ShaderVariableSet* GetShaderProgramShaderVariableSet( ShaderProgram* program );
 
 bool HasUniform( const ShaderProgram* program, const char* name );
 
@@ -148,5 +171,41 @@ void SetShaderProgramFamily( ShaderProgramSet* set,
  */
 ShaderProgram* GetShaderProgramByFamilyList( const ShaderProgramSet* set,
                                              const char* familyList );
+
+
+UniformBuffer* CreateUniformBuffer();
+
+void ReferenceUniformBuffer( UniformBuffer* buffer );
+void ReleaseUniformBuffer( UniformBuffer* buffer );
+
+//void SetUniform( UniformBuffer* buffer,
+//                 const char* name,
+//                 UniformType type,
+//                 const UniformValue* value );
+//void UnsetUniform( UniformBuffer* buffer, const char* name );
+
+
+ShaderVariableSet* CreateShaderVariableSet();
+void FreeShaderVariableSet( ShaderVariableSet* set );
+
+void SetIntUniform(    ShaderVariableSet* set, const char* name, int value );
+void SetFloatUniform(  ShaderVariableSet* set, const char* name, float value );
+void SetVec3Uniform(   ShaderVariableSet* set, const char* name, Vec3 value );
+void SetMat3Uniform(   ShaderVariableSet* set, const char* name, Mat3 value );
+void SetMat4Uniform(   ShaderVariableSet* set, const char* name, Mat4 value );
+void SetTexture(       ShaderVariableSet* set, const char* name, Texture* texture );
+void SetUniformBuffer( ShaderVariableSet* set, const char* name, UniformBuffer* buffer );
+void UnsetShaderVariable( ShaderVariableSet* set, const char* name );
+
+void GatherShaderVariableBindings( const ShaderProgram* program,
+                                   UniformBindings* bindings,
+                                   ShaderVariableSet** variableSets,
+                                   int variableSetCount );
+
+void SetShaderProgramUniforms( ShaderProgram* program,
+                               const ShaderVariableSet** variableSets,
+                               int variableSetCount,
+                               const UniformBindings* bindings );
+
 
 #endif

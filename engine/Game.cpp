@@ -1,5 +1,6 @@
 #include "Common.h"
 #include "Math.h"
+#include "Crc32.h"
 #include "PhysFS.h"
 #include "Config.h"
 #include "Window.h"
@@ -46,6 +47,8 @@ static void CreateArgumentTable( const int argc, char** argv );
 
 bool InitGame( const int argc, char** argv )
 {
+    InitCrc32();
+
     Log("------------- PhysFS -------------");
     if(!InitPhysFS(argc, argv))
         return false;
