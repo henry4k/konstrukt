@@ -10,6 +10,7 @@ local Object = class.Object
 local Mat4   = require 'core/Matrix4'
 local ModelWorld          = require 'core/graphics/ModelWorld'
 local LightWorld          = require 'core/graphics/LightWorld'
+local ShaderVariableSet   = require 'core/graphics/ShaderVariableSet'
 local HasAttachmentTarget = require 'core/physics/HasAttachmentTarget'
 
 
@@ -29,12 +30,16 @@ function Camera:initialize( modelWorld, lightWorld, projectionType )
     self.handle = engine.CreateCamera(modelWorld.handle, lightWorldHandle)
     self.modelWorld = modelWorld
     self.lightWorld = lightWorld
+    self.shaderVariables =
+        ShaderVariableSet(engine.GetCameraShaderVariableSet(self.handle))
     engine.SetCameraProjectionType(self.handle, projectionType)
 end
 
 function Camera:destroy()
     engine.DestroyCamera(self.handle)
     self.handle = nil
+    self.shaderVariables:destroy()
+    self.shaderVariables = nil
 end
 
 --- Retrieve @{core.graphics.ModelWorld} used by the camera.

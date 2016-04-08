@@ -35,7 +35,7 @@ ModelWorld* CreateModelWorld();
 void ReferenceModelWorld( ModelWorld* world );
 void ReleaseModelWorld( ModelWorld* world );
 
-void DrawModelWorld( const ModelWorld* world,
+void DrawModelWorld( ModelWorld* world,
                      const ShaderProgramSet* programSet,
                      Camera* camera );
 

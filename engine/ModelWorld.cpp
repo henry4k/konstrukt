@@ -9,6 +9,7 @@
 #include "Reference.h"
 #include "PhysicsManager.h"
 #include "Camera.h"
+#include "LightWorld.h"
 #include "ModelWorld.h"
 
 
@@ -38,17 +39,19 @@ struct Model
     int overlayLevel;
 };
 
-struct ModelWorld
-{
-    ReferenceCounter refCounter;
-    Model models[MAX_MODELS];
-};
-
 struct ModelDrawEntry
 {
     const Model* model;
     ShaderProgram* program;
+    ShaderVariableSet* generatedVariableSet;
     ShaderVariableBindings bindings;
+};
+
+struct ModelWorld
+{
+    ReferenceCounter refCounter;
+    Model models[MAX_MODELS];
+    ModelDrawEntry drawEntries[MAX_MODELS];
 };
 
 
@@ -64,6 +67,8 @@ ModelWorld* CreateModelWorld()
     ModelWorld* world = new ModelWorld;
     memset(world, 0, sizeof(ModelWorld));
     InitReferenceCounter(&world->refCounter);
+    REPEAT(MAX_MODELS, i)
+        world->drawEntries[i].generatedVariableSet = CreateShaderVariableSet();
     return world;
 }
 
@@ -78,6 +83,8 @@ static void FreeModelWorld( ModelWorld* world )
                   i, model);
             FreeModel(model);
         }
+
+        FreeShaderVariableSet(world->drawEntries[i].generatedVariableSet);
     }
     delete world;
 }
@@ -127,32 +134,67 @@ static void SetOverlayLevel( int level )
     CurrentOverlayLevel = level;
 }
 
-static int GetShaderVariableSets( const ShaderVariableSet*** setsOut,
-                                  const Model* model,
-                                  const ShaderProgram* program )
+static void ClearModelDrawEntry( ModelDrawEntry* entry )
 {
-    static const int SHADER_VARIABLE_SET_COUNT = 3;
+    ClearShaderVariableSet(entry->generatedVariableSet);
+    entry->bindings.textureCount = 0;
+}
+
+static int GetShaderVariableSets( const ShaderVariableSet*** setsOut,
+                                  const ModelDrawEntry* entry,
+                                  const Camera* camera )
+{
+    static const int SHADER_VARIABLE_SET_COUNT = 6;
     static const ShaderVariableSet* sets[SHADER_VARIABLE_SET_COUNT];
-    //sets[0] = cameraStuff;
-    //sets[0] = lightStuff;
-    sets[0] = model->shaderVariableSet;
-    sets[1] = GetShaderProgramShaderVariableSet(program);
-    sets[2] = GetGlobalShaderVariableSet();
     *setsOut = sets;
-    return SHADER_VARIABLE_SET_COUNT;
+    const LightWorld* lightWorld = GetCameraLightWorld(camera);
+    if(lightWorld) // TODO: Kinda dirty solution :/
+    {
+        sets[0] = GetCameraShaderVariableSet(camera);
+        sets[1] = GetLightWorldShaderVariableSet(lightWorld);
+        sets[2] = entry->generatedVariableSet;
+        sets[3] = entry->model->shaderVariableSet;
+        sets[4] = GetShaderProgramShaderVariableSet(entry->program);
+        sets[5] = GetGlobalShaderVariableSet();
+        return SHADER_VARIABLE_SET_COUNT;
+    }
+    else
+    {
+        sets[0] = GetCameraShaderVariableSet(camera);
+        sets[1] = entry->generatedVariableSet;
+        sets[2] = entry->model->shaderVariableSet;
+        sets[3] = GetShaderProgramShaderVariableSet(entry->program);
+        sets[4] = GetGlobalShaderVariableSet();
+        return SHADER_VARIABLE_SET_COUNT-1;
+    }
+}
+
+static Mat4 CalculateModelTransformation( const Model* model )
+{
+    const Mat4 solidTransformation =
+        TryToGetSolidTransformation(model->attachmentTarget,
+                                    model->attachmentFlags);
+    return MulMat4(solidTransformation, model->transformation);
 }
 
 static void SetModelDrawEntry( ModelDrawEntry* entry,
                                const Model* model,
-                               const ShaderProgramSet* programSet )
+                               const ShaderProgramSet* programSet,
+                               const Camera* camera )
 {
     entry->model = model;
     entry->program = GetShaderProgramByFamilyList(programSet,
                                                   model->programFamilyList);
     const ShaderVariableSet** variableSets = NULL;
-    const int variableSetCount = GetShaderVariableSets(&variableSets,
-                                                       entry->model,
-                                                       entry->program);
+
+    GenerateCameraModelShaderVariables(camera,
+                                       entry->generatedVariableSet,
+                                       entry->program,
+                                       CalculateModelTransformation(model),
+                                       1); // TODO: Pass a proper radius.
+
+    const int variableSetCount =
+        GetShaderVariableSets(&variableSets, entry, camera);
     GatherShaderVariableBindings(entry->program,
                                  &entry->bindings,
                                  variableSets,
@@ -181,9 +223,8 @@ static void DrawModel( const ModelDrawEntry* entry,
 
     SetModelUniforms(model, program, camera);
     const ShaderVariableSet** variableSets = NULL;
-    const int variableSetCount = GetShaderVariableSets(&variableSets,
-                                                       model,
-                                                       program);
+    const int variableSetCount =
+        GetShaderVariableSets(&variableSets, entry, camera);
     SetShaderProgramUniforms(program,
                              variableSets,
                              variableSetCount,
@@ -195,14 +236,13 @@ static void DrawModel( const ModelDrawEntry* entry,
     DrawMesh(model->mesh);
 }
 
-void DrawModelWorld( const ModelWorld* world,
+void DrawModelWorld( ModelWorld* world,
                      const ShaderProgramSet* programSet,
                      Camera* camera )
 {
     const Model* models = world->models;
-    ModelDrawEntry drawList[MAX_MODELS];
-    memset(drawList, 0, sizeof(drawList));
-    int drawListSize = 0;
+    ModelDrawEntry* drawEntries = world->drawEntries;
+    int drawEntryCount = 0;
 
     // Fill draw list:
     REPEAT(MAX_MODELS, i)
@@ -210,28 +250,21 @@ void DrawModelWorld( const ModelWorld* world,
         const Model* model = &models[i];
         if(model->active)
         {
-            ModelDrawEntry* entry = &drawList[drawListSize];
-            SetModelDrawEntry(entry, model, programSet);
-            drawListSize++;
+            ModelDrawEntry* entry = &drawEntries[drawEntryCount];
+            ClearModelDrawEntry(entry);
+            SetModelDrawEntry(entry, model, programSet, camera);
+            drawEntryCount++;
         }
     }
 
     // Sort draw list:
-    qsort(drawList, drawListSize, sizeof(ModelDrawEntry), CompareModelDrawEntries);
+    qsort(drawEntries, drawEntryCount, sizeof(ModelDrawEntry), CompareModelDrawEntries);
 
     // Render draw list:
-    REPEAT(drawListSize, i)
-        DrawModel(&drawList[i], camera);
+    REPEAT(drawEntryCount, i)
+        DrawModel(&drawEntries[i], camera);
 
     SetOverlayLevel(0);
-}
-
-static Mat4 CalculateModelTransformation( const Model* model )
-{
-    const Mat4 solidTransformation =
-        TryToGetSolidTransformation(model->attachmentTarget,
-                                    model->attachmentFlags);
-    return MulMat4(solidTransformation, model->transformation);
 }
 
 static void SetModelUniforms( const Model* model,
@@ -281,10 +314,8 @@ static int CompareModelDrawEntries( const void* a_, const void* b_ )
     if(r != 0)
         return r;
 
-    //r = Compare((uintptr_t)a->textures[0],
-    //            (uintptr_t)b->textures[0]);
-    r = Compare((uintptr_t)a->model->textures[0],
-                (uintptr_t)b->model->textures[0]);
+    r = Compare((uintptr_t)a->bindings.textures[0],
+                (uintptr_t)b->bindings.textures[0]);
     if(r != 0)
         return r;
 

@@ -10,6 +10,7 @@ struct Solid;
 struct Camera;
 struct ShaderProgram;
 struct ShaderProgramSet;
+struct ShaderVariableSet;
 
 enum CameraProjectionType
 {
@@ -36,6 +37,15 @@ void SetCameraNearAndFarPlanes( Camera* camera, float zNear, float zFar );
 void SetCameraProjectionType( Camera* camera, CameraProjectionType type );
 void SetCameraFieldOfView( Camera* camera, float fov );
 void SetCameraScale( Camera* camera, float scale );
+
+ShaderVariableSet* GetCameraShaderVariableSet( const Camera* camera );
+LightWorld* GetCameraLightWorld( const Camera* camera );
+void GenerateCameraModelShaderVariables( const Camera* camera,
+                                         ShaderVariableSet* variableSet,
+                                         const ShaderProgram* program,
+                                         Mat4 modelTransformation,
+                                         float modelRadius );
+
 
 /**
  * Sets uniform values, that depend solely on the camera.

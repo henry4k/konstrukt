@@ -4,6 +4,7 @@
 #include "Common.h"
 #include "Reference.h"
 #include "PhysicsManager.h"
+#include "Shader.h"
 #include "LightWorld.h"
 
 
@@ -23,6 +24,7 @@ struct Light
     bool active;
     ReferenceCounter refCounter;
     LightUniform uniforms[MAX_LIGHT_UNIFORMS];
+    ShaderVariableSet* shaderVariableSet;
     Solid* attachmentTarget;
     int attachmentFlags;
     Mat4 transformation;
@@ -40,6 +42,7 @@ struct LightWorld
     char lightPositionName[MAX_UNIFORM_NAME_SIZE];
     int maxActiveLightCount;
     Light lights[MAX_LIGHTS];
+    ShaderVariableSet* shaderVariableSet;
 };
 
 struct ActiveLight
@@ -64,6 +67,7 @@ LightWorld* CreateLightWorld( const char* lightCountUniformName,
     CopyString(lightPositionName,
                world->lightPositionName,
                sizeof(world->lightPositionName));
+    world->shaderVariableSet = CreateShaderVariableSet();
     return world;
 }
 
@@ -79,6 +83,7 @@ static void FreeLightWorld( LightWorld* world )
             FreeLight(light);
         }
     }
+    FreeShaderVariableSet(world->shaderVariableSet);
     delete world;
 }
 
@@ -121,6 +126,11 @@ void UpdateLights( LightWorld* world )
     }
 }
 
+ShaderVariableSet* GetLightWorldShaderVariableSet( const LightWorld* world )
+{
+    return world->shaderVariableSet;
+}
+
 static float CalcLightIlluminance( const Light* light,
                                    Vec3 objectPosition,
                                    float objectRadius )
@@ -136,6 +146,81 @@ static float CalcLightIlluminance( const Light* light,
     }
     FatalError("Unknown light type.");
     return 0;
+}
+
+void GenerateLightShaderVariables( const LightWorld* world,
+                                   ShaderVariableSet* variableSet,
+                                   Vec3 objectPosition,
+                                   float objectRadius )
+{
+    const int maxCount = world->maxActiveLightCount;
+    int count = 0;
+    ActiveLight* activeLights = new ActiveLight[maxCount]; // TODO: Optimize
+
+    ActiveLight* leastImportantActiveLight = NULL;
+
+    // Populate activeLights:
+    REPEAT(MAX_LIGHTS, i)
+    {
+        const Light* light = &world->lights[i];
+        if(!light->active)
+            continue;
+
+        float illuminance = CalcLightIlluminance(light,
+                                                 objectPosition,
+                                                 objectRadius);
+        // Ignore lights which doesn't illuminate the object:
+        if(illuminance > 0)
+        {
+            // Fill activeLights array:
+            if(count < maxCount)
+            {
+                activeLights[count].light = light;
+                activeLights[count].illuminance = illuminance;
+                if(!leastImportantActiveLight ||
+                   leastImportantActiveLight->illuminance < illuminance)
+                {
+                    leastImportantActiveLight = &activeLights[count];
+                }
+                count++;
+            }
+            // When activeLights is full and current light has a higher
+            // illuminance: Replace active light with lowest illuminance!
+            else if(illuminance > leastImportantActiveLight->illuminance)
+            {
+                leastImportantActiveLight->light = light;
+                leastImportantActiveLight->illuminance = illuminance;
+
+                // Find active light with lowest illuminance:
+                leastImportantActiveLight = &activeLights[0];
+                for(int j = 1; j < maxCount; j++)
+                {
+                    if(activeLights[j].illuminance <
+                       leastImportantActiveLight->illuminance)
+                    {
+                        leastImportantActiveLight = &activeLights[j];
+                    }
+                }
+            }
+        }
+    }
+
+
+    // Upload lights to shader program:
+    SetIntUniform(variableSet, world->lightCountUniformName, count);
+    REPEAT(count, i)
+    {
+        const Light* light = activeLights[i].light;
+
+        // Position:
+        const char* positionName = Format(world->lightPositionName, i);
+        SetVec3Uniform(variableSet, positionName, light->position);
+
+        // Other uniforms:
+        CopyShaderVariablesAsArrayElements(variableSet, light->shaderVariableSet, i);
+    }
+
+    delete[] activeLights;
 }
 
 void SetLightUniforms( LightWorld* world,
@@ -206,15 +291,15 @@ void SetLightUniforms( LightWorld* world,
     {
         const Light* light = activeLights[i].light;
 
+        // Position:
+        const char* positionName = Format(world->lightPositionName, i);
+        UniformValue positionValue;
+        positionValue.vec3 = light->position;
+        SetUniform(program, positionName, VEC3_UNIFORM, &positionValue);
+
+        // Other uniforms:
         REPEAT(MAX_LIGHT_UNIFORMS, j)
         {
-            // Position:
-            const char* positionName = Format(world->lightPositionName, i);
-            UniformValue positionValue;
-            positionValue.vec3 = light->position;
-            SetUniform(program, positionName, VEC3_UNIFORM, &positionValue);
-
-            // Other uniforms:
             const LightUniform* uniform = &light->uniforms[j];
             if(uniform->name[0] != '\0')
             {
@@ -247,6 +332,7 @@ Light* CreateLight( LightWorld* world, LightType type )
         light->active = true;
         light->type = type;
         InitReferenceCounter(&light->refCounter);
+        light->shaderVariableSet = CreateShaderVariableSet();
         return light;
     }
     else
@@ -262,6 +348,7 @@ static void FreeLight( Light* light )
     FreeReferenceCounter(&light->refCounter);
     if(light->attachmentTarget)
         ReleaseSolid(light->attachmentTarget);
+    FreeShaderVariableSet(light->shaderVariableSet);
 }
 
 void ReferenceLight( Light* light )
@@ -338,4 +425,9 @@ void UnsetLightUniform( Light* light, const char* name )
     LightUniform* uniform = FindUniform(light, name);
     if(uniform)
         uniform->name[0] = '\0';
+}
+
+ShaderVariableSet* GetLightShaderVariableSet( const Light* light )
+{
+    return light->shaderVariableSet;
 }

@@ -6,6 +6,7 @@
 
 
 struct Solid;
+struct ShaderVariableSet;
 
 
 enum LightType
@@ -52,6 +53,11 @@ void ReleaseLightWorld( LightWorld* world );
 
 void SetMaxActiveLightCount( LightWorld* world, int max );
 void UpdateLights( LightWorld* world );
+ShaderVariableSet* GetLightWorldShaderVariableSet( const LightWorld* world );
+void GenerateLightShaderVariables( const LightWorld* world,
+                                   ShaderVariableSet* variableSet,
+                                   Vec3 objectPosition,
+                                   float objectRadius );
 void SetLightUniforms( LightWorld* world,
                        ShaderProgram* program,
                        Vec3 objectPosition,
@@ -72,5 +78,6 @@ void SetLightUniform( Light* light,
                       UniformType type,
                       const UniformValue* value );
 void UnsetLightUniform( Light* light, const char* name );
+ShaderVariableSet* GetLightShaderVariableSet( const Light* light );
 
 #endif

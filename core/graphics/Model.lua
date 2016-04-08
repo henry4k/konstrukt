@@ -11,6 +11,7 @@ local Vec     = require 'core/Vector'
 local Mat4    = require 'core/Matrix4'
 local Mesh    = require 'core/graphics/Mesh'
 local Texture = require 'core/graphics/Texture'
+local ShaderVariableSet   = require 'core/graphics/ShaderVariableSet'
 local HasTransformation   = require 'core/HasTransformation'
 local HasAttachmentTarget = require 'core/physics/HasAttachmentTarget'
 
@@ -26,11 +27,15 @@ function Model:initialize()
     self.mesh = nil
     self.activeTextures = {}
     self.activeUniforms = {}
+    self.shaderVariables =
+        ShaderVariableSet(engine.GetModelShaderVariableSet(self.handle))
 end
 
 function Model:destroy()
     engine.DestroyModel(self.handle)
     self.handle = nil
+    self.shaderVariables:destroy()
+    self.shaderVariables = nil
 end
 
 --- Changes a models mesh.

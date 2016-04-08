@@ -894,8 +894,6 @@ void ReleaseUniformBuffer( UniformBuffer* buffer )
 
 // ---- ShaderVariableSet ----
 
-static void FreeShaderVariable( ShaderVariable* var );
-
 ShaderVariableSet* CreateShaderVariableSet()
 {
     ShaderVariableSet* set = new ShaderVariableSet;
@@ -905,9 +903,37 @@ ShaderVariableSet* CreateShaderVariableSet()
 
 void FreeShaderVariableSet( ShaderVariableSet* set )
 {
+    ClearShaderVariableSet(set);
+    delete set;
+}
+
+static void FreeShaderVariable( ShaderVariable* var )
+{
+    //var->nameHash = 0;
+    switch(var->type)
+    {
+        case UNIFORM_VARIABLE:
+            break;
+
+        case TEXTURE_VARIABLE:
+            if(var->value.texture)
+                ReleaseTexture(var->value.texture);
+            break;
+
+        case UNIFORM_BUFFER_VARIABLE:
+            if(var->value.uniformBuffer)
+                ReleaseUniformBuffer(var->value.uniformBuffer);
+            break;
+    }
+
+    // TODO: Shouldn't be needed:
+    memset(var, 0, sizeof(ShaderVariable));
+}
+
+void ClearShaderVariableSet( ShaderVariableSet* set )
+{
     REPEAT(MAX_SHADER_VARIABLE_SET_ENTRIES, i)
         FreeShaderVariable(&set->entries[i]);
-    delete set;
 }
 
 static ShaderVariable* FindShaderVariableByNameHash( ShaderVariableSet* set,
@@ -939,29 +965,6 @@ static const ShaderVariable* FindConstShaderVariableInSetsByNameHash( const Shad
             return var;
     }
     return NULL;
-}
-
-static void FreeShaderVariable( ShaderVariable* var )
-{
-    //var->nameHash = 0;
-    switch(var->type)
-    {
-        case UNIFORM_VARIABLE:
-            break;
-
-        case TEXTURE_VARIABLE:
-            if(var->value.texture)
-                ReleaseTexture(var->value.texture);
-            break;
-
-        case UNIFORM_BUFFER_VARIABLE:
-            if(var->value.uniformBuffer)
-                ReleaseUniformBuffer(var->value.uniformBuffer);
-            break;
-    }
-
-    // TODO: Shouldn't be needed:
-    memset(var, 0, sizeof(ShaderVariable));
 }
 
 static ShaderVariable* PrepareNewShaderVariable( ShaderVariableSet* set,
@@ -1040,6 +1043,23 @@ void UnsetShaderVariable( ShaderVariableSet* set, const char* name )
     ShaderVariable* entry = FindShaderVariableByNameHash(set, nameHash);
     if(entry)
         FreeShaderVariable(entry);
+}
+
+void CopyShaderVariablesAsArrayElements( ShaderVariableSet* destinationSet,
+                                         const ShaderVariableSet* sourceSet,
+                                         int arrayIndex )
+{
+    REPEAT(MAX_SHADER_VARIABLE_SET_ENTRIES, i)
+    {
+        const ShaderVariable* sourceVar = &sourceSet->entries[i];
+        if(sourceVar->nameHash)
+        {
+            const char* newName = Format("%s[%d]", sourceVar->name, arrayIndex);
+            ShaderVariable* destinationVar =
+                PrepareNewShaderVariable(destinationSet, newName, sourceVar->type);
+            destinationVar->value = sourceVar->value;
+        }
+    }
 }
 
 static void AddTextureBinding( ShaderVariableBindings* bindings,

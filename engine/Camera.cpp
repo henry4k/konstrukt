@@ -15,6 +15,7 @@ struct Camera
     ReferenceCounter refCounter;
     ModelWorld* modelWorld;
     LightWorld* lightWorld;
+    ShaderVariableSet* shaderVariableSet;
     Solid* attachmentTarget;
     int attachmentFlags;
     Mat4 modelTransformation;
@@ -43,6 +44,7 @@ Camera* CreateCamera( ModelWorld* modelWorld,
     camera->lightWorld = lightWorld;
     if(camera->lightWorld)
         ReferenceLightWorld(lightWorld);
+    camera->shaderVariableSet = CreateShaderVariableSet();
 
     camera->modelTransformation = Mat4Identity;
     camera->viewTransformation  = Mat4Identity;
@@ -66,6 +68,7 @@ static void FreeCamera( Camera* camera )
         ReleaseLightWorld(camera->lightWorld);
     if(camera->attachmentTarget)
         ReleaseSolid(camera->attachmentTarget);
+    FreeShaderVariableSet(camera->shaderVariableSet);
     delete camera;
 }
 
@@ -202,6 +205,78 @@ void SetCameraUniforms( Camera* camera, ShaderProgram* program )
                  value = InverseMat4(TransposeMat4(*projection)));
 }
 
+static void UpdateCameraShaderVariables( const Camera* camera )
+{
+    SetMat4Uniform(camera->shaderVariableSet,
+                   "View",
+                   camera->viewTransformation);
+
+    const Mat4* projection = &camera->projectionTransformation;
+    SetMat4Uniform(camera->shaderVariableSet,
+                   "Projection",
+                   *projection);
+    SetMat4Uniform(camera->shaderVariableSet,
+                   "InverseProjection",
+                   InverseMat4(*projection));
+    SetMat4Uniform(camera->shaderVariableSet,
+                   "InverseTransposeProjection",
+                   InverseMat4(TransposeMat4(*projection)));
+}
+
+ShaderVariableSet* GetCameraShaderVariableSet( const Camera* camera )
+{
+    return camera->shaderVariableSet;
+}
+
+LightWorld* GetCameraLightWorld( const Camera* camera )
+{
+    return camera->lightWorld;
+}
+
+void GenerateCameraModelShaderVariables( const Camera* camera,
+                                         ShaderVariableSet* variableSet,
+                                         const ShaderProgram* program,
+                                         Mat4 modelTransformation,
+                                         float modelRadius )
+{
+    const Mat4* projection = &camera->projectionTransformation;
+    const Mat4* view       = &camera->viewTransformation;
+    const Mat4  model      =
+        MulMat4(GetCameraModelTransformation(camera), modelTransformation);
+
+    const Mat4 modelView = MulMat4(*view, model);
+    const Mat4 modelViewProjection = MulMat4(*projection, modelView);
+
+    SetMat4Uniform(variableSet, "Model", modelTransformation); // TODO
+    SetMat4Uniform(variableSet, "ModelView", modelView);
+    SetMat4Uniform(variableSet, "ModelViewProjection", modelViewProjection);
+
+#define CALC_MAT4(NAME, CALCULATION) \
+    if(HasUniform(program, (NAME))) \
+        SetMat4Uniform(variableSet, (NAME), (CALCULATION));
+    // Same set, but inversed:
+    CALC_MAT4("InverseModelView",
+              InverseMat4(modelView));
+    CALC_MAT4("InverseModelViewProjection",
+              InverseMat4(modelViewProjection));
+
+    // Same set, but inversed and transposed:
+    CALC_MAT4("InverseTransposeModelView",
+              InverseMat4(TransposeMat4(modelView)));
+    CALC_MAT4("InverseTransposeModelViewProjection",
+              InverseMat4(TransposeMat4(modelViewProjection)));
+#undef CALC_MAT4
+
+    if(camera->lightWorld)
+    {
+        const Vec3 position = MulMat4ByVec3(modelTransformation, Vec3Zero); // TODO
+        GenerateLightShaderVariables(camera->lightWorld,
+                                     variableSet,
+                                     position,
+                                     modelRadius);
+    }
+}
+
 void SetCameraModelUniforms( Camera* camera,
                              ShaderProgram* program,
                              const Mat4* modelTransformation )
@@ -261,5 +336,10 @@ void DrawCameraView( Camera* camera, ShaderProgramSet* set )
     // could be called needlessly multiple times a frame.
     if(camera->lightWorld)
         UpdateLights(camera->lightWorld);
+
+    // Dito:
+    UpdateCameraProjection(camera);
+    UpdateCameraShaderVariables(camera);
+
     DrawModelWorld(camera->modelWorld, set, camera);
 }

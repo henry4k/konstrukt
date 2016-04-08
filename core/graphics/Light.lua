@@ -6,6 +6,7 @@ local class   = require 'middleclass'
 local Object  = class.Object
 local Vec     = require 'core/Vector'
 local Mat4    = require 'core/Matrix4'
+local ShaderVariableSet   = require 'core/graphics/ShaderVariableSet'
 local HasTransformation   = require 'core/HasTransformation'
 local HasAttachmentTarget = require 'core/physics/HasAttachmentTarget'
 
@@ -19,11 +20,15 @@ function Light:initialize()
     assert(self.handle, 'Can\'t be instanciated directly, use LightWorld:createLight instead.')
     self.attachmentTarget = nil
     self.activeUniforms = {}
+    self.shaderVariables =
+        ShaderVariableSet(engine.GetLightShaderVariableSet(self.handle))
 end
 
 function Light:destroy()
     engine.DestroyLight(self.handle)
     self.handle = nil
+    self.shaderVariables:destroy()
+    self.shaderVariables = nil
 end
 
 function Light:_setValue( value )

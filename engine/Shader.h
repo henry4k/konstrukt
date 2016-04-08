@@ -197,6 +197,12 @@ void SetTexture(       ShaderVariableSet* set, const char* name, Texture* textur
 void SetUniformBuffer( ShaderVariableSet* set, const char* name, UniformBuffer* buffer );
 void UnsetShaderVariable( ShaderVariableSet* set, const char* name );
 
+void ClearShaderVariableSet( ShaderVariableSet* set );
+
+void CopyShaderVariablesAsArrayElements( ShaderVariableSet* destinationSet,
+                                         const ShaderVariableSet* sourceSet,
+                                         int arrayIndex );
+
 void GatherShaderVariableBindings( const ShaderProgram* program,
                                    ShaderVariableBindings* bindings,
                                    const ShaderVariableSet** variableSets,

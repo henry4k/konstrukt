@@ -1,10 +1,10 @@
 #include <string.h> // memset
 
 #include "../Lua.h"
-//#include "../Shader.h"
 #include "../LightWorld.h"
 #include "Math.h"
 #include "PhysicsManager.h"
+#include "Shader.h"
 #include "LightWorld.h"
 
 
@@ -41,6 +41,13 @@ static int Lua_SetMaxActiveLightCount( lua_State* l )
     const int count = luaL_checkinteger(l, 2);
     SetMaxActiveLightCount(world, count);
     return 0;
+}
+
+static int Lua_GetLightWorldShaderVariableSet( lua_State* l )
+{
+    LightWorld* world = CheckLightWorldFromLua(l, 1);
+    PushShaderVariableSetToLua(l, GetLightWorldShaderVariableSet(world));
+    return 1;
 }
 
 LightWorld* GetLightWorldFromLua( lua_State* l, int stackPosition )
@@ -179,6 +186,13 @@ static int Lua_UnsetLightUniform( lua_State* l )
     return 0;
 }
 
+static int Lua_GetLightShaderVariableSet( lua_State* l )
+{
+    Light* light = CheckLightFromLua(l, 1);
+    PushShaderVariableSetToLua(l, GetLightShaderVariableSet(light));
+    return 1;
+}
+
 Light* GetLightFromLua( lua_State* l, int stackPosition )
 {
     return (Light*)GetPointerFromLua(l, stackPosition);
@@ -195,6 +209,7 @@ bool RegisterLightWorldInLua()
         RegisterFunctionInLua("CreateLightWorld", Lua_CreateLightWorld) &&
         RegisterFunctionInLua("DestroyLightWorld", Lua_DestroyLightWorld) &&
         RegisterFunctionInLua("SetMaxActiveLightCount", Lua_SetMaxActiveLightCount) &&
+        RegisterFunctionInLua("GetLightWorldShaderVariableSet", Lua_GetLightWorldShaderVariableSet);
 
         RegisterFunctionInLua("CreateLight", Lua_CreateLight) &&
         RegisterFunctionInLua("DestroyLight", Lua_DestroyLight) &&
@@ -204,4 +219,5 @@ bool RegisterLightWorldInLua()
         RegisterFunctionInLua("SetLightRange", Lua_SetLightRange) &&
         RegisterFunctionInLua("SetLightUniform", Lua_SetLightUniform) &&
         RegisterFunctionInLua("UnsetLightUniform", Lua_UnsetLightUniform);
+        RegisterFunctionInLua("GetLightShaderVariableSet", Lua_GetLightShaderVariableSet);
 }

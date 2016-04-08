@@ -4,6 +4,7 @@
 #include "PhysicsManager.h"
 #include "ModelWorld.h"
 #include "LightWorld.h"
+#include "Shader.h"
 #include "Camera.h"
 
 
@@ -104,6 +105,13 @@ static int Lua_SetCameraScale( lua_State* l )
     return 0;
 }
 
+static int Lua_GetCameraShaderVariableSet( lua_State* l )
+{
+    Camera* camera = CheckCameraFromLua(l, 1);
+    PushShaderVariableSetToLua(l, GetCameraShaderVariableSet(camera));
+    return 1;
+}
+
 Camera* GetCameraFromLua( lua_State* l, int stackPosition )
 {
     return (Camera*)GetPointerFromLua(l, stackPosition);
@@ -125,5 +133,6 @@ bool RegisterCameraInLua()
         RegisterFunctionInLua("SetCameraNearAndFarPlanes", Lua_SetCameraNearAndFarPlanes) &&
         RegisterFunctionInLua("SetCameraProjectionType", Lua_SetCameraProjectionType) &&
         RegisterFunctionInLua("SetCameraFieldOfView", Lua_SetCameraFieldOfView) &&
-        RegisterFunctionInLua("SetCameraScale", Lua_SetCameraScale);
+        RegisterFunctionInLua("SetCameraScale", Lua_SetCameraScale) &&
+        RegisterFunctionInLua("GetCameraShaderVariableSet", Lua_GetCameraShaderVariableSet);
 }

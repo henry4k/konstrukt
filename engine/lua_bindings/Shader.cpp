@@ -1,6 +1,7 @@
 #include "../Lua.h"
 #include "../Shader.h"
 #include "Math.h"
+#include "Texture.h"
 #include "Shader.h"
 
 
@@ -247,6 +248,15 @@ static int Lua_SetMat4Uniform( lua_State* l )
     return 0;
 }
 
+static int Lua_SetTexture( lua_State* l )
+{
+    ShaderVariableSet* set = CheckShaderVariableSetFromLua(l, 1);
+    const char* name  = luaL_checkstring(l, 2);
+    Texture* value = CheckTextureFromLua(l, 3);
+    SetTexture(set, name, value);
+    return 0;
+}
+
 static int Lua_UnsetShaderVariable( lua_State* l )
 {
     ShaderVariableSet* set = CheckShaderVariableSetFromLua(l, 1);
@@ -295,5 +305,6 @@ bool RegisterShaderInLua()
         RegisterFunctionInLua("SetFloatUniform", Lua_SetFloatUniform) &&
         RegisterFunctionInLua("SetVec3Uniform", Lua_SetVec3Uniform) &&
         RegisterFunctionInLua("SetMat4Uniform", Lua_SetMat4Uniform) &&
+        RegisterFunctionInLua("SetTexture", Lua_SetTexture) &&
         RegisterFunctionInLua("UnsetShaderVariable", Lua_UnsetShaderVariable);
 }

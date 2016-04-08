@@ -15,12 +15,16 @@ local class    = require 'middleclass'
 local Object   = class.Object
 local Vec      = require 'core/Vector'
 local Mat4     = require 'core/Matrix4'
-local Shader   = require 'core/graphics/Shader'
 local Resource = require 'core/Resource'
+local Shader   = require 'core/graphics/Shader'
+local ShaderVariableSet = require 'core/graphics/ShaderVariableSet'
 
 
 local ShaderProgram = class('core/graphics/ShaderProgram')
 ShaderProgram:include(Resource)
+
+ShaderProgram.static.globalVariables =
+    ShaderVariableSet(engine.GetGlobalShaderVariableSet())
 
 --- Creates a shader program by loading and linking the given shader sources.
 --
@@ -51,11 +55,15 @@ function ShaderProgram:initialize( ... )
         shaderHandles[i] = v.handle
     end
     self.handle = engine.LinkShaderProgram(table.unpack(shaderHandles))
+    self.variables =
+        ShaderVariableSet(engine.GetShaderProgramShaderVariableSet(self.handle))
 end
 
 function ShaderProgram:destroy()
     engine.DestroyShaderProgram(self.handle)
     self.handle = nil
+    self.variables:destroy()
+    self.variables = nil
 end
 
 --- Sets a global default value for a uniform.

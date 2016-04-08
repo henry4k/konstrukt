@@ -9,16 +9,21 @@ local Light  = require 'core/graphics/Light'
 
 
 local LightWorld = class('core/graphics/LightWorld')
+local ShaderVariableSet = require 'core/graphics/ShaderVariableSet'
 
 function LightWorld:initialize( lightCountUniformName,
                                 lightPositionUniformName )
     self.handle = engine.CreateLightWorld(lightCountUniformName,
                                           lightPositionUniformName)
+    self.shaderVariables =
+        ShaderVariableSet(engine.GetLightWorldShaderVariableSet(self.handle))
 end
 
 function LightWorld:destroy()
     engine.DestroyLightWorld(self.handle)
     self.handle = nil
+    self.shaderVariables:destroy()
+    self.shaderVariables = nil
 end
 
 function LightWorld:setMaxActiveLightCount( count )
