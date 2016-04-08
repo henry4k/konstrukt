@@ -78,7 +78,7 @@ typedef union
     Mat4 mat4;
 } UniformValue;
 
-struct UniformBindings
+struct ShaderVariableBindings
 {
     int textureCount;
     Texture* textures[MAX_TEXTURE_UNITS];
@@ -122,7 +122,7 @@ void ReleaseShaderProgram( ShaderProgram* program );
  */
 void BindShaderProgram( ShaderProgram* program );
 
-ShaderVariableSet* GetShaderProgramShaderVariableSet( ShaderProgram* program );
+ShaderVariableSet* GetShaderProgramShaderVariableSet( const ShaderProgram* program );
 
 bool HasUniform( const ShaderProgram* program, const char* name );
 
@@ -198,14 +198,14 @@ void SetUniformBuffer( ShaderVariableSet* set, const char* name, UniformBuffer* 
 void UnsetShaderVariable( ShaderVariableSet* set, const char* name );
 
 void GatherShaderVariableBindings( const ShaderProgram* program,
-                                   UniformBindings* bindings,
-                                   ShaderVariableSet** variableSets,
+                                   ShaderVariableBindings* bindings,
+                                   const ShaderVariableSet** variableSets,
                                    int variableSetCount );
 
 void SetShaderProgramUniforms( ShaderProgram* program,
                                const ShaderVariableSet** variableSets,
                                int variableSetCount,
-                               const UniformBindings* bindings );
+                               const ShaderVariableBindings* bindings );
 
 
 #endif

@@ -32,7 +32,7 @@ struct Model
     Texture* textures[MAX_TEXTURE_UNITS];
     char programFamilyList[MAX_PROGRAM_FAMILY_LIST_SIZE];
     LocalUniform uniforms[MAX_LOCAL_UNIFORMS];
-    //UniformSet* uniformSet;
+    ShaderVariableSet* shaderVariableSet;
     Solid* attachmentTarget;
     int attachmentFlags;
     int overlayLevel;
@@ -48,7 +48,7 @@ struct ModelDrawEntry
 {
     const Model* model;
     ShaderProgram* program;
-    //Texture* textures[MAX_TEXTURE_UNITS];
+    ShaderVariableBindings bindings;
 };
 
 
@@ -127,6 +127,74 @@ static void SetOverlayLevel( int level )
     CurrentOverlayLevel = level;
 }
 
+static int GetShaderVariableSets( const ShaderVariableSet*** setsOut,
+                                  const Model* model,
+                                  const ShaderProgram* program )
+{
+    static const int SHADER_VARIABLE_SET_COUNT = 3;
+    static const ShaderVariableSet* sets[SHADER_VARIABLE_SET_COUNT];
+    //sets[0] = cameraStuff;
+    //sets[0] = lightStuff;
+    sets[0] = model->shaderVariableSet;
+    sets[1] = GetShaderProgramShaderVariableSet(program);
+    sets[2] = GetGlobalShaderVariableSet();
+    *setsOut = sets;
+    return SHADER_VARIABLE_SET_COUNT;
+}
+
+static void SetModelDrawEntry( ModelDrawEntry* entry,
+                               const Model* model,
+                               const ShaderProgramSet* programSet )
+{
+    entry->model = model;
+    entry->program = GetShaderProgramByFamilyList(programSet,
+                                                  model->programFamilyList);
+    const ShaderVariableSet** variableSets = NULL;
+    const int variableSetCount = GetShaderVariableSets(&variableSets,
+                                                       entry->model,
+                                                       entry->program);
+    GatherShaderVariableBindings(entry->program,
+                                 &entry->bindings,
+                                 variableSets,
+                                 variableSetCount);
+}
+
+static void DrawModel( const ModelDrawEntry* entry,
+                       Camera* camera )
+{
+    const Model* model     = entry->model;
+    ShaderProgram* program = entry->program;
+
+    if(!ModelIsComplete(model))
+    {
+        Error("Trying to draw incomplete model %p.", model);
+        return;
+    }
+
+    BindShaderProgram(program);
+    SetCameraUniforms(camera, program);
+
+    // Texture optimization is handled by the texture module already.
+    REPEAT(MAX_TEXTURE_UNITS, i)
+        if(model->textures[i])
+            BindTexture(model->textures[i], i);
+
+    SetModelUniforms(model, program, camera);
+    const ShaderVariableSet** variableSets = NULL;
+    const int variableSetCount = GetShaderVariableSets(&variableSets,
+                                                       model,
+                                                       program);
+    SetShaderProgramUniforms(program,
+                             variableSets,
+                             variableSetCount,
+                             &entry->bindings);
+
+    SetOverlayLevel(model->overlayLevel);
+
+    // Mesh optimization is handled by the mesh module already.
+    DrawMesh(model->mesh);
+}
+
 void DrawModelWorld( const ModelWorld* world,
                      const ShaderProgramSet* programSet,
                      Camera* camera )
@@ -143,11 +211,7 @@ void DrawModelWorld( const ModelWorld* world,
         if(model->active)
         {
             ModelDrawEntry* entry = &drawList[drawListSize];
-            entry->model = model;
-            entry->program = GetShaderProgramByFamilyList(programSet,
-                                                          model->programFamilyList);
-            //entry->textures =
-            // TODO
+            SetModelDrawEntry(entry, model, programSet);
             drawListSize++;
         }
     }
@@ -156,37 +220,8 @@ void DrawModelWorld( const ModelWorld* world,
     qsort(drawList, drawListSize, sizeof(ModelDrawEntry), CompareModelDrawEntries);
 
     // Render draw list:
-    ShaderProgram* currentProgram = NULL;
     REPEAT(drawListSize, i)
-    {
-        const Model* model = drawList[i].model;
-        ShaderProgram* program = drawList[i].program;
-
-        if(!ModelIsComplete(model))
-        {
-            Error("Trying to draw incomplete model %p.", model);
-            continue;
-        }
-
-        if(program != currentProgram)
-        {
-            currentProgram = program;
-            BindShaderProgram(program);
-            SetCameraUniforms(camera, program);
-        }
-
-        // Texture optimization is handled by the texture module already.
-        REPEAT(MAX_TEXTURE_UNITS, i)
-            if(model->textures[i])
-                BindTexture(model->textures[i], i);
-
-        SetModelUniforms(model, program, camera);
-
-        SetOverlayLevel(model->overlayLevel);
-
-        // Mesh optimization is handled by the mesh module already.
-        DrawMesh(model->mesh);
-    }
+        DrawModel(&drawList[i], camera);
 
     SetOverlayLevel(0);
 }
@@ -276,7 +311,7 @@ Model* CreateModel( ModelWorld* world )
         model->active = true;
         InitReferenceCounter(&model->refCounter);
         model->transformation = Mat4Identity;
-        //model->uniformSet = CreateUniformSet();
+        model->shaderVariableSet = CreateShaderVariableSet();
         return model;
     }
     else
@@ -293,7 +328,7 @@ static void FreeModel( Model* model )
     REPEAT(MAX_TEXTURE_UNITS, i)
         if(model->textures[i])
             ReleaseTexture(model->textures[i]);
-    //FreeUniformSet(model->uniformSet);
+    FreeShaderVariableSet(model->shaderVariableSet);
     if(model->mesh)
         ReleaseMesh(model->mesh);
     if(model->attachmentTarget)
@@ -357,10 +392,10 @@ void SetModelProgramFamilyList( Model* model, const char* familyList )
                sizeof(model->programFamilyList));
 }
 
-//UniformSet* GetModelUniformSet( Model* model )
-//{
-//    return model->uniformSet;
-//}
+ShaderVariableSet* GetModelShaderVariableSet( const Model* model )
+{
+    return model->shaderVariableSet;
+}
 
 static LocalUniform* FindUniform( Model* model, const char* name )
 {

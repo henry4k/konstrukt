@@ -123,6 +123,13 @@ static int Lua_SetModelProgramFamilyList( lua_State* l )
     return 0;
 }
 
+static int Lua_GetModelShaderVariableSet( lua_State* l )
+{
+    Model* model = CheckModelFromLua(l, 1);
+    PushShaderVariableSetToLua(l, GetModelShaderVariableSet(model));
+    return 1;
+}
+
 static int Lua_SetModelUniform( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
@@ -204,6 +211,7 @@ bool RegisterModelWorldInLua()
         RegisterFunctionInLua("SetModelMesh", Lua_SetModelMesh) &&
         RegisterFunctionInLua("SetModelTexture", Lua_SetModelTexture) &&
         RegisterFunctionInLua("SetModelProgramFamilyList", Lua_SetModelProgramFamilyList) &&
+        RegisterFunctionInLua("GetModelShaderVariableSet", Lua_GetModelShaderVariableSet) &&
         RegisterFunctionInLua("SetModelUniform", Lua_SetModelUniform) &&
         RegisterFunctionInLua("UnsetModelUniform", Lua_UnsetModelUniform);
 }

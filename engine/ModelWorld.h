@@ -9,6 +9,7 @@ struct Texture;
 struct Mesh;
 struct ShaderProgram;
 struct ShaderProgramSet;
+struct ShaderVariableSet;
 struct UniformSet;
 struct Solid;
 struct Camera;
@@ -50,7 +51,7 @@ void SetModelOverlayLevel( Model* model, int level );
 void SetModelMesh( Model* model, Mesh* mesh );
 void SetModelTexture( Model* model, int unit, Texture* texture );
 void SetModelProgramFamilyList( Model* model, const char* familyList );
-UniformSet* GetModelUniformSet( Model* model );
+ShaderVariableSet* GetModelShaderVariableSet( const Model* model );
 void SetModelUniform( Model* model,
                       const char* name,
                       UniformType type,

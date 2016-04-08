@@ -82,6 +82,19 @@ static int Lua_DestroyShaderProgram( lua_State* l )
     return 0;
 }
 
+static int Lua_GetShaderProgramShaderVariableSet( lua_State* l )
+{
+    ShaderProgram* program = CheckShaderProgramFromLua(l, 1);
+    PushShaderVariableSetToLua(l, GetShaderProgramShaderVariableSet(program));
+    return 1;
+}
+
+static int Lua_GetGlobalShaderVariableSet( lua_State* l )
+{
+    PushShaderVariableSetToLua(l, GetGlobalShaderVariableSet());
+    return 1;
+}
+
 static int Lua_SetGlobalUniform( lua_State* l )
 {
     const char* name = luaL_checkstring(l, 1);
@@ -102,7 +115,7 @@ static int Lua_SetGlobalUniform( lua_State* l )
     {
         case SAMPLER_UNIFORM:
         case INT_UNIFORM:
-            value.i = (int)luaL_checknumber(l, 3);
+            value.i = luaL_checkinteger(l, 3);
             SetGlobalUniform(name, type, &value);
             break;
 
@@ -194,6 +207,70 @@ ShaderProgramSet* CheckShaderProgramSetFromLua( lua_State* l, int stackPosition 
 }
 
 
+// --- ShaderVariableSet ---
+
+static int Lua_SetIntUniform( lua_State* l )
+{
+    ShaderVariableSet* set = CheckShaderVariableSetFromLua(l, 1);
+    const char* name = luaL_checkstring(l, 2);
+    const int value  = luaL_checkinteger(l, 3);
+    SetIntUniform(set, name, value);
+    return 0;
+}
+
+static int Lua_SetFloatUniform( lua_State* l )
+{
+    ShaderVariableSet* set = CheckShaderVariableSetFromLua(l, 1);
+    const char* name  = luaL_checkstring(l, 2);
+    const float value = luaL_checknumber(l, 3);
+    SetFloatUniform(set, name, value);
+    return 0;
+}
+
+static int Lua_SetVec3Uniform( lua_State* l )
+{
+    ShaderVariableSet* set = CheckShaderVariableSetFromLua(l, 1);
+    const char* name = luaL_checkstring(l, 2);
+    const Vec3 value = {{(float)luaL_checknumber(l, 3),
+                         (float)luaL_checknumber(l, 4),
+                         (float)luaL_checknumber(l, 5)}};
+    SetVec3Uniform(set, name, value);
+    return 0;
+}
+
+static int Lua_SetMat4Uniform( lua_State* l )
+{
+    ShaderVariableSet* set = CheckShaderVariableSetFromLua(l, 1);
+    const char* name  = luaL_checkstring(l, 2);
+    const Mat4* value = CheckMatrix4FromLua(l, 3);
+    SetMat4Uniform(set, name, *value);
+    return 0;
+}
+
+static int Lua_UnsetShaderVariable( lua_State* l )
+{
+    ShaderVariableSet* set = CheckShaderVariableSetFromLua(l, 1);
+    const char* name = luaL_checkstring(l, 2);
+    UnsetShaderVariable(set, name);
+    return 0;
+}
+
+void PushShaderVariableSetToLua( lua_State* l, ShaderVariableSet* set )
+{
+    PushPointerToLua(l, set);
+}
+
+ShaderVariableSet* GetShaderVariableSetFromLua( lua_State* l, int stackPosition )
+{
+    return (ShaderVariableSet*)GetPointerFromLua(l, stackPosition);
+}
+
+ShaderVariableSet* CheckShaderVariableSetFromLua( lua_State* l, int stackPosition )
+{
+    return (ShaderVariableSet*)CheckPointerFromLua(l, stackPosition);
+}
+
+
 // --- Register in Lua ---
 
 bool RegisterShaderInLua()
@@ -204,11 +281,19 @@ bool RegisterShaderInLua()
 
         RegisterFunctionInLua("LinkShaderProgram", Lua_LinkShaderProgram) &&
         RegisterFunctionInLua("DestroyShaderProgram", Lua_DestroyShaderProgram) &&
+        RegisterFunctionInLua("GetShaderProgramShaderVariableSet", Lua_GetShaderProgramShaderVariableSet) &&
 
+        RegisterFunctionInLua("GetGlobalShaderVariableSet", Lua_GetGlobalShaderVariableSet) &&
         RegisterFunctionInLua("SetGlobalUniform", Lua_SetGlobalUniform) &&
         RegisterFunctionInLua("UnsetGlobalUniform", Lua_UnsetGlobalUniform) &&
 
         RegisterFunctionInLua("CreateShaderProgramSet", Lua_CreateShaderProgramSet) &&
         RegisterFunctionInLua("DestroyShaderProgramSet", Lua_DestroyShaderProgramSet) &&
-        RegisterFunctionInLua("SetShaderProgramFamily", Lua_SetShaderProgramFamily);
+        RegisterFunctionInLua("SetShaderProgramFamily", Lua_SetShaderProgramFamily) &&
+
+        RegisterFunctionInLua("SetIntUniform", Lua_SetIntUniform) &&
+        RegisterFunctionInLua("SetFloatUniform", Lua_SetFloatUniform) &&
+        RegisterFunctionInLua("SetVec3Uniform", Lua_SetVec3Uniform) &&
+        RegisterFunctionInLua("SetMat4Uniform", Lua_SetMat4Uniform) &&
+        RegisterFunctionInLua("UnsetShaderVariable", Lua_UnsetShaderVariable);
 }

@@ -610,7 +610,7 @@ void BindShaderProgram( ShaderProgram* program )
     }
 }
 
-ShaderVariableSet* GetShaderProgramShaderVariableSet( ShaderProgram* program )
+ShaderVariableSet* GetShaderProgramShaderVariableSet( const ShaderProgram* program )
 {
     return program->variableSet;
 }
@@ -919,13 +919,22 @@ static ShaderVariable* FindShaderVariableByNameHash( ShaderVariableSet* set,
     return NULL;
 }
 
-static ShaderVariable* FindShaderVariableInSetsByNameHash( ShaderVariableSet** set,
-                                                           int setCount,
-                                                           uint32_t nameHash )
+static const ShaderVariable* FindConstShaderVariableByNameHash( const ShaderVariableSet* set,
+                                                                uint32_t nameHash )
+{
+    REPEAT(MAX_SHADER_VARIABLE_SET_ENTRIES, i)
+        if(set->entries[i].nameHash == nameHash)
+            return &set->entries[i];
+    return NULL;
+}
+
+static const ShaderVariable* FindConstShaderVariableInSetsByNameHash( const ShaderVariableSet** set,
+                                                                      int setCount,
+                                                                      uint32_t nameHash )
 {
     REPEAT(setCount, i)
     {
-        ShaderVariable* var = FindShaderVariableByNameHash(set[i], nameHash);
+        const ShaderVariable* var = FindConstShaderVariableByNameHash(set[i], nameHash);
         if(var)
             return var;
     }
@@ -1033,7 +1042,7 @@ void UnsetShaderVariable( ShaderVariableSet* set, const char* name )
         FreeShaderVariable(entry);
 }
 
-static void AddTextureBinding( UniformBindings* bindings,
+static void AddTextureBinding( ShaderVariableBindings* bindings,
                                Texture* texture )
 {
     // Don't add a texture twice
@@ -1071,20 +1080,20 @@ static int CompareTextures( const void* a_, const void* b_ )
 }
 
 void GatherShaderVariableBindings( const ShaderProgram* program,
-                                   UniformBindings* bindings,
-                                   ShaderVariableSet** variableSets,
+                                   ShaderVariableBindings* bindings,
+                                   const ShaderVariableSet** variableSets,
                                    int variableSetCount )
 {
-    memset(bindings, 0, sizeof(UniformBindings));
+    memset(bindings, 0, sizeof(ShaderVariableBindings));
     REPEAT(program->uniformCount, i)
     {
         const UniformDefinition* definition = &program->uniformDefinitions[i];
         if(definition->type == SAMPLER_UNIFORM)
         {
             const ShaderVariable* var =
-                FindShaderVariableInSetsByNameHash(variableSets,
-                                                   variableSetCount,
-                                                   definition->nameHash);
+                FindConstShaderVariableInSetsByNameHash(variableSets,
+                                                        variableSetCount,
+                                                        definition->nameHash);
             if(var)
             {
                 assert(var->type == TEXTURE_VARIABLE);
@@ -1105,7 +1114,7 @@ void GatherShaderVariableBindings( const ShaderProgram* program,
           CompareTextures);
 }
 
-static int GetTextureUnit( const UniformBindings* bindings,
+static int GetTextureUnit( const ShaderVariableBindings* bindings,
                            const ShaderVariable* var )
 {
     REPEAT(bindings->textureCount, i)
@@ -1118,17 +1127,17 @@ static int GetTextureUnit( const UniformBindings* bindings,
 }
 
 void SetShaderProgramUniforms( ShaderProgram* program,
-                               ShaderVariableSet** variableSets,
+                               const ShaderVariableSet** variableSets,
                                int variableSetCount,
-                               const UniformBindings* bindings )
+                               const ShaderVariableBindings* bindings )
 {
     REPEAT(program->uniformCount, i)
     {
         const UniformDefinition* definition = &program->uniformDefinitions[i];
         const ShaderVariable* var =
-            FindShaderVariableInSetsByNameHash(variableSets,
-                                               variableSetCount,
-                                               definition->nameHash);
+            FindConstShaderVariableInSetsByNameHash(variableSets,
+                                                    variableSetCount,
+                                                    definition->nameHash);
         if(var)
         {
             switch(var->type)
