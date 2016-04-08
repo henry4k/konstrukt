@@ -7,10 +7,7 @@
 local engine  = require 'engine'
 local class   = require 'middleclass'
 local Object  = class.Object
-local Vec     = require 'core/Vector'
-local Mat4    = require 'core/Matrix4'
 local Mesh    = require 'core/graphics/Mesh'
-local Texture = require 'core/graphics/Texture'
 local ShaderVariableSet   = require 'core/graphics/ShaderVariableSet'
 local HasTransformation   = require 'core/HasTransformation'
 local HasAttachmentTarget = require 'core/physics/HasAttachmentTarget'
@@ -25,8 +22,6 @@ function Model:initialize()
     assert(self.handle, 'Can\'t be instanciated directly, use ModelWorld:createModel instead.')
     self.attachmentTarget = nil
     self.mesh = nil
-    self.activeTextures = {}
-    self.activeUniforms = {}
     self.shaderVariables =
         ShaderVariableSet(engine.GetModelShaderVariableSet(self.handle))
 end
@@ -55,24 +50,6 @@ function Model:setOverlayLevel( level )
     engine.SetModelOverlayLevel(self.handle, level)
 end
 
---- Changes a texture unit.
--- @param[type=number] unit
--- @param[type=core.graphics.Texture] texture
-function Model:setTexture( unit, texture )
-    assert(math.isInteger(unit), 'Unit must be an integer.')
-    assert(unit >= 0, 'Unit must be positive.')
-    assert(Object.isInstanceOf(texture, Texture), 'Must be called with a texture.')
-    engine.SetModelTexture(self.handle, unit, texture.handle)
-    self.activeTextures[unit] = true
-end
-
-function Model:unsetAllTextures()
-    for unit, _ in pairs(self.activeTextures) do
-        engine.SetModelTexture(self.handle, unit, nil)
-        self.activeTextures[unit] = nil
-    end
-end
-
 --- Changes the programs family.
 --
 -- @param[type=string] family
@@ -84,39 +61,6 @@ end
 function Model:setProgramFamily( family, ... )
     local families = {family, ...}
     engine.SetModelProgramFamilyList(self.handle, table.concat(families, ','))
-end
-
---- Changes a model specific uniform.
---
--- @param name
--- @param[type=number|Vector|Matrix4] value
--- @param[opt] type
--- Is needed for number unifroms.  Either `int` or `float` are applicable.
---
-function Model:setUniform( name, value, type )
-    if Object.isInstanceOf(value, Mat4) then
-        assert(not type, 'Type argument is ignored, when called with a matrix.')
-        engine.SetModelUniform(self.handle, name, 'mat4', value.handle)
-    elseif Vec:isInstance(value) then
-        assert(not type, 'Type argument is ignored, when called with a vector.')
-        engine.SetModelUniform(self.handle, name, 'vec'..#value, value:unpack())
-    else
-        assert(type, 'Type is missing.')
-        engine.SetModelUniform(self.handle, name, type, value)
-    end
-    self.activeUniforms[name] = true
-end
-
---- Remove a uniform.
-function Model:unsetUniform( name )
-    engine.UnsetModelUniform(self.handle, name)
-    self.activeUniforms[name] = nil
-end
-
-function Model:unsetAllUniforms()
-    for name, _ in pairs(self.activeUniforms) do
-        self:unsetUniform(name)
-    end
 end
 
 function Model:_setTransformation( matrix )

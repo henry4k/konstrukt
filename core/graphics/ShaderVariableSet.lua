@@ -36,5 +36,9 @@ function ShaderVariableSet:set( name, value )
     end
 end
 
+function ShaderVariableSet:clear()
+    engine.ClearShaderVariableSet(self.handle)
+end
+
 
 return ShaderVariableSet

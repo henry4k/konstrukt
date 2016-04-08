@@ -13,16 +13,8 @@
 #include "ModelWorld.h"
 
 
-static const int MAX_LOCAL_UNIFORMS = 32;
 static const int MAX_MODELS = 64;
 
-
-struct LocalUniform
-{
-    char name[MAX_UNIFORM_NAME_SIZE];
-    UniformType type;
-    UniformValue value;
-};
 
 struct Model
 {
@@ -30,9 +22,7 @@ struct Model
     ReferenceCounter refCounter;
     Mat4 transformation;
     Mesh* mesh;
-    Texture* textures[MAX_TEXTURE_UNITS];
     char programFamilyList[MAX_PROGRAM_FAMILY_LIST_SIZE];
-    LocalUniform uniforms[MAX_LOCAL_UNIFORMS];
     ShaderVariableSet* shaderVariableSet;
     Solid* attachmentTarget;
     int attachmentFlags;
@@ -57,9 +47,6 @@ struct ModelWorld
 
 static void FreeModel( Model* model );
 static bool ModelIsComplete( const Model* model );
-static void SetModelUniforms( const Model* model,
-                              ShaderProgram* program,
-                              Camera* camera );
 static int CompareModelDrawEntries( const void* a_, const void* b_ );
 
 ModelWorld* CreateModelWorld()
@@ -214,13 +201,11 @@ static void DrawModel( const ModelDrawEntry* entry,
     }
 
     BindShaderProgram(program);
-    SetCameraUniforms(camera, program);
 
     // Texture optimization is handled by the texture module already.
     REPEAT(entry->bindings.textureCount, i)
         BindTexture(entry->bindings.textures[i], i);
 
-    SetModelUniforms(model, program, camera);
     const ShaderVariableSet** variableSets = NULL;
     const int variableSetCount =
         GetShaderVariableSets(&variableSets, entry, camera);
@@ -264,21 +249,6 @@ void DrawModelWorld( ModelWorld* world,
         DrawModel(&drawEntries[i], camera);
 
     SetOverlayLevel(0);
-}
-
-static void SetModelUniforms( const Model* model,
-                              ShaderProgram* program,
-                              Camera* camera )
-{
-    const Mat4 modelTransformation = CalculateModelTransformation(model);
-    SetCameraModelUniforms(camera, program, &modelTransformation);
-
-    for(int i = 0; i < MAX_LOCAL_UNIFORMS; i++)
-    {
-        const LocalUniform* uniform = &model->uniforms[i];
-        if(uniform->name[0] != '\0')
-            SetUniform(program, uniform->name, uniform->type, &uniform->value);
-    }
 }
 
 static int Compare( uintptr_t a, uintptr_t b )
@@ -355,9 +325,6 @@ static void FreeModel( Model* model )
 {
     model->active = false;
     FreeReferenceCounter(&model->refCounter);
-    REPEAT(MAX_TEXTURE_UNITS, i)
-        if(model->textures[i])
-            ReleaseTexture(model->textures[i]);
     FreeShaderVariableSet(model->shaderVariableSet);
     if(model->mesh)
         ReleaseMesh(model->mesh);
@@ -406,15 +373,6 @@ void SetModelMesh( Model* model, Mesh* mesh )
         ReferenceMesh(model->mesh);
 }
 
-void SetModelTexture( Model* model, int unit, Texture* texture )
-{
-    if(model->textures[unit])
-        ReleaseTexture(model->textures[unit]);
-    model->textures[unit] = texture;
-    if(model->textures[unit])
-        ReferenceTexture(model->textures[unit]);
-}
-
 void SetModelProgramFamilyList( Model* model, const char* familyList )
 {
     CopyString(familyList,
@@ -425,45 +383,6 @@ void SetModelProgramFamilyList( Model* model, const char* familyList )
 ShaderVariableSet* GetModelShaderVariableSet( const Model* model )
 {
     return model->shaderVariableSet;
-}
-
-static LocalUniform* FindUniform( Model* model, const char* name )
-{
-    LocalUniform* uniforms = model->uniforms;
-    for(int i = 0; i < MAX_LOCAL_UNIFORMS; i++)
-        if(strncmp(name, uniforms[i].name, MAX_UNIFORM_NAME_SIZE-1) == 0)
-            return &uniforms[i];
-    return NULL;
-}
-
-static LocalUniform* FindFreeUniform( Model* model )
-{
-    return FindUniform(model, "");
-}
-
-void SetModelUniform( Model* model,
-                      const char* name,
-                      UniformType type,
-                      const UniformValue* value )
-{
-    LocalUniform* uniform = FindUniform(model, name);
-    if(!uniform)
-        uniform = FindFreeUniform(model);
-    if(!uniform)
-        FatalError("Too many uniforms for model %p.", model);
-
-    memset(uniform, 0, sizeof(LocalUniform));
-
-    CopyString(name, uniform->name, sizeof(uniform->name));
-    uniform->type = type;
-    memcpy(&uniform->value, value, GetUniformSize(type));
-}
-
-void UnsetModelUniform( Model* model, const char* name )
-{
-    LocalUniform* uniform = FindUniform(model, name);
-    if(uniform)
-        uniform->name[0] = '\0';
 }
 
 static bool ModelIsComplete( const Model* model )

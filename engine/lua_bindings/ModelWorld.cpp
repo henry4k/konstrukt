@@ -106,15 +106,6 @@ static int Lua_SetModelMesh( lua_State* l )
     return 0;
 }
 
-static int Lua_SetModelTexture( lua_State* l )
-{
-    Model* model = CheckModelFromLua(l, 1);
-    const int unit = luaL_checkinteger(l, 2);
-    Texture* texture = GetTextureFromLua(l, 3);
-    SetModelTexture(model, unit, texture);
-    return 0;
-}
-
 static int Lua_SetModelProgramFamilyList( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
@@ -128,63 +119,6 @@ static int Lua_GetModelShaderVariableSet( lua_State* l )
     Model* model = CheckModelFromLua(l, 1);
     PushShaderVariableSetToLua(l, GetModelShaderVariableSet(model));
     return 1;
-}
-
-static int Lua_SetModelUniform( lua_State* l )
-{
-    Model* model = CheckModelFromLua(l, 1);
-    const char* name = luaL_checkstring(l, 2);
-
-    static const char* types[] =
-    {
-        "int",
-        "float",
-        "vec3",
-        "mat3",
-        "mat4",
-        NULL
-    };
-    const UniformType type = (UniformType)luaL_checkoption(l, 3, NULL, types);
-
-    UniformValue value;
-    switch(type)
-    {
-        case INT_UNIFORM:
-        case SAMPLER_UNIFORM:
-            value.i = (int)luaL_checknumber(l, 4);
-            SetModelUniform(model, name, type, &value);
-            break;
-
-        case FLOAT_UNIFORM:
-            value.f = luaL_checknumber(l, 4);
-            SetModelUniform(model, name, type, &value);
-            break;
-
-        case VEC3_UNIFORM:
-            value.vec3._[0] = luaL_checknumber(l, 4);
-            value.vec3._[1] = luaL_checknumber(l, 5);
-            value.vec3._[2] = luaL_checknumber(l, 6);
-            SetModelUniform(model, name, type, &value);
-            break;
-
-        case MAT3_UNIFORM:
-            return luaL_argerror(l, 3, "Mat3 is not supported by the Lua API.");
-
-        case MAT4_UNIFORM:
-            const Mat4* m = CheckMatrix4FromLua(l, 4);
-            SetModelUniform(model, name, type, (const UniformValue*)&m);
-            break;
-    }
-
-    return 0;
-}
-
-static int Lua_UnsetModelUniform( lua_State* l )
-{
-    Model* model = CheckModelFromLua(l, 1);
-    const char* uniformName = luaL_checkstring(l, 2);
-    UnsetModelUniform(model, uniformName);
-    return 0;
 }
 
 Model* GetModelFromLua( lua_State* l, int stackPosition )
@@ -209,9 +143,6 @@ bool RegisterModelWorldInLua()
         RegisterFunctionInLua("SetModelTransformation", Lua_SetModelTransformation) &&
         RegisterFunctionInLua("SetModelOverlayLevel", Lua_SetModelOverlayLevel) &&
         RegisterFunctionInLua("SetModelMesh", Lua_SetModelMesh) &&
-        RegisterFunctionInLua("SetModelTexture", Lua_SetModelTexture) &&
         RegisterFunctionInLua("SetModelProgramFamilyList", Lua_SetModelProgramFamilyList) &&
-        RegisterFunctionInLua("GetModelShaderVariableSet", Lua_GetModelShaderVariableSet) &&
-        RegisterFunctionInLua("SetModelUniform", Lua_SetModelUniform) &&
-        RegisterFunctionInLua("UnsetModelUniform", Lua_UnsetModelUniform);
+        RegisterFunctionInLua("GetModelShaderVariableSet", Lua_GetModelShaderVariableSet);
 }

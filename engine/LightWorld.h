@@ -58,10 +58,6 @@ void GenerateLightShaderVariables( const LightWorld* world,
                                    ShaderVariableSet* variableSet,
                                    Vec3 objectPosition,
                                    float objectRadius );
-void SetLightUniforms( LightWorld* world,
-                       ShaderProgram* program,
-                       Vec3 objectPosition,
-                       float objectRadius );
 
 
 Light* CreateLight( LightWorld* world, LightType type );
@@ -73,11 +69,6 @@ void SetLightAttachmentTarget( Light* light, Solid* target, int flags );
 void SetLightTransformation( Light* light, Mat4 transformation );
 void SetLightValue( Light* light, float value );
 void SetLightRange( Light* light, float range );
-void SetLightUniform( Light* light,
-                      const char* name,
-                      UniformType type,
-                      const UniformValue* value );
-void UnsetLightUniform( Light* light, const char* name );
 ShaderVariableSet* GetLightShaderVariableSet( const Light* light );
 
 #endif

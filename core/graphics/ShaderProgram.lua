@@ -13,8 +13,6 @@
 local engine   = require 'engine'
 local class    = require 'middleclass'
 local Object   = class.Object
-local Vec      = require 'core/Vector'
-local Mat4     = require 'core/Matrix4'
 local Resource = require 'core/Resource'
 local Shader   = require 'core/graphics/Shader'
 local ShaderVariableSet = require 'core/graphics/ShaderVariableSet'
@@ -64,34 +62,6 @@ function ShaderProgram:destroy()
     self.handle = nil
     self.variables:destroy()
     self.variables = nil
-end
-
---- Sets a global default value for a uniform.
---
--- @param name
--- @param[type=number|core.Vector|core.Matrix4] value
--- @param[opt] type
--- Is needed for number unifroms.  Either `int` or `float` are applicable.
---
-function ShaderProgram.static:setGlobalUniform( name, value, type )
-    if class.Object.isInstanceOf(value, Mat4) then
-        assert(not type, 'Type argument is ignored, when called with a matrix.')
-        engine.SetGlobalUniform(name, 'mat4', value.handle)
-    elseif class.Object.isInstanceOf(value, Vec) then
-        assert(not type, 'Type argument is ignored, when called with a vector.')
-        engine.SetGlobalUniform(name, 'vec'..#value, value:unpack())
-    else
-        assert(type, 'Type is missing.')
-        engine.SetGlobalUniform(name, type, value)
-    end
-end
-
---- Remove a global uniform.
---
--- Note that the uniform may still be set in some shader programs.
---
-function ShaderProgram.static:unsetGlobalUniform( name )
-    engine.UnsetGlobalUniform(name)
 end
 
 

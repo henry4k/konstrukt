@@ -129,63 +129,6 @@ static int Lua_SetLightRange( lua_State* l )
     return 0;
 }
 
-static int Lua_SetLightUniform( lua_State* l )
-{
-    Light* light = CheckLightFromLua(l, 1);
-    const char* name = luaL_checkstring(l, 2);
-
-    static const char* types[] =
-    {
-        "int",
-        "float",
-        "vec3",
-        "mat3",
-        "mat4",
-        NULL
-    };
-    const UniformType type = (UniformType)luaL_checkoption(l, 3, NULL, types);
-
-    UniformValue value;
-    switch(type)
-    {
-        case SAMPLER_UNIFORM:
-        case INT_UNIFORM:
-            value.i = (int)luaL_checknumber(l, 4);
-            SetLightUniform(light, name, type, &value);
-            break;
-
-        case FLOAT_UNIFORM:
-            value.f = luaL_checknumber(l, 4);
-            SetLightUniform(light, name, type, &value);
-            break;
-
-        case VEC3_UNIFORM:
-            value.vec3._[0] = luaL_checknumber(l, 4);
-            value.vec3._[1] = luaL_checknumber(l, 5);
-            value.vec3._[2] = luaL_checknumber(l, 6);
-            SetLightUniform(light, name, type, &value);
-            break;
-
-        case MAT3_UNIFORM:
-            return luaL_argerror(l, 3, "Mat3 is not supported by the Lua API.");
-
-        case MAT4_UNIFORM:
-            const Mat4* m = CheckMatrix4FromLua(l, 4);
-            SetLightUniform(light, name, type, (const UniformValue*)&m);
-            break;
-    }
-
-    return 0;
-}
-
-static int Lua_UnsetLightUniform( lua_State* l )
-{
-    Light* light = CheckLightFromLua(l, 1);
-    const char* uniformName = luaL_checkstring(l, 2);
-    UnsetLightUniform(light, uniformName);
-    return 0;
-}
-
 static int Lua_GetLightShaderVariableSet( lua_State* l )
 {
     Light* light = CheckLightFromLua(l, 1);
@@ -217,7 +160,5 @@ bool RegisterLightWorldInLua()
         RegisterFunctionInLua("SetLightTransformation", Lua_SetLightTransformation) &&
         RegisterFunctionInLua("SetLightValue", Lua_SetLightValue) &&
         RegisterFunctionInLua("SetLightRange", Lua_SetLightRange) &&
-        RegisterFunctionInLua("SetLightUniform", Lua_SetLightUniform) &&
-        RegisterFunctionInLua("UnsetLightUniform", Lua_UnsetLightUniform);
         RegisterFunctionInLua("GetLightShaderVariableSet", Lua_GetLightShaderVariableSet);
 }

@@ -46,32 +46,6 @@ void GenerateCameraModelShaderVariables( const Camera* camera,
                                          Mat4 modelTransformation,
                                          float modelRadius );
 
-
-/**
- * Sets uniform values, that depend solely on the camera.
- *
- * These are:
- * - mat4 Projection
- * - mat4 InverseProjection
- * - mat4 InverseTransposeProjection
- */
-void SetCameraUniforms( Camera* camera, ShaderProgram* program );
-
-/**
- * Sets uniform values, that depend on camera and model transformation.
- *
- * These are:
- * - mat4 ModelView
- * - mat4 ModelViewProjection
- * - mat4 InverseModelView
- * - mat4 InverseModelViewProjection
- * - mat4 InverseTransposeModelView
- * - mat4 InverseTransposeModelViewProjection
- */
-void SetCameraModelUniforms( Camera* camera,
-                             ShaderProgram* program,
-                             const Mat4* modelTransformation );
-
 void DrawCameraView( Camera* camera, ShaderProgramSet* set );
 
 #endif

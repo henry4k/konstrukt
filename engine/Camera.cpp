@@ -181,30 +181,6 @@ static const Mat4 GetCameraModelTransformation( const Camera* camera )
                    camera->modelTransformation);
 }
 
-#define CALC_UNIFORM(NAME, CALCULATION) \
-    if(HasUniform(program, (NAME))) \
-    { \
-        Mat4 value; \
-        (CALCULATION); \
-        SetUniform(program, (NAME), MAT4_UNIFORM, (const UniformValue*)&value); \
-    }
-
-void SetCameraUniforms( Camera* camera, ShaderProgram* program )
-{
-    UpdateCameraProjection(camera);
-    const Mat4* projection = &camera->projectionTransformation;
-
-    SetUniform(program,
-               "Projection",
-               MAT4_UNIFORM,
-               (const UniformValue*)projection);
-
-    CALC_UNIFORM("InverseProjection",
-                 value = InverseMat4(*projection));
-    CALC_UNIFORM("InverseTransposeProjection",
-                 value = InverseMat4(TransposeMat4(*projection)));
-}
-
 static void UpdateCameraShaderVariables( const Camera* camera )
 {
     SetMat4Uniform(camera->shaderVariableSet,
@@ -274,59 +250,6 @@ void GenerateCameraModelShaderVariables( const Camera* camera,
                                      variableSet,
                                      position,
                                      modelRadius);
-    }
-}
-
-void SetCameraModelUniforms( Camera* camera,
-                             ShaderProgram* program,
-                             const Mat4* modelTransformation )
-{
-    UpdateCameraProjection(camera);
-    const Mat4* projection = &camera->projectionTransformation;
-    const Mat4* view = &camera->viewTransformation;
-    const Mat4  model = MulMat4(GetCameraModelTransformation(camera),
-                                *modelTransformation);
-
-    const Mat4 modelView = MulMat4(*view, model);
-    const Mat4 modelViewProjection = MulMat4(*projection, modelView);
-
-    // These are almost always used:
-    SetUniform(program,
-               "Model",
-               MAT4_UNIFORM,
-               (const UniformValue*)modelTransformation);
-    SetUniform(program,
-               "View",
-               MAT4_UNIFORM,
-               (const UniformValue*)view);
-    SetUniform(program,
-               "ModelView",
-               MAT4_UNIFORM,
-               (const UniformValue*)&modelView);
-    SetUniform(program,
-               "ModelViewProjection",
-               MAT4_UNIFORM,
-               (const UniformValue*)&modelViewProjection);
-
-    // Same set, but inversed:
-    CALC_UNIFORM("InverseModelView",
-                 value = InverseMat4(modelView));
-    CALC_UNIFORM("InverseModelViewProjection",
-                 value = InverseMat4(modelViewProjection));
-
-    // Same set, but inversed and transposed:
-    CALC_UNIFORM("InverseTransposeModelView",
-                 value = InverseMat4(TransposeMat4(modelView)));
-    CALC_UNIFORM("InverseTransposeModelViewProjection",
-                 value = InverseMat4(TransposeMat4(modelViewProjection)));
-
-    if(camera->lightWorld)
-    {
-        Vec3 position = MulMat4ByVec3(*modelTransformation, Vec3Zero);
-        SetLightUniforms(camera->lightWorld,
-                         program,
-                         position,
-                         1); // TODO: Pass a proper object radius.
     }
 }
 

@@ -37,9 +37,7 @@ void DestroyRenderManager()
 
 void RenderScene()
 {
-    UniformValue timeValue;
-    timeValue.f = GetTime();
-    SetGlobalUniform("Time", FLOAT_UNIFORM, &timeValue);
+    SetFloatUniform(GetGlobalShaderVariableSet(), "Time", GetTime());
 
     RenderTarget* defaultRenderTarget = GetDefaultRenderTarget();
     UpdateRenderTarget(defaultRenderTarget);

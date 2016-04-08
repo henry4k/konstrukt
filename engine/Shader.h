@@ -126,23 +126,6 @@ ShaderVariableSet* GetShaderProgramShaderVariableSet( const ShaderProgram* progr
 
 bool HasUniform( const ShaderProgram* program, const char* name );
 
-void SetUniform( ShaderProgram* program,
-                 const char* name,
-                 UniformType type,
-                 const UniformValue* value );
-
-/**
- * Sets the uniform `name` in all shader programs.
- */
-void SetGlobalUniform( const char* name,
-                       UniformType type,
-                       const UniformValue* value );
-
-/**
- * Frees the global uniform slot, but program uniforms are *not* updated.
- */
-void UnsetGlobalUniform( const char* name );
-
 
 /**
  * @param defaultProgram
@@ -177,12 +160,6 @@ UniformBuffer* CreateUniformBuffer();
 
 void ReferenceUniformBuffer( UniformBuffer* buffer );
 void ReleaseUniformBuffer( UniformBuffer* buffer );
-
-//void SetUniform( UniformBuffer* buffer,
-//                 const char* name,
-//                 UniformType type,
-//                 const UniformValue* value );
-//void UnsetUniform( UniformBuffer* buffer, const char* name );
 
 
 ShaderVariableSet* CreateShaderVariableSet();
