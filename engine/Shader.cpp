@@ -339,6 +339,10 @@ static int CountUniforms( const ShaderProgram* program )
             name
         );
 
+        const int location = glGetUniformLocation(program->handle, name);
+        if(location == -1)
+            continue;
+
         count += size; // treat array elements as full uniforms
     }
     return count;

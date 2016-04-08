@@ -217,9 +217,8 @@ static void DrawModel( const ModelDrawEntry* entry,
     SetCameraUniforms(camera, program);
 
     // Texture optimization is handled by the texture module already.
-    REPEAT(MAX_TEXTURE_UNITS, i)
-        if(model->textures[i])
-            BindTexture(model->textures[i], i);
+    REPEAT(entry->bindings.textureCount, i)
+        BindTexture(entry->bindings.textures[i], i);
 
     SetModelUniforms(model, program, camera);
     const ShaderVariableSet** variableSets = NULL;

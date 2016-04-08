@@ -13,6 +13,7 @@ function Material:initialize()
     self.textures = {}
     self.programFamilyList = nil
     self.uniforms = {}
+    self.shaderVariables = {}
 end
 
 function Material:setOverlayLevel( level )
@@ -57,6 +58,10 @@ function Material:updateModel( model )
     model:unsetAllUniforms()
     for name, uniform in pairs(self.uniforms) do
         model:setUniform(name, uniform.value, uniform.type)
+    end
+
+    for name, value in pairs(self.shaderVariables) do
+        model.shaderVariables:set(name, value)
     end
 end
 
