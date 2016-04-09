@@ -31,7 +31,7 @@ static void LogPhysFSVersion()
 #if defined(KONSTRUKT_SELFCONTAINED)
 static bool SetupConfig()
 {
-    return PHYSFS_setWriteDir(PHYSFS_getBaseDir()) == 0;
+    return PHYSFS_setWriteDir(PHYSFS_getBaseDir());
 }
 #else
 static bool SetupConfig()
