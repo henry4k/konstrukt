@@ -4,8 +4,6 @@
 
 local engine = require 'engine'
 local class  = require 'middleclass'
-local Object = class.Object
-local Light  = require 'core/graphics/Light'
 
 
 local LightWorld = class('core/graphics/LightWorld')

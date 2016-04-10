@@ -49,7 +49,7 @@ static float MaxAudioSourceDistance = 0;
 static float AudioSourceReferenceDistance = 0;
 static Solid* ListenerAttachmentTarget = NULL;
 static int ListenerAttachmentFlags = 0;
-static Mat4 ListenerTransformation;
+static Mat4 ListenerTransformation = Mat4Identity;
 
 
 // --- Global ---

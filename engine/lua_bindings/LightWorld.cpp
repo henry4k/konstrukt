@@ -152,7 +152,7 @@ bool RegisterLightWorldInLua()
         RegisterFunctionInLua("CreateLightWorld", Lua_CreateLightWorld) &&
         RegisterFunctionInLua("DestroyLightWorld", Lua_DestroyLightWorld) &&
         RegisterFunctionInLua("SetMaxActiveLightCount", Lua_SetMaxActiveLightCount) &&
-        RegisterFunctionInLua("GetLightWorldShaderVariableSet", Lua_GetLightWorldShaderVariableSet);
+        RegisterFunctionInLua("GetLightWorldShaderVariableSet", Lua_GetLightWorldShaderVariableSet) &&
 
         RegisterFunctionInLua("CreateLight", Lua_CreateLight) &&
         RegisterFunctionInLua("DestroyLight", Lua_DestroyLight) &&

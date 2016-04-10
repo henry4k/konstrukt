@@ -1058,10 +1058,10 @@ void GatherShaderVariableBindings( const ShaderProgram* program,
                 AddTextureBinding(bindings,
                                   var->value.texture);
             }
-            else
-            {
-                Error("Can\'t bind uniform %s:  Not available in any uniform set.", definition->name);
-            }
+            //else
+            //{
+            //    Error("Can\'t bind uniform %s:  Not available in any ShaderVariableSet.", definition->name);
+            //}
         }
     }
 
@@ -1114,9 +1114,9 @@ void SetShaderProgramUniforms( ShaderProgram* program,
                     FatalError("Uniform blocks are no uniforms.");
             }
         }
-        else
-        {
-            Error("Can\'t set uniform %s:  Not available in any uniform set.", definition->name);
-        }
+        //else
+        //{
+        //    Error("Can\'t set uniform %s:  Not available in any ShaderVariableSet.", definition->name);
+        //}
     }
 }

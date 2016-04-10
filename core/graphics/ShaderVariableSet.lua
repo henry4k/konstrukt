@@ -21,7 +21,7 @@ function ShaderVariableSet:destroy()
     self.handle = nil
 end
 
-function ShaderVariableSet:set( name, value )
+function ShaderVariableSet:set( name, value, type )
     assert(self.handle)
     self.variables[name] = value
     if Object.isInstanceOf(value, Texture) then
@@ -31,6 +31,8 @@ function ShaderVariableSet:set( name, value )
     elseif Vec:isInstance(value) then
         assert(#value == 3, 'Only 3D vectors are supported.')
         engine.SetVec3Uniform(self.handle, name, value:unpack())
+    elseif type == 'int' then
+        engine.SetIntUniform(self.handle, name, value)
     else
         engine.SetFloatUniform(self.handle, name, value)
     end

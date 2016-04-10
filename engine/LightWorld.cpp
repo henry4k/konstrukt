@@ -132,8 +132,16 @@ static float CalcLightIlluminance( const Light* light,
             return light->value;
 
         case POINT_LIGHT:
-            // TODO
-            return 0;
+            Vec3 delta = {{objectPosition._[0] - light->position._[0],
+                           objectPosition._[1] - light->position._[1],
+                           objectPosition._[2] - light->position._[2]}};
+
+            float distance = Vec3Length(delta) - objectRadius - light->range;
+            if(distance < 0)
+                distance = 0;
+
+            const float denominator = 4 * PI * distance * distance;
+            return light->value / denominator; // I = P / (4 PI r^2)
     }
     FatalError("Unknown light type.");
     return 0;
@@ -235,6 +243,7 @@ Light* CreateLight( LightWorld* world, LightType type )
         light->type = type;
         InitReferenceCounter(&light->refCounter);
         light->shaderVariableSet = CreateShaderVariableSet();
+        light->transformation = Mat4Identity;
         return light;
     }
     else
