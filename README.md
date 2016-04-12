@@ -7,7 +7,7 @@ The project is still very WIP!
 
 This repository contains the engine and the core package.
 ... which is pretty useless for itself.  Take a look at the example package
-at https://github.com/henry4k/konstrukt-example to see how it can be used.
+at https://github.com/henry4k/apoapsis-example to see how it can be used.
 
 
 ## Dependencies
@@ -16,7 +16,7 @@ Runtime dependencies:
 
 - [PhysFS 2.0+](http://icculus.org/physfs/)
 - Lua 5.2
-- Open GL
+- Open GL 3.2
 - [GLFW 3](http://www.glfw.org/)
 - Open AL
 - ALURE
@@ -26,7 +26,6 @@ Runtime dependencies:
 Compile time depencencies:
 
 - CMake
-- [GLM](http://glm.g-truc.net/)
 - Python 3 (needed by flextGL)
 - Python 3 package wheezy.template (needed by flextGL)
 

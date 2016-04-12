@@ -108,7 +108,7 @@ void UpdateLights( LightWorld* world )
     REPEAT(MAX_LIGHTS, i)
     {
         Light* light = &world->lights[i];
-        if(!light->active)
+        if(!light->active || light->type == GLOBAL_LIGHT)
             continue;
 
         const Mat4 transformation = CalculateLightTransformation(light);
@@ -211,9 +211,12 @@ void GenerateLightShaderVariables( const LightWorld* world,
     {
         const Light* light = activeLights[i].light;
 
-        // Position:
-        const char* positionName = Format(world->lightPositionName, i);
-        SetVec3Uniform(variableSet, positionName, light->position);
+        if(light->type != GLOBAL_LIGHT)
+        {
+            // Position:
+            const char* positionName = Format("%s[%d]", world->lightPositionName, i);
+            SetVec3Uniform(variableSet, positionName, light->position);
+        }
 
         // Other uniforms:
         CopyShaderVariablesAsArrayElements(variableSet, light->shaderVariableSet, i);
@@ -286,7 +289,10 @@ void SetLightAttachmentTarget( Light* light, Solid* target, int flags )
 
 void SetLightTransformation( Light* light, Mat4 transformation )
 {
-    light->transformation = transformation;
+    if(light->type == GLOBAL_LIGHT)
+        Error("Global lights have no transformation.");
+    else
+        light->transformation = transformation;
 }
 
 void SetLightValue( Light* light, float value )
@@ -296,7 +302,10 @@ void SetLightValue( Light* light, float value )
 
 void SetLightRange( Light* light, float range )
 {
-    light->range = range;
+    if(light->type == GLOBAL_LIGHT)
+        Error("Global lights have no light range.");
+    else
+        light->range = range;
 }
 
 ShaderVariableSet* GetLightShaderVariableSet( const Light* light )

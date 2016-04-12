@@ -15,9 +15,9 @@ Light:include(HasAttachmentTarget)
 --- Can't be instanciated directly, use @{core.graphics.LightWorld:createLight} instead.
 function Light:initialize()
     assert(self.handle, 'Can\'t be instanciated directly, use LightWorld:createLight instead.')
-    self.attachmentTarget = nil
     self.shaderVariables =
         ShaderVariableSet(engine.GetLightShaderVariableSet(self.handle))
+    self.attachmentTarget = nil
 end
 
 function Light:destroy()
@@ -27,12 +27,12 @@ function Light:destroy()
     self.shaderVariables = nil
 end
 
-function Light:_setValue( value )
+function Light:setValue( value )
     assert(value >= 0, 'Value must be positive or zero.')
     engine.SetLightValue(self.handle, value)
 end
 
-function Light:_setRange( range )
+function Light:setRange( range )
     assert(range >= 0, 'Range must be positive or zero.')
     engine.SetLightRange(self.handle, range)
 end
