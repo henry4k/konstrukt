@@ -1,0 +1,10 @@
+{
+   "type": "native",
+   "version": "0.0.0",
+   "operatingSystem": "@LOWERCASE_SYSTEM_NAME@",
+   "architecture": "@CMAKE_SYSTEM_PROCESSOR@",
+   "executables":
+   {
+       "konstrukt@CMAKE_EXECUTABLE_SUFFIX@": {}
+   }
+}
