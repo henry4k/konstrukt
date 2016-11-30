@@ -1,6 +1,10 @@
 {
-   "type": "native",
    "version": "0.0.0",
+   "provides":
+   {
+       "konstrukt": "0.0.0"
+   },
+   "type": "native",
    "operatingSystem": "@LOWERCASE_SYSTEM_NAME@",
    "architecture": "@CMAKE_SYSTEM_PROCESSOR@",
    "executables":

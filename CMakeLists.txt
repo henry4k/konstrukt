@@ -46,8 +46,8 @@ add_subdirectory(engine)
 ### Distribution:
 
 string(TOLOWER ${CMAKE_SYSTEM_NAME} LOWERCASE_SYSTEM_NAME)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/meta.json.in
-               ${CMAKE_CURRENT_BINARY_DIR}/meta.json @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/package.json.in
+               ${CMAKE_CURRENT_BINARY_DIR}/package.json @ONLY)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/meta.json
         DESTINATION "${KONSTRUKT_SCRIPT_INSTALL_PATH}")
