@@ -10,6 +10,43 @@ This repository contains the engine and the core package.
 at https://github.com/henry4k/apoapsis-example to see how it can be used.
 
 
+## Running the engine
+
+The engine has the following command line interface:
+
+`konstrukt [options] <scenario package> <other packages ...> [-- <scenario arguments>]`
+
+
+### Options
+
+#### `--state=...` (optional)
+
+Path to a directory in which the simulation state can be stored.
+Without this option the engine will create a temporary directory.
+
+
+#### `--shared-state=...` (optional)
+
+Path to a directory which stores data, that is shared by all/multiple
+scenarios.  Without this option the engine will create a temporary directory.
+
+
+#### `--search-paths=...;...;...` (optional)
+
+A semicolon separated list of directories, which are used to resolve package
+file names.  The engines directory is always tried first.
+
+
+### Packages
+
+Packages must be passed either using their base name or file path.
+
+A packages base name looks like this: `<name>.<major>.<minor>.<patch>` (e. g. `example.1.2.3`)
+
+If a package is passed using its base name, the engine uses the search paths
+to resolve its file path.
+
+
 ## Dependencies
 
 Runtime dependencies:

@@ -6,17 +6,10 @@
 
 static int Lua_MountPackage( lua_State* l )
 {
-    const char* name = luaL_checkstring(l, 1);
-    const bool result = MountPackage(name);
+    const char* reference = luaL_checkstring(l, 1);
+    const bool result = MountPackage(reference);
     lua_pushboolean(l, result);
     return 1;
-}
-
-static int Lua_UnmountPackage( lua_State* l )
-{
-    const char* name = luaL_checkstring(l, 1);
-    UnmountPackage(name);
-    return 0;
 }
 
 static int Lua_ReadFile( lua_State* l )
@@ -220,7 +213,6 @@ bool RegisterPhysFSInLua()
 {
     return
         RegisterFunctionInLua("MountPackage", Lua_MountPackage) &&
-        RegisterFunctionInLua("UnmountPackage", Lua_UnmountPackage) &&
         RegisterFunctionInLua("ReadFile", Lua_ReadFile) &&
         RegisterFunctionInLua("WriteFile", Lua_WriteFile) &&
         RegisterFunctionInLua("DeleteFile", Lua_DeleteFile) &&

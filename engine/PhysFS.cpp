@@ -108,8 +108,8 @@ void SetPackageSearchPaths( const char* paths )
     Log("Package search paths: %s", SearchPaths);
 }
 
-static const char* ResolvePackageNameWithBasePath( const char* name,
-                                                   const char* basePath )
+static const char* ResolvePackageIdWithBasePath( const char* id,
+                                                 const char* basePath )
 {
     static char buffer[MAX_PATH_SIZE];
 
@@ -121,14 +121,14 @@ static const char* ResolvePackageNameWithBasePath( const char* name,
 
     if(!path)
     {
-        path = Format("%s%s%s", basePath, separator, name);
+        path = Format("%s%s%s", basePath, separator, id);
         if(GetFileType(path) != FILE_TYPE_DIRECTORY)
             path = NULL;
     }
 
     if(!path)
     {
-        path = Format("%s%s%s.zip", basePath, separator, name);
+        path = Format("%s%s%s.zip", basePath, separator, id);
         if(GetFileType(path) != FILE_TYPE_REGULAR)
             path = NULL;
     }
@@ -144,8 +144,8 @@ static const char* ResolvePackageNameWithBasePath( const char* name,
     }
 }
 
-static const char* ResolvePackageNameWithSearchPath( const char* name,
-                                                     const char* searchPath )
+static const char* ResolvePackageIdWithSearchPath( const char* id,
+                                                   const char* searchPath )
 {
     const int searchPathLength = strlen(searchPath);
     int pathStart = 0;
@@ -161,65 +161,76 @@ static const char* ResolvePackageNameWithSearchPath( const char* name,
             memcpy(buffer, &searchPath[pathStart], pathLength);
             buffer[pathLength] = '\0';
 
-            const char* path = ResolvePackageNameWithBasePath(name, buffer);
+            const char* path = ResolvePackageIdWithBasePath(id, buffer);
             if(path)
                 return path;
 
             pathStart = i+1;
         }
     }
-    return ResolvePackageNameWithBasePath(name, &searchPath[pathStart]);
+    return ResolvePackageIdWithBasePath(id, &searchPath[pathStart]);
 }
 
-static const char* ResolvePackageName( const char* name )
+static const char* ResolvePackageReference( const char* reference )
 {
-    return ResolvePackageNameWithSearchPath(name, SearchPaths);
+    if(GetFileType(reference) != FILE_TYPE_DIRECTORY)
+        return reference;
+    if(GetFileType(reference) != FILE_TYPE_REGULAR)
+        return reference;
+    return ResolvePackageIdWithSearchPath(reference, SearchPaths);
 }
 
-bool MountPackage( const char* name )
+static const char* GetBaseName( const char* path )
 {
-    const char* packagePath = ResolvePackageName(name);
+    int i = strlen(path)-1;
+    for(; i >= 0; i--)
+        if(path[i] == '/' ||
+           path[i] == '\\')
+            return &path[i+1];
+    return path;
+}
+
+static const char* ExtractPackageNameFromReference( const char* reference )
+{
+    static char buffer[MAX_PATH_SIZE];
+
+    const char* baseName = GetBaseName(reference);
+
+    int i = 0;
+    for(;;i++)
+        if(baseName[i] == '.' || baseName[i] == '\0')
+            break;
+
+    assert(i >= 0);
+    assert(i < MAX_PATH_SIZE-1);
+    memcpy(buffer, &baseName, i);
+    buffer[i] = '\0';
+
+    return buffer;
+}
+
+bool MountPackage( const char* reference )
+{
+    const char* packagePath = ResolvePackageReference(reference);
     if(packagePath)
     {
-        const char* mountPath = name;
+        const char* mountPath = ExtractPackageNameFromReference(reference);
         if(PHYSFS_mount(packagePath, mountPath, true))
         {
-            Log("Mounted package '%s' (%s).", name, packagePath);
+            Log("Mounted package '%s' (%s).", reference, packagePath);
             return true;
         }
         else
         {
-            Error("Can't mount package '%s' (%s):", name, packagePath);
+            Error("Can't mount package '%s' (%s):", reference, packagePath);
             Error("%s", PHYSFS_getLastError());
             return false;
         }
     }
     else
     {
-        Error("Can't find package '%s' in search paths.", name);
+        Error("Can't find package '%s' in search paths.", reference);
         return false;
-    }
-}
-
-void UnmountPackage( const char* name )
-{
-    const char* packagePath = ResolvePackageName(name);
-    // TODO: This is an error prone solution.  It can break when you change the search path.
-    if(packagePath)
-    {
-        if(PHYSFS_unmount(packagePath))
-        {
-            Log("Unmounted package '%s'.", name);
-        }
-        else
-        {
-            Error("Can't unmount package '%s' (%s):", name, packagePath);
-            Error("%s", PHYSFS_getLastError());
-        }
-    }
-    else
-    {
-        Error("Can't unmount package '%s' since it's not loaded.", name);
     }
 }
 
