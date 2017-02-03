@@ -75,8 +75,6 @@ bool InitWindow()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    if(debug)
-        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
     glfwWindowHint(GLFW_DEPTH_BITS, GetConfigInt("opengl.depth-bits", 24));
     glfwWindowHint(GLFW_STENCIL_BITS, 0);
     glfwWindowHint(GLFW_SAMPLES, GetConfigInt("opengl.samples", 0));

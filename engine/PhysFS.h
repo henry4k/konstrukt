@@ -19,7 +19,7 @@ struct FileBuffer
 };
 
 
-bool InitPhysFS( const int argc, char const * const * argv );
+bool InitPhysFS( const char* argv0 );
 bool PostConfigInitPhysFS();
 void DestroyPhysFS();
 
@@ -43,26 +43,21 @@ const char* GetUserDataDirectory();
 void SetPackageSearchPaths( const char* paths );
 
 /**
- * Resolves the package name to an archive or directory and mounts it.
+ * Resolves the package reference to an archive or directory and mounts it.
  *
  * Once mounted, the packages contents will be available under
  * `/<package name>` in the virtual file system.
  * Among other things, the package search path will be used to resolve a
  * package name.  See #SetPackageSearchPaths for more information.
  *
- * @return
- * `true` if the package name could be resolved and the package was
- * successfully mounted.  `false` otherwise.
- */
-bool MountPackage( const char* name );
-
-/**
- * Releases a mounted package and makes it unavailable.
+ * @param reference
+ * Is either a file path to a package or a package id, which can be found in
+ * one of the search paths.
  *
- * The package won't be accessible through the virtual file system anymore.
- * Nothing will happen, if no package with this name has been mounted.
+ * @return
+ * `true` if the package was found and successfully mounted.  `false` otherwise.
  */
-void UnmountPackage( const char* name );
+bool MountPackage( const char* reference );
 
 /**
  * Helper function that loads a complete vfs file into memory.

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1)
 
 project(konstrukt)
 
@@ -18,15 +18,7 @@ find_package(PhysFS REQUIRED)
 find_package(Bullet 2.80 REQUIRED)
 find_package(OpenAL 1 REQUIRED)
 find_package(ALURE 1.2 REQUIRED)
-if(CMAKE_VERSION VERSION_LESS 3)
-    set(LUA_INCLUDE_DIR NOTFOUND CACHE PATH "")
-    set(LUA_LIBRARY NOTFOUND CACHE PATH "")
-    if(NOT LUA_INCLUDE_DIR OR NOT LUA_LIBRARY)
-        message(SEND_ERROR "LUA_INCLUDE_DIR or LUA_LIBRARY missing")
-    endif()
-else()
-    find_package(Lua 5.2 REQUIRED)
-endif()
+find_package(Lua 5.2 EXACT REQUIRED)
 
 include_directories(${OPENGL_INCLUDE_DIR}
                     ${LUA_INCLUDE_DIR}

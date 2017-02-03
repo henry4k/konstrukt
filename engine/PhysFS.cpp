@@ -53,13 +53,14 @@ static bool SetupConfig()
 }
 #endif
 
-bool InitPhysFS( const int argc, char const * const * argv )
+bool InitPhysFS( const char* argv0 )
 {
     memset(&UserDataDirectory, 0, sizeof(UserDataDirectory));
     memset(SearchPaths,        0, sizeof(SearchPaths));
+    CopyString(DEFAULT_PACKAGE_SEARCH_PATHS, SearchPaths, sizeof(SearchPaths));
 
     LogPhysFSVersion();
-    if(PHYSFS_init(argv[0]) &&
+    if(PHYSFS_init(argv0) &&
        SetupConfig())
     {
         assert(PHYSFS_getWriteDir() != NULL);
@@ -203,7 +204,7 @@ static const char* ExtractPackageNameFromReference( const char* reference )
 
     assert(i >= 0);
     assert(i < MAX_PATH_SIZE-1);
-    memcpy(buffer, &baseName, i);
+    memcpy(buffer, baseName, i);
     buffer[i] = '\0';
 
     return buffer;

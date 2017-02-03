@@ -17,19 +17,19 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}"
                     "${PROJECT_SOURCE_DIR}/third-party/stb_image")
 
 target_link_libraries(konstruktlib stbimage
-                                  stbimageresize
-                                  inih
-                                  lua-cjson
-                                  flextGL
-                                  ${LUA_LIBRARY}
-                                  ${OPENAL_LIBRARY}
-                                  ${ALURE_LIBRARIES}
-                                  ${BULLET_DYNAMICS_LIBRARY}
-                                  ${BULLET_COLLISION_LIBRARY}
-                                  ${BULLET_MATH_LIBRARY}
-                                  ${PhysFS_LIBRARIES}
-                                  ${GLFW3_LIBRARIES}
-                                  ${OPENGL_gl_LIBRARY})
+                                   stbimageresize
+                                   inih
+                                   lua-cjson
+                                   flextGL
+                                   ${LUA_LIBRARY}
+                                   ${OPENAL_LIBRARY}
+                                   ${ALURE_LIBRARIES}
+                                   ${BULLET_DYNAMICS_LIBRARY}
+                                   ${BULLET_COLLISION_LIBRARY}
+                                   ${BULLET_MATH_LIBRARY}
+                                   ${PhysFS_LIBRARIES}
+                                   ${GLFW3_LIBRARIES}
+                                   ${OPENGL_gl_LIBRARY})
 
 add_executable(konstrukt Main.cpp)
 target_link_libraries(konstrukt konstruktlib)

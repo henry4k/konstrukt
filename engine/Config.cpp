@@ -4,7 +4,6 @@
 #include <ini.h>
 
 #include "Common.h"
-#include "PhysFS.h"
 #include "Config.h"
 
 
@@ -14,60 +13,34 @@ using namespace std;
 static map<string,string> g_ConfigValues;
 
 
-static void SetConfigValue( const char* key, const char* value )
+bool InitConfig()
 {
-    g_ConfigValues[key] = value;
-}
-
-static int IniEntryCallback( void* user, const char* section, const char* name, const char* value );
-
-static void ParseIniFile( const char* fileName )
-{
-    Log("Reading config file %s ..", fileName);
-    ini_parse(fileName, IniEntryCallback, NULL);
-}
-
-static void ParseArguments( const int argc, char const * const * argv )
-{
-    // Parse command line arguments ...
-    for(int i = 1; i < argc; ++i)
-    {
-        const string arg = argv[i];
-        // --key=value
-
-        if(arg.size() < 2 ||
-           arg[0] != '-'  ||
-           arg[1] != '-')
-            break;
-
-        const size_t equalsPos = arg.find('=');
-
-        if(equalsPos == string::npos)
-            break;
-
-        string key   = arg.substr(2, equalsPos-2);
-        string value = arg.substr(equalsPos+1);
-
-        if(key == "config")
-            ParseIniFile(value.c_str());
-        else
-            SetConfigValue(key.c_str(), value.c_str());
-    }
-}
-
-bool InitConfig( const int argc, char const * const * argv )
-{
-    const char* userConfig = Format("%s/config.ini", GetUserDataDirectory());
-    ParseIniFile(userConfig);
-
-    ParseArguments(argc, argv);
-
     return true;
 }
 
 void DestroyConfig()
 {
     g_ConfigValues.clear();
+}
+
+void SetConfigString( const char* key, const char* value )
+{
+    g_ConfigValues[key] = value;
+}
+
+void SetConfigInt( const char* key, int value )
+{
+    SetConfigString(key, Format("%d", value));
+}
+
+void SetConfigFloat( const char* key, float value )
+{
+    SetConfigString(key, Format("%f", value));
+}
+
+void SetConfigBool( const char* key, bool value )
+{
+    SetConfigString(key, value ? "true" : "false");
 }
 
 const char* GetConfigString( const char* key, const char* defaultValue )
@@ -132,6 +105,12 @@ static int IniEntryCallback( void* user, const char* section, const char* name, 
     else
         key = string(section) + string(".") + string(name);
 
-    SetConfigValue(key.c_str(), value);
+    SetConfigString(key.c_str(), value);
     return 1;
+}
+
+void ReadConfigFile( const char* fileName )
+{
+    Log("Reading config file %s ..", fileName);
+    ini_parse(fileName, IniEntryCallback, NULL);
 }
