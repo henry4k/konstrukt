@@ -1,2 +1,2 @@
 file(GLOB Sources *.h *.c)
-add_library(stbimage STATIC ${Sources})
+add_library(stb_image STATIC ${Sources})

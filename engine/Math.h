@@ -123,7 +123,6 @@ Vec3 MulQuatByVec3( Quat q, Vec3 v );
 Mat4 Mat4FromQuat( Quat q );
 
 
-#define REPEAT(N,I) for(int I = 0; I < (N); I++)
 #define MAT4_AT(M,X,Y) ((M)._[(X)*4+(Y)])
 #define MAT3_AT(M,X,Y) ((M)._[(X)*3+(Y)])
 

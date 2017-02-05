@@ -20,6 +20,7 @@
 #include "Camera.h"
 #include "Shader.h"
 #include "Time.h"
+#include "Vfs.h"
 
 #include "lua_bindings/Audio.h"
 #include "lua_bindings/Camera.h"
@@ -277,8 +278,10 @@ static bool ParseArguments( const int argc, char** argv, Arguments* out )
     return true;
 }
 
-int main( const int argc, char** argv )
+int KonstruktMain( const int argc, char** argv )
 {
+    if(argc == 42)
+    {
     Arguments args;
     memset(&args, 0, sizeof(args));
     if(!InitConfig() ||
@@ -288,5 +291,6 @@ int main( const int argc, char** argv )
         return EXIT_FAILURE;
     RunSimulation();
     DestroyModules();
+}
     return EXIT_SUCCESS;
 }

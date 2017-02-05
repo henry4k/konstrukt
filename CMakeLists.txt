@@ -26,7 +26,7 @@ include_directories(${OPENGL_INCLUDE_DIR}
                     ${OPENAL_INCLUDE_DIR}
                     ${ALURE_INCLUDE_DIRS}
                     ${BULLET_INCLUDE_DIR}
-                    ${PHYSFS_INCLUDE_DIRS})
+                    ${PhysFS_INCLUDE_DIRS})
 
 
 ### Further definitions:

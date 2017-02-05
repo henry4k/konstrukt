@@ -1,5 +1,6 @@
 #include <assert.h>
 
+#include "Common.h" // REPEAT
 #include "OpenGL.h"
 #include "Vertex.h"
 

@@ -7,6 +7,22 @@
 #include "PhysFS.h"
 
 
+
+
+enum FileType
+{
+    FILE_TYPE_INVALID,
+    FILE_TYPE_UNKNOWN,
+    FILE_TYPE_REGULAR,
+    FILE_TYPE_DIRECTORY
+};
+
+static FileType GetFileType( const char* path )
+{
+    return FILE_TYPE_INVALID;
+}
+
+
 static const int MAX_PATH_SIZE = 256;
 static const int MAX_PATH_LIST_SIZE = 512;
 static const char PATH_SEPARATOR = ';';

@@ -1,33 +1,69 @@
-#if defined(__WINDOWS__)
-    #define WIN32_LEAN_AND_MEAN
-    #define NOGDI
-    #include <windows.h> // GetFileAttributes
-#else
-    #include <sys/stat.h> // stat
-    #include <signal.h>
+#if !defined(_WIN32)
     #include <unistd.h> // isatty
 #endif
+
 #include <string.h> // strncpy, strcmp
 #include <stdlib.h> // exit
 #include <stdio.h> // printf
 #include <stdarg.h>
 #include <assert.h>
 
+#include "Warnings.h"
+BEGIN_EXTERNAL_CODE
+#include <konstrukt_stb_sprintf.h>
+END_EXTERNAL_CODE
+
 #include "Config.h"
 #include "Common.h"
 
 
+// --- Strings ---
+
+static int FormatBufferV( char* buffer, int size, const char* format, va_list va )
+{
+    const int length = stbsp_vsnprintf(buffer, size, format, va);
+    if(length >= size)
+        FatalError("Buffer size exceeded.");
+    return length;
+}
+
+int FormatBuffer( char* buffer, int size, const char* format, ... )
+{
+    va_list vl;
+    va_start(vl, format);
+    const int length = FormatBufferV(buffer, size, format, vl);
+    va_end(vl);
+    return length;
+}
+
 const char* Format( const char* format, ... )
 {
     static char buffer[512];
-
     va_list vl;
     va_start(vl, format);
-        vsprintf(buffer, format, vl);
+    FormatBufferV(buffer, 512, format, vl);
     va_end(vl);
-
     return buffer;
 }
+
+bool CopyString( const char* source, char* destination, int destinationSize )
+{
+    assert(source && destination && destinationSize > 0);
+
+    strncpy(destination, source, destinationSize);
+    if(destination[destinationSize-1] == '\0')
+    {
+        return true;
+    }
+    else
+    {
+        destination[destinationSize-1] = '\0';
+        return false;
+    }
+}
+
+
+// --- Logging ---
 
 static void SimpleLogHandler( LogLevel level, const char* line )
 {
@@ -138,11 +174,10 @@ void FatalError( const char* format, ... )
     va_start(vl, format);
     LogV(LOG_ERROR, format, vl);
     va_end(vl);
-    //raise(SIGTRAP);
     exit(EXIT_FAILURE);
 }
 
-#if defined(__WINDOWS__)
+#if defined(_WIN32)
 static LogHandler AutodetectLogHandler()
 {
     return SimpleLogHandler;
@@ -180,46 +215,3 @@ bool PostConfigInitLog()
         return false;
     }
 }
-
-bool CopyString( const char* source, char* destination, int destinationSize )
-{
-    assert(source && destination && destinationSize > 0);
-
-    strncpy(destination, source, destinationSize);
-    if(destination[destinationSize-1] == '\0')
-    {
-        return true;
-    }
-    else
-    {
-        destination[destinationSize-1] = '\0';
-        return false;
-    }
-}
-
-#if defined(__WINDOWS__)
-FileType GetFileType( const char* path )
-{
-    DWORD type = GetFileAttributesA(path);
-    if(type == INVALID_FILE_ATTRIBUTES)
-        return FILE_TYPE_INVALID;
-
-    if(type & FILE_ATTRIBUTE_DIRECTORY)
-        return FILE_TYPE_DIRECTORY;
-    else
-        return FILE_TYPE_REGULAR;
-}
-#else
-FileType GetFileType( const char* path )
-{
-    struct stat info;
-    if(stat(path, &info) == -1)
-        return FILE_TYPE_INVALID;
-    if(info.st_mode & S_IFREG)
-        return FILE_TYPE_REGULAR;
-    else if(info.st_mode & S_IFDIR)
-        return FILE_TYPE_DIRECTORY;
-    else
-        return FILE_TYPE_UNKNOWN;
-}
-#endif

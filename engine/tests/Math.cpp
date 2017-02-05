@@ -1,5 +1,6 @@
 #include <math.h>
 #include <float.h>
+#include "../Common.h"
 #include "../Math.h"
 #include "TestTools.h"
 

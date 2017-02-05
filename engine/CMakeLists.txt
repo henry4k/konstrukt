@@ -1,7 +1,10 @@
-file(GLOB LibSources *.cpp
-                     control_bindings/*.cpp
-                     lua_bindings/*.cpp)
-list(REMOVE_ITEM LibSources Main.cpp)
+file(GLOB LibSources
+     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+     *.cpp
+     control_bindings/*.cpp
+     lua_bindings/*.cpp
+     vfs/*.cpp)
+list(REMOVE_ITEM LibSources ExecutableMain.cpp)
 
 add_library(konstruktlib STATIC ${LibSources})
 
@@ -14,13 +17,17 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}"
                     "${PROJECT_SOURCE_DIR}/third-party/inih"
                     "${PROJECT_SOURCE_DIR}/third-party/lua-cjson"
                     "${PROJECT_SOURCE_DIR}/third-party/stb_image_resize"
-                    "${PROJECT_SOURCE_DIR}/third-party/stb_image")
+                    "${PROJECT_SOURCE_DIR}/third-party/stb_image"
+                    "${PROJECT_SOURCE_DIR}/third-party/stb_sprintf"
+                    "${PROJECT_SOURCE_DIR}/third-party/vec")
 
-target_link_libraries(konstruktlib stbimage
-                                   stbimageresize
+target_link_libraries(konstruktlib stb_image
+                                   stb_image_resize
+                                   stb_sprintf
                                    inih
                                    lua-cjson
                                    flextGL
+                                   vec
                                    ${LUA_LIBRARY}
                                    ${OPENAL_LIBRARY}
                                    ${ALURE_LIBRARIES}
@@ -31,7 +38,7 @@ target_link_libraries(konstruktlib stbimage
                                    ${GLFW3_LIBRARIES}
                                    ${OPENGL_gl_LIBRARY})
 
-add_executable(konstrukt Main.cpp)
+add_executable(konstrukt ExecutableMain.cpp)
 target_link_libraries(konstrukt konstruktlib)
 
 install(TARGETS konstrukt
