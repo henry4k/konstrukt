@@ -10,7 +10,7 @@ extern "C"
 }
 
 #include "Common.h"
-#include "PhysFS.h"
+#include "Vfs.h"
 #include "Lua.h"
 
 
@@ -304,27 +304,18 @@ static bool HandleLuaCallResult( lua_State* l, int result )
     }
 }
 
-struct LoadInfo
+static const int LOAD_BUFFER_SIZE = 1024;
+struct LoadState
 {
-    FileBuffer* buffer;
-    bool done;
+    VfsFile* file;
+    char buffer[LOAD_BUFFER_SIZE];
 };
 
 static const char* ReadLuaChunk( lua_State* l, void* userData, size_t* bytesRead )
 {
-    LoadInfo* loadInfo = (LoadInfo*)userData;
-    if(loadInfo->done)
-    {
-        *bytesRead = 0;
-        return NULL;
-    }
-    else
-    {
-        loadInfo->done = true;
-        FileBuffer* buffer = loadInfo->buffer;
-        *bytesRead = buffer->size;
-        return buffer->data;
-    }
+    LoadState* state = (LoadState*)userData;
+    *bytesRead = ReadVfsFile(state->file, state->buffer, LOAD_BUFFER_SIZE);
+    return state->buffer;
 }
 
 bool RunLuaScript( lua_State* l, const char* vfsPath )
@@ -333,17 +324,12 @@ bool RunLuaScript( lua_State* l, const char* vfsPath )
 
     lua_pushcfunction(l, Lua_ErrorProxy);
 
-    FileBuffer* buffer = LoadFile(vfsPath);
-    if(buffer)
+    VfsFile* file = OpenVfsFile(vfsPath, VFS_OPEN_READ);
+    if(file)
     {
-        LoadInfo loadInfo;
-        loadInfo.buffer = buffer;
-        loadInfo.done = false;
-
-        const int loadResult = lua_load(l, ReadLuaChunk, &loadInfo, vfsPath, "t"); // Only allow text chunks
-        FreeFile(buffer);
-
-        if(loadResult == LUA_OK)
+        LoadState state;
+        state.file = file;
+        if(lua_load(l, ReadLuaChunk, &state, vfsPath, "t") == LUA_OK)
         {
             const int callResult = lua_pcall(l, 0, 0, -2);
             return HandleLuaCallResult(l, callResult);
