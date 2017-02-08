@@ -80,10 +80,13 @@ end
 --- Create or replace a regular file with the given content.
 -- @param filePath
 -- @param[type=string] content
-function FileSystem.writeFile( filePath, content )
+-- @param[type=string] mode
+-- Either `w` or `a`.  Defaults to `w`.  With `a` the content is appended to
+-- the file (if it exists) and `w` just replaces its content.
+function FileSystem.writeFile( filePath, content, mode )
     assertIsFilePath(filePath)
     assert(type(content) == 'string', 'File content must be a string.')
-    engine.WriteFile(filePath, content)
+    engine.WriteFile(filePath, content, mode or 'w')
 end
 
 --- Delete a file.
@@ -105,17 +108,14 @@ end
 --- Tests whether a file exists at the given path.
 function FileSystem.fileExists( filePath )
     assertIsFilePath(filePath)
-    return engine.FileExists(filePath)
+    return engine.GetFileInfo(filePath) ~= nil
 end
 
 --- Retrieves file attributes.
 -- @return:
 -- A table in the following entries:
 --
--- - `size`: File size in bytes.
--- - `mtime`: File modification time as unix timestamp if available.
--- - `ctime`: File creation time as unix timestamp if available.
--- - `type`: `regular`, `directory`, `symlink` or `other`.
+-- - `type`: `regular`, `directory` or `unknown`
 --
 -- Keep in mind that the timestamps may or may not be available.
 --
@@ -130,7 +130,7 @@ end
 --
 function FileSystem.makeDirectory( filePath )
     assertIsFilePath(filePath)
-    engine.MakeDirectory(filePath)
+    engine.MakeDir(filePath)
 end
 
 local function buildEntryComparision( directory, directoriesFirst )
@@ -210,7 +210,7 @@ function FileSystem.getDirectoryEntries( filePath, sortMethod )
     local sortFn = sortFunctions[sortMethod]
     assert(sortFn, 'Unknown sort method: '..sortMethod)
 
-    local entries = engine.GetDirectoryEntries(filePath)
+    local entries = engine.GetDirEntries(filePath)
     sortFn(filePath, entries)
     return entries
 end

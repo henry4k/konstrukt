@@ -6,7 +6,7 @@
 #include "Common.h"
 #include "Crc32.h"
 #include "Texture.h"
-#include "PhysFS.h"
+#include "Vfs.h"
 #include "OpenGL.h"
 #include "Vertex.h"
 #include "Reference.h"
@@ -180,19 +180,21 @@ static void ShowShaderLog( Shader* shader, bool success, const char* vfsPath )
 
 static Shader* CreateShader( const char* vfsPath, int type )
 {
-    FileBuffer* buffer = LoadFile(vfsPath);
-    if(!buffer)
-    {
-        Error("Failed to read shader source %s", vfsPath);
+    VfsFile* file = OpenVfsFile(vfsPath, VFS_OPEN_READ);
+    if(!file)
         return NULL;
-    }
+
+    const int fileSize = GetVfsFileSize(file);
+    char* fileContent = (char*)malloc(fileSize);
+    ReadVfsFile(file, fileContent, fileSize);
+    CloseVfsFile(file);
 
     Shader* shader = new Shader;
     InitReferenceCounter(&shader->refCounter);
     shader->handle = glCreateShader(type);
 
-    glShaderSource(shader->handle, 1, &buffer->data, &buffer->size);
-    FreeFile(buffer);
+    glShaderSource(shader->handle, 1, &fileContent, &fileSize);
+    free(fileContent);
 
     glCompileShader(shader->handle);
 

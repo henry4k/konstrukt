@@ -9,7 +9,7 @@ BEGIN_EXTERNAL_CODE
 END_EXTERNAL_CODE
 
 #include "Common.h"
-#include "PhysFS.h"
+#include "Vfs.h"
 #include "OpenGL.h"
 #include "Image.h"
 
@@ -29,55 +29,48 @@ bool CreateImage( Image* image, int width, int height, int channelCount )
     return true;
 }
 
-static int PhysFSRead( void* user, char* data, int size )
+static int VfsRead( void* user, char* data, int size )
 {
-    PHYSFS_File* file = (PHYSFS_File*)user;
-    return (int)PHYSFS_readBytes(file, data, size);
+    VfsFile* file = (VfsFile*)user;
+    return ReadVfsFile(file, data, size);
 }
 
-static void PhysFSSkip( void* user, int offset )
+static void VfsSkip( void* user, int offset )
 {
-    PHYSFS_File* file = (PHYSFS_File*)user;
-    const int currentPosition = PHYSFS_tell(file);
-    assert(currentPosition >= 0);
-    const int newPosition = currentPosition + offset;
-    const int success = PHYSFS_seek(file, newPosition);
-    assert(success);
+    VfsFile* file = (VfsFile*)user;
+    SetVfsFilePos(file, GetVfsFilePos(file)+offset);
 }
 
-static int PhysFSEOF( void* user )
+static int VfsEOF( void* user )
 {
-    PHYSFS_File* file = (PHYSFS_File*)user;
-    return PHYSFS_eof(file);
+    VfsFile* file = (VfsFile*)user;
+    return HasVfsFileEnded(file);
 }
 
-static const stbi_io_callbacks PhysFSCallbacks =
+static const stbi_io_callbacks VfsCallbacks =
 {
-   PhysFSRead,
-   PhysFSSkip,
-   PhysFSEOF
+   VfsRead,
+   VfsSkip,
+   VfsEOF
 };
 
 bool LoadImage( Image* image, const char* vfsPath )
 {
     memset(image, 0, sizeof(Image));
 
-    PHYSFS_File* file = PHYSFS_openRead(vfsPath);
+    VfsFile* file = OpenVfsFile(vfsPath, VFS_OPEN_READ);
     if(!file)
-    {
-        Error("Can't load '%s': %s", vfsPath, PHYSFS_getLastError());
         return false;
-    }
 
     stbi_set_flip_vertically_on_load(1);
 
-    image->data = stbi_load_from_callbacks(&PhysFSCallbacks,
+    image->data = stbi_load_from_callbacks(&VfsCallbacks,
                                            file,
                                            &image->width,
                                            &image->height,
                                            &image->channelCount,
                                            STBI_default);
-    PHYSFS_close(file);
+    CloseVfsFile(file);
     if(!image->data)
     {
         Error("Can't load '%s': %s", vfsPath, stbi_failure_reason());

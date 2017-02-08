@@ -5,7 +5,6 @@
 #include "Common.h"
 #include "Math.h"
 #include "Crc32.h"
-#include "PhysFS.h"
 #include "Config.h"
 #include "Window.h"
 #include "Controls.h"
@@ -35,7 +34,6 @@
 #include "lua_bindings/RenderTarget.h"
 #include "lua_bindings/ModelWorld.h"
 #include "lua_bindings/LightWorld.h"
-#include "lua_bindings/PhysFS.h"
 #include "lua_bindings/PhysicsManager.h"
 #include "lua_bindings/Shader.h"
 #include "lua_bindings/Time.h"
@@ -65,7 +63,6 @@ static bool RegisterAllModulesInLua()
         RegisterRenderTargetInLua() &&
         RegisterModelWorldInLua() &&
         RegisterLightWorldInLua() &&
-        RegisterPhysFSInLua() &&
         RegisterPhysicsManagerInLua() &&
         RegisterShaderInLua() &&
         RegisterTimeInLua() &&
@@ -78,16 +75,12 @@ static bool InitModules( const char* arg0 )
 {
     InitCrc32();
 
-    Log("------------- PhysFS -------------");
-    if(!InitPhysFS(arg0))
+    Log("------------- VFS -------------");
+    if(!InitVfs(arg0))
         return false;
 
     Log("----------- Log post config init ------------");
     if(!PostConfigInitLog())
-        return false;
-
-    Log("----------- PhysFS post config init ------------");
-    if(!PostConfigInitPhysFS())
         return false;
 
     Log("------------- Lua -------------");
@@ -146,12 +139,13 @@ static void DestroyModules()
     DestroyTime();
     DestroyWindow();
     DestroyConfig();
-    DestroyPhysFS();
+    DestroyVfs();
 }
 
 static bool InitScript( const char* scenarioPackage )
 {
-    return MountPackage("core") && RunLuaScript(GetLuaState(), "core/bootstrap/init.lua");
+    return true;
+    //return MountPackage("core") && RunLuaScript(GetLuaState(), "core/bootstrap/init.lua");
 }
 
 static void RunSimulation()
