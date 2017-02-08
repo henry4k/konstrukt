@@ -14,7 +14,7 @@ local searchPaths = {
 ResourceManager.registerLoader('module', function( moduleName )
     for _, searchPath in ipairs(searchPaths) do
         local path = string.format(searchPath, moduleName)
-        if engine.FileExists(path) then
+        if engine.GetFileInfo(path) then
             local module = _dofile(path)
             assert(module, 'Module at '..path..' did not return anything.')
             return { value=module }

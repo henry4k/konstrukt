@@ -25,7 +25,19 @@ struct VfsFileInfo
 };
 
 
-bool InitVfs( const char* argv0 );
+/**
+ * @param stateDirectory
+ * Path to a directory in which the simulation state can be stored.  Passing
+ * `NULL` will create temporary directory.
+ *
+ * @param sharedStateDirectory
+ * Path to a directory which stores data, that is shared by all/multiple
+ * scenarios.  Passing `NULL` will create temporary directory.
+ */
+bool InitVfs( const char* argv0,
+              const char* stateDirectory,
+              const char* sharedStateDirectory );
+
 void DestroyVfs();
 
 
@@ -60,6 +72,11 @@ void UnmountVfsDir( const char* vfsPath );
 
 // --- Package mount utilities ---
 
+/**
+ * Appends a directory path to the search path list.
+ *
+ * When mounting the search path list is traversed form the start to the end.
+ */
 void AddPackageSearchPath( const char* path );
 
 /**
@@ -77,7 +94,7 @@ void AddPackageSearchPath( const char* path );
  * @return
  * `true` if the package was found and successfully mounted.  `false` otherwise.
  */
-//bool MountPackage( const char* reference );
+bool MountPackage( const char* reference );
 
 
 // --- File access ---
@@ -121,8 +138,6 @@ bool HasVfsFileEnded( const VfsFile* file );
 
 // --- File system introspection ---
 
-// stat
-
 /**
  * Lists all files in a directory.  Only real entries are emitted, nothing
  * like `..` or `.`.
@@ -141,6 +156,9 @@ PathList* GetVfsDirEntries( const char* vfsPath );
  */
 VfsFileInfo GetVfsFileInfo( const char* vfsPath );
 
+/**
+ * Tries to delete a regular file or an empty directory.
+ */
 bool DeleteVfsFile( const char* vfsPath );
 
 bool MakeVfsDir( const char* vfsPath );

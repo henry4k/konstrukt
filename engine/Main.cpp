@@ -39,6 +39,16 @@
 #include "lua_bindings/Time.h"
 #include "lua_bindings/Texture.h"
 #include "lua_bindings/VoxelVolume.h"
+#include "lua_bindings/Vfs.h"
+
+
+struct Arguments
+{
+    const char* state;
+    const char* sharedState;
+    const char* searchPaths;
+    const char* scenario;
+};
 
 
 static int Lua_StopSimulation( lua_State* l )
@@ -68,15 +78,16 @@ static bool RegisterAllModulesInLua()
         RegisterTimeInLua() &&
         RegisterTextureInLua() &&
         RegisterVoxelVolumeInLua() &&
+        RegisterVfsInLua() &&
         RegisterFunctionInLua("StopSimulation", Lua_StopSimulation);
 }
 
-static bool InitModules( const char* arg0 )
+static bool InitModules( const char* arg0, const Arguments* arguments )
 {
     InitCrc32();
 
     Log("------------- VFS -------------");
-    if(!InitVfs(arg0))
+    if(!InitVfs(arg0, arguments->state, arguments->sharedState))
         return false;
 
     Log("----------- Log post config init ------------");
@@ -144,8 +155,7 @@ static void DestroyModules()
 
 static bool InitScript( const char* scenarioPackage )
 {
-    return true;
-    //return MountPackage("core") && RunLuaScript(GetLuaState(), "core/bootstrap/init.lua");
+    return MountPackage("core") && RunLuaScript(GetLuaState(), "core/bootstrap/init.lua");
 }
 
 static void RunSimulation()
@@ -221,16 +231,14 @@ static const char* MatchPrefix( const char* prefix, const char* value )
         return NULL;
 }
 
-struct Arguments
-{
-    const char* state;
-    const char* sharedState;
-    const char* searchPaths;
-    const char* scenario;
-};
-
 static bool ParseArguments( const int argc, char** argv, Arguments* out )
 {
+    if(argc == 1)
+    {
+        PrintHelp(argv[0]);
+        return false;
+    }
+
     for(int i = 1; i < argc; i++)
     {
         const char* arg = argv[i];
@@ -274,17 +282,21 @@ static bool ParseArguments( const int argc, char** argv, Arguments* out )
 
 int KonstruktMain( const int argc, char** argv )
 {
-    if(argc == 42)
-    {
     Arguments args;
     memset(&args, 0, sizeof(args));
-    if(!InitConfig() ||
-       !ParseArguments(argc, argv, &args) ||
-       !InitModules(argv[0]) ||
-       !InitScript(args.scenario))
+
+    if(!InitConfig())
         return EXIT_FAILURE;
+    if(!ParseArguments(argc, argv, &args))
+        return EXIT_FAILURE;
+    if(!InitModules(argv[0], &args))
+        return EXIT_FAILURE;
+    if(!InitScript(args.scenario))
+    {
+        DestroyModules();
+        return EXIT_FAILURE;
+    }
     RunSimulation();
     DestroyModules();
-}
     return EXIT_SUCCESS;
 }

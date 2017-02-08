@@ -126,7 +126,7 @@ static PathList* GetVfsDirEntries_PhysFS( const Mount* mount, const char* subMou
 {
     const char* path;
     if(subMountPath)
-        Format("%s/%s", mount->vfsPath, subMountPath);
+        path = Format("%s/%s", mount->vfsPath, subMountPath);
     else
         path = mount->vfsPath;
 
@@ -148,7 +148,7 @@ static VfsFileInfo GetVfsFileInfo_PhysFS( const Mount* mount, const char* subMou
 {
     const char* path;
     if(subMountPath)
-        Format("%s/%s", mount->vfsPath, subMountPath);
+        path = Format("%s/%s", mount->vfsPath, subMountPath);
     else
         path = mount->vfsPath;
 

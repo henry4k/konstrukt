@@ -36,7 +36,7 @@ local FileSystem = {
 function FileSystem._loadPackageMetadata( packageName )
     assertIsPackageName(packageName)
     local Json = require 'core/Json'
-    local metadata = Json.decodeFromFile(packageName..'/meta.json')
+    local metadata = Json.decodeFromFile(packageName..'/package.json')
     return setmetatable(metadata, packageMetadataMetatable)
 end
 
