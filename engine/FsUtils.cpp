@@ -132,7 +132,7 @@ static bool IsValidEntry( const char* entry )
 PathList* GetDirEntries( const char* path )
 {
     PathList* list = NEW(PathList);
-    vec_init(list);
+    InitArrayList(list);
 #if defined(_WIN32)
     // Add "\\*" to path:
     char buffer[MAX_PATH_SIZE];
@@ -151,7 +151,7 @@ PathList* GetDirEntries( const char* path )
     {
         if(IsValidEntry(dirEntry.cFileName))
         {
-            Path* entry = vec_push_ptr(list);
+            Path* entry = AllocateAtEndOfArrayList(list, 1);
             CopyString(dirEntry.cFileName, entry->str, sizeof(Path));
         }
     } while(FindNextFile(dir, &dirEntry));
@@ -174,7 +174,7 @@ PathList* GetDirEntries( const char* path )
         {
             if(IsValidEntry(dirEntry->d_name))
             {
-                Path* entry = vec_push_ptr(list);
+                Path* entry = AllocateAtEndOfArrayList(list, 1);
                 CopyString(dirEntry->d_name, entry->str, sizeof(Path));
             }
         }
@@ -187,15 +187,15 @@ PathList* GetDirEntries( const char* path )
     return list;
 
 error:
-    vec_deinit(list);
+    DestroyArrayList(list);
     DELETE(PathList, list);
     return NULL;
 }
 
 void FreePathList( PathList* list )
 {
-    vec_deinit(list);
-    free(list);
+    DestroyArrayList(list);
+    DELETE(PathList, list);
 }
 
 bool RemoveFile( const char* path )
@@ -221,10 +221,9 @@ bool RemoveDirectoryTree( const char* path )
         {
             PathList* entries = GetDirEntries(path);
             bool fail = false;
-            int i;
-            Path* entry;
-            vec_foreach_ptr(entries, entry, i)
+            REPEAT(entries->length, i)
             {
+                const Path* entry = entries->data + i;
                 char entryPath[MAX_PATH_SIZE];
                 FormatBuffer(entryPath, MAX_PATH_SIZE, "%s%c%s",
                         path, NATIVE_DIR_SEP, entry->str);

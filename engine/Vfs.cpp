@@ -17,8 +17,8 @@ struct VfsFile
 
 MountSystem* RealMountSystem;
 MountSystem* PhysFSMountSystem;
-vec_t(Mount) Mounts;
-vec_t(Path) SearchPaths;
+ArrayList(Mount) Mounts;
+ArrayList(Path) SearchPaths;
 char TempStateDirectory[MAX_PATH_SIZE];
 char TempSharedStateDirectory[MAX_PATH_SIZE];
 
@@ -60,8 +60,8 @@ bool InitVfs( const char* argv0,
     if(!PhysFSMountSystem)
         return false;
 
-    vec_init(&Mounts);
-    vec_init(&SearchPaths);
+    InitArrayList(&Mounts);
+    InitArrayList(&SearchPaths);
 
     if(!SetWriteDirectory("state",
                           stateDirectory,
@@ -80,18 +80,19 @@ bool InitVfs( const char* argv0,
 
 void DestroyVfs()
 {
-    int i;
-    Mount* mount;
-    vec_foreach_ptr(&Mounts, mount, i)
+    REPEAT(Mounts.length, i)
+    {
+        Mount* mount = Mounts.data + i;
         mount->mountSystem->unmount(mount);
+    }
 
     if(TempStateDirectory[0] != '\0')
         RemoveDirectoryTree(TempStateDirectory);
     if(TempSharedStateDirectory[0] != '\0')
         RemoveDirectoryTree(TempSharedStateDirectory);
 
-    vec_deinit(&Mounts);
-    vec_deinit(&SearchPaths);
+    DestroyArrayList(&Mounts);
+    DestroyArrayList(&SearchPaths);
 
     RealMountSystem->destroy();
     PhysFSMountSystem->destroy();
@@ -108,10 +109,9 @@ static bool IsValidMountPoint( const char* vfsPath )
 
 static Mount* FindMountByVfsPath( const char* vfsPath, int* indexOut )
 {
-    int i;
-    Mount* mount;
-    vec_foreach_ptr(&Mounts, mount, i)
+    REPEAT(Mounts.length, i)
     {
+        Mount* mount = Mounts.data + i;
         if(strcmp(mount->vfsPath, vfsPath) == 0)
         {
             if(indexOut)
@@ -144,7 +144,7 @@ bool MountVfsDir( const char* vfsPath,
     else
         mountSystem = PhysFSMountSystem;
 
-    Mount* mount = vec_push_ptr(&Mounts);
+    Mount* mount = AllocateAtEndOfArrayList(&Mounts, 1);
     memset(mount, 0, sizeof(Mount));
     mount->mountSystem = mountSystem;
     CopyString(vfsPath,  mount->vfsPath,  MAX_PATH_SIZE);
@@ -174,7 +174,7 @@ void UnmountVfsDir( const char* vfsPath )
 
     mount->mountSystem->unmount(mount);
 
-    vec_splice(&Mounts, mountIndex, 1);
+    RemoveFromArrayList(&Mounts, mountIndex, 1);
 }
 
 
@@ -182,7 +182,7 @@ void UnmountVfsDir( const char* vfsPath )
 
 void AddPackageSearchPath( const char* path )
 {
-    Path* searchPath = vec_push_ptr(&SearchPaths);
+    Path* searchPath = AllocateAtEndOfArrayList(&SearchPaths, 1);
     CopyString(path, searchPath->str, sizeof(Path));
 }
 
@@ -204,10 +204,9 @@ static const char* ResolvePackageIdWithBasePath( const char* id,
 
 static const char* ResolvePackageIdWithSearchPath( const char* id )
 {
-    int i;
-    Path* basePath;
-    vec_foreach_ptr(&SearchPaths, basePath, i)
+    REPEAT(SearchPaths.length, i)
     {
+        const Path* basePath = SearchPaths.data + i;
         const char* path = ResolvePackageIdWithBasePath(id, basePath->str);
         if(path)
             return path;
@@ -380,12 +379,11 @@ bool HasVfsFileEnded( const VfsFile* file )
 static PathList* GetMountNames()
 {
     PathList* list = NEW(PathList);
-    int i;
-    Mount* mount;
-    vec_foreach_ptr(&Mounts, mount, i)
+    REPEAT(Mounts.length, i)
     {
+        const Mount* mount = Mounts.data + i;
         const char* entryName = mount->vfsPath+1; // Skip the initial slash
-        Path* entry = vec_push_ptr(list);
+        Path* entry = AllocateAtEndOfArrayList(list, 1);
         CopyString(entryName, entry->str, sizeof(Path));
     }
     return list;

@@ -1,7 +1,7 @@
 #ifndef __KONSTRUKT_FS_UTILS__
 #define __KONSTRUKT_FS_UTILS__
 
-#include <vec.h>
+#include "ArrayList.h"
 
 
 static const int MAX_PATH_SIZE = 256;
@@ -26,7 +26,7 @@ struct Path
     char str[MAX_PATH_SIZE];
 };
 
-typedef vec_t(Path) PathList;
+typedef ArrayList(Path) PathList;
 
 
 FileType GetFileType( const char* path );

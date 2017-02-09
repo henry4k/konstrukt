@@ -131,12 +131,12 @@ static PathList* GetVfsDirEntries_PhysFS( const Mount* mount, const char* subMou
         path = mount->vfsPath;
 
     PathList* list = NEW(PathList);
-    vec_init(list);
+    InitArrayList(list);
 
     char** fileList = PHYSFS_enumerateFiles(path);
     for(int i = 0; fileList[i] != NULL; i++)
     {
-        Path* entry = vec_push_ptr(list);
+        Path* entry = AllocateAtEndOfArrayList(list, 1);
         CopyString(fileList[i], entry->str, sizeof(Path));
     }
     PHYSFS_freeList(fileList);

@@ -66,10 +66,9 @@ static int Lua_GetDirEntries( lua_State* l )
 
     lua_createtable(l, list->length, 0);
 
-    int i;
-    Path* entry;
-    vec_foreach_ptr(list, entry, i)
+    REPEAT(list->length, i)
     {
+        const Path* entry = list->data + i;
         lua_pushstring(l, entry->str);
         lua_rawseti(l, -2, i+1);
     }
