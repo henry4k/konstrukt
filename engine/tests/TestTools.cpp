@@ -18,9 +18,12 @@ void TestLogHandler( LogLevel level, const char* line )
             dummyLog("%s", line);
             break;
 
-        case LOG_ERROR:
+        case LOG_WARNING:
+            dummyLog("WARNING: %s", line);
+            break;
+
         case LOG_FATAL_ERROR:
-            dummyLog("%s", line);
+            dummyLog("FATAL ERROR: %s", line);
             break;
 
         default:

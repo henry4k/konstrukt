@@ -1,6 +1,9 @@
 #include <string.h> // memset
-#include <engine/MeshBuffer.h>
+#include "../MeshBuffer.h"
 #include "TestTools.h"
+#include <dummy/bdd.hpp>
+
+using namespace dummy;
 
 
 Vertex* CreateVertex( float x, float y, float z )
@@ -12,6 +15,12 @@ Vertex* CreateVertex( float x, float y, float z )
     v.position = position;
     v.normal   = normal;
     return &v;
+}
+
+void FreeMeshBuffer( MeshBuffer* buffer )
+{
+    ReferenceMeshBuffer(buffer);
+    ReleaseMeshBuffer(buffer);
 }
 
 int main( int argc, char** argv )
@@ -45,8 +54,8 @@ int main( int argc, char** argv )
             const Vertex* vertices = GetMeshBufferVertices(buffer);
             const Vec3 v1 = {{1,0,0}};
             const Vec3 v2 = {{1,1,0}};
-            Require(vertices[0].position == v1);
-            Require(vertices[1].position == v2);
+            Require(ArraysAreEqual(vertices[0].position._, v1._, 3));
+            Require(ArraysAreEqual(vertices[1].position._, v2._, 3));
             // TODO: Test if normal and tangent are transformed correctly.
 
             FreeMeshBuffer(buffer);
@@ -76,8 +85,8 @@ int main( int argc, char** argv )
             Require(GetMeshBufferVertexCount(a) == 4);
             const Vec3 v2 = {{2,3,4}};
             const Vec3 v3 = {{5,6,7}};
-            Require(vertices[2].position == v2);
-            Require(vertices[3].position == v3);
+            Require(ArraysAreEqual(vertices[2].position._, v2._, 3));
+            Require(ArraysAreEqual(vertices[3].position._, v3._, 3));
             Require(GetMeshBufferIndexCount(a) == 4);
             Require(indices[2] == 2);
             Require(indices[3] == 3);
@@ -113,8 +122,8 @@ int main( int argc, char** argv )
             Require(GetMeshBufferVertexCount(a) == 4);
             const Vec3 v2 = {{3,3,4}};
             const Vec3 v3 = {{6,6,7}};
-            Require(vertices[2].position == v2);
-            Require(vertices[3].position == v3);
+            Require(ArraysAreEqual(vertices[2].position._, v2._, 3));
+            Require(ArraysAreEqual(vertices[3].position._, v3._, 3));
             Require(GetMeshBufferIndexCount(a) == 4);
             Require(indices[2] == 2);
             Require(indices[3] == 3);

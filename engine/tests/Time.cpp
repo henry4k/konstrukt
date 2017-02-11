@@ -1,6 +1,10 @@
 #include <string.h> // strcmp
-#include <engine/Time.h>
+#include "../Time.h"
 #include "TestTools.h"
+#include <dummy/bdd.hpp>
+
+using namespace dummy;
+
 
 class TimeScope
 {
@@ -28,10 +32,10 @@ int main( int argc, char** argv )
     InitTests(argc, argv);
 
     Describe("Test module")
-        .use(dummyExceptionSandbox)
+        .use(dummySignalSandbox)
 
         .it("can be initialized and destroyed.", [](){
-            Require(InitTime() == true);
+            InitTime();
             DestroyTime();
         })
 

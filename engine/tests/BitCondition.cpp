@@ -1,5 +1,11 @@
-#include <engine/BitCondition.h>
+#include <stdlib.h> // NULL
+#include "../Common.h"
+#include "../List.h"
+#include "../BitCondition.h"
 #include "TestTools.h"
+#include <dummy/inline.hpp>
+
+#define InlineTest DUMMY_INLINE_TEST
 
 static const BitCondition conditionsA[] =
 {
@@ -26,10 +32,10 @@ static char payloadB[] = "B";
 static char payloadC[] = "C";
 static char payloadD[] = "D";
 
-static bool HasPayload( void** results, int resultCount, void* payload )
+static bool HasPayload( List* results, void* payload )
 {
-    for(int i = 0; i < resultCount; i++)
-        if(results[i] == payload)
+    REPEAT(GetListLength(results), i)
+        if(GetListEntry(results, i) == payload)
             return true;
     return false;
 }
@@ -42,15 +48,14 @@ InlineTest("BitConditionSolver can gather matching payloads.", dummySignalSandbo
     AddBitConditions(solver, conditionsC, 2, (void*)payloadC);
     AddBitConditions(solver, conditionsC, 2, (void*)payloadD);
 
-    void** results = NULL;
-    int resultCount = GatherPayloadFromBitField(solver, NULL, 0, &results);
+    List* results = GatherPayloadFromBitField(solver, NULL, 0);
 
-    Require(resultCount == 4);
     Require(results != NULL);
-    Require(HasPayload(results, resultCount, payloadA));
-    Require(HasPayload(results, resultCount, payloadB));
-    Require(HasPayload(results, resultCount, payloadC));
-    Require(HasPayload(results, resultCount, payloadD));
+    Require(GetListLength(results) == 4);
+    Require(HasPayload(results, payloadA));
+    Require(HasPayload(results, payloadB));
+    Require(HasPayload(results, payloadC));
+    Require(HasPayload(results, payloadD));
 
     FreeBitConditionSolver(solver);
 }
@@ -58,5 +63,6 @@ InlineTest("BitConditionSolver can gather matching payloads.", dummySignalSandbo
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
+    dummyAddInlineTests();
     return RunTests();
 }

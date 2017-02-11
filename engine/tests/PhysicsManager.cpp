@@ -1,5 +1,9 @@
-#include <engine/PhysicsManager.h>
+#include "../PhysicsManager.h"
 #include "TestTools.h"
+#include <dummy/bdd.hpp>
+
+using namespace dummy;
+
 
 class ModuleScope
 {
@@ -17,16 +21,16 @@ int main( int argc, char** argv )
     InitTests(argc, argv);
 
     Describe("Physics manager")
-        .use(dummyExceptionSandbox)
+        .use(dummySignalSandbox)
 
         .it("can be initialized and destructed.", [](){
 
-            Require(InitPhysicsManager() == true);
+            InitPhysicsManager();
             DestroyPhysicsManager();
         });
 
     Describe("Collision shapes")
-        .use(dummyExceptionSandbox)
+        .use(dummySignalSandbox)
 
         .it("can be referenced and released.", [](){
 
@@ -38,7 +42,7 @@ int main( int argc, char** argv )
         });
 
     Describe("Solids")
-        .use(dummyExceptionSandbox)
+        .use(dummySignalSandbox)
 
         .it("can be referenced and released.", [](){
 

@@ -36,7 +36,7 @@ void LogHandlerTest()
                 break;
 
             case 2:
-                Require(level == LOG_ERROR);
+                Require(level == LOG_WARNING);
                 Require(strcmp(line, "bar") == 0);
                 break;
 
@@ -69,7 +69,7 @@ void LogHandlerTest()
     CallCount = 0;
 
     Log("foo");
-    Error("bar");
+    Warn("bar");
     Log("aaa\nbbb");
     Log("ccc\n");
 
