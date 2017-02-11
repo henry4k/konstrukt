@@ -316,39 +316,36 @@ static void LuaCollisionCallback( const Collision* collision )
 
 // --- Register in Lua ---
 
-bool RegisterPhysicsManagerInLua()
+void RegisterPhysicsManagerInLua()
 {
     CollisionEvent = RegisterLuaEvent(COLLISION_EVENT_NAME);
-    if(CollisionEvent == INVALID_LUA_EVENT)
-        return false;
 
     SetCollisionCallback(LuaCollisionCallback);
 
-    return
-        RegisterFunctionInLua("SetGravity", Lua_SetGravity) &&
+    RegisterFunctionInLua("SetGravity", Lua_SetGravity);
 
-        RegisterFunctionInLua("DestroyCollisionShape", Lua_DestroyCollisionShape) &&
-        RegisterFunctionInLua("CreateEmptyCollisionShape", Lua_CreateEmptyCollisionShape) &&
-        RegisterFunctionInLua("CreateBoxCollisionShape", Lua_CreateBoxCollisionShape) &&
-        RegisterFunctionInLua("CreateSphereCollisionShape", Lua_CreateSphereCollisionShape) &&
-        RegisterFunctionInLua("CreateCapsuleCollisionShape", Lua_CreateCapsuleCollisionShape) &&
-        RegisterFunctionInLua("CreateCompoundCollisionShape", Lua_CreateCompoundCollisionShape) &&
+    RegisterFunctionInLua("DestroyCollisionShape", Lua_DestroyCollisionShape);
+    RegisterFunctionInLua("CreateEmptyCollisionShape", Lua_CreateEmptyCollisionShape);
+    RegisterFunctionInLua("CreateBoxCollisionShape", Lua_CreateBoxCollisionShape);
+    RegisterFunctionInLua("CreateSphereCollisionShape", Lua_CreateSphereCollisionShape);
+    RegisterFunctionInLua("CreateCapsuleCollisionShape", Lua_CreateCapsuleCollisionShape);
+    RegisterFunctionInLua("CreateCompoundCollisionShape", Lua_CreateCompoundCollisionShape);
 
-        RegisterFunctionInLua("CreateForce", Lua_CreateForce) &&
-        RegisterFunctionInLua("DestroyForce", Lua_DestroyForce) &&
-        RegisterFunctionInLua("SetForce", Lua_SetForce) &&
+    RegisterFunctionInLua("CreateForce", Lua_CreateForce);
+    RegisterFunctionInLua("DestroyForce", Lua_DestroyForce);
+    RegisterFunctionInLua("SetForce", Lua_SetForce);
 
-        RegisterFunctionInLua("CreateSolid", Lua_CreateSolid) &&
-        RegisterFunctionInLua("DestroySolid", Lua_DestroySolid) &&
-        RegisterFunctionInLua("GetSolidMass", Lua_GetSolidMass) &&
-        RegisterFunctionInLua("SetSolidMass", Lua_SetSolidMass) &&
-        RegisterFunctionInLua("SetSolidRestitution", Lua_SetSolidRestitution) &&
-        RegisterFunctionInLua("SetSolidFriction", Lua_SetSolidFriction) &&
-        RegisterFunctionInLua("SetSolidCollisionThreshold", Lua_SetSolidCollisionThreshold) &&
-        RegisterFunctionInLua("GetSolidPosition", Lua_GetSolidPosition) &&
-        RegisterFunctionInLua("GetSolidRotation", Lua_GetSolidRotation) &&
-        RegisterFunctionInLua("GetSolidLinearVelocity", Lua_GetSolidLinearVelocity) &&
-        RegisterFunctionInLua("GetSolidAngularVelocity", Lua_GetSolidAngularVelocity) &&
-        RegisterFunctionInLua("EnableGravityForSolid", Lua_EnableGravityForSolid) &&
-        RegisterFunctionInLua("ApplySolidImpulse", Lua_ApplySolidImpulse);
+    RegisterFunctionInLua("CreateSolid", Lua_CreateSolid);
+    RegisterFunctionInLua("DestroySolid", Lua_DestroySolid);
+    RegisterFunctionInLua("GetSolidMass", Lua_GetSolidMass);
+    RegisterFunctionInLua("SetSolidMass", Lua_SetSolidMass);
+    RegisterFunctionInLua("SetSolidRestitution", Lua_SetSolidRestitution);
+    RegisterFunctionInLua("SetSolidFriction", Lua_SetSolidFriction);
+    RegisterFunctionInLua("SetSolidCollisionThreshold", Lua_SetSolidCollisionThreshold);
+    RegisterFunctionInLua("GetSolidPosition", Lua_GetSolidPosition);
+    RegisterFunctionInLua("GetSolidRotation", Lua_GetSolidRotation);
+    RegisterFunctionInLua("GetSolidLinearVelocity", Lua_GetSolidLinearVelocity);
+    RegisterFunctionInLua("GetSolidAngularVelocity", Lua_GetSolidAngularVelocity);
+    RegisterFunctionInLua("EnableGravityForSolid", Lua_EnableGravityForSolid);
+    RegisterFunctionInLua("ApplySolidImpulse", Lua_ApplySolidImpulse);
 }

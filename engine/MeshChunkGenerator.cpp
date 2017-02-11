@@ -108,24 +108,19 @@ static void* CreateVoxelMesh( MeshChunkGenerator* generator,
                               const BitCondition* conditions,
                               int conditionCount )
 {
-    if(generator->voxelMeshCount < MAX_VOXEL_MESHES)
-    {
-        const int i = generator->voxelMeshCount;
-        VoxelMesh* mesh = &generator->voxelMeshes[i];
-        mesh->type = type;
-        mesh->materialId = materialId;
-        AddBitConditions(generator->meshConditions,
-                         conditions,
-                         conditionCount,
-                         mesh);
-        generator->voxelMeshCount++;
-        return (void*)&mesh->data;
-    }
-    else
-    {
-        Error("Can't create more voxel meshes.");
-        return NULL;
-    }
+    if(generator->voxelMeshCount >= MAX_VOXEL_MESHES)
+        FatalError("Can't create more voxel meshes.");
+
+    const int i = generator->voxelMeshCount;
+    VoxelMesh* mesh = &generator->voxelMeshes[i];
+    mesh->type = type;
+    mesh->materialId = materialId;
+    AddBitConditions(generator->meshConditions,
+                     conditions,
+                     conditionCount,
+                     mesh);
+    generator->voxelMeshCount++;
+    return (void*)&mesh->data;
 }
 
 bool CreateBlockVoxelMesh( MeshChunkGenerator* generator,

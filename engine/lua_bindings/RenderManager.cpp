@@ -9,8 +9,7 @@ static int Lua_GetFrameTime( lua_State* l )
     return 1;
 }
 
-bool RegisterRenderManagerInLua()
+void RegisterRenderManagerInLua()
 {
-    return
-        RegisterFunctionInLua("GetFrameTime", Lua_GetFrameTime);
+    RegisterFunctionInLua("GetFrameTime", Lua_GetFrameTime);
 }

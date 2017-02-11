@@ -235,27 +235,26 @@ ShaderVariableSet* CheckShaderVariableSetFromLua( lua_State* l, int stackPositio
 
 // --- Register in Lua ---
 
-bool RegisterShaderInLua()
+void RegisterShaderInLua()
 {
-    return
-        RegisterFunctionInLua("LoadShader", Lua_LoadShader) &&
-        RegisterFunctionInLua("DestroyShader", Lua_DestroyShader) &&
+    RegisterFunctionInLua("LoadShader", Lua_LoadShader);
+    RegisterFunctionInLua("DestroyShader", Lua_DestroyShader);
 
-        RegisterFunctionInLua("LinkShaderProgram", Lua_LinkShaderProgram) &&
-        RegisterFunctionInLua("DestroyShaderProgram", Lua_DestroyShaderProgram) &&
-        RegisterFunctionInLua("GetShaderProgramShaderVariableSet", Lua_GetShaderProgramShaderVariableSet) &&
+    RegisterFunctionInLua("LinkShaderProgram", Lua_LinkShaderProgram);
+    RegisterFunctionInLua("DestroyShaderProgram", Lua_DestroyShaderProgram);
+    RegisterFunctionInLua("GetShaderProgramShaderVariableSet", Lua_GetShaderProgramShaderVariableSet);
 
-        RegisterFunctionInLua("GetGlobalShaderVariableSet", Lua_GetGlobalShaderVariableSet) &&
+    RegisterFunctionInLua("GetGlobalShaderVariableSet", Lua_GetGlobalShaderVariableSet);
 
-        RegisterFunctionInLua("CreateShaderProgramSet", Lua_CreateShaderProgramSet) &&
-        RegisterFunctionInLua("DestroyShaderProgramSet", Lua_DestroyShaderProgramSet) &&
-        RegisterFunctionInLua("SetShaderProgramFamily", Lua_SetShaderProgramFamily) &&
+    RegisterFunctionInLua("CreateShaderProgramSet", Lua_CreateShaderProgramSet);
+    RegisterFunctionInLua("DestroyShaderProgramSet", Lua_DestroyShaderProgramSet);
+    RegisterFunctionInLua("SetShaderProgramFamily", Lua_SetShaderProgramFamily);
 
-        RegisterFunctionInLua("SetIntUniform", Lua_SetIntUniform) &&
-        RegisterFunctionInLua("SetFloatUniform", Lua_SetFloatUniform) &&
-        RegisterFunctionInLua("SetVec3Uniform", Lua_SetVec3Uniform) &&
-        RegisterFunctionInLua("SetMat4Uniform", Lua_SetMat4Uniform) &&
-        RegisterFunctionInLua("SetTexture", Lua_SetTexture) &&
-        RegisterFunctionInLua("UnsetShaderVariable", Lua_UnsetShaderVariable) &&
-        RegisterFunctionInLua("ClearShaderVariableSet", Lua_ClearShaderVariableSet);
+    RegisterFunctionInLua("SetIntUniform", Lua_SetIntUniform);
+    RegisterFunctionInLua("SetFloatUniform", Lua_SetFloatUniform);
+    RegisterFunctionInLua("SetVec3Uniform", Lua_SetVec3Uniform);
+    RegisterFunctionInLua("SetMat4Uniform", Lua_SetMat4Uniform);
+    RegisterFunctionInLua("SetTexture", Lua_SetTexture);
+    RegisterFunctionInLua("UnsetShaderVariable", Lua_UnsetShaderVariable);
+    RegisterFunctionInLua("ClearShaderVariableSet", Lua_ClearShaderVariableSet);
 }

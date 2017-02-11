@@ -16,7 +16,7 @@ static double LastFrameTimestamp;
 static double FrameTime;
 
 
-bool InitRenderManager()
+void InitRenderManager()
 {
     EnableVertexArrays();
     glEnable(GL_DEPTH_TEST);
@@ -28,7 +28,6 @@ bool InitRenderManager()
     glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
     glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, // RGB
                         GL_ONE, GL_ZERO);               // A
-    return true;
 }
 
 void DestroyRenderManager()

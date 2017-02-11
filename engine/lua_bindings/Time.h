@@ -7,6 +7,6 @@ struct Timer;
 Timer* GetTimerFromLua( lua_State* l, int stackPosition );
 Timer* CheckTimerFromLua( lua_State* l, int stackPosition );
 
-bool RegisterTimeInLua();
+void RegisterTimeInLua();
 
 #endif

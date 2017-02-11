@@ -23,7 +23,7 @@ char TempStateDirectory[MAX_PATH_SIZE];
 char TempSharedStateDirectory[MAX_PATH_SIZE];
 
 
-static bool SetWriteDirectory( const char* name,
+static void SetWriteDirectory( const char* name,
                                const char* path,
                                char* tempDirOut )
 {
@@ -33,49 +33,30 @@ static bool SetWriteDirectory( const char* name,
     {
         isTempDir = true;
         path = CreateTemporaryDirectory(name);
-        if(!path)
-            return false;
     }
 
-    if(!MountVfsDir(name, path, true))
-        return false;
+    MountVfsDir(name, path, true);
 
     if(isTempDir)
         CopyString(path, tempDirOut, MAX_PATH_SIZE);
     else
         tempDirOut[0] = '\0';
-
-    return true;
 }
 
-bool InitVfs( const char* argv0,
+void InitVfs( const char* argv0,
               const char* stateDirectory,
               const char* sharedStateDirectory )
 {
     RealMountSystem = InitVfs_Real();
-    if(!RealMountSystem)
-        return false;
-
     PhysFSMountSystem = InitVfs_PhysFS(argv0);
-    if(!PhysFSMountSystem)
-        return false;
 
     InitArrayList(&Mounts);
     InitArrayList(&SearchPaths);
 
-    if(!SetWriteDirectory("state",
-                          stateDirectory,
-                          TempStateDirectory))
-        return false;
-
-    if(!SetWriteDirectory("shared-state",
-                          sharedStateDirectory,
-                          TempSharedStateDirectory))
-        return false;
+    SetWriteDirectory("state", stateDirectory, TempStateDirectory);
+    SetWriteDirectory("shared-state", sharedStateDirectory, TempSharedStateDirectory);
 
     AddPackageSearchPath(DEFAULT_PACKAGE_SEARCH_PATH);
-
-    return true;
 }
 
 void DestroyVfs()
@@ -119,24 +100,19 @@ static Mount* FindMountByVfsPath( const char* vfsPath, int* indexOut )
             return mount;
         }
     }
+    FatalError("Mount point '%s' does not exist.", vfsPath);
     return NULL;
 }
 
-bool MountVfsDir( const char* vfsPath,
+void MountVfsDir( const char* vfsPath,
                   const char* realPath,
                   bool writingAllowed )
 {
     if(!IsValidMountPoint(vfsPath))
-    {
-        Error("'%s' is not a valid mount point.", vfsPath);
-        return NULL;
-    }
+        FatalError("'%s' is not a valid mount point.", vfsPath);
 
     if(FindMountByVfsPath(vfsPath, NULL))
-    {
-        Error("'%s' is already mounted to something.", vfsPath);
-        return NULL;
-    }
+        FatalError("'%s' is already mounted to something.", vfsPath);
 
     const MountSystem* mountSystem;
     if(writingAllowed)
@@ -151,15 +127,8 @@ bool MountVfsDir( const char* vfsPath,
     CopyString(realPath, mount->realPath, MAX_PATH_SIZE);
     mount->writingAllowed = writingAllowed;
 
-    if(!mountSystem->mount(mount))
-    {
-        Mounts.length--;
-        return NULL;
-    }
-
+    mountSystem->mount(mount);
     Log("Mounted '%s' to '%s'.", realPath, vfsPath);
-
-    return mount;
 }
 
 void UnmountVfsDir( const char* vfsPath )
@@ -167,10 +136,7 @@ void UnmountVfsDir( const char* vfsPath )
     int mountIndex;
     Mount* mount = FindMountByVfsPath(vfsPath, &mountIndex);
     if(!mount)
-    {
-        Error("Mount point '%s' does not exist.", vfsPath);
-        return;
-    }
+        FatalError("Mount point '%s' does not exist.", vfsPath);
 
     mount->mountSystem->unmount(mount);
 
@@ -220,8 +186,13 @@ static const char* ResolvePackageReference( const char* reference )
     if(type == FILE_TYPE_DIRECTORY ||
        type == FILE_TYPE_REGULAR)
         return reference;
-    else
-        return ResolvePackageIdWithSearchPath(reference);
+
+    const char* path = ResolvePackageIdWithSearchPath(reference);
+    if(path)
+        return path;
+
+    FatalError("Can't resolve package reference '%s'.", reference);
+    return NULL;
 }
 
 static const char* GetBaseName( const char* path )
@@ -253,28 +224,12 @@ static const char* ExtractPackageNameFromReference( const char* reference )
     return buffer;
 }
 
-bool MountPackage( const char* reference )
+void MountPackage( const char* reference )
 {
     const char* packagePath = ResolvePackageReference(reference);
-    if(packagePath)
-    {
-        const char* name = ExtractPackageNameFromReference(reference);
-        if(MountVfsDir(name, packagePath, false))
-        {
-            Log("Mounted package '%s' (%s).", name, packagePath);
-            return true;
-        }
-        else
-        {
-            Error("Can't mount package '%s' (%s):", name, packagePath);
-            return false;
-        }
-    }
-    else
-    {
-        Error("Can't find package '%s'.", reference);
-        return false;
-    }
+    const char* name = ExtractPackageNameFromReference(reference);
+    MountVfsDir(name, packagePath, false);
+    Log("Mounted package '%s' (%s).", name, packagePath);
 }
 
 
@@ -315,21 +270,10 @@ VfsFile* OpenVfsFile( const char* vfsPath, VfsOpenMode mode )
     const char* mountPoint = SplitVfsPath(vfsPath, &subMountPath);
 
     if(!mountPoint || !subMountPath)
-    {
-        Error("Can't open file '%s'.", vfsPath);
-        return NULL;
-    }
+        FatalError("Can't open file '%s'.", vfsPath);
 
     const Mount* mount = FindMountByVfsPath(mountPoint, NULL);
-    if(!mount)
-    {
-        Error("Can't open file '%s' as mount point does not exist.", vfsPath);
-        return NULL;
-    }
-
     void* handle = mount->mountSystem->openFile(mount, subMountPath, mode);
-    if(!handle)
-        return NULL;
 
     VfsFile* file = NEW(VfsFile);
     file->mountSystem = mount->mountSystem;
@@ -353,7 +297,7 @@ int WriteVfsFile( VfsFile* file, const void* buffer, int size )
     return file->mountSystem->writeFile(file->handle, buffer, size);
 }
 
-bool SetVfsFilePos( VfsFile* file, int position )
+void SetVfsFilePos( VfsFile* file, int position )
 {
     return file->mountSystem->setFilePos(file->handle, position);
 }
@@ -400,21 +344,8 @@ PathList* GetVfsDirEntries( const char* vfsPath )
         const char* subMountPath;
         const char* mountPoint = SplitVfsPath(vfsPath, &subMountPath);
         const Mount* mount = FindMountByVfsPath(mountPoint, NULL);
-        if(!mount)
-        {
-            Error("Mount point '%s' does not exist.", mountPoint);
-            return NULL;
-        }
-
         return mount->mountSystem->getDirEntries(mount, subMountPath);
     }
-}
-
-static VfsFileInfo GetInvalidFileInfo()
-{
-    VfsFileInfo info;
-    memset(&info, 0, sizeof(info));
-    return info;
 }
 
 VfsFileInfo GetVfsFileInfo( const char* vfsPath )
@@ -422,39 +353,21 @@ VfsFileInfo GetVfsFileInfo( const char* vfsPath )
     const char* subMountPath;
     const char* mountPoint = SplitVfsPath(vfsPath, &subMountPath);
     const Mount* mount = FindMountByVfsPath(mountPoint, NULL);
-    if(!mount)
-    {
-        Error("Mount point '%s' does not exist.", mountPoint);
-        return GetInvalidFileInfo();
-    }
-
     return mount->mountSystem->getFileInfo(mount, subMountPath);
 }
 
-bool DeleteVfsFile( const char* vfsPath )
+void DeleteVfsFile( const char* vfsPath )
 {
     const char* subMountPath;
     const char* mountPoint = SplitVfsPath(vfsPath, &subMountPath);
     Mount* mount = FindMountByVfsPath(mountPoint, NULL);
-    if(!mount)
-    {
-        Error("Mount point '%s' does not exist.", mountPoint);
-        return false;
-    }
-
     return mount->mountSystem->deleteFile(mount, subMountPath);
 }
 
-bool MakeVfsDir( const char* vfsPath )
+void MakeVfsDir( const char* vfsPath )
 {
     const char* subMountPath;
     const char* mountPoint = SplitVfsPath(vfsPath, &subMountPath);
     Mount* mount = FindMountByVfsPath(mountPoint, NULL);
-    if(!mount)
-    {
-        Error("Mount point '%s' does not exist.", mountPoint);
-        return false;
-    }
-
     return mount->mountSystem->makeDir(mount, subMountPath);
 }

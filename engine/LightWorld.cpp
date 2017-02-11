@@ -69,8 +69,8 @@ static void FreeLightWorld( LightWorld* world )
         Light* light = &world->lights[i];
         if(light->active)
         {
-            Error("Light #%d (%p) was still active when the world was destroyed.",
-                  i, light);
+            FatalError("Light #%d (%p) was still active when the world was destroyed.",
+                       i, light);
             FreeLight(light);
         }
     }
@@ -239,21 +239,16 @@ static Light* FindInactiveLight( LightWorld* world )
 Light* CreateLight( LightWorld* world, LightType type )
 {
     Light* light = FindInactiveLight(world);
-    if(light)
-    {
-        memset(light, 0, sizeof(Light));
-        light->active = true;
-        light->type = type;
-        InitReferenceCounter(&light->refCounter);
-        light->shaderVariableSet = CreateShaderVariableSet();
-        light->transformation = Mat4Identity;
-        return light;
-    }
-    else
-    {
-        Error("Can't create more lights.");
-        return NULL;
-    }
+    if(!light)
+        FatalError("Can't create more lights.");
+
+    memset(light, 0, sizeof(Light));
+    light->active = true;
+    light->type = type;
+    InitReferenceCounter(&light->refCounter);
+    light->shaderVariableSet = CreateShaderVariableSet();
+    light->transformation = Mat4Identity;
+    return light;
 }
 
 static void FreeLight( Light* light )
@@ -290,7 +285,7 @@ void SetLightAttachmentTarget( Light* light, Solid* target, int flags )
 void SetLightTransformation( Light* light, Mat4 transformation )
 {
     if(light->type == GLOBAL_LIGHT)
-        Error("Global lights have no transformation.");
+        FatalError("Global lights have no transformation.");
     else
         light->transformation = transformation;
 }
@@ -303,7 +298,7 @@ void SetLightValue( Light* light, float value )
 void SetLightRange( Light* light, float range )
 {
     if(light->type == GLOBAL_LIGHT)
-        Error("Global lights have no light range.");
+        FatalError("Global lights have no light range.");
     else
         light->range = range;
 }

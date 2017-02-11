@@ -40,7 +40,7 @@ static void UpdateAudioListener();
 static void FreeAudioSource( AudioSource* source );
 static void UpdateAudioSource( AudioSource* source );
 static const char* GetALErrorString();
-static bool PrintALError( const char* origin );
+static void CheckALError( const char* origin );
 static void PrintAudioDevices();
 
 static AudioSource* AudioSources = NULL;
@@ -54,7 +54,7 @@ static Mat4 ListenerTransformation = Mat4Identity;
 
 // --- Global ---
 
-bool InitAudio()
+void InitAudio()
 {
     if(GetConfigBool("audio.print-devices", false))
         PrintAudioDevices();
@@ -66,26 +66,20 @@ bool InitAudio()
         Log("Using default audio device.");
 
     if(!alureInitDevice(deviceName, NULL))
-    {
-        Error("Failed to initialize audio device%s", alureGetErrorString());
-        return false;
-    }
+        FatalError("Failed to initialize audio device: %s", alureGetErrorString());
 
     ALuint alureMajor = 0;
     ALuint alureMinor = 0;
     alureGetVersion(&alureMajor, &alureMinor);
 
-    Log(
-        "Using OpenAL %s\n"
+    Log("Using OpenAL %s\n"
         "Vendor: %s\n"
         "Renderer: %s\n"
         "Alure: %d.%d",
-
         alGetString(AL_VERSION),
         alGetString(AL_VENDOR),
         alGetString(AL_RENDERER),
-        alureMajor, alureMinor
-    );
+        alureMajor, alureMinor);
 
     AudioSourceCount = GetConfigInt("audio.max-sources", 32);
     AudioSources = new AudioSource[AudioSourceCount];
@@ -102,8 +96,6 @@ bool InitAudio()
     alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED); // ?
     //alDopplerFactor();
     //alDopplerVelocity();
-
-    return true;
 }
 
 void DestroyAudio()
@@ -186,25 +178,21 @@ static void UpdateAudioListener()
 AudioBuffer* LoadAudioBuffer( const char* fileName )
 {
     const ALuint handle = alureCreateBufferFromFile(fileName);
-    if(handle == AL_NONE || PrintALError("LoadAudioBuffer"))
-    {
-        Error("Can't load %s: %s", fileName, alureGetErrorString());
-        return NULL;
-    }
-    else
-    {
-        Log("Loaded %s", fileName);
-        AudioBuffer* buffer = new AudioBuffer;
-        memset(buffer, 0, sizeof(AudioBuffer));
-        buffer->handle = handle;
-        return buffer;
-    }
+    if(handle == AL_NONE)
+        FatalError("Can't load %s: %s", fileName, alureGetErrorString());
+    CheckALError("LoadAudioBuffer");
+
+    Log("Loaded %s", fileName);
+    AudioBuffer* buffer = new AudioBuffer;
+    memset(buffer, 0, sizeof(AudioBuffer));
+    buffer->handle = handle;
+    return buffer;
 }
 
 static void FreeAudioBuffer( AudioBuffer* buffer )
 {
     alDeleteBuffers(1, &buffer->handle);
-    PrintALError("FreeAudioBuffer");
+    CheckALError("FreeAudioBuffer");
     delete buffer;
 }
 
@@ -239,32 +227,27 @@ static AudioSource* FindFreeAudioSource()
 AudioSource* CreateAudioSource()
 {
     AudioSource* source = FindFreeAudioSource();
-    if(source)
-    {
-        ALuint handle = AL_NONE;
-        alGenSources(1, &handle);
+    if(!source)
+        FatalError("Reached audio source limit! (%d sources)", AudioSourceCount);
 
-        memset(source, 0, sizeof(AudioSource));
-        source->handle = handle;
-        source->transformation = Mat4Identity;
+    ALuint handle = AL_NONE;
+    alGenSources(1, &handle);
 
-        alSourcef(handle, AL_MAX_DISTANCE, MaxAudioSourceDistance);
-        alSourcef(handle, AL_REFERENCE_DISTANCE, AudioSourceReferenceDistance);
+    memset(source, 0, sizeof(AudioSource));
+    source->handle = handle;
+    source->transformation = Mat4Identity;
 
-        return source;
-    }
-    else
-    {
-        Error("Reached audio source limit! (%d sources)", AudioSourceCount);
-        return NULL;
-    }
+    alSourcef(handle, AL_MAX_DISTANCE, MaxAudioSourceDistance);
+    alSourcef(handle, AL_REFERENCE_DISTANCE, AudioSourceReferenceDistance);
+
+    return source;
 }
 
 static void FreeAudioSource( AudioSource* source )
 {
     alDeleteSources(1, &source->handle);
     source->handle = AL_NONE;
-    PrintALError("FreeAudioSourceAtIndex");
+    CheckALError("FreeAudioSourceAtIndex");
 }
 
 void ReferenceAudioSource( AudioSource* source )
@@ -282,25 +265,25 @@ void ReleaseAudioSource( AudioSource* source )
 void SetAudioSourceRelative( AudioSource* source, bool relative )
 {
     alSourcei(source->handle, AL_SOURCE_RELATIVE, (relative ? AL_TRUE : AL_FALSE));
-    PrintALError("SetAudioSourceRelative");
+    CheckALError("SetAudioSourceRelative");
 }
 
 void SetAudioSourceLooping( AudioSource* source, bool loop )
 {
     alSourcei(source->handle, AL_LOOPING, (loop ? AL_TRUE : AL_FALSE));
-    PrintALError("SetAudioSourceLooping");
+    CheckALError("SetAudioSourceLooping");
 }
 
 void SetAudioSourcePitch( AudioSource* source, float pitch )
 {
     alSourcef(source->handle, AL_PITCH, pitch);
-    PrintALError("SetAudioSourcePitch");
+    CheckALError("SetAudioSourcePitch");
 }
 
 void SetAudioSourceGain( AudioSource* source, float gain )
 {
     alSourcef(source->handle, AL_GAIN, gain);
-    PrintALError("SetAudioSourceGain");
+    CheckALError("SetAudioSourceGain");
 }
 
 void SetAudioSourceAttachmentTarget( AudioSource* source, Solid* target, int flags )
@@ -361,25 +344,25 @@ static void UpdateAudioSource( AudioSource* source )
         }
     }
 
-    PrintALError("UpdateAudioSource");
+    CheckALError("UpdateAudioSource");
 }
 
 void EnqueueAudioBuffer( AudioSource* source, AudioBuffer* buffer )
 {
     alSourceQueueBuffers(source->handle, 1, &buffer->handle);
-    PrintALError("EnqueueAudioBuffer");
+    CheckALError("EnqueueAudioBuffer");
 }
 
 void PlayAudioSource( AudioSource* source )
 {
     alSourcePlay(source->handle);
-    PrintALError("PlayAudioSource");
+    CheckALError("PlayAudioSource");
 }
 
 void PauseAudioSource( AudioSource* source )
 {
     alSourcePause(source->handle);
-    PrintALError("PauseAudioSource");
+    CheckALError("PauseAudioSource");
 }
 
 
@@ -392,48 +375,35 @@ static const char* GetALErrorString()
     {
         switch(error)
         {
-            case AL_INVALID_NAME: return "Invalid name";
-            case AL_INVALID_ENUM: return "Invalid enum";
-            case AL_INVALID_VALUE: return "Invalid value";
+            case AL_INVALID_NAME:      return "Invalid name";
+            case AL_INVALID_ENUM:      return "Invalid enum";
+            case AL_INVALID_VALUE:     return "Invalid value";
             case AL_INVALID_OPERATION: return "Invalid operation";
-            case AL_OUT_OF_MEMORY: return "Out of memory";
-            default: return "Unknown issue";
+            case AL_OUT_OF_MEMORY:     return "Out of memory";
+            default:                   return "Unknown issue";
         }
     }
 
     return NULL;
 }
 
-static bool PrintALError( const char* origin )
+static void CheckALError( const char* origin )
 {
     const char* error = GetALErrorString();
     if(error)
-    {
-        Error("%s: %s", origin, error);
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+        FatalError("%s: %s", origin, error);
 }
 
 static void PrintAudioDevices()
 {
     ALCsizei deviceCount = 0;
     const char** deviceNames = alureGetDeviceNames(true, &deviceCount);
-
     if(!deviceNames || deviceCount == 0)
-    {
-        Error("Failed to query audio device list: %s", alureGetErrorString());
-    }
-    else
-    {
-        Log("Available audio devices:");
-        for(int i = 0; i < deviceCount; ++i)
-            Log("  %s", deviceNames[i]);
-    }
+        FatalError("Failed to query audio device list: %s", alureGetErrorString());
 
-    if(deviceNames)
-        alureFreeDeviceNames(deviceNames);
+    Log("Available audio devices:");
+    for(int i = 0; i < deviceCount; ++i)
+        Log("  %s", deviceNames[i]);
+
+    alureFreeDeviceNames(deviceNames);
 }

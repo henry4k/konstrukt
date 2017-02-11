@@ -47,14 +47,11 @@ Timer* CheckTimerFromLua( lua_State* l, int stackPosition )
     return (Timer*)CheckPointerFromLua(l, stackPosition);
 }
 
-bool RegisterTimeInLua()
+void RegisterTimeInLua()
 {
     g_TimerTriggeredEvent = RegisterLuaEvent(TIMER_TRIGGERED_EVENT_NAME);
-    if(g_TimerTriggeredEvent == INVALID_LUA_EVENT)
-        return false;
 
-    return
-        RegisterFunctionInLua("GetTime", Lua_GetTime) &&
-        RegisterFunctionInLua("CreateTimer", Lua_CreateTimer) &&
-        RegisterFunctionInLua("DestroyTimer", Lua_DestroyTimer);
+    RegisterFunctionInLua("GetTime", Lua_GetTime);
+    RegisterFunctionInLua("CreateTimer", Lua_CreateTimer);
+    RegisterFunctionInLua("DestroyTimer", Lua_DestroyTimer);
 }

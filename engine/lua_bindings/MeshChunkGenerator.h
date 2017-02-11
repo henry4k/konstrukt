@@ -7,6 +7,6 @@ struct MeshChunkGenerator;
 MeshChunkGenerator* GetMeshChunkGeneratorFromLua( lua_State* l, int stackPosition );
 MeshChunkGenerator* CheckMeshChunkGeneratorFromLua( lua_State* l, int stackPosition );
 
-bool RegisterMeshChunkGeneratorInLua();
+void RegisterMeshChunkGeneratorInLua();
 
 #endif

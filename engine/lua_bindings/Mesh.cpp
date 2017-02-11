@@ -39,9 +39,8 @@ Mesh* CheckMeshFromLua( lua_State* l, int stackPosition )
     return (Mesh*)CheckPointerFromLua(l, stackPosition);
 }
 
-bool RegisterMeshInLua()
+void RegisterMeshInLua()
 {
-    return
-        RegisterFunctionInLua("CreateMesh", Lua_CreateMesh) &&
-        RegisterFunctionInLua("DestroyMesh", Lua_DestroyMesh);
+    RegisterFunctionInLua("CreateMesh", Lua_CreateMesh);
+    RegisterFunctionInLua("DestroyMesh", Lua_DestroyMesh);
 }

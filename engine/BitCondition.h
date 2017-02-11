@@ -37,7 +37,7 @@ void AddBitConditions( BitConditionSolver* solver,
  * Collect all values (payloads), whose bit conditions match the given bit field.
  *
  * @return
- * A list which contains the results or `NULL` if something went wrong.
+ * A list which contains the results.
  */
 List* GatherPayloadFromBitField( const BitConditionSolver* solver,
                                  const void* bitField,

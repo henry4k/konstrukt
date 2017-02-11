@@ -12,7 +12,7 @@
 enum LogLevel
 {
     LOG_INFO,
-    LOG_ERROR,
+    LOG_WARNING,
     LOG_FATAL_ERROR
 };
 
@@ -26,7 +26,7 @@ void SetLogHandler( LogHandler handler );
 LogHandler GetLogHandler();
 
 void Log( const char* format, ... );
-void Error( const char* format, ... );
+void Warn( const char* format, ... );
 
 /**
  * Will abort the program after emitting the log message.

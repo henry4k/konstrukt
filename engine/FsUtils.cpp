@@ -59,27 +59,22 @@ const char* GetLastErrorAsString()
 }
 #endif
 
-bool CreateDirectory( const char* path )
+void CreateDirectory( const char* path )
 {
 #if defined(_WIN32)
     if(!CreateDirectoryA(path, NULL))
     {
-        Error("Can't create directory '%s': %s",
-              path,
-              GetLastErrorAsString());
-        return false;
+        FatalError("Can't create directory '%s': %s",
+                   path, GetLastErrorAsString());
     }
 #else
     const mode_t mode = S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH; // 0666
     if(mkdir(path, mode) != 0)
     {
-        Error("Can't create directory '%s': %s",
-              path,
-              strerror(errno));
-        return false;
+        FatalError("Can't create directory '%s': %s",
+                   path, strerror(errno));
     }
 #endif
-    return true;
 }
 
 const char* CreateTemporaryDirectory( const char* name )
@@ -88,10 +83,8 @@ const char* CreateTemporaryDirectory( const char* name )
     char tempPath[MAX_PATH_SIZE];
     if(!GetTempPathA(sizeof(tempPath), tempPath))
     {
-        Error("Can't create temporary directory '%s': %s",
-              name,
-              GetLastErrorAsString());
-        return NULL;
+        FatalError("Can't create temporary directory '%s': %s",
+                   name, GetLastErrorAsString());
     }
 
     const char* path;
@@ -105,19 +98,15 @@ const char* CreateTemporaryDirectory( const char* name )
                       randomValue);
     } while(GetFileType(path) != FILE_TYPE_INVALID);
 
-    if(!CreateDirectory(path))
-        return NULL;
-
+    CreateDirectory(path);
     return path;
 #else
     static char path[MAX_PATH_SIZE];
     CopyString(Format("/tmp/konstrukt-%s-XXXXXX", name), path, sizeof(path));
     if(!mkdtemp(path))
     {
-        Error("Can't create temporary directory '%s': %s",
-              name,
-              strerror(errno));
-        return NULL;
+        FatalError("Can't create temporary directory '%s': %s",
+                   name, strerror(errno));
     }
     return path;
 #endif
@@ -142,10 +131,7 @@ PathList* GetDirEntries( const char* path )
     WIN32_FIND_DATA dirEntry;
     HANDLE dir = FindFirstFile(path, &dirEntry);
     if(dir == INVALID_HANDLE_VALUE)
-    {
-        Error("Can't read directory '%s'.", path);
-        goto error;
-    }
+        FatalError("Can't read directory '%s'.", path);
 
     do
     {
@@ -160,12 +146,7 @@ PathList* GetDirEntries( const char* path )
 #else
     DIR* dir = opendir(path);
     if(!dir)
-    {
-        Error("Can't read directory '%s': %s",
-              path,
-              strerror(errno));
-        goto error;
-    }
+        FatalError("Can't read directory '%s': %s", path, strerror(errno));
 
     for(;;)
     {
@@ -185,11 +166,6 @@ PathList* GetDirEntries( const char* path )
     closedir(dir);
 #endif
     return list;
-
-error:
-    DestroyArrayList(list);
-    DELETE(PathList, list);
-    return NULL;
 }
 
 void FreePathList( PathList* list )
@@ -198,19 +174,13 @@ void FreePathList( PathList* list )
     DELETE(PathList, list);
 }
 
-bool RemoveFile( const char* path )
+void RemoveFile( const char* path )
 {
     if(remove(path) != 0)
-    {
-        Error("Can't remove '%s': %s",
-              path,
-              strerror(errno));
-        return false;
-    }
-    return true;
+        FatalError("Can't remove '%s': %s", path, strerror(errno));
 }
 
-bool RemoveDirectoryTree( const char* path )
+void RemoveDirectoryTree( const char* path )
 {
     switch(GetFileType(path))
     {
@@ -220,32 +190,22 @@ bool RemoveDirectoryTree( const char* path )
         case FILE_TYPE_DIRECTORY:
         {
             PathList* entries = GetDirEntries(path);
-            bool fail = false;
             REPEAT(entries->length, i)
             {
                 const Path* entry = entries->data + i;
                 char entryPath[MAX_PATH_SIZE];
                 FormatBuffer(entryPath, MAX_PATH_SIZE, "%s%c%s",
                         path, NATIVE_DIR_SEP, entry->str);
-                if(!RemoveDirectoryTree(entryPath))
-                {
-                    fail = true;
-                    break;
-                }
+                RemoveDirectoryTree(entryPath);
             }
             FreePathList(entries);
-            if(fail)
-                return false;
             return RemoveFile(path);
         }
 
         case FILE_TYPE_UNKNOWN:
-            Error("Encountered a file of unknown type: %s", path);
-            return false;
+            FatalError("Encountered a file of unknown type: %s", path);
 
         case FILE_TYPE_INVALID:
             FatalError("Can't delete invalid files: %s", path);
-            return false;
     }
-    return false;
 }

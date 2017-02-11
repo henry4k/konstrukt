@@ -20,6 +20,6 @@ void PushShaderVariableSetToLua( lua_State* l, ShaderVariableSet* set );
 ShaderVariableSet* GetShaderVariableSetFromLua( lua_State* l, int stackPosition );
 ShaderVariableSet* CheckShaderVariableSetFromLua( lua_State* l, int stackPosition );
 
-bool RegisterShaderInLua();
+void RegisterShaderInLua();
 
 #endif

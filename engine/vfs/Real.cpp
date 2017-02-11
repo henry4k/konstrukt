@@ -13,16 +13,12 @@ static void DestroyVfs_Real()
     // Nothing to do here.
 }
 
-static bool MountVfsDir_Real( Mount* mount )
+static void MountVfsDir_Real( Mount* mount )
 {
     if(GetFileType(mount->realPath) != FILE_TYPE_DIRECTORY)
-    {
-        Error("Can't mount '%s': '%s' is not a directory.",
-              mount->vfsPath,
-              mount->realPath);
-        return false;
-    }
-    return true;
+        FatalError("Can't mount '%s': '%s' is not a directory.",
+                   mount->vfsPath,
+                   mount->realPath);
 }
 
 static void UnmountVfsDir_Real( const Mount* mount )
@@ -91,21 +87,15 @@ static void* OpenVfsFile_Real( const Mount* mount,
                                VfsOpenMode mode )
 {
     if(!subMountPath)
-    {
-        Error("Can't open file '%s'.", mount->vfsPath);
-        return NULL;
-    }
+        FatalError("Can't open file '%s'.", mount->vfsPath);
 
     const char* path = GetRealPath(mount, subMountPath);
     FILE* file = fopen(path, VfsOpenModeToString(mode));
     if(!file)
-    {
-        Error("Can't open file '%s/%s': %s",
-              mount->vfsPath,
-              subMountPath,
-              strerror(errno));
-        return NULL;
-    }
+        FatalError("Can't open file '%s/%s': %s",
+                   mount->vfsPath,
+                   subMountPath,
+                   strerror(errno));
 
     return (void*)file;
 }
@@ -113,7 +103,7 @@ static void* OpenVfsFile_Real( const Mount* mount,
 static void CloseVfsFile_Real( const void* file )
 {
     if(fclose((FILE*)file) != 0)
-        Error("Can't close file: %s", strerror(errno));
+        FatalError("Can't close file: %s", strerror(errno));
 }
 
 static int ReadVfsFile_Real( void* file, void* buffer, int size )
@@ -126,31 +116,18 @@ static int WriteVfsFile_Real( void* file, const void* buffer, int size )
     return (int)fwrite(buffer, 1, size, (FILE*)file);
 }
 
-static bool SetVfsFilePos_Real( void* file, int position )
+static void SetVfsFilePos_Real( void* file, int position )
 {
-    if(fseek((FILE*)file, position, SEEK_SET) == 0)
-    {
-        return true;
-    }
-    else
-    {
-        Error("Can't set file position: %s", strerror(errno));
-        return false;
-    }
+    if(fseek((FILE*)file, position, SEEK_SET) != 0)
+        FatalError("Can't set file position: %s", strerror(errno));
 }
 
 static int GetVfsFilePos_Real( const void* file )
 {
     int pos = ftell((FILE*)file);
-    if(pos >= 0)
-    {
-        return true;
-    }
-    else
-    {
-        Error("Can't get file position: %s", strerror(errno));
-        return false;
-    }
+    if(pos < 0)
+        FatalError("Can't get file position: %s", strerror(errno));
+    return pos;
 }
 
 static int GetVfsFileSize_Real( const void* file )
@@ -182,16 +159,16 @@ static VfsFileInfo GetVfsFileInfo_Real( const Mount* mount, const char* subMount
     return info;
 }
 
-static bool DeleteVfsFile_Real( Mount* mount, const char* subMountPath )
+static void DeleteVfsFile_Real( Mount* mount, const char* subMountPath )
 {
     const char* path = GetRealPath(mount, subMountPath);
-    return RemoveFile(path);
+    RemoveFile(path);
 }
 
-static bool MakeVfsDir_Real( Mount* mount, const char* subMountPath )
+static void MakeVfsDir_Real( Mount* mount, const char* subMountPath )
 {
     const char* path = GetRealPath(mount, subMountPath);
-    return CreateDirectory(path);
+    CreateDirectory(path);
 }
 
 MountSystem* InitVfs_Real()

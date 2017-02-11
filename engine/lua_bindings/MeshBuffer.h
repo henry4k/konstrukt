@@ -7,6 +7,6 @@ struct MeshBuffer;
 MeshBuffer* GetMeshBufferFromLua( lua_State* l, int stackPosition );
 MeshBuffer* CheckMeshBufferFromLua( lua_State* l, int stackPosition );
 
-bool RegisterMeshBufferInLua();
+void RegisterMeshBufferInLua();
 
 #endif

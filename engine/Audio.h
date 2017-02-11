@@ -45,7 +45,7 @@ struct AudioBuffer;
 struct AudioSource;
 
 
-bool InitAudio();
+void InitAudio();
 void DestroyAudio();
 
 /**

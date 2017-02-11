@@ -259,28 +259,27 @@ int CheckTransformationFlagsFromLua( lua_State* l, int stackPosition )
 
 // --- Register in Lua ---
 
-bool RegisterMathInLua()
+void RegisterMathInLua()
 {
-    return
-        RegisterUserDataTypeInLua(QUATERNION_TYPE, NULL) &&
-        RegisterFunctionInLua("CreateQuaternion", Lua_CreateQuaternion) &&
-        RegisterFunctionInLua("CreateQuaternionByAngleAndAxis", Lua_CreateQuaternionByAngleAndAxis) &&
-        RegisterFunctionInLua("CopyQuaternion", Lua_CopyQuaternion) &&
-        RegisterFunctionInLua("NormalizeQuaternion", Lua_NormalizeQuaternion) &&
-        RegisterFunctionInLua("QuaternionConjugate", Lua_QuaternionConjugate) &&
-        RegisterFunctionInLua("InvertQuaternion", Lua_InvertQuaternion) &&
-        RegisterFunctionInLua("MultiplyQuaternion", Lua_MultiplyQuaternion) &&
-        RegisterFunctionInLua("QuaternionXVector3", Lua_QuaternionXVector3) &&
+    RegisterUserDataTypeInLua(QUATERNION_TYPE, NULL);
+    RegisterFunctionInLua("CreateQuaternion", Lua_CreateQuaternion);
+    RegisterFunctionInLua("CreateQuaternionByAngleAndAxis", Lua_CreateQuaternionByAngleAndAxis);
+    RegisterFunctionInLua("CopyQuaternion", Lua_CopyQuaternion);
+    RegisterFunctionInLua("NormalizeQuaternion", Lua_NormalizeQuaternion);
+    RegisterFunctionInLua("QuaternionConjugate", Lua_QuaternionConjugate);
+    RegisterFunctionInLua("InvertQuaternion", Lua_InvertQuaternion);
+    RegisterFunctionInLua("MultiplyQuaternion", Lua_MultiplyQuaternion);
+    RegisterFunctionInLua("QuaternionXVector3", Lua_QuaternionXVector3);
 
-        RegisterUserDataTypeInLua(MATRIX_TYPE, NULL) &&
-        RegisterFunctionInLua("CreateMatrix4", Lua_CreateMatrix4) &&
-        RegisterFunctionInLua("CreateMatrix4FromQuaternion", Lua_CreateMatrix4FromQuaternion) &&
-        RegisterFunctionInLua("CopyMatrix4", Lua_CopyMatrix4) &&
-        RegisterFunctionInLua("MultiplyMatrix4", Lua_MultiplyMatrix4) &&
-        RegisterFunctionInLua("TranslateMatrix4", Lua_TranslateMatrix4) &&
-        RegisterFunctionInLua("ScaleMatrix4", Lua_ScaleMatrix4) &&
-        RegisterFunctionInLua("RotateMatrix4", Lua_RotateMatrix4) &&
-        RegisterFunctionInLua("Matrix4TransformVector", Lua_Matrix4TransformVector) &&
-        RegisterFunctionInLua("CreateLookAtMatrix", Lua_CreateLookAtMatrix) &&
-        RegisterFunctionInLua("ClipTranslationOfMatrix4", Lua_ClipTranslationOfMatrix4);
+    RegisterUserDataTypeInLua(MATRIX_TYPE, NULL);
+    RegisterFunctionInLua("CreateMatrix4", Lua_CreateMatrix4);
+    RegisterFunctionInLua("CreateMatrix4FromQuaternion", Lua_CreateMatrix4FromQuaternion);
+    RegisterFunctionInLua("CopyMatrix4", Lua_CopyMatrix4);
+    RegisterFunctionInLua("MultiplyMatrix4", Lua_MultiplyMatrix4);
+    RegisterFunctionInLua("TranslateMatrix4", Lua_TranslateMatrix4);
+    RegisterFunctionInLua("ScaleMatrix4", Lua_ScaleMatrix4);
+    RegisterFunctionInLua("RotateMatrix4", Lua_RotateMatrix4);
+    RegisterFunctionInLua("Matrix4TransformVector", Lua_Matrix4TransformVector);
+    RegisterFunctionInLua("CreateLookAtMatrix", Lua_CreateLookAtMatrix);
+    RegisterFunctionInLua("ClipTranslationOfMatrix4", Lua_ClipTranslationOfMatrix4);
 }

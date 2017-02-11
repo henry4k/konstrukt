@@ -85,7 +85,7 @@ struct ShaderVariableBindings
 };
 
 
-bool InitShader();
+void InitShader();
 void DestroyShader();
 
 ShaderVariableSet* GetGlobalShaderVariableSet();

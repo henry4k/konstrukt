@@ -76,7 +76,7 @@ static bool ControlNameIsOkay( const char* name )
 {
     if(strlen(name) > MAX_CONTROL_NAME_SIZE-1)
     {
-        Error("Name of control '%s' is too long.", name);
+        FatalError("Name of control '%s' is too long.", name);
         return false;
     }
 
@@ -84,7 +84,7 @@ static bool ControlNameIsOkay( const char* name )
     {
         if(strcmp(name, g_Controls[i].name) == 0)
         {
-            Error("Control '%s' is not unique.", name);
+            FatalError("Control '%s' is not unique.", name);
             return false;
         }
     }
@@ -119,7 +119,7 @@ bool RegisterControl( const char* name, ControlActionFn callback, void* context 
         }
         else
         {
-            Error("Unknown interpretation mode '%s' of control '%s'.", interpretation, name);
+            FatalError("Unknown interpretation mode '%s' of control '%s'.", interpretation, name);
             return false;
         }
     }
@@ -132,13 +132,13 @@ bool RegisterControl( const char* name, ControlActionFn callback, void* context 
     {
         if(!CreateControlBindingFromString(bindingName, controlIndex))
         {
-            Error("Failed to create binding for '%s'.", bindingName);
+            FatalError("Failed to create binding for '%s'.", bindingName);
             return false;
         }
     }
     else
     {
-        Error("Control '%s' is unused.", name);
+        Warn("Control '%s' is unused.", name);
         return false;
     }
 

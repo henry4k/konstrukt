@@ -49,7 +49,7 @@ static const float INFINITE_COLLISION_THRESHOLD = FLT_MAX; // Safer than INFINIT
 typedef void (*CollisionCallback)( const Collision* collision );
 
 
-bool InitPhysicsManager();
+void InitPhysicsManager();
 void DestroyPhysicsManager();
 void UpdatePhysicsManager( double timeDelta );
 void SetCollisionCallback( CollisionCallback callback );

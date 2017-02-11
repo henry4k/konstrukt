@@ -117,16 +117,15 @@ MeshBuffer* CheckMeshBufferFromLua( lua_State* l, int stackPosition )
     return (MeshBuffer*)CheckPointerFromLua(l, stackPosition);
 }
 
-bool RegisterMeshBufferInLua()
+void RegisterMeshBufferInLua()
 {
-    return
-        RegisterFunctionInLua("CreateMeshBuffer", Lua_CreateMeshBuffer) &&
-        RegisterFunctionInLua("DestroyMeshBuffer", Lua_DestroyMeshBuffer) &&
-        RegisterFunctionInLua("TransformMeshBuffer", Lua_TransformMeshBuffer) &&
-        RegisterFunctionInLua("IndexMeshBuffer", Lua_IndexMeshBuffer) &&
-        RegisterFunctionInLua("CalcMeshBufferNormals", Lua_CalcMeshBufferNormals) &&
-        RegisterFunctionInLua("CalcMeshBufferTangents", Lua_CalcMeshBufferTangents) &&
-        RegisterFunctionInLua("AppendMeshBuffer", Lua_AppendMeshBuffer) &&
-        RegisterFunctionInLua("AppendIndexToMeshBuffer", Lua_AppendIndexToMeshBuffer) &&
-        RegisterFunctionInLua("AppendVertexToMeshBuffer", Lua_AppendVertexToMeshBuffer);
+    RegisterFunctionInLua("CreateMeshBuffer", Lua_CreateMeshBuffer);
+    RegisterFunctionInLua("DestroyMeshBuffer", Lua_DestroyMeshBuffer);
+    RegisterFunctionInLua("TransformMeshBuffer", Lua_TransformMeshBuffer);
+    RegisterFunctionInLua("IndexMeshBuffer", Lua_IndexMeshBuffer);
+    RegisterFunctionInLua("CalcMeshBufferNormals", Lua_CalcMeshBufferNormals);
+    RegisterFunctionInLua("CalcMeshBufferTangents", Lua_CalcMeshBufferTangents);
+    RegisterFunctionInLua("AppendMeshBuffer", Lua_AppendMeshBuffer);
+    RegisterFunctionInLua("AppendIndexToMeshBuffer", Lua_AppendIndexToMeshBuffer);
+    RegisterFunctionInLua("AppendVertexToMeshBuffer", Lua_AppendVertexToMeshBuffer);
 }

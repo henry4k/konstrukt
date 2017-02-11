@@ -18,7 +18,7 @@ struct Mount
 struct MountSystem
 {
     void (*destroy)();
-    bool (*mount)( Mount* mount );
+    void (*mount)( Mount* mount );
     void (*unmount)( const Mount* mount );
     void* (*openFile)( const Mount* mount,
                        const char* subMountPath,
@@ -26,14 +26,14 @@ struct MountSystem
     void (*closeFile)( const void* file );
     int (*readFile)( void* file, void* buffer, int size );
     int (*writeFile)( void* file, const void* buffer, int size );
-    bool (*setFilePos)( void* file, int position );
+    void (*setFilePos)( void* file, int position );
     int  (*getFilePos)( const void* file );
     int  (*getFileSize)( const void* file );
     bool (*hasFileEnded)( const void* file );
     PathList* (*getDirEntries)( const Mount* mount, const char* subMountPath );
     VfsFileInfo (*getFileInfo)( const Mount* mount, const char* subMountPath );
-    bool (*deleteFile)( Mount* mount, const char* subMountPath );
-    bool (*makeDir)( Mount* mount, const char* subMountPath );
+    void (*deleteFile)( Mount* mount, const char* subMountPath );
+    void (*makeDir)( Mount* mount, const char* subMountPath );
 };
 
 #endif

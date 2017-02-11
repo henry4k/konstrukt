@@ -176,24 +176,23 @@ AudioSource* CheckAudioSourceFromLua( lua_State* l, int stackPosition )
 
 // --- Register in Lua ---
 
-bool RegisterAudioInLua()
+void RegisterAudioInLua()
 {
-    return
-        RegisterFunctionInLua("SetAudioListenerAttachmentTarget", Lua_SetAudioListenerAttachmentTarget) &&
-        RegisterFunctionInLua("SetAudioListenerTransformation", Lua_SetAudioListenerTransformation) &&
+    RegisterFunctionInLua("SetAudioListenerAttachmentTarget", Lua_SetAudioListenerAttachmentTarget);
+    RegisterFunctionInLua("SetAudioListenerTransformation", Lua_SetAudioListenerTransformation);
 
-        RegisterFunctionInLua("LoadAudioBuffer", Lua_LoadAudioBuffer) &&
-        RegisterFunctionInLua("DestroyAudioBuffer", Lua_DestroyAudioBuffer) &&
+    RegisterFunctionInLua("LoadAudioBuffer", Lua_LoadAudioBuffer);
+    RegisterFunctionInLua("DestroyAudioBuffer", Lua_DestroyAudioBuffer);
 
-        RegisterFunctionInLua("CreateAudioSource", Lua_CreateAudioSource) &&
-        RegisterFunctionInLua("DestroyAudioSource", Lua_DestroyAudioSource) &&
-        RegisterFunctionInLua("SetAudioSourceRelative", Lua_SetAudioSourceRelative) &&
-        RegisterFunctionInLua("SetAudioSourceLooping", Lua_SetAudioSourceLooping) &&
-        RegisterFunctionInLua("SetAudioSourcePitch", Lua_SetAudioSourcePitch) &&
-        RegisterFunctionInLua("SetAudioSourceGain", Lua_SetAudioSourceGain) &&
-        RegisterFunctionInLua("SetAudioSourceAttachmentTarget", Lua_SetAudioSourceAttachmentTarget) &&
-        RegisterFunctionInLua("SetAudioSourceTransformation", Lua_SetAudioSourceTransformation) &&
-        RegisterFunctionInLua("EnqueueAudioBuffer", Lua_EnqueueAudioBuffer) &&
-        RegisterFunctionInLua("PlayAudioSource", Lua_PlayAudioSource) &&
-        RegisterFunctionInLua("PauseAudioSource", Lua_PauseAudioSource);
+    RegisterFunctionInLua("CreateAudioSource", Lua_CreateAudioSource);
+    RegisterFunctionInLua("DestroyAudioSource", Lua_DestroyAudioSource);
+    RegisterFunctionInLua("SetAudioSourceRelative", Lua_SetAudioSourceRelative);
+    RegisterFunctionInLua("SetAudioSourceLooping", Lua_SetAudioSourceLooping);
+    RegisterFunctionInLua("SetAudioSourcePitch", Lua_SetAudioSourcePitch);
+    RegisterFunctionInLua("SetAudioSourceGain", Lua_SetAudioSourceGain);
+    RegisterFunctionInLua("SetAudioSourceAttachmentTarget", Lua_SetAudioSourceAttachmentTarget);
+    RegisterFunctionInLua("SetAudioSourceTransformation", Lua_SetAudioSourceTransformation);
+    RegisterFunctionInLua("EnqueueAudioBuffer", Lua_EnqueueAudioBuffer);
+    RegisterFunctionInLua("PlayAudioSource", Lua_PlayAudioSource);
+    RegisterFunctionInLua("PauseAudioSource", Lua_PauseAudioSource);
 }

@@ -7,6 +7,6 @@ struct Image;
 Image* GetImageFromLua( lua_State* l, int stackPosition );
 Image* CheckImageFromLua( lua_State* l, int stackPosition );
 
-bool RegisterImageInLua();
+void RegisterImageInLua();
 
 #endif

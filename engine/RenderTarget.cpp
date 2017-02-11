@@ -45,7 +45,7 @@ static void FreeRenderTarget( RenderTarget* target );
 static bool RenderTargetIsComplete( const RenderTarget* target );
 static void OnFramebufferResize( int width, int height );
 
-bool InitDefaultRenderTarget()
+void InitDefaultRenderTarget()
 {
     RenderTarget* target = DefaultRenderTarget = new RenderTarget;
     memset(target, 0, sizeof(RenderTarget));
@@ -53,8 +53,6 @@ bool InitDefaultRenderTarget()
     target->type = DEFAULT_RENDER_TARGET;
 
     SetFrambufferFn(OnFramebufferResize);
-
-    return true;
 }
 
 void DestroyDefaultRenderTarget()
@@ -201,10 +199,7 @@ static bool RenderTargetIsComplete( const RenderTarget* target )
 void UpdateRenderTarget( RenderTarget* target )
 {
     if(!RenderTargetIsComplete(target))
-    {
-        Error("Can't update incomplete render target %p.", target);
-        return;
-    }
+        FatalError("Can't update incomplete render target %p.", target);
 
     switch(target->type)
     {

@@ -66,8 +66,8 @@ static void FreeModelWorld( ModelWorld* world )
         Model* model = &world->models[i];
         if(model->active)
         {
-            Error("Model #%d (%p) was still active when the world was destroyed.",
-                  i, model);
+            FatalError("Model #%d (%p) was still active when the world was destroyed.",
+                       i, model);
             FreeModel(model);
         }
 
@@ -195,10 +195,7 @@ static void DrawModel( const ModelDrawEntry* entry,
     ShaderProgram* program = entry->program;
 
     if(!ModelIsComplete(model))
-    {
-        Error("Trying to draw incomplete model %p.", model);
-        return;
-    }
+        FatalError("Trying to draw incomplete model %p.", model);
 
     BindShaderProgram(program);
 
@@ -305,20 +302,15 @@ static Model* FindInactiveModel( ModelWorld* world )
 Model* CreateModel( ModelWorld* world )
 {
     Model* model = FindInactiveModel(world);
-    if(model)
-    {
-        memset(model, 0, sizeof(Model));
-        model->active = true;
-        InitReferenceCounter(&model->refCounter);
-        model->transformation = Mat4Identity;
-        model->shaderVariableSet = CreateShaderVariableSet();
-        return model;
-    }
-    else
-    {
-        Error("Can't create more models.");
-        return NULL;
-    }
+    if(!model)
+        FatalError("Can't create more models.");
+
+    memset(model, 0, sizeof(Model));
+    model->active = true;
+    InitReferenceCounter(&model->refCounter);
+    model->transformation = Mat4Identity;
+    model->shaderVariableSet = CreateShaderVariableSet();
+    return model;
 }
 
 static void FreeModel( Model* model )

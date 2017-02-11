@@ -7,6 +7,6 @@ struct Texture;
 Texture* GetTextureFromLua( lua_State* l, int stackPosition );
 Texture* CheckTextureFromLua( lua_State* l, int stackPosition );
 
-bool RegisterTextureInLua();
+void RegisterTextureInLua();
 
 #endif

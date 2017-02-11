@@ -33,7 +33,7 @@ Mesh* CreateMesh( const MeshBuffer* buffer )
     const int indexCount = GetMeshBufferIndexCount(buffer);
 
     if(!vertexCount)
-        Error("Creating an empty mesh.");
+        FatalError("Creating an empty mesh.");
 
     Mesh* mesh = new Mesh;
     memset(mesh, 0, sizeof(Mesh));

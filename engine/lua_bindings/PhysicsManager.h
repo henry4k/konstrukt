@@ -15,6 +15,6 @@ Force* CheckForceFromLua( lua_State* l, int stackPosition );
 Solid* GetSolidFromLua( lua_State* l, int stackPosition );
 Solid* CheckSolidFromLua( lua_State* l, int stackPosition );
 
-bool RegisterPhysicsManagerInLua();
+void RegisterPhysicsManagerInLua();
 
 #endif

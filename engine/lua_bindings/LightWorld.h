@@ -11,6 +11,6 @@ LightWorld* CheckLightWorldFromLua( lua_State* l, int stackPosition );
 Light* GetLightFromLua( lua_State* l, int stackPosition );
 Light* CheckLightFromLua( lua_State* l, int stackPosition );
 
-bool RegisterLightWorldInLua();
+void RegisterLightWorldInLua();
 
 #endif

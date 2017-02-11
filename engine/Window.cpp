@@ -54,7 +54,7 @@ static void OnMouseScroll( GLFWwindow* window, double xoffset, double yoffset );
 static void OnCursorMove( GLFWwindow* window, double x, double y );
 static void OnKeyAction( GLFWwindow* window, int key, int scancode, int action, int mods );
 
-bool InitWindow()
+void InitWindow()
 {
     const int width  = GetConfigInt("window.width",  640);
     const int height = GetConfigInt("window.height", 480);
@@ -66,10 +66,7 @@ bool InitWindow()
     assert(g_Window == NULL);
     glfwSetErrorCallback(OnGLFWError);
     if(!glfwInit())
-    {
-        Error("GLFW init failed.");
-        return false;
-    }
+        FatalError("GLFW init failed.");
 
     glfwDefaultWindowHints();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -83,11 +80,7 @@ bool InitWindow()
 
     g_Window = glfwCreateWindow(width, height, title, NULL, NULL);
     if(!g_Window)
-    {
-        Error("Window creation failed.");
-        glfwTerminate();
-        return false;
-    }
+        FatalError("Window creation failed.");
 
     glfwGetWindowSize(g_Window, &g_WindowWidth, &g_WindowHeight);
     glfwGetFramebufferSize(g_Window, &g_FramebufferWidth, &g_FramebufferHeight);
@@ -95,10 +88,7 @@ bool InitWindow()
     glfwMakeContextCurrent(g_Window);
 
     if(!flextInit(g_Window))
-    {
-        Error("Failed to load OpenGL extensions.");
-        return false;
-    }
+        FatalError("Failed to load OpenGL extensions.");
 
     Log("Using OpenGL %s\n"
         "Vendor: %s\n"
@@ -128,16 +118,12 @@ bool InitWindow()
 
     if(debug)
     {
-        if(FLEXT_ARB_debug_output)
-        {
-            glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-            glDebugMessageCallbackARB(OnDebugEvent, NULL);
-            Log("Debug output supported! You may receive debug messages from your OpenGL driver.");
-        }
-        else
-        {
-            Error("Debug output requested, but it's not supported!");
-        }
+        if(!FLEXT_ARB_debug_output)
+            FatalError("Debug output requested, but it's not supported!");
+
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+        glDebugMessageCallbackARB(OnDebugEvent, NULL);
+        Log("Debug output supported! You may receive debug messages from your OpenGL driver.");
     }
 
     glfwSetWindowSizeCallback(g_Window, OnWindowResize);
@@ -146,8 +132,6 @@ bool InitWindow()
     glfwSetScrollCallback(g_Window, OnMouseScroll);
     glfwSetCursorPosCallback(g_Window, OnCursorMove);
     glfwSetKeyCallback(g_Window, OnKeyAction);
-
-    return true;
 }
 
 void DestroyWindow()
@@ -231,7 +215,7 @@ void SetKeyActionFn( KeyActionFn fn )
 
 static void OnGLFWError( int code, const char* description )
 {
-    Error("GLFW error %d: %s", code, description);
+    FatalError("GLFW error %d: %s", code, description);
 }
 
 #if defined(KONSTRUKT_GL_DEBUG_FIX)
@@ -285,7 +269,7 @@ CALLBACK_API static void OnDebugEvent( GLenum source,
         case GL_DEBUG_SEVERITY_LOW_ARB: severityName = "Low"; break;
     }
 
-    Error("%s severity %s %s %d, %s", severityName, sourceName, typeName, id, message);
+    Warn("%s severity %s %s %d, %s", severityName, sourceName, typeName, id, message);
 }
 
 static void OnWindowResize( GLFWwindow* window, int width, int height )

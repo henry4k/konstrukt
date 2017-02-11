@@ -146,19 +146,18 @@ Light* CheckLightFromLua( lua_State* l, int stackPosition )
     return (Light*)CheckPointerFromLua(l, stackPosition);
 }
 
-bool RegisterLightWorldInLua()
+void RegisterLightWorldInLua()
 {
-    return
-        RegisterFunctionInLua("CreateLightWorld", Lua_CreateLightWorld) &&
-        RegisterFunctionInLua("DestroyLightWorld", Lua_DestroyLightWorld) &&
-        RegisterFunctionInLua("SetMaxActiveLightCount", Lua_SetMaxActiveLightCount) &&
-        RegisterFunctionInLua("GetLightWorldShaderVariableSet", Lua_GetLightWorldShaderVariableSet) &&
+    RegisterFunctionInLua("CreateLightWorld", Lua_CreateLightWorld);
+    RegisterFunctionInLua("DestroyLightWorld", Lua_DestroyLightWorld);
+    RegisterFunctionInLua("SetMaxActiveLightCount", Lua_SetMaxActiveLightCount);
+    RegisterFunctionInLua("GetLightWorldShaderVariableSet", Lua_GetLightWorldShaderVariableSet);
 
-        RegisterFunctionInLua("CreateLight", Lua_CreateLight) &&
-        RegisterFunctionInLua("DestroyLight", Lua_DestroyLight) &&
-        RegisterFunctionInLua("SetLightAttachmentTarget", Lua_SetLightAttachmentTarget) &&
-        RegisterFunctionInLua("SetLightTransformation", Lua_SetLightTransformation) &&
-        RegisterFunctionInLua("SetLightValue", Lua_SetLightValue) &&
-        RegisterFunctionInLua("SetLightRange", Lua_SetLightRange) &&
-        RegisterFunctionInLua("GetLightShaderVariableSet", Lua_GetLightShaderVariableSet);
+    RegisterFunctionInLua("CreateLight", Lua_CreateLight);
+    RegisterFunctionInLua("DestroyLight", Lua_DestroyLight);
+    RegisterFunctionInLua("SetLightAttachmentTarget", Lua_SetLightAttachmentTarget);
+    RegisterFunctionInLua("SetLightTransformation", Lua_SetLightTransformation);
+    RegisterFunctionInLua("SetLightValue", Lua_SetLightValue);
+    RegisterFunctionInLua("SetLightRange", Lua_SetLightRange);
+    RegisterFunctionInLua("GetLightShaderVariableSet", Lua_GetLightShaderVariableSet);
 }

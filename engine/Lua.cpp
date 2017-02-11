@@ -34,9 +34,10 @@ static int Lua_SetErrorFunction( lua_State* l );
 static int Lua_SetEventCallback( lua_State* l );
 static int Lua_ErrorProxy( lua_State* l );
 static int Lua_Log( lua_State* l );
+static int Lua_Warn( lua_State* l );
 
 
-bool InitLua()
+void InitLua()
 {
     assert(g_LuaState == NULL);
     assert(g_LuaEvents.empty());
@@ -72,10 +73,9 @@ bool InitLua()
     RegisterFunctionInLua("SetErrorFunction", Lua_SetErrorFunction);
     RegisterFunctionInLua("SetEventCallback", Lua_SetEventCallback);
     RegisterFunctionInLua("Log", Lua_Log);
+    RegisterFunctionInLua("Warn", Lua_Warn);
 
     g_LuaShutdownEvent = RegisterLuaEvent("Shutdown");
-
-    return true;
 }
 
 void DestroyLua()
@@ -117,16 +117,15 @@ void UpdateLua()
     );
 }
 
-bool RegisterFunctionInLua( const char* name, lua_CFunction fn )
+void RegisterFunctionInLua( const char* name, lua_CFunction fn )
 {
     lua_rawgeti(g_LuaState, LUA_REGISTRYINDEX, g_LuaFunctionTable);
     lua_pushcfunction(g_LuaState, fn);
     lua_setfield(g_LuaState, -2, name);
     lua_pop(g_LuaState, 1);
-    return true;
 }
 
-bool RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback )
+void RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback )
 {
     lua_State* l = g_LuaState;
 
@@ -142,8 +141,6 @@ bool RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback )
 
     // pop metatable
     lua_pop(l, 1);
-
-    return true;
 }
 
 void* PushUserDataToLua( lua_State* l, const char* typeName, int size )
@@ -152,45 +149,31 @@ void* PushUserDataToLua( lua_State* l, const char* typeName, int size )
 
     luaL_getmetatable(l, typeName);
     if(!lua_istable(l, -1))
-    {
-        lua_pop(l, 2);
-        return NULL;
-    }
-    lua_setmetatable(l, -2);
+        FatalError("Lua userdata type '%s' does not exist.", typeName);
 
+    lua_setmetatable(l, -2);
     return data;
 }
 
-bool CopyUserDataToLua( lua_State* l, const char* typeName, int size, const void* data )
+void CopyUserDataToLua( lua_State* l, const char* typeName, int size, const void* data )
 {
     void* luaData = PushUserDataToLua(l, typeName, size);
-    if(!luaData)
-        return false;
     memcpy(luaData, data, size);
-    return true;
 }
 
 void* GetUserDataFromLua( lua_State* l, int stackPosition, const char* typeName )
 {
     void* data = lua_touserdata(l, stackPosition);
     if(!data)
-        return NULL;
+        FatalError("Not userdata");
 
     const bool dataHasMetatable = lua_getmetatable(l, stackPosition);
     if(!dataHasMetatable)
-    {
-        Error("no metatable attached");
-        return NULL;
-    }
+        FatalError("no metatable attached");
 
     luaL_getmetatable(l, typeName);
     if(!lua_istable(l, -1) || !lua_rawequal(l, -2, -1))
-    {
-        // pop userdatas metatable and the types metatable
-        lua_pop(l, 2);
-        Error("type unknown");
-        return NULL;
-    }
+        FatalError("type unknown");
 
     // pop both metatables
     lua_pop(l, 2);
@@ -275,32 +258,28 @@ static int Lua_ErrorProxy( lua_State* l )
     return 1;
 }
 
-static bool HandleLuaCallResult( lua_State* l, int result )
+static void HandleLuaCallResult( lua_State* l, int result )
 {
     switch(result)
     {
         case LUA_ERRRUN:
             {
                 const char* message = lua_tostring(l, -1);
-                Error("%s", message);
+                FatalError("%s", message);
                 lua_pop(l, 1);
             }
-            return false;
 
         case LUA_ERRMEM:
             FatalError("Lua encountered a memory allocation error.");
-            return false;
 
         case LUA_ERRERR:
             FatalError("Lua encountered an error while executing the error function.");
-            return false;
 
         case 0:
-            return true;
+            return;
 
         default:
             FatalError("Unknown call result.");
-            return false;
     }
 }
 
@@ -318,32 +297,24 @@ static const char* ReadLuaChunk( lua_State* l, void* userData, size_t* bytesRead
     return state->buffer;
 }
 
-bool RunLuaScript( lua_State* l, const char* vfsPath )
+void RunLuaScript( lua_State* l, const char* vfsPath )
 {
     Log("Running %s ...", vfsPath);
 
     lua_pushcfunction(l, Lua_ErrorProxy);
 
     VfsFile* file = OpenVfsFile(vfsPath, VFS_OPEN_READ);
-    if(file)
+    LoadState state;
+    state.file = file;
+    if(lua_load(l, ReadLuaChunk, &state, vfsPath, "t") == LUA_OK)
     {
-        LoadState state;
-        state.file = file;
-        if(lua_load(l, ReadLuaChunk, &state, vfsPath, "t") == LUA_OK)
-        {
-            const int callResult = lua_pcall(l, 0, 0, -2);
-            return HandleLuaCallResult(l, callResult);
-        }
-        else
-        {
-            Error("%s", lua_tostring(l, -1));
-            lua_pop(l, 2); // pop error function and error message
-            return false;
-        }
+        const int callResult = lua_pcall(l, 0, 0, -2);
+        HandleLuaCallResult(l, callResult);
     }
     else
     {
-        return false;
+        FatalError("%s", lua_tostring(l, -1));
+        lua_pop(l, 2); // pop error function and error message
     }
 }
 
@@ -369,10 +340,10 @@ int RegisterLuaEvent( const char* name )
     g_LuaEvents.push_back(event);
 
     const int id = (int)g_LuaEvents.size()-1;
-    if(id >= 0)
-        return id;
-    else
-        return INVALID_LUA_EVENT;
+    if(id < 0)
+        FatalError("RegisterLuaEvent");
+
+    return id;
 }
 
 int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues )
@@ -415,77 +386,8 @@ int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues
         stackSizeAfterCall - (stackSizeBeforeCall-poppedValueCount);
     lua_remove(l, -(returnValueCount+1)); // Remove error function
 
-    if(HandleLuaCallResult(l, callResult))
-        return returnValueCount;
-    else
-        return 0;
-}
-
-bool PushArrayToLua( lua_State* l, LuaArrayType elementType, int elementCount, const void* elements )
-{
-    lua_createtable(l, elementCount, 0);
-
-    switch(elementType)
-    {
-#define HANDLE_TYPE(TypeEnum, Typedef, PushFn) \
-        case TypeEnum: \
-            for(int i = 0; i < elementCount; i++) \
-            { \
-                PushFn(l, ((const Typedef*)elements)[i]); \
-                lua_rawseti(l, -2, i+1); \
-            } \
-            break;
-
-        HANDLE_TYPE(LUA_BOOL_ARRAY, bool, lua_pushboolean)
-        HANDLE_TYPE(LUA_DOUBLE_ARRAY, double, lua_pushnumber)
-        HANDLE_TYPE(LUA_LONG_ARRAY, long, lua_pushinteger)
-#undef HANDLE_TYPE
-
-        default:
-            FatalError("Unsupported element type.");
-    }
-
-    return true;
-}
-
-bool GetArrayFromLua( lua_State* l, int stackPosition, LuaArrayType elementType, int maxElementCount, void* destination )
-{
-    if(lua_type(l, stackPosition) != LUA_TTABLE)
-        return false;
-
-    const int totalArraySize = GetLuaArraySize(l, stackPosition);
-    const int elementCount =
-        (totalArraySize < maxElementCount) ? totalArraySize : maxElementCount;
-
-    switch(elementType)
-    {
-#define HANDLE_TYPE(TypeEnum, Typedef, GetFn) \
-        case TypeEnum: \
-            for(int i = 0; i < elementCount; i++) \
-            { \
-                lua_rawgeti(l, stackPosition, i+1); \
-                ((Typedef*)destination)[i] = GetFn(l, -1); \
-            } \
-            break;
-
-        HANDLE_TYPE(LUA_BOOL_ARRAY, bool, lua_toboolean)
-        HANDLE_TYPE(LUA_DOUBLE_ARRAY, double, lua_tonumber)
-        HANDLE_TYPE(LUA_LONG_ARRAY, long, lua_tointeger)
-#undef HANDLE_TYPE
-
-        default:
-            FatalError("Unsupported element type.");
-    }
-
-    return true;
-}
-
-int GetLuaArraySize( lua_State* l, int stackPosition )
-{
-    if(lua_type(l, stackPosition) == LUA_TTABLE)
-        return lua_rawlen(l, stackPosition);
-    else
-        return 0;
+    HandleLuaCallResult(l, callResult);
+    return returnValueCount;
 }
 
 static int Lua_SetEventCallback( lua_State* l )
@@ -505,5 +407,12 @@ static int Lua_Log( lua_State* l )
 {
     const char* message = luaL_checkstring(l, 1);
     Log("%s", message);
+    return 0;
+}
+
+static int Lua_Warn( lua_State* l )
+{
+    const char* message = luaL_checkstring(l, 1);
+    Warn("%s", message);
     return 0;
 }

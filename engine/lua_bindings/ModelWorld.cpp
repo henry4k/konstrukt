@@ -131,18 +131,17 @@ Model* CheckModelFromLua( lua_State* l, int stackPosition )
     return (Model*)CheckPointerFromLua(l, stackPosition);
 }
 
-bool RegisterModelWorldInLua()
+void RegisterModelWorldInLua()
 {
-    return
-        RegisterFunctionInLua("CreateModelWorld", Lua_CreateModelWorld) &&
-        RegisterFunctionInLua("DestroyModelWorld", Lua_DestroyModelWorld) &&
+    RegisterFunctionInLua("CreateModelWorld", Lua_CreateModelWorld);
+    RegisterFunctionInLua("DestroyModelWorld", Lua_DestroyModelWorld);
 
-        RegisterFunctionInLua("CreateModel", Lua_CreateModel) &&
-        RegisterFunctionInLua("DestroyModel", Lua_DestroyModel) &&
-        RegisterFunctionInLua("SetModelAttachmentTarget", Lua_SetModelAttachmentTarget) &&
-        RegisterFunctionInLua("SetModelTransformation", Lua_SetModelTransformation) &&
-        RegisterFunctionInLua("SetModelOverlayLevel", Lua_SetModelOverlayLevel) &&
-        RegisterFunctionInLua("SetModelMesh", Lua_SetModelMesh) &&
-        RegisterFunctionInLua("SetModelProgramFamilyList", Lua_SetModelProgramFamilyList) &&
-        RegisterFunctionInLua("GetModelShaderVariableSet", Lua_GetModelShaderVariableSet);
+    RegisterFunctionInLua("CreateModel", Lua_CreateModel);
+    RegisterFunctionInLua("DestroyModel", Lua_DestroyModel);
+    RegisterFunctionInLua("SetModelAttachmentTarget", Lua_SetModelAttachmentTarget);
+    RegisterFunctionInLua("SetModelTransformation", Lua_SetModelTransformation);
+    RegisterFunctionInLua("SetModelOverlayLevel", Lua_SetModelOverlayLevel);
+    RegisterFunctionInLua("SetModelMesh", Lua_SetModelMesh);
+    RegisterFunctionInLua("SetModelProgramFamilyList", Lua_SetModelProgramFamilyList);
+    RegisterFunctionInLua("GetModelShaderVariableSet", Lua_GetModelShaderVariableSet);
 }

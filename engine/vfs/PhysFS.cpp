@@ -16,23 +16,19 @@
 static void DestroyVfs_PhysFS()
 {
     if(!PHYSFS_deinit())
-        Error("%s", PHYSFS_getLastError());
+        FatalError("PHYSFS_deinit: %s", PHYSFS_getLastError());
 }
 
-static bool MountVfsDir_PhysFS( Mount* mount )
+static void MountVfsDir_PhysFS( Mount* mount )
 {
     if(!PHYSFS_mount(mount->realPath, mount->vfsPath, true))
-    {
-        Error("Can't mount '%s': %s", mount->vfsPath, PHYSFS_getLastError());
-        return false;
-    }
-    return true;
+        FatalError("Can't mount '%s': %s", mount->vfsPath, PHYSFS_getLastError());
 }
 
 static void UnmountVfsDir_PhysFS( const Mount* mount )
 {
     if(!PHYSFS_unmount(mount->realPath))
-        Error("Can't unmount '%s': %s", mount->vfsPath, PHYSFS_getLastError());
+        FatalError("Can't unmount '%s': %s", mount->vfsPath, PHYSFS_getLastError());
 }
 
 static void* OpenVfsFile_PhysFS( const Mount* mount,
@@ -40,24 +36,15 @@ static void* OpenVfsFile_PhysFS( const Mount* mount,
                                  VfsOpenMode mode )
 {
     if(!subMountPath)
-    {
-        Error("Can't open file: '%s'", mount->vfsPath);
-        return NULL;
-    }
+        FatalError("Can't open file: '%s'", mount->vfsPath);
 
     if(mode != VFS_OPEN_READ)
-    {
-        Error("Can't write to files mounted as read-only.");
-        return NULL;
-    }
+        FatalError("Can't write to files mounted as read-only.");
 
     const char* path = Format("%s/%s", mount->vfsPath, subMountPath);
     PHYSFS_File* file = PHYSFS_openRead(path);
     if(!file)
-    {
-        Error("%s", PHYSFS_getLastError());
-        return NULL;
-    }
+        FatalError("PHYSFS_openRead: %s", PHYSFS_getLastError());
 
     return (void*)file;
 }
@@ -65,7 +52,7 @@ static void* OpenVfsFile_PhysFS( const Mount* mount,
 static void CloseVfsFile_PhysFS( const void* file )
 {
     if(!PHYSFS_close((PHYSFS_File*)file))
-        Error("%s", PHYSFS_getLastError());
+        FatalError("PHYSFS_close: %s", PHYSFS_getLastError());
 }
 
 static int ReadVfsFile_PhysFS( void* file, void* buffer, int size )
@@ -75,46 +62,30 @@ static int ReadVfsFile_PhysFS( void* file, void* buffer, int size )
 
 static int WriteVfsFile_PhysFS( void* file, const void* buffer, int size )
 {
-    Error("Mount is read only.");
+    FatalError("Mount is read only.");
     return 0;
 }
 
-static bool SetVfsFilePos_PhysFS( void* file, int position )
+static void SetVfsFilePos_PhysFS( void* file, int position )
 {
     if(!PHYSFS_seek((PHYSFS_File*)file, position))
-    {
-        Error("%s", PHYSFS_getLastError());
-        return false;
-    }
-    return true;
+        FatalError("PHYSFS_seek: %s", PHYSFS_getLastError());
 }
 
 static int GetVfsFilePos_PhysFS( const void* file )
 {
     const int pos = PHYSFS_tell((PHYSFS_File*)file);
-    if(pos >= 0)
-    {
-        return pos;
-    }
-    else
-    {
-        Error("%s", PHYSFS_getLastError());
-        return -1;
-    }
+    if(pos < 0)
+        FatalError("PHYSFS_tell: %s", PHYSFS_getLastError());
+    return pos;
 }
 
 static int GetVfsFileSize_PhysFS( const void* file )
 {
     const int length = PHYSFS_fileLength((PHYSFS_File*)file);
-    if(length >= 0)
-    {
-        return length;
-    }
-    else
-    {
-        Error("Can't determine file size.");
-        return -1;
-    }
+    if(length < 0)
+        FatalError("PHYSFS_fileLength: %s", PHYSFS_getLastError());
+    return length;
 }
 
 static bool HasVfsFileEnded_PhysFS( const void* file )
@@ -167,16 +138,14 @@ static VfsFileInfo GetVfsFileInfo_PhysFS( const Mount* mount, const char* subMou
     return info;
 }
 
-static bool DeleteVfsFile_PhysFS( Mount* mount, const char* subMountPath )
+static void DeleteVfsFile_PhysFS( Mount* mount, const char* subMountPath )
 {
-    Error("Mount is read only.");
-    return false;
+    FatalError("Mount is read only.");
 }
 
-static bool MakeVfsDir_PhysFS( Mount* mount, const char* subMountPath )
+static void MakeVfsDir_PhysFS( Mount* mount, const char* subMountPath )
 {
-    Error("Mount is read only.");
-    return false;
+    FatalError("Mount is read only.");
 }
 
 MountSystem* InitVfs_PhysFS( const char* argv0 )
@@ -190,10 +159,7 @@ MountSystem* InitVfs_PhysFS( const char* argv0 )
     Log("Linked against PhysFS %d.%d.%d", linked.major, linked.minor, linked.patch);
 
     if(!PHYSFS_init(argv0))
-    {
-        Error("%s", PHYSFS_getLastError());
-        return NULL;
-    }
+        FatalError("PHYSFS_init: %s", PHYSFS_getLastError());
 
     PHYSFS_permitSymbolicLinks(true);
 

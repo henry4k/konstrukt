@@ -87,7 +87,7 @@ static inline Vec3 FromBulletVec( const btVector3& v )
     return r;
 }
 
-bool InitPhysicsManager()
+void InitPhysicsManager()
 {
     CollisionConfiguration = new btDefaultCollisionConfiguration();
     CollisionDispatcher = new btCollisionDispatcher(CollisionConfiguration);
@@ -101,8 +101,6 @@ bool InitPhysicsManager()
     memset(Forces, 0, sizeof(Forces));
 
     World->setInternalTickCallback(WorldTickCallback);
-
-    return true;
 }
 
 void DestroyPhysicsManager()
@@ -401,9 +399,8 @@ static void DestroyAllFocesOfSolid( Solid* solid )
         Force* force = &Forces[i];
         if(force->solid == solid)
         {
-            Error("Solid %p still had force %p on destruction. This may lead to further errors!",
-                  solid,
-                  force);
+            FatalError("Solid %p still had force %p on destruction.",
+                       solid, force);
             DestroyForce(force);
         }
     }
@@ -516,33 +513,29 @@ static void HandleCollisions()
         Solid* solidA = (Solid*)coA->getUserPointer();
         Solid* solidB = (Solid*)coB->getUserPointer();
 
-        if(solidA && solidB)
+        if(!solidA || !solidB)
+            FatalError("Collision occured, but user pointers are NULL!");
+
+        const int contactCount = manifold->getNumContacts();
+        for(int j = 0; j < contactCount; j++)
         {
-            const int contactCount = manifold->getNumContacts();
-            for(int j = 0; j < contactCount; j++)
+            const btManifoldPoint& point = manifold->getContactPoint(j);
+            if(PropagateCollision(point, solidA, solidB))
             {
-                const btManifoldPoint& point = manifold->getContactPoint(j);
-                if(PropagateCollision(point, solidA, solidB))
-                {
-                    const btVector3& pointOnA  = point.getPositionWorldOnA();
-                    const btVector3& pointOnB  = point.getPositionWorldOnB();
-                    const btVector3& normalOnB = point.m_normalWorldOnB;
+                const btVector3& pointOnA  = point.getPositionWorldOnA();
+                const btVector3& pointOnB  = point.getPositionWorldOnB();
+                const btVector3& normalOnB = point.m_normalWorldOnB;
 
-                    Collision collision;
-                    collision.a = solidA;
-                    collision.b = solidB;
-                    collision.pointOnA  = FromBulletVec(pointOnA);
-                    collision.pointOnB  = FromBulletVec(pointOnB);
-                    collision.normalOnB = FromBulletVec(normalOnB);
-                    collision.impulse = point.m_appliedImpulse;
+                Collision collision;
+                collision.a = solidA;
+                collision.b = solidB;
+                collision.pointOnA  = FromBulletVec(pointOnA);
+                collision.pointOnB  = FromBulletVec(pointOnB);
+                collision.normalOnB = FromBulletVec(normalOnB);
+                collision.impulse = point.m_appliedImpulse;
 
-                    CurrentCollisionCallback(&collision);
-                }
+                CurrentCollisionCallback(&collision);
             }
-        }
-        else
-        {
-            Error("Collision occured, but user pointers are NULL!");
         }
     }
 }

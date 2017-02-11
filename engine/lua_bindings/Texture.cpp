@@ -98,10 +98,9 @@ Texture* CheckTextureFromLua( lua_State* l, int stackPosition )
     return (Texture*)CheckPointerFromLua(l, stackPosition);
 }
 
-bool RegisterTextureInLua()
+void RegisterTextureInLua()
 {
-    return
-        RegisterFunctionInLua("Create2dTexture", Lua_Create2dTexture) &&
-        RegisterFunctionInLua("CreateCubeTexture", Lua_CreateCubeTexture) &&
-        RegisterFunctionInLua("DestroyTexture", Lua_DestroyTexture);
+    RegisterFunctionInLua("Create2dTexture", Lua_Create2dTexture);
+    RegisterFunctionInLua("CreateCubeTexture", Lua_CreateCubeTexture);
+    RegisterFunctionInLua("DestroyTexture", Lua_DestroyTexture);
 }

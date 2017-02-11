@@ -34,7 +34,7 @@ struct VfsFileInfo
  * Path to a directory which stores data, that is shared by all/multiple
  * scenarios.  Passing `NULL` will create temporary directory.
  */
-bool InitVfs( const char* argv0,
+void InitVfs( const char* argv0,
               const char* stateDirectory,
               const char* sharedStateDirectory );
 
@@ -57,7 +57,7 @@ void DestroyVfs();
  * If set to `false` the VFS may not write to this directory.
  * This can't be used with ZIP archives.
  */
-bool MountVfsDir( const char* vfsPath,
+void MountVfsDir( const char* vfsPath,
                   const char* realPath,
                   bool writingAllowed );
 
@@ -90,11 +90,8 @@ void AddPackageSearchPath( const char* path );
  * @param reference
  * Is either a file path to a package or a package id, which can be found in
  * one of the search paths.
- *
- * @return
- * `true` if the package was found and successfully mounted.  `false` otherwise.
  */
-bool MountPackage( const char* reference );
+void MountPackage( const char* reference );
 
 
 // --- File access ---
@@ -105,10 +102,6 @@ bool MountPackage( const char* reference );
  *
  * @param mode
  * The same mode flags that are accepted by `fopen`.
- *
- * @return
- * Returns a file handle if the operation succeeded or `NULL` if something
- * went wrong.
  */
 VfsFile* OpenVfsFile( const char* vfsPath, VfsOpenMode mode );
 
@@ -130,7 +123,7 @@ int ReadVfsFile( VfsFile* file, void* buffer, int size );
  */
 int WriteVfsFile( VfsFile* file, const void* buffer, int size );
 
-bool SetVfsFilePos( VfsFile* file, int position );
+void SetVfsFilePos( VfsFile* file, int position );
 int  GetVfsFilePos( const VfsFile* file );
 int  GetVfsFileSize( const VfsFile* file );
 bool HasVfsFileEnded( const VfsFile* file );
@@ -159,8 +152,8 @@ VfsFileInfo GetVfsFileInfo( const char* vfsPath );
 /**
  * Tries to delete a regular file or an empty directory.
  */
-bool DeleteVfsFile( const char* vfsPath );
+void DeleteVfsFile( const char* vfsPath );
 
-bool MakeVfsDir( const char* vfsPath );
+void MakeVfsDir( const char* vfsPath );
 
 #endif

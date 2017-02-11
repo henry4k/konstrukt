@@ -102,12 +102,11 @@ VoxelVolume* CheckVoxelVolumeFromLua( lua_State* l, int stackPosition )
     return (VoxelVolume*)CheckPointerFromLua(l, stackPosition);
 }
 
-bool RegisterVoxelVolumeInLua()
+void RegisterVoxelVolumeInLua()
 {
-    return
-        RegisterFunctionInLua("CreateVoxelVolume", Lua_CreateVoxelVolume) &&
-        RegisterFunctionInLua("DestroyVoxelVolume", Lua_DestroyVoxelVolume) &&
-        RegisterFunctionInLua("ReadVoxelData", Lua_ReadVoxelData) &&
-        RegisterFunctionInLua("WriteVoxelData", Lua_WriteVoxelData) &&
-        RegisterFunctionInLua("GetVoxelInt32Count", Lua_GetVoxelInt32Count);
+    RegisterFunctionInLua("CreateVoxelVolume", Lua_CreateVoxelVolume);
+    RegisterFunctionInLua("DestroyVoxelVolume", Lua_DestroyVoxelVolume);
+    RegisterFunctionInLua("ReadVoxelData", Lua_ReadVoxelData);
+    RegisterFunctionInLua("WriteVoxelData", Lua_WriteVoxelData);
+    RegisterFunctionInLua("GetVoxelInt32Count", Lua_GetVoxelInt32Count);
 }

@@ -22,7 +22,7 @@ enum LuaArrayType
 };
 
 
-bool InitLua();
+void InitLua();
 void DestroyLua();
 
 lua_State* GetLuaState();
@@ -31,11 +31,8 @@ void UpdateLua();
 
 /**
  * Registers a native function in Lua.
- *
- * @return
- * `true` if the function has been successfully registered in Lua.
  */
-bool RegisterFunctionInLua( const char* name, lua_CFunction fn );
+void RegisterFunctionInLua( const char* name, lua_CFunction fn );
 
 /**
  * Registers a user data type by name.
@@ -46,11 +43,8 @@ bool RegisterFunctionInLua( const char* name, lua_CFunction fn );
  * @param gcCallback
  * Function that is called before Lua frees garbage collected user data.
  * May be `NULL` - in this case Lua doesn't notify you at all.
- *
- * @return
- * `true` if the user data type has been successfully registered in Lua.
  */
-bool RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback );
+void RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback );
 
 /**
  * Allocates memory for a user defined data structure in Lua
@@ -64,7 +58,6 @@ bool RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback );
  *
  * @return
  * The allocated, but uninitialized, user data
- * or `NULL` if the type does not exist.
  */
 void* PushUserDataToLua( lua_State* l, const char* typeName, int size );
 
@@ -79,11 +72,8 @@ void* PushUserDataToLua( lua_State* l, const char* typeName, int size );
  *
  * @param data
  * Pointer to the data, that is being copied.
- *
- * @return
- * `false` if the type does not exist.
  */
-bool CopyUserDataToLua( lua_State* l, const char* typeName, int size, const void* data );
+void CopyUserDataToLua( lua_State* l, const char* typeName, int size, const void* data );
 
 /**
  * Checks if the element at `stackPosition` has the requested user data type
@@ -141,7 +131,7 @@ void* CheckPointerFromLua( lua_State* l, int stackPosition );
 /**
  * Loads a script from `vfsPath` and executes it.
  */
-bool RunLuaScript( lua_State* l, const char* vfsPath );
+void RunLuaScript( lua_State* l, const char* vfsPath );
 
 /**
  * Registers a new event and returns its id.
@@ -150,7 +140,7 @@ bool RunLuaScript( lua_State* l, const char* vfsPath );
  * An event may only be registered once.
  *
  * @return
- * The events id or `INVALID_LUA_EVENT` if something went wrong.
+ * The events id.
  */
 int RegisterLuaEvent( const char* name );
 
@@ -175,29 +165,5 @@ int RegisterLuaEvent( const char* name );
  * Number of values that were pushed in the stack or 0.
  */
 int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues );
-
-/**
- * Converts a C array to its Lua equivalent and pushes it in the stack.
- */
-bool PushArrayToLua( lua_State* l, LuaArrayType elementType, int elementCount, const void* elements );
-
-/**
- * Writes an Lua array to a C array.
- *
- * @param maxElementCount
- * Writes at most `elementCount` elements to `destination`.
- *
- * @param destination
- * C array that can hold at least `maxElementCount` elements of type `elementType`.
- *
- * TODO: Return void and use `lua_error instead!
- */
-bool GetArrayFromLua( lua_State* l, int stackPosition, LuaArrayType elementType, int maxElementCount, void* destination );
-
-/**
- * @return
- * Size of Lua array at `stackPosition` or 0 if there is no array.
- */
-int GetLuaArraySize( lua_State* l, int stackPosition );
 
 #endif

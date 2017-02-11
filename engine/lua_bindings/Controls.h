@@ -1,6 +1,6 @@
 #ifndef __KONSTRUKT_LUA_BINDINGS_CONTROLS__
 #define __KONSTRUKT_LUA_BINDINGS_CONTROLS__
 
-bool RegisterControlsInLua();
+void RegisterControlsInLua();
 
 #endif

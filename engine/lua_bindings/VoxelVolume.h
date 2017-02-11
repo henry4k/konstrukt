@@ -7,6 +7,6 @@ struct VoxelVolume;
 VoxelVolume* GetVoxelVolumeFromLua( lua_State* l, int stackPosition );
 VoxelVolume* CheckVoxelVolumeFromLua( lua_State* l, int stackPosition );
 
-bool RegisterVoxelVolumeInLua();
+void RegisterVoxelVolumeInLua();
 
 #endif

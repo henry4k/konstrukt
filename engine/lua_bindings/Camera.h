@@ -7,6 +7,6 @@ struct Camera;
 Camera* GetCameraFromLua( lua_State* l, int stackPosition );
 Camera* CheckCameraFromLua( lua_State* l, int stackPosition );
 
-bool RegisterCameraInLua();
+void RegisterCameraInLua();
 
 #endif

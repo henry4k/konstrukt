@@ -31,11 +31,11 @@ typedef ArrayList(Path) PathList;
 
 FileType GetFileType( const char* path );
 
-bool CreateDirectory( const char* path );
+void CreateDirectory( const char* path );
 
 /**
  * @return
- * Path to the newly created directory or `NULL` if something went wrong.
+ * Path to the newly created directory.
  */
 const char* CreateTemporaryDirectory( const char* name );
 
@@ -54,13 +54,13 @@ void FreePathList( PathList* list );
 /**
  * Deletes files and empty directories.
  */
-bool RemoveFile( const char* path );
+void RemoveFile( const char* path );
 
 /**
  * Deletes files and directories recursively.
  *
  * Should be obviously used with caution.
  */
-bool RemoveDirectoryTree( const char* path );
+void RemoveDirectoryTree( const char* path );
 
 #endif

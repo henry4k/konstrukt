@@ -66,12 +66,11 @@ RenderTarget* CheckRenderTargetFromLua( lua_State* l, int stackPosition )
     return (RenderTarget*)CheckPointerFromLua(l, stackPosition);
 }
 
-bool RegisterRenderTargetInLua()
+void RegisterRenderTargetInLua()
 {
-    return
-        RegisterFunctionInLua("GetDefaultRenderTarget", Lua_GetDefaultRenderTarget) &&
-        RegisterFunctionInLua("CreateTextureRenderTarget", Lua_CreateTextureRenderTarget) &&
-        RegisterFunctionInLua("DestroyRenderTarget", Lua_DestroyRenderTarget) &&
-        RegisterFunctionInLua("SetRenderTargetCamera", Lua_SetRenderTargetCamera) &&
-        RegisterFunctionInLua("SetRenderTargetShaderProgramSet", Lua_SetRenderTargetShaderProgramSet);
+    RegisterFunctionInLua("GetDefaultRenderTarget", Lua_GetDefaultRenderTarget);
+    RegisterFunctionInLua("CreateTextureRenderTarget", Lua_CreateTextureRenderTarget);
+    RegisterFunctionInLua("DestroyRenderTarget", Lua_DestroyRenderTarget);
+    RegisterFunctionInLua("SetRenderTargetCamera", Lua_SetRenderTargetCamera);
+    RegisterFunctionInLua("SetRenderTargetShaderProgramSet", Lua_SetRenderTargetShaderProgramSet);
 }

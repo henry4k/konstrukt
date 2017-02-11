@@ -116,10 +116,9 @@ struct ShaderVariableSet
 static ShaderVariableSet* GlobalShaderVariableSet = NULL;
 
 
-bool InitShader()
+void InitShader()
 {
     GlobalShaderVariableSet = CreateShaderVariableSet();
-    return true;
 }
 
 void DestroyShader()
@@ -163,19 +162,13 @@ static void ShowShaderLog( Shader* shader, bool success, const char* vfsPath )
         glGetShaderInfoLog(shader->handle, length, NULL, log);
     }
 
-    if(success && log)
-        Log("Compiled shader: %s", vfsPath);
-    if(!success)
-        Error("Error compiling shader %s", vfsPath);
+    if(success)
+        Warn("Compiled shader: %s\n%s", vfsPath, log);
+    else
+        FatalError("Error compiling shader %s\n%s", vfsPath, log);
 
     if(log)
-    {
-        if(success)
-            Log("%s", log);
-        else
-            Error("%s", log);
         delete[] log;
-    }
 }
 
 static Shader* CreateShader( const char* vfsPath, int type )
@@ -200,17 +193,8 @@ static Shader* CreateShader( const char* vfsPath, int type )
 
     GLint state;
     glGetShaderiv(shader->handle, GL_COMPILE_STATUS, &state);
-    if(state)
-    {
-        ShowShaderLog(shader, state, vfsPath);
-        return shader;
-    }
-    else
-    {
-        ShowShaderLog(shader, state, vfsPath);
-        FreeShader(shader);
-        return NULL;
-    }
+    ShowShaderLog(shader, state, vfsPath);
+    return shader;
 }
 
 Shader* LoadShader( const char* vfsPath )
@@ -225,7 +209,7 @@ Shader* LoadShader( const char* vfsPath )
     }
     else
     {
-        Error("Can't determine shader type of file %s", vfsPath);
+        FatalError("Can't determine shader type of file %s", vfsPath);
         return NULL;
     }
 }
@@ -266,19 +250,13 @@ static void ShowShaderProgramLog( ShaderProgram* program, bool success, const ch
         glGetProgramInfoLog(program->handle, length, NULL, log);
     }
 
-    if(success && log)
-        Log("%s", message);
-    if(!success)
-        Error("%s", message);
+    if(success)
+        Warn("%s\n%s", message, log);
+    else
+        FatalError("%s\n%s", message, log);
 
     if(log)
-    {
-        if(success)
-            Log("%s", log);
-        else
-            Error("%s", log);
         delete[] log;
-    }
 }
 
 static UniformType GLToUniformType( GLenum glType )
@@ -501,13 +479,8 @@ static void ReadUniformBlockDefinitions( ShaderProgram* program )
 ShaderProgram* LinkShaderProgram( Shader** shaders, int shaderCount )
 {
     for(int i = 0; i < shaderCount; i++)
-    {
         if(!shaders[i] || shaders[i]->handle == INVALID_SHADER_HANDLE)
-        {
-            Error("Cannot link a shader program with invalid shaders.");
-            return NULL;
-        }
-    }
+            FatalError("Cannot link a shader program with invalid shaders.");
 
     ShaderProgram* program = new ShaderProgram;
     memset(program, 0, sizeof(ShaderProgram));
@@ -750,21 +723,16 @@ void SetShaderProgramFamily( ShaderProgramSet* set,
     ShaderProgramSetEntry* entry = FindShaderProgramSetEntry(set, family);
     if(!entry)
         entry = FindShaderProgramSetEntry(set, "");
-
-    if(entry)
-    {
-        CopyString(family, entry->family, sizeof(entry->family));
-
-        if(entry->program)
-            ReleaseShaderProgram(entry->program);
-        entry->program = program;
-        if(entry->program)
-            ReferenceShaderProgram(entry->program);
-    }
-    else
-    {
+    if(!entry)
         FatalError("Too many family entries for shader program set %p.", set);
-    }
+
+    CopyString(family, entry->family, sizeof(entry->family));
+
+    if(entry->program)
+        ReleaseShaderProgram(entry->program);
+    entry->program = program;
+    if(entry->program)
+        ReferenceShaderProgram(entry->program);
 }
 
 ShaderProgram* GetShaderProgramByFamilyList( const ShaderProgramSet* set,
@@ -1010,15 +978,11 @@ static void AddTextureBinding( ShaderVariableBindings* bindings,
         if(bindings->textures[i] == texture)
             return;
 
-    if(bindings->textureCount < MAX_TEXTURE_UNITS)
-    {
-        bindings->textures[bindings->textureCount] = texture;
-        bindings->textureCount++;
-    }
-    else
-    {
-        Error("Can\'t bind any more textures!");
-    }
+    if(bindings->textureCount >= MAX_TEXTURE_UNITS)
+        FatalError("Can\'t bind any more textures!");
+
+    bindings->textures[bindings->textureCount] = texture;
+    bindings->textureCount++;
 }
 
 static int Compare( uintptr_t a, uintptr_t b )
@@ -1054,16 +1018,12 @@ void GatherShaderVariableBindings( const ShaderProgram* program,
                 FindConstShaderVariableInSetsByNameHash(variableSets,
                                                         variableSetCount,
                                                         definition->nameHash);
-            if(var)
-            {
-                assert(var->type == TEXTURE_VARIABLE);
-                AddTextureBinding(bindings,
-                                  var->value.texture);
-            }
-            //else
-            //{
-            //    Error("Can\'t bind uniform %s:  Not available in any ShaderVariableSet.", definition->name);
-            //}
+            if(!var)
+            //    FatalError("Can\'t bind uniform %s:  Not available in any ShaderVariableSet.", definition->name);
+
+            assert(var->type == TEXTURE_VARIABLE);
+            AddTextureBinding(bindings,
+                                var->value.texture);
         }
     }
 
@@ -1098,27 +1058,23 @@ void SetShaderProgramUniforms( ShaderProgram* program,
             FindConstShaderVariableInSetsByNameHash(variableSets,
                                                     variableSetCount,
                                                     definition->nameHash);
-        if(var)
+        if(!var)
+        //    FatalError("Can\'t set uniform %s:  Not available in any ShaderVariableSet.", definition->name);
+
+        switch(var->type)
         {
-            switch(var->type)
-            {
-                case UNIFORM_VARIABLE:
-                    SetUniform(program, i, &var->value.uniform.value);
-                    break;
+            case UNIFORM_VARIABLE:
+                SetUniform(program, i, &var->value.uniform.value);
+                break;
 
-                case TEXTURE_VARIABLE:
-                    UniformValue v;
-                    v.i = GetTextureUnit(bindings, var);
-                    SetUniform(program, i, &v);
-                    break;
+            case TEXTURE_VARIABLE:
+                UniformValue v;
+                v.i = GetTextureUnit(bindings, var);
+                SetUniform(program, i, &v);
+                break;
 
-                case UNIFORM_BUFFER_VARIABLE:
-                    FatalError("Uniform blocks are no uniforms.");
-            }
+            case UNIFORM_BUFFER_VARIABLE:
+                FatalError("Uniform blocks are no uniforms.");
         }
-        //else
-        //{
-        //    Error("Can\'t set uniform %s:  Not available in any ShaderVariableSet.", definition->name);
-        //}
     }
 }

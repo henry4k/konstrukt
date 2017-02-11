@@ -76,8 +76,8 @@ static void SimpleLogHandler( LogLevel level, const char* line )
             file = stdout;
             break;
 
-        case LOG_ERROR:
-            prefix = "ERROR: ";
+        case LOG_WARNING:
+            prefix = "WARNING: ";
             file = stderr;
             break;
 
@@ -101,8 +101,8 @@ static void ColorLogHandler( LogLevel level, const char* line )
             file = stdout;
             break;
 
-        case LOG_ERROR:
-            prefix = "\033[31mERROR: ";
+        case LOG_WARNING:
+            prefix = "\033[31mWARNING: ";
             postfix = "\033[0m";
             file = stderr;
             break;
@@ -160,11 +160,11 @@ void Log( const char* format, ... )
     va_end(vl);
 }
 
-void Error( const char* format, ... )
+void Warn( const char* format, ... )
 {
     va_list vl;
     va_start(vl, format);
-    LogV(LOG_ERROR, format, vl);
+    LogV(LOG_WARNING, format, vl);
     va_end(vl);
 }
 
@@ -172,7 +172,7 @@ void FatalError( const char* format, ... )
 {
     va_list vl;
     va_start(vl, format);
-    LogV(LOG_ERROR, format, vl);
+    LogV(LOG_FATAL_ERROR, format, vl);
     va_end(vl);
     exit(EXIT_FAILURE);
 }
@@ -211,7 +211,7 @@ bool PostConfigInitLog()
     }
     else
     {
-        Error("Unknown log handler '%s'.", handlerName);
+        FatalError("Unknown log handler '%s'.", handlerName);
         return false;
     }
 }

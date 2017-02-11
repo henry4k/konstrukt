@@ -15,6 +15,6 @@ Quat* CheckQuaternionFromLua( lua_State* l, int stackPosition );
 
 int CheckTransformationFlagsFromLua( lua_State* l, int stackPosition );
 
-bool RegisterMathInLua();
+void RegisterMathInLua();
 
 #endif

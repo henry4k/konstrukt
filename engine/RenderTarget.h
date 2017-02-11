@@ -13,7 +13,7 @@ struct RenderTarget;
 
 
 
-bool InitDefaultRenderTarget();
+void InitDefaultRenderTarget();
 void DestroyDefaultRenderTarget();
 
 /**
@@ -39,7 +39,7 @@ Camera* GetRenderTargetCamera( RenderTarget* target, int layer );
 ShaderProgramSet* GetRenderTargetShaderProgramSet( RenderTarget* target );
 
 /**
- * 
+ *
  */
 void UpdateRenderTarget( RenderTarget* target );
 

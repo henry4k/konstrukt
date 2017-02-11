@@ -150,11 +150,10 @@ MeshChunkGenerator* CheckMeshChunkGeneratorFromLua( lua_State* l, int stackPosit
     return (MeshChunkGenerator*)CheckPointerFromLua(l, stackPosition);
 }
 
-bool RegisterMeshChunkGeneratorInLua()
+void RegisterMeshChunkGeneratorInLua()
 {
-    return
-        RegisterFunctionInLua("CreateMeshChunkGenerator", Lua_CreateMeshChunkGenerator) &&
-        RegisterFunctionInLua("DestroyMeshChunkGenerator", Lua_DestroyMeshChunkGenerator) &&
-        RegisterFunctionInLua("CreateBlockVoxelMesh", Lua_CreateBlockVoxelMesh) &&
-        RegisterFunctionInLua("GenerateMeshChunk", Lua_GenerateMeshChunk);
+    RegisterFunctionInLua("CreateMeshChunkGenerator", Lua_CreateMeshChunkGenerator);
+    RegisterFunctionInLua("DestroyMeshChunkGenerator", Lua_DestroyMeshChunkGenerator);
+    RegisterFunctionInLua("CreateBlockVoxelMesh", Lua_CreateBlockVoxelMesh);
+    RegisterFunctionInLua("GenerateMeshChunk", Lua_GenerateMeshChunk);
 }

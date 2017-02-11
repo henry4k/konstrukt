@@ -7,6 +7,6 @@ struct RenderTarget;
 RenderTarget* GetRenderTargetFromLua( lua_State* l, int stackPosition );
 RenderTarget* CheckRenderTargetFromLua( lua_State* l, int stackPosition );
 
-bool RegisterRenderTargetInLua();
+void RegisterRenderTargetInLua();
 
 #endif

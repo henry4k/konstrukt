@@ -122,17 +122,16 @@ Camera* CheckCameraFromLua( lua_State* l, int stackPosition )
     return (Camera*)CheckPointerFromLua(l, stackPosition);
 }
 
-bool RegisterCameraInLua()
+void RegisterCameraInLua()
 {
-    return
-        RegisterFunctionInLua("CreateCamera", Lua_CreateCamera) &&
-        RegisterFunctionInLua("DestroyCamera", Lua_DestroyCamera) &&
-        RegisterFunctionInLua("SetCameraAttachmentTarget", Lua_SetCameraAttachmentTarget) &&
-        RegisterFunctionInLua("SetCameraModelTransformation", Lua_SetCameraModelTransformation) &&
-        RegisterFunctionInLua("SetCameraViewTransformation", Lua_SetCameraViewTransformation) &&
-        RegisterFunctionInLua("SetCameraNearAndFarPlanes", Lua_SetCameraNearAndFarPlanes) &&
-        RegisterFunctionInLua("SetCameraProjectionType", Lua_SetCameraProjectionType) &&
-        RegisterFunctionInLua("SetCameraFieldOfView", Lua_SetCameraFieldOfView) &&
-        RegisterFunctionInLua("SetCameraScale", Lua_SetCameraScale) &&
-        RegisterFunctionInLua("GetCameraShaderVariableSet", Lua_GetCameraShaderVariableSet);
+    RegisterFunctionInLua("CreateCamera", Lua_CreateCamera);
+    RegisterFunctionInLua("DestroyCamera", Lua_DestroyCamera);
+    RegisterFunctionInLua("SetCameraAttachmentTarget", Lua_SetCameraAttachmentTarget);
+    RegisterFunctionInLua("SetCameraModelTransformation", Lua_SetCameraModelTransformation);
+    RegisterFunctionInLua("SetCameraViewTransformation", Lua_SetCameraViewTransformation);
+    RegisterFunctionInLua("SetCameraNearAndFarPlanes", Lua_SetCameraNearAndFarPlanes);
+    RegisterFunctionInLua("SetCameraProjectionType", Lua_SetCameraProjectionType);
+    RegisterFunctionInLua("SetCameraFieldOfView", Lua_SetCameraFieldOfView);
+    RegisterFunctionInLua("SetCameraScale", Lua_SetCameraScale);
+    RegisterFunctionInLua("GetCameraShaderVariableSet", Lua_GetCameraShaderVariableSet);
 }

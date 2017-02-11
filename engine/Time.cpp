@@ -24,11 +24,10 @@ static Timer Timers[MAX_TIMERS];
 static bool TimerIsActive( const Timer* timer );
 
 
-bool InitTime()
+void InitTime()
 {
     Time = 0;
     memset(Timers, 0, sizeof(Timers));
-    return true;
 }
 
 void DestroyTime()
@@ -81,20 +80,15 @@ Timer* CreateTimer( double minDelay, void* context, TimerCallback callback )
     assert(callback);
 
     Timer* timer = FindInactiveTimer();
-    if(timer)
-    {
-        memset(timer, 0, sizeof(Timer));
-        timer->minDelay = minDelay;
-        timer->lastOccurrence = Time;
-        timer->callback = callback;
-        timer->context = context;
-        return timer;
-    }
-    else
-    {
-        Error("Can't create more timers.");
-        return NULL;
-    }
+    if(!timer)
+        FatalError("Can't create more timers.");
+
+    memset(timer, 0, sizeof(Timer));
+    timer->minDelay = minDelay;
+    timer->lastOccurrence = Time;
+    timer->callback = callback;
+    timer->context = context;
+    return timer;
 }
 
 void DestroyTimer( Timer* timer )

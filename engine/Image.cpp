@@ -14,7 +14,7 @@ END_EXTERNAL_CODE
 #include "Image.h"
 
 
-bool CreateImage( Image* image, int width, int height, int channelCount )
+void CreateImage( Image* image, int width, int height, int channelCount )
 {
     memset(image, 0, sizeof(Image));
 
@@ -25,8 +25,6 @@ bool CreateImage( Image* image, int width, int height, int channelCount )
     image->type = GL_UNSIGNED_BYTE;
 
     image->data = malloc(width*height*channelCount);
-
-    return true;
 }
 
 static int VfsRead( void* user, char* data, int size )
@@ -54,13 +52,11 @@ static const stbi_io_callbacks VfsCallbacks =
    VfsEOF
 };
 
-bool LoadImage( Image* image, const char* vfsPath )
+void LoadImage( Image* image, const char* vfsPath )
 {
     memset(image, 0, sizeof(Image));
 
     VfsFile* file = OpenVfsFile(vfsPath, VFS_OPEN_READ);
-    if(!file)
-        return false;
 
     stbi_set_flip_vertically_on_load(1);
 
@@ -72,14 +68,9 @@ bool LoadImage( Image* image, const char* vfsPath )
                                            STBI_default);
     CloseVfsFile(file);
     if(!image->data)
-    {
-        Error("Can't load '%s': %s", vfsPath, stbi_failure_reason());
-        return false;
-    }
+        FatalError("Can't load '%s': %s", vfsPath, stbi_failure_reason());
 
     image->type = GL_UNSIGNED_BYTE;
-
-    return true;
 }
 
 void MultiplyImageRgbByAlpha( Image* image )
@@ -115,7 +106,7 @@ void MultiplyImageRgbByAlpha( Image* image )
     }
 }
 
-bool CreateResizedImage( Image* output,
+void CreateResizedImage( Image* output,
                          const Image* input,
                          int width,
                          int height )
@@ -154,21 +145,14 @@ bool CreateResizedImage( Image* output,
 
     const unsigned char* inputPixels  = (const unsigned char*)input->data;
           unsigned char* outputPixels =       (unsigned char*)output->data;
-    if(stbir_resize_uint8_generic( inputPixels,  input->width,  input->height, 0,
-                                  outputPixels, output->width, output->height, 0,
-                                  channelCount, alphaChannel, flags,
-                                  STBIR_EDGE_CLAMP,
-                                  STBIR_FILTER_DEFAULT,
-                                  STBIR_COLORSPACE_LINEAR,
-                                  NULL))
-    {
-        return true;
-    }
-    else
-    {
-        Error("Failed to resize image.");
-        return false;
-    }
+    if(!stbir_resize_uint8_generic( inputPixels,  input->width,  input->height, 0,
+                                   outputPixels, output->width, output->height, 0,
+                                   channelCount, alphaChannel, flags,
+                                   STBIR_EDGE_CLAMP,
+                                   STBIR_FILTER_DEFAULT,
+                                   STBIR_COLORSPACE_LINEAR,
+                                   NULL))
+        FatalError("Failed to resize image.");
 }
 
 void FreeImage( const Image* image )

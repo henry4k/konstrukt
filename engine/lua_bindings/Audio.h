@@ -11,6 +11,6 @@ AudioBuffer* CheckAudioBufferFromLua( lua_State* l, int stackPosition );
 AudioSource* GetAudioSourceFromLua( lua_State* l, int stackPosition );
 AudioSource* CheckAudioSourceFromLua( lua_State* l, int stackPosition );
 
-bool RegisterAudioInLua();
+void RegisterAudioInLua();
 
 #endif

@@ -1,4 +1,4 @@
-#include <stdlib.h> // EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // exit, EXIT_FAILURE, EXIT_SUCCESS
 #include <string.h> // strcmp, strncpy
 #include <stdio.h> // printf
 
@@ -57,85 +57,71 @@ static int Lua_StopSimulation( lua_State* l )
     return 0;
 }
 
-static bool RegisterAllModulesInLua()
+static void RegisterAllModulesInLua()
 {
-    return
-        RegisterAudioInLua() &&
-        RegisterCameraInLua() &&
-        RegisterConfigInLua() &&
-        RegisterControlsInLua() &&
-        RegisterImageInLua() &&
-        RegisterMathInLua() &&
-        RegisterMeshInLua() &&
-        RegisterMeshBufferInLua() &&
-        RegisterMeshChunkGeneratorInLua() &&
-        RegisterRenderManagerInLua() &&
-        RegisterRenderTargetInLua() &&
-        RegisterModelWorldInLua() &&
-        RegisterLightWorldInLua() &&
-        RegisterPhysicsManagerInLua() &&
-        RegisterShaderInLua() &&
-        RegisterTimeInLua() &&
-        RegisterTextureInLua() &&
-        RegisterVoxelVolumeInLua() &&
-        RegisterVfsInLua() &&
-        RegisterFunctionInLua("StopSimulation", Lua_StopSimulation);
+    RegisterAudioInLua();
+    RegisterCameraInLua();
+    RegisterConfigInLua();
+    RegisterControlsInLua();
+    RegisterImageInLua();
+    RegisterMathInLua();
+    RegisterMeshInLua();
+    RegisterMeshBufferInLua();
+    RegisterMeshChunkGeneratorInLua();
+    RegisterRenderManagerInLua();
+    RegisterRenderTargetInLua();
+    RegisterModelWorldInLua();
+    RegisterLightWorldInLua();
+    RegisterPhysicsManagerInLua();
+    RegisterShaderInLua();
+    RegisterTimeInLua();
+    RegisterTextureInLua();
+    RegisterVoxelVolumeInLua();
+    RegisterVfsInLua();
+    RegisterFunctionInLua("StopSimulation", Lua_StopSimulation);
 }
 
-static bool InitModules( const char* arg0, const Arguments* arguments )
+static void InitModules( const char* arg0, const Arguments* arguments )
 {
     InitCrc32();
 
     Log("------------- VFS -------------");
-    if(!InitVfs(arg0, arguments->state, arguments->sharedState))
-        return false;
+    InitVfs(arg0, arguments->state, arguments->sharedState);
 
     Log("----------- Log post config init ------------");
-    if(!PostConfigInitLog())
-        return false;
+    PostConfigInitLog();
 
     Log("------------- Lua -------------");
-    if(!InitLua())
-        return false;
+    InitLua();
 
     Log("----------- Window ------------");
-    if(!InitWindow())
-        return false;
+    InitWindow();
 
     Log("--------- Time ----------");
-    if(!InitTime())
-        return false;
+    InitTime();
 
     Log("------------ Audio ------------");
-    if(!InitAudio())
-        return false;
+    InitAudio();
 
     Log("---------- Controls -----------");
-    if(!InitControls())
-        return false;
+    InitControls();
 
     Log("--------- Physics Manager ----------");
-    if(!InitPhysicsManager())
-        return false;
+    InitPhysicsManager();
 
     Log("--------- Shader ----------");
-    if(!InitShader())
-        return false;
+    InitShader();
 
     Log("--------- Render Manager ----------");
-    if(!InitRenderManager())
-        return false;
+    InitRenderManager();
 
     Log("--------- Default Render Target ----------");
-    if(!InitDefaultRenderTarget())
-        return false;
+    InitDefaultRenderTarget();
 
     Log("--- Registering Lua modules ----");
-    if(!RegisterAllModulesInLua())
-        return false;
+    RegisterAllModulesInLua();
 
     Log("-------------------------------");
-    return true;
 }
 
 static void DestroyModules()
@@ -153,9 +139,10 @@ static void DestroyModules()
     DestroyVfs();
 }
 
-static bool InitScript( const char* scenarioPackage )
+static void InitScript( const char* scenarioPackage )
 {
-    return MountPackage("core") && RunLuaScript(GetLuaState(), "core/bootstrap/init.lua");
+    MountPackage("core");
+    RunLuaScript(GetLuaState(), "core/bootstrap/init.lua");
 }
 
 static void RunSimulation()
@@ -179,7 +166,7 @@ static void RunSimulation()
 
 // --- Program arguments ---
 
-static void PrintHelp( const char* arg0 )
+static void PrintHelpAndExit( const char* arg0 )
 {
     printf("Usage: %s [options] <packages>\n"
            "\n"
@@ -194,6 +181,7 @@ static void PrintHelp( const char* arg0 )
            "Packages:\n"
            "\tPackages must be passed either using their base name or file path.\n"
            "\tA base name looks like this: `<name>.<major>.<minor>.<patch>`\n", arg0);
+    exit(EXIT_FAILURE);
 }
 
 static void ParseConfigString( const char* value )
@@ -231,13 +219,10 @@ static const char* MatchPrefix( const char* prefix, const char* value )
         return NULL;
 }
 
-static bool ParseArguments( const int argc, char** argv, Arguments* out )
+static void ParseArguments( const int argc, char** argv, Arguments* out )
 {
     if(argc == 1)
-    {
-        PrintHelp(argv[0]);
-        return false;
-    }
+        PrintHelpAndExit(argv[0]);
 
     for(int i = 1; i < argc; i++)
     {
@@ -260,10 +245,10 @@ static bool ParseArguments( const int argc, char** argv, Arguments* out )
         if(match) { ParseConfigString(match); continue; }
 
         match = MatchPrefix("--help", arg);
-        if(match) { PrintHelp(argv[0]); return false; }
+        if(match) { PrintHelpAndExit(argv[0]); }
 
         match = MatchPrefix("-", arg);
-        if(match) { Error("Unknown argument '%s'", arg); return false; }
+        if(match) { FatalError("Unknown argument '%s'", arg); }
 
         // TODO: Mount package `arg`
         Log("Mounting '%s' ...", arg);
@@ -272,31 +257,21 @@ static bool ParseArguments( const int argc, char** argv, Arguments* out )
     }
 
     if(!out->scenario)
-    {
-        Error("Needs at least one package to use as scenario!");
-        return false;
-    }
-
-    return true;
+        FatalError("Needs at least one package to use as scenario!");
 }
 
 int KonstruktMain( const int argc, char** argv )
 {
+    InitConfig();
+
     Arguments args;
     memset(&args, 0, sizeof(args));
+    ParseArguments(argc, argv, &args);
 
-    if(!InitConfig())
-        return EXIT_FAILURE;
-    if(!ParseArguments(argc, argv, &args))
-        return EXIT_FAILURE;
-    if(!InitModules(argv[0], &args))
-        return EXIT_FAILURE;
-    if(!InitScript(args.scenario))
-    {
-        DestroyModules();
-        return EXIT_FAILURE;
-    }
+    InitModules(argv[0], &args);
+    InitScript(args.scenario);
     RunSimulation();
     DestroyModules();
+
     return EXIT_SUCCESS;
 }
