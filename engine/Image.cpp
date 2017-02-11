@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <stdlib.h> // malloc, free
 #include <string.h> // memset
 
 #include "Warnings.h"
@@ -24,7 +23,7 @@ void CreateImage( Image* image, int width, int height, int channelCount )
 
     image->type = GL_UNSIGNED_BYTE;
 
-    image->data = malloc(width*height*channelCount);
+    image->data = Alloc(width*height*channelCount);
 }
 
 static int VfsRead( void* user, char* data, int size )
@@ -122,7 +121,7 @@ void CreateResizedImage( Image* output,
     output->channelCount = channelCount;
     output->type   = input->type;
 
-    output->data = malloc(width*height*channelCount);
+    output->data = Alloc(width*height*channelCount);
 
     const int flags = STBIR_FLAG_ALPHA_PREMULTIPLIED;
     // ^- Always assume premultiplied color channels and don't treat the alpha
@@ -158,5 +157,5 @@ void CreateResizedImage( Image* output,
 void FreeImage( const Image* image )
 {
     if(image->data)
-        free(image->data);
+        Free(image->data);
 }

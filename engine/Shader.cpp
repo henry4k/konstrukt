@@ -178,7 +178,7 @@ static Shader* CreateShader( const char* vfsPath, int type )
         return NULL;
 
     const int fileSize = GetVfsFileSize(file);
-    char* fileContent = (char*)malloc(fileSize);
+    char* fileContent = (char*)Alloc(fileSize);
     ReadVfsFile(file, fileContent, fileSize);
     CloseVfsFile(file);
 
@@ -187,7 +187,7 @@ static Shader* CreateShader( const char* vfsPath, int type )
     shader->handle = glCreateShader(type);
 
     glShaderSource(shader->handle, 1, &fileContent, &fileSize);
-    free(fileContent);
+    Free(fileContent);
 
     glCompileShader(shader->handle);
 

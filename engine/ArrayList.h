@@ -1,7 +1,7 @@
 #ifndef __KONSTRUKT_ARRAY_LIST__
 #define __KONSTRUKT_ARRAY_LIST__
 
-#include <stdlib.h> // free
+#include "Common.h" // Free
 #include <string.h> // memset
 
 
@@ -18,20 +18,24 @@
     memset((list), 0, sizeof(*(list)))
 
 #define DestroyArrayList( list ) \
-    (free((list)->data), \
+    (Free((list)->data), \
      InitArrayList(list))
 
 #define AllocateInArrayList( list, pos, amount ) \
-    &(list)->data[_AllocateInArrayList(_UnpackArrayList(list), (pos), (amount))]
+    (_AllocateInArrayList(_UnpackArrayList(list), (pos), (amount)), \
+     (list)->data + (pos))
 
 #define AllocateAtEndOfArrayList( list, amount ) \
-    &(list)->data[_AllocateInArrayList(_UnpackArrayList(list), (list)->length, (amount))]
+    (_AllocateInArrayList(_UnpackArrayList(list), (list)->length, (amount)), \
+     (list)->data + (list)->length - (amount))
 
 #define InsertInArrayList( list, pos, amount, elements ) \
-    &(list)->data[_InsertInArrayList(_UnpackArrayList(list), (pos), (amount), (const char*)(elements))]
+    (_InsertInArrayList(_UnpackArrayList(list), (pos), (amount), (const char*)(elements)), \
+     (list)->data + (pos))
 
 #define AppendToArrayList( list, amount, elements ) \
-    &(list)->data[_InsertInArrayList(_UnpackArrayList(list), (list)->length, (amount), (const char*)(elements))]
+    (_InsertInArrayList(_UnpackArrayList(list), (list)->length, (amount), (const char*)(elements)), \
+     (list)->data + (list)->length - (amount))
 
 #define RemoveFromArrayList( list, pos, amount ) \
     _RemoveFromArrayList(_UnpackArrayList(list), (pos), (amount))
@@ -54,16 +58,16 @@ void _ReserveArrayListCapacity( CharArrayList* list,
                                 int elementSize,
                                 int newCapacity );
 
-int _AllocateInArrayList( CharArrayList* list,
-                          int elementSize,
-                          int pos,
-                          int amount );
+void _AllocateInArrayList( CharArrayList* list,
+                           int elementSize,
+                           int pos,
+                           int amount );
 
-int _InsertInArrayList( CharArrayList* list,
-                        int elementSize,
-                        int pos,
-                        int amount,
-                        const char* elements );
+void _InsertInArrayList( CharArrayList* list,
+                         int elementSize,
+                         int pos,
+                         int amount,
+                         const char* elements );
 
 void _RemoveFromArrayList( CharArrayList* list,
                            int elementSize,

@@ -1,6 +1,5 @@
 #include <assert.h>
 #include <string.h> // memset
-#include <stdlib.h> // realloc, free
 
 #include "Common.h"
 #include "List.h"
@@ -313,10 +312,10 @@ static MeshBuffer* GetMeshBufferForMaterial( ChunkEnvironment* env,
     materialCount++;
     env->materialCount = materialCount;
     env->materialMeshBuffers =
-        (MeshBuffer**)realloc(env->materialMeshBuffers,
+        (MeshBuffer**)ReAlloc(env->materialMeshBuffers,
                               sizeof(MeshBuffer*)*materialCount);
     env->materialIds =
-        (int*)realloc(env->materialIds,
+        (int*)ReAlloc(env->materialIds,
                       sizeof(int)*materialCount);
 
     // Insert the material:
@@ -487,8 +486,8 @@ static void FreeChunkEnvironment( ChunkEnvironment* env )
 
     for(int i = 0; i < env->materialCount; i++)
         ReleaseMeshBuffer(env->materialMeshBuffers[i]);
-    free(env->materialMeshBuffers);
-    free(env->materialIds);
+    Free(env->materialMeshBuffers);
+    Free(env->materialIds);
 
     delete env;
 }

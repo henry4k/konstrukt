@@ -1,7 +1,7 @@
 #include <assert.h>
-#include <stdlib.h> // malloc, realloc, free
 #include <string.h> // memset, memcpy, memmove
 
+#include "Common.h"
 #include "List.h"
 
 
@@ -15,7 +15,7 @@ struct List
 
 List* CreateList( int elementSize )
 {
-    List* list = (List*)malloc(sizeof(List));
+    List* list = (List*)Alloc(sizeof(List));
     memset(list, 0, sizeof(List));
     list->elementSize = elementSize;
     return list;
@@ -24,9 +24,9 @@ List* CreateList( int elementSize )
 void FreeList( List* list )
 {
     if(list->elements)
-        free(list->elements);
+        Free(list->elements);
     memset(list, 0, sizeof(List));
-    free(list);
+    Free(list);
 }
 
 int GetListLength( const List* list )
@@ -56,7 +56,7 @@ void* InsertListEntries( List* list, int position, int count, const void* elemen
     const int elementSize = list->elementSize;
     const int oldElementCount = list->count;
     list->count += count;
-    list->elements = (char*)realloc(list->elements, elementSize * list->count);
+    list->elements = (char*)ReAlloc(list->elements, elementSize * list->count);
     char* insertionStart = &list->elements[elementSize*(position)];
     char* insertionEnd   = &list->elements[elementSize*(position+count)];
     if(position != oldElementCount)
@@ -87,7 +87,7 @@ void RemoveListEntries( List* list, int position, int count )
         memmove(removalStart, removalEnd, elementSize*elementsToMove);
     }
     list->count -= count;
-    list->elements = (char*)realloc(list->elements, elementSize * list->count);
+    list->elements = (char*)ReAlloc(list->elements, elementSize * list->count);
 }
 
 

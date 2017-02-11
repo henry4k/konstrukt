@@ -13,9 +13,8 @@ using namespace std;
 static map<string,string> g_ConfigValues;
 
 
-bool InitConfig()
+void InitConfig()
 {
-    return true;
 }
 
 void DestroyConfig()

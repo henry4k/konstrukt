@@ -135,7 +135,7 @@ int main( int argc, char** argv )
             LuaScope luaScope;
             lua_State* l = GetLuaState();
 
-            RunLuaScript(l, "lua/Test.lua");
+            RunLuaScript(l, "data/Test.lua");
         })
 
         .it("can fire events.", [](){

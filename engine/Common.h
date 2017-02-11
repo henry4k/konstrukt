@@ -1,13 +1,18 @@
 #ifndef __KONSTRUKT_COMMON__
 #define __KONSTRUKT_COMMON__
 
-#include <stdlib.h> // calloc, free
 #include <string.h> // memset
+
+
+void* Alloc( size_t size );
+void  Free( void* pointer );
+void* ReAlloc( void* oldPointer, size_t size );
+#define AllocZeroed(size) memset(Alloc(size), 0, (size))
 
 //#define REPEAT(N,I) for(int n = (N), I = 0; I < n; I++)
 #define REPEAT(N,I) for(int I = 0; I < (N); I++)
-#define NEW(S) (S*)calloc(1, sizeof(S))
-#define DELETE(S,P) { memset(P, 0, sizeof(S)); free(P); }
+#define NEW(S) (S*)AllocZeroed(sizeof(S))
+#define DELETE(S,P) { memset(P, 0, sizeof(S)); Free(P); }
 
 enum LogLevel
 {

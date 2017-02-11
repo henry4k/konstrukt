@@ -10,11 +10,12 @@ static int Lua_ReadFile( lua_State* l )
     VfsFile* file = OpenVfsFile(vfsPath, VFS_OPEN_READ);
 
     const int fileSize = GetVfsFileSize(file);
-    char* fileContent = (char*)malloc(fileSize);
+    char* fileContent = (char*)Alloc(fileSize);
     ReadVfsFile(file, fileContent, fileSize);
     CloseVfsFile(file);
 
     lua_pushlstring(l, fileContent, fileSize);
+    Free(fileContent);
     return 1;
 }
 

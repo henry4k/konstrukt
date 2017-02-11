@@ -1,6 +1,5 @@
 #include <assert.h>
 #include <math.h> // floor, ceil
-#include <stdlib.h> // malloc, free, realloc
 #include <string.h> // memset, memcmp, memcpy
 
 #include "List.h"

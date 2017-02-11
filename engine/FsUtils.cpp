@@ -6,6 +6,7 @@
     #include <stdlib.h> // rand_s
     #undef CreateDirectory
 #else
+    #include <stdlib.h> // mkdtemp
     #include <sys/stat.h> // stat, mkdir
     #include <dirent.h> // opendir, readdir, closedir
 #endif

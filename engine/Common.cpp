@@ -3,7 +3,7 @@
 #endif
 
 #include <string.h> // strncpy, strcmp
-#include <stdlib.h> // exit
+#include <stdlib.h> // exit, malloc, realloc, free
 #include <stdio.h> // printf
 #include <stdarg.h>
 #include <assert.h>
@@ -15,6 +15,35 @@ END_EXTERNAL_CODE
 
 #include "Config.h"
 #include "Common.h"
+
+
+// --- Heap ---
+
+static void HandleAllocationError( size_t size )
+{
+    FatalError("Memory allocation of %$.2d bytes failed.", size);
+}
+
+void* Alloc( size_t size )
+{
+    void* r = malloc(size);
+    if(!r)
+        HandleAllocationError(size);
+    return r;
+}
+
+void Free( void* pointer )
+{
+    free(pointer);
+}
+
+void* ReAlloc( void* oldPointer, size_t size )
+{
+    void* r = realloc(oldPointer, size);
+    if(!r)
+        HandleAllocationError(size);
+    return r;
+}
 
 
 // --- Strings ---

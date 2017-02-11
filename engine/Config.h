@@ -1,7 +1,7 @@
 #ifndef __KONSTRUKT_CONFIG__
 #define __KONSTRUKT_CONFIG__
 
-bool InitConfig();
+void InitConfig();
 void DestroyConfig();
 
 void SetConfigString( const char* key, const char* value );

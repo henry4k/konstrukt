@@ -88,7 +88,7 @@ static bool IsValidMountPoint( const char* vfsPath )
     return strchr(vfsPath, '/') == NULL;
 }
 
-static Mount* FindMountByVfsPath( const char* vfsPath, int* indexOut )
+static Mount* TryGetMountByVfsPath( const char* vfsPath, int* indexOut )
 {
     REPEAT(Mounts.length, i)
     {
@@ -100,8 +100,15 @@ static Mount* FindMountByVfsPath( const char* vfsPath, int* indexOut )
             return mount;
         }
     }
-    FatalError("Mount point '%s' does not exist.", vfsPath);
     return NULL;
+}
+
+static Mount* GetMountByVfsPath( const char* vfsPath, int* indexOut )
+{
+    Mount* mount = TryGetMountByVfsPath(vfsPath, indexOut);
+    if(!mount)
+        FatalError("Mount point '%s' does not exist.", vfsPath);
+    return mount;
 }
 
 void MountVfsDir( const char* vfsPath,
@@ -111,7 +118,7 @@ void MountVfsDir( const char* vfsPath,
     if(!IsValidMountPoint(vfsPath))
         FatalError("'%s' is not a valid mount point.", vfsPath);
 
-    if(FindMountByVfsPath(vfsPath, NULL))
+    if(TryGetMountByVfsPath(vfsPath, NULL))
         FatalError("'%s' is already mounted to something.", vfsPath);
 
     const MountSystem* mountSystem;
@@ -134,12 +141,9 @@ void MountVfsDir( const char* vfsPath,
 void UnmountVfsDir( const char* vfsPath )
 {
     int mountIndex;
-    Mount* mount = FindMountByVfsPath(vfsPath, &mountIndex);
-    if(!mount)
-        FatalError("Mount point '%s' does not exist.", vfsPath);
-
+    Mount* mount = GetMountByVfsPath(vfsPath, &mountIndex);
     mount->mountSystem->unmount(mount);
-
+    Log("Unmounted '%s' from '%s'.", mount->realPath, mount->vfsPath);
     RemoveFromArrayList(&Mounts, mountIndex, 1);
 }
 
@@ -272,7 +276,7 @@ VfsFile* OpenVfsFile( const char* vfsPath, VfsOpenMode mode )
     if(!mountPoint || !subMountPath)
         FatalError("Can't open file '%s'.", vfsPath);
 
-    const Mount* mount = FindMountByVfsPath(mountPoint, NULL);
+    const Mount* mount = GetMountByVfsPath(mountPoint, NULL);
     void* handle = mount->mountSystem->openFile(mount, subMountPath, mode);
 
     VfsFile* file = NEW(VfsFile);
@@ -283,7 +287,7 @@ VfsFile* OpenVfsFile( const char* vfsPath, VfsOpenMode mode )
 
 void CloseVfsFile( VfsFile* file )
 {
-    file->mountSystem->closeFile(file);
+    file->mountSystem->closeFile(file->handle);
     DELETE(VfsFile, file);
 }
 
@@ -326,7 +330,7 @@ static PathList* GetMountNames()
     REPEAT(Mounts.length, i)
     {
         const Mount* mount = Mounts.data + i;
-        const char* entryName = mount->vfsPath+1; // Skip the initial slash
+        const char* entryName = mount->vfsPath;
         Path* entry = AllocateAtEndOfArrayList(list, 1);
         CopyString(entryName, entry->str, sizeof(Path));
     }
@@ -343,7 +347,7 @@ PathList* GetVfsDirEntries( const char* vfsPath )
     {
         const char* subMountPath;
         const char* mountPoint = SplitVfsPath(vfsPath, &subMountPath);
-        const Mount* mount = FindMountByVfsPath(mountPoint, NULL);
+        const Mount* mount = GetMountByVfsPath(mountPoint, NULL);
         return mount->mountSystem->getDirEntries(mount, subMountPath);
     }
 }
@@ -352,7 +356,7 @@ VfsFileInfo GetVfsFileInfo( const char* vfsPath )
 {
     const char* subMountPath;
     const char* mountPoint = SplitVfsPath(vfsPath, &subMountPath);
-    const Mount* mount = FindMountByVfsPath(mountPoint, NULL);
+    const Mount* mount = GetMountByVfsPath(mountPoint, NULL);
     return mount->mountSystem->getFileInfo(mount, subMountPath);
 }
 
@@ -360,7 +364,7 @@ void DeleteVfsFile( const char* vfsPath )
 {
     const char* subMountPath;
     const char* mountPoint = SplitVfsPath(vfsPath, &subMountPath);
-    Mount* mount = FindMountByVfsPath(mountPoint, NULL);
+    Mount* mount = GetMountByVfsPath(mountPoint, NULL);
     return mount->mountSystem->deleteFile(mount, subMountPath);
 }
 
@@ -368,6 +372,6 @@ void MakeVfsDir( const char* vfsPath )
 {
     const char* subMountPath;
     const char* mountPoint = SplitVfsPath(vfsPath, &subMountPath);
-    Mount* mount = FindMountByVfsPath(mountPoint, NULL);
+    Mount* mount = GetMountByVfsPath(mountPoint, NULL);
     return mount->mountSystem->makeDir(mount, subMountPath);
 }

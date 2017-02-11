@@ -22,13 +22,18 @@ static void DestroyVfs_PhysFS()
 static void MountVfsDir_PhysFS( Mount* mount )
 {
     if(!PHYSFS_mount(mount->realPath, mount->vfsPath, true))
-        FatalError("Can't mount '%s': %s", mount->vfsPath, PHYSFS_getLastError());
+        FatalError("Can't mount '%s' as '%s': %s",
+                   mount->realPath,
+                   mount->vfsPath,
+                   PHYSFS_getLastError());
 }
 
 static void UnmountVfsDir_PhysFS( const Mount* mount )
 {
     if(!PHYSFS_unmount(mount->realPath))
-        FatalError("Can't unmount '%s': %s", mount->vfsPath, PHYSFS_getLastError());
+        FatalError("Can't unmount '%s': %s",
+                   mount->realPath,
+                   PHYSFS_getLastError());
 }
 
 static void* OpenVfsFile_PhysFS( const Mount* mount,

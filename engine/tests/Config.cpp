@@ -1,6 +1,10 @@
 #include <string.h> // strcmp
-#include <engine/Config.h>
+#include "../Config.h"
 #include "TestTools.h"
+#include <dummy/bdd.hpp>
+
+using namespace dummy;
+
 
 class ConfigScope
 {
@@ -8,7 +12,7 @@ private:
     bool destroyed;
 
 public:
-    ConfigScope() { destroyed = false; }
+    ConfigScope() { InitConfig(); destroyed = false; }
     ~ConfigScope() { if(!destroyed) DestroyConfig(); }
     void destroy() { DestroyConfig(); destroyed = true; };
 };
@@ -18,52 +22,27 @@ int main( int argc, char** argv )
     InitTests(argc, argv);
 
     Describe("Config module")
-        .use(dummyExceptionSandbox)
+        .use(dummySignalSandbox)
 
         .it("can be initialized empty.", [](){
 
-            Require(InitConfig(0, NULL) == true);
+            InitConfig();
             DestroyConfig();
         })
 
-        .it("has a proper destructor.", [](){
+        .it("can set and get values.", [](){
 
-            const char* argv[] = {"", "--aaa=bbb"};
-
-            {
-                Require(InitConfig(2, argv) == true);
-                ConfigScope scope;
-                Require(strcmp(GetConfigString("aaa",""), "bbb") == 0);
-            }
-
-            {
-                Require(InitConfig(0, NULL) == true);
-                ConfigScope scope;
-                Require(GetConfigString("aaa",NULL) == NULL);
-            }
-        })
-
-        .it("can parse arguments.", [](){
-
-            const char* argv[] = {"", "--aaa=bbb", "--foo=bar", "--ccc=ddd"};
-
-            Require(InitConfig(4, argv) == true);
             ConfigScope scope;
-
-            Require(strcmp(GetConfigString("foo",""), "bar") == 0);
-            Require(strcmp(GetConfigString("foo","yyy"), "bar") == 0);
-            Require(strcmp(GetConfigString("foo",NULL), "bar") == 0);
-            Require(strcmp(GetConfigString("xxx",""), "") == 0);
-            Require(strcmp(GetConfigString("xxx","yyy"), "yyy") == 0);
-            Require(GetConfigString("xxx",NULL) == NULL);
+            SetConfigString("aaa", "bbb");
+            Require(strcmp(GetConfigString("aaa",""), "bbb") == 0);
         })
 
         .it("can convert integer values.", [](){
 
-            const char* argv[] = {"", "--aaa=42", "--bbb=1.1", "--ccc=1.9"};
-
-            Require(InitConfig(4, argv) == true);
             ConfigScope scope;
+            SetConfigString("aaa", "42");
+            SetConfigString("bbb", "1.1");
+            SetConfigString("ccc", "1.9");
 
             Require(GetConfigInt("aaa", 0) == 42);
             Require(GetConfigInt("bbb", 0) == 1);
@@ -73,10 +52,10 @@ int main( int argc, char** argv )
 
         .it("can convert floating point values.", [](){
 
-            const char* argv[] = {"", "--aaa=42", "--bbb=1.1", "--ccc=1.9"};
-
-            Require(InitConfig(4, argv) == true);
             ConfigScope scope;
+            SetConfigString("aaa", "42");
+            SetConfigString("bbb", "1.1");
+            SetConfigString("ccc", "1.9");
 
             Require(GetConfigFloat("aaa", 0) == 42);
             Require(GetConfigFloat("bbb", 0) == 1.1f);
@@ -86,20 +65,16 @@ int main( int argc, char** argv )
 
         .it("can convert boolean values.", [](){
 
-            const char* argv[] = {
-                "",
-                "--aaa=42",
-                "--bbb=1.1",
-                "--ccc=1.9",
-                "--ddd=0",
-                "--eee=0.0",
-                "--fff=true",
-                "--ggg=false",
-                "--hhh=yes",
-                "--jjj=no"};
-
-            Require(InitConfig(10, argv) == true);
             ConfigScope scope;
+            SetConfigString("aaa", "42");
+            SetConfigString("bbb", "1.1");
+            SetConfigString("ccc", "1.9");
+            SetConfigString("ddd", "0");
+            SetConfigString("eee", "0.0");
+            SetConfigString("fff", "true");
+            SetConfigString("ggg", "false");
+            SetConfigString("hhh", "yes");
+            SetConfigString("jjj", "no");
 
             Require(GetConfigBool("aaa", false) == true);
             Require(GetConfigBool("bbb", false) == true);
@@ -117,12 +92,9 @@ int main( int argc, char** argv )
 
         .it("can parse ini files.", [](){
 
-            const char* argv[] = {"", "--config=config/Test.ini"};
-
-            Require(InitConfig(2, argv) == true);
             ConfigScope scope;
+            ReadConfigFile("data/Test.ini");
 
-            Require(GetConfigString("config", NULL) == NULL);
             Require(strcmp(GetConfigString("aaa", ""), "bbb") == 0);
             Require(strcmp(GetConfigString("foo.bar", ""), "baz") == 0);
             Require(strcmp(GetConfigString("foo.hello", ""), "Hello World") == 0);
