@@ -60,7 +60,7 @@ bool PostConfigInitLog();
 
 // --- Other utilities ---
 
-//#define REPEAT(N,I) for(int n = (int)(N), I = 0; I < n; I++)
-#define REPEAT(N,I) for(int I = 0; I < (N); I++)
+#define REPEAT(N,I) for(int _n = (int)(N), I = 0; I < _n; I++)
+//#define REPEAT(N,I) for(int I = 0; I < (N); I++)
 
 #endif
