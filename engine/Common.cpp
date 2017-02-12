@@ -17,7 +17,7 @@ END_EXTERNAL_CODE
 #include "Common.h"
 
 
-// --- Heap ---
+// --- Memory allocation ---
 
 static void HandleAllocationError( size_t size )
 {
@@ -101,6 +101,10 @@ static void SimpleLogHandler( LogLevel level, const char* line )
     FILE* file = NULL;
     switch(level)
     {
+        case LOG_DEBUG:
+            file = stdout;
+            break;
+
         case LOG_INFO:
             file = stdout;
             break;
@@ -110,8 +114,8 @@ static void SimpleLogHandler( LogLevel level, const char* line )
             file = stderr;
             break;
 
-        case LOG_FATAL_ERROR:
-            prefix = "FATAL ERROR: ";
+        case LOG_ERROR:
+            prefix = "ERROR: ";
             file = stderr;
             break;
     }
@@ -126,18 +130,24 @@ static void ColorLogHandler( LogLevel level, const char* line )
     FILE* file = NULL;
     switch(level)
     {
+        case LOG_DEBUG:
+            prefix = "\033[30;1m";
+            postfix = "\033[0m";
+            file = stdout;
+            break;
+
         case LOG_INFO:
             file = stdout;
             break;
 
         case LOG_WARNING:
-            prefix = "\033[31mWARNING: ";
+            prefix = "\033[33mWARNING: ";
             postfix = "\033[0m";
             file = stderr;
             break;
 
-        case LOG_FATAL_ERROR:
-            prefix = "\033[31;1mFATAL ERROR: ";
+        case LOG_ERROR:
+            prefix = "\033[31;1mERROR: ";
             postfix = "\033[0m";
             file = stderr;
             break;
@@ -181,19 +191,11 @@ void LogV( LogLevel level, const char* format, va_list vl )
     }
 }
 
-void Log( const char* format, ... )
+void Log( LogLevel level, const char* format, ... )
 {
     va_list vl;
     va_start(vl, format);
-    LogV(LOG_INFO, format, vl);
-    va_end(vl);
-}
-
-void Warn( const char* format, ... )
-{
-    va_list vl;
-    va_start(vl, format);
-    LogV(LOG_WARNING, format, vl);
+    LogV(level, format, vl);
     va_end(vl);
 }
 
@@ -201,7 +203,7 @@ void FatalError( const char* format, ... )
 {
     va_list vl;
     va_start(vl, format);
-    LogV(LOG_FATAL_ERROR, format, vl);
+    LogV(LOG_ERROR, format, vl);
     va_end(vl);
     exit(EXIT_FAILURE);
 }

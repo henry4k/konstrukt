@@ -138,7 +138,7 @@ bool RegisterControl( const char* name, ControlActionFn callback, void* context 
     }
     else
     {
-        Warn("Control '%s' is unused.", name);
+        LogWarning("Control '%s' is unused.", name);
         return false;
     }
 

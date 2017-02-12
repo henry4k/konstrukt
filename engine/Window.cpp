@@ -63,6 +63,12 @@ void InitWindow()
     const bool debug = GetConfigBool("opengl.debug", false);
     const bool vsync = GetConfigBool("opengl.vsync", true);
 
+    LogDebug("Compiled with GLFW %d.%d.%d",
+             GLFW_VERSION_MAJOR,
+             GLFW_VERSION_MINOR,
+             GLFW_VERSION_REVISION);
+    LogDebug("Using GLFW %s", glfwGetVersionString());
+
     assert(g_Window == NULL);
     glfwSetErrorCallback(OnGLFWError);
     if(!glfwInit())
@@ -90,14 +96,14 @@ void InitWindow()
     if(!flextInit(g_Window))
         FatalError("Failed to load OpenGL extensions.");
 
-    Log("Using OpenGL %s\n"
-        "Vendor: %s\n"
-        "Renderer: %s\n"
-        "GLSL: %s",
-        glGetString(GL_VERSION),
-        glGetString(GL_VENDOR),
-        glGetString(GL_RENDERER),
-        glGetString(GL_SHADING_LANGUAGE_VERSION));
+    LogDebug("Using OpenGL %s\n"
+             "Vendor: %s\n"
+             "Renderer: %s\n"
+             "GLSL: %s",
+             glGetString(GL_VERSION),
+             glGetString(GL_VENDOR),
+             glGetString(GL_RENDERER),
+             glGetString(GL_SHADING_LANGUAGE_VERSION));
 
     if(vsync)
     {
@@ -123,7 +129,7 @@ void InitWindow()
 
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
         glDebugMessageCallbackARB(OnDebugEvent, NULL);
-        Log("Debug output supported! You may receive debug messages from your OpenGL driver.");
+        LogDebug("Debug output supported! You may receive debug messages from your OpenGL driver.");
     }
 
     glfwSetWindowSizeCallback(g_Window, OnWindowResize);
@@ -250,6 +256,10 @@ CALLBACK_API static void OnDebugEvent( GLenum source,
         case GL_DEBUG_SOURCE_OTHER_ARB: sourceName = ""; break;
     }
 
+    LogLevel logLevel = LOG_WARNING;
+    if(type == GL_DEBUG_TYPE_ERROR_ARB)
+        logLevel = LOG_ERROR;
+
     const char* typeName = "unknown issue";
     switch(type)
     {
@@ -269,7 +279,7 @@ CALLBACK_API static void OnDebugEvent( GLenum source,
         case GL_DEBUG_SEVERITY_LOW_ARB: severityName = "Low"; break;
     }
 
-    Warn("%s severity %s %s %d, %s", severityName, sourceName, typeName, id, message);
+    Log(logLevel, "%s severity %s %s %d, %s", severityName, sourceName, typeName, id, message);
 }
 
 static void OnWindowResize( GLFWwindow* window, int width, int height )

@@ -110,6 +110,6 @@ static int IniEntryCallback( void* user, const char* section, const char* name, 
 
 void ReadConfigFile( const char* fileName )
 {
-    Log("Reading config file %s ..", fileName);
+    LogInfo("Reading config file %s ..", fileName);
     ini_parse(fileName, IniEntryCallback, NULL);
 }

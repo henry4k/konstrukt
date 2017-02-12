@@ -89,6 +89,12 @@ static inline Vec3 FromBulletVec( const btVector3& v )
 
 void InitPhysicsManager()
 {
+    const int version = btGetVersion();
+    const int major = version/100;
+    const int minor = (version-major*100)/10;
+    const int patch = version-(major*100 + minor*10);
+    LogDebug("Using Bullet %d.%d.%d", major, minor, patch);
+
     CollisionConfiguration = new btDefaultCollisionConfiguration();
     CollisionDispatcher = new btCollisionDispatcher(CollisionConfiguration);
     BroadphaseInterface = new btDbvtBroadphase();

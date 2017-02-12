@@ -25,7 +25,7 @@ function print( ... )
     for i, arg in ipairs(args) do
         args[i] = tostring(arg)
     end
-    engine.Log(table.concat(args, '\t'))
+    engine.Log('debug', table.concat(args, '\t'))
 end
 
 function loadfile( fileName, ... )

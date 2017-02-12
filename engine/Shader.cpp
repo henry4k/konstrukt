@@ -163,7 +163,7 @@ static void ShowShaderLog( Shader* shader, bool success, const char* vfsPath )
     }
 
     if(success)
-        Warn("Compiled shader: %s\n%s", vfsPath, log);
+        LogWarning("Compiled shader: %s\n%s", vfsPath, log);
     else
         FatalError("Error compiling shader %s\n%s", vfsPath, log);
 
@@ -251,7 +251,7 @@ static void ShowShaderProgramLog( ShaderProgram* program, bool success, const ch
     }
 
     if(success)
-        Warn("%s\n%s", message, log);
+        LogWarning("%s\n%s", message, log);
     else
         FatalError("%s\n%s", message, log);
 
@@ -440,7 +440,7 @@ static void ReadUniformBlockDefinitions( ShaderProgram* program )
                                   i,
                                   GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS,
                                   &uniformCount);
-        Log("BLOCK: %d %s size=%d uniforms=%d", i, name, size, uniformCount);
+        LogDebug("BLOCK: %d %s size=%d uniforms=%d", i, name, size, uniformCount);
 
         int* uniformIndices_ = new int[uniformCount];
         GLuint* uniformIndices = new GLuint[uniformCount];
@@ -458,8 +458,8 @@ static void ReadUniformBlockDefinitions( ShaderProgram* program )
         glGetActiveUniformsiv(program->handle, uniformCount, uniformIndices, GL_UNIFORM_ARRAY_STRIDE, uniformArrStride);
         glGetActiveUniformsiv(program->handle, uniformCount, uniformIndices, GL_UNIFORM_MATRIX_STRIDE, uniformMatStride);
         REPEAT(uniformCount, j)
-            Log("  %d location=%d offset=%d arrStride=%d matStride=%d",
-                j, uniformIndices[j], uniformOffset[j], uniformArrStride[j], uniformMatStride[j]);
+            LogDebug("  %d location=%d offset=%d arrStride=%d matStride=%d",
+                     j, uniformIndices[j], uniformOffset[j], uniformArrStride[j], uniformMatStride[j]);
         delete[] uniformIndices;
         delete[] uniformOffset;
         delete[] uniformArrStride;

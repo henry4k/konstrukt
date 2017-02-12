@@ -85,43 +85,40 @@ static void InitModules( const char* arg0, const Arguments* arguments )
 {
     InitCrc32();
 
-    Log("------------- VFS -------------");
+    LogDebug("------------- VFS -------------");
     InitVfs(arg0, arguments->state, arguments->sharedState);
 
-    Log("----------- Log post config init ------------");
-    PostConfigInitLog();
-
-    Log("------------- Lua -------------");
+    LogDebug("------------- Lua -------------");
     InitLua();
 
-    Log("----------- Window ------------");
+    LogDebug("----------- Window ------------");
     InitWindow();
 
-    Log("--------- Time ----------");
+    LogDebug("--------- Time ----------");
     InitTime();
 
-    Log("------------ Audio ------------");
+    LogDebug("------------ Audio ------------");
     InitAudio();
 
-    Log("---------- Controls -----------");
+    LogDebug("---------- Controls -----------");
     InitControls();
 
-    Log("--------- Physics Manager ----------");
+    LogDebug("--------- Physics Manager ----------");
     InitPhysicsManager();
 
-    Log("--------- Shader ----------");
+    LogDebug("--------- Shader ----------");
     InitShader();
 
-    Log("--------- Render Manager ----------");
+    LogDebug("--------- Render Manager ----------");
     InitRenderManager();
 
-    Log("--------- Default Render Target ----------");
+    LogDebug("--------- Default Render Target ----------");
     InitDefaultRenderTarget();
 
-    Log("--- Registering Lua modules ----");
+    LogDebug("--- Registering Lua modules ----");
     RegisterAllModulesInLua();
 
-    Log("-------------------------------");
+    LogDebug("-------------------------------");
 }
 
 static void DestroyModules()
@@ -251,7 +248,7 @@ static void ParseArguments( const int argc, char** argv, Arguments* out )
         if(match) { FatalError("Unknown argument '%s'", arg); }
 
         // TODO: Mount package `arg`
-        Log("Mounting '%s' ...", arg);
+        LogInfo("Mounting '%s' ...", arg);
         if(!out->scenario) // first package is the scenario
             out->scenario = arg;
     }
@@ -263,6 +260,7 @@ static void ParseArguments( const int argc, char** argv, Arguments* out )
 int KonstruktMain( const int argc, char** argv )
 {
     InitConfig();
+    PostConfigInitLog();
 
     Arguments args;
     memset(&args, 0, sizeof(args));

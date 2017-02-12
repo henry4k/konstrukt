@@ -14,6 +14,7 @@ void TestLogHandler( LogLevel level, const char* line )
 {
     switch(level)
     {
+        case LOG_DEBUG:
         case LOG_INFO:
             dummyLog("%s", line);
             break;
@@ -22,8 +23,8 @@ void TestLogHandler( LogLevel level, const char* line )
             dummyLog("WARNING: %s", line);
             break;
 
-        case LOG_FATAL_ERROR:
-            dummyLog("FATAL ERROR: %s", line);
+        case LOG_ERROR:
+            dummyLog("ERROR: %s", line);
             break;
 
         default:

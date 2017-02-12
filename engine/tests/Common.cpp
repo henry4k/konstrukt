@@ -68,10 +68,10 @@ void LogHandlerTest()
 
     CallCount = 0;
 
-    Log("foo");
-    Warn("bar");
-    Log("aaa\nbbb");
-    Log("ccc\n");
+    LogInfo("foo");
+    LogWarning("bar");
+    LogInfo("aaa\nbbb");
+    LogInfo("ccc\n");
 
     Require(CallCount == 6);
 }

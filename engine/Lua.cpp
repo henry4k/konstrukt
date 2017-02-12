@@ -34,7 +34,6 @@ static int Lua_SetErrorFunction( lua_State* l );
 static int Lua_SetEventCallback( lua_State* l );
 static int Lua_ErrorProxy( lua_State* l );
 static int Lua_Log( lua_State* l );
-static int Lua_Warn( lua_State* l );
 
 
 void InitLua()
@@ -42,12 +41,12 @@ void InitLua()
     assert(g_LuaState == NULL);
     assert(g_LuaEvents.empty());
 
-    Log("Using " LUA_COPYRIGHT);
+    LogDebug("Compiled with " LUA_COPYRIGHT);
     const int version = (int)*lua_version(NULL);
     const int major = version/100;
     const int minor = (version-major*100)/10;
     const int patch = version-(major*100 + minor*10);
-    Log("Linked against Lua %d.%d.%d", major, minor, patch);
+    LogDebug("Using Lua %d.%d.%d", major, minor, patch);
 
     lua_State* l = g_LuaState = luaL_newstate();
     g_LuaEvents.clear();
@@ -73,7 +72,6 @@ void InitLua()
     RegisterFunctionInLua("SetErrorFunction", Lua_SetErrorFunction);
     RegisterFunctionInLua("SetEventCallback", Lua_SetEventCallback);
     RegisterFunctionInLua("Log", Lua_Log);
-    RegisterFunctionInLua("Warn", Lua_Warn);
 
     g_LuaShutdownEvent = RegisterLuaEvent("Shutdown");
 }
@@ -111,7 +109,7 @@ void UpdateLua()
     lua_gc(g_LuaState, LUA_GCCOLLECT, 0);
     const int memAfterGC = GetLuaMemoryInBytes();
 
-    Log("LUA GC UPDATE: %d bytes in use. %d bytes collected.",
+    LogDebug("LUA GC UPDATE: %d bytes in use. %d bytes collected.",
         memAfterGC,
         memBeforeGC-memAfterGC
     );
@@ -299,7 +297,7 @@ static const char* ReadLuaChunk( lua_State* l, void* userData, size_t* bytesRead
 
 void RunLuaScript( lua_State* l, const char* vfsPath )
 {
-    Log("Running %s ...", vfsPath);
+    LogInfo("Running %s ...", vfsPath);
 
     lua_pushcfunction(l, Lua_ErrorProxy);
 
@@ -405,14 +403,15 @@ static int Lua_SetEventCallback( lua_State* l )
 
 static int Lua_Log( lua_State* l )
 {
-    const char* message = luaL_checkstring(l, 1);
-    Log("%s", message);
-    return 0;
-}
-
-static int Lua_Warn( lua_State* l )
-{
-    const char* message = luaL_checkstring(l, 1);
-    Warn("%s", message);
+    static const char* levelNames[] =
+    {
+        "debug",
+        "info",
+        "warning",
+        "error"
+    };
+    const LogLevel level = (LogLevel)luaL_checkoption(l, 1, NULL, levelNames);
+    const char* message = luaL_checkstring(l, 2);
+    Log(level, "%s", message);
     return 0;
 }
