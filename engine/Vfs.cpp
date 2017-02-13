@@ -135,7 +135,8 @@ void MountVfsDir( const char* vfsPath,
     mount->writingAllowed = writingAllowed;
 
     mountSystem->mount(mount);
-    LogInfo("Mounted '%s' to '%s'.", realPath, vfsPath);
+
+    LogNotice("Mounted '%s' to '%s'.", realPath, vfsPath);
 }
 
 void UnmountVfsDir( const char* vfsPath )
@@ -143,7 +144,7 @@ void UnmountVfsDir( const char* vfsPath )
     int mountIndex;
     Mount* mount = GetMountByVfsPath(vfsPath, &mountIndex);
     mount->mountSystem->unmount(mount);
-    LogInfo("Unmounted '%s' from '%s'.", mount->realPath, mount->vfsPath);
+    LogNotice("Unmounted '%s' from '%s'.", mount->realPath, mount->vfsPath);
     RemoveFromArrayList(&Mounts, mountIndex, 1);
 }
 
@@ -233,7 +234,7 @@ void MountPackage( const char* reference )
     const char* packagePath = ResolvePackageReference(reference);
     const char* name = ExtractPackageNameFromReference(reference);
     MountVfsDir(name, packagePath, false);
-    LogInfo("Mounted package '%s' (%s).", name, packagePath);
+    LogNotice("Mounted package '%s' (%s).", name, packagePath);
 }
 
 

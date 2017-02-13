@@ -84,41 +84,17 @@ static void RegisterAllModulesInLua()
 static void InitModules( const char* arg0, const Arguments* arguments )
 {
     InitCrc32();
-
-    LogDebug("------------- VFS -------------");
     InitVfs(arg0, arguments->state, arguments->sharedState);
-
-    LogDebug("------------- Lua -------------");
     InitLua();
-
-    LogDebug("----------- Window ------------");
     InitWindow();
-
-    LogDebug("--------- Time ----------");
     InitTime();
-
-    LogDebug("------------ Audio ------------");
     InitAudio();
-
-    LogDebug("---------- Controls -----------");
     InitControls();
-
-    LogDebug("--------- Physics Manager ----------");
     InitPhysicsManager();
-
-    LogDebug("--------- Shader ----------");
     InitShader();
-
-    LogDebug("--------- Render Manager ----------");
     InitRenderManager();
-
-    LogDebug("--------- Default Render Target ----------");
     InitDefaultRenderTarget();
-
-    LogDebug("--- Registering Lua modules ----");
     RegisterAllModulesInLua();
-
-    LogDebug("-------------------------------");
 }
 
 static void DestroyModules()
@@ -248,7 +224,7 @@ static void ParseArguments( const int argc, char** argv, Arguments* out )
         if(match) { FatalError("Unknown argument '%s'", arg); }
 
         // TODO: Mount package `arg`
-        LogInfo("Mounting '%s' ...", arg);
+        LogNotice("Mounting '%s' ...", arg);
         if(!out->scenario) // first package is the scenario
             out->scenario = arg;
     }

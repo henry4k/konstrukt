@@ -32,10 +32,32 @@ bool CopyString( const char* source, char* destination, int destinationSize );
 
 enum LogLevel
 {
-    LOG_DEBUG,
+    /**
+     * Normal operational messages that require no action.
+     */
     LOG_INFO,
+
+    /**
+     * Events that are unusual, but not error conditions.
+     *
+     * Interesting runtime events (startup/shutdown).
+     */
+    LOG_NOTICE,
+
+    /**
+     * May indicate that an error will occur if action is not taken.
+     */
     LOG_WARNING,
-    LOG_ERROR
+
+    /**
+     * Runtime errors or unexpected conditions.
+     */
+    LOG_ERROR,
+
+    /**
+     * A serious error occured - program will usually end soon.
+     */
+    LOG_FATAL_ERROR
 };
 
 typedef void (*LogHandler)( LogLevel level, const char* line );
@@ -45,8 +67,9 @@ void SetLogHandler( LogHandler handler );
 LogHandler GetLogHandler();
 
 void Log( LogLevel level, const char* format, ... );
-#define LogDebug(...)   Log(LOG_DEBUG,   __VA_ARGS__)
+
 #define LogInfo(...)    Log(LOG_INFO,    __VA_ARGS__)
+#define LogNotice(...)  Log(LOG_NOTICE,  __VA_ARGS__)
 #define LogWarning(...) Log(LOG_WARNING, __VA_ARGS__)
 #define LogError(...)   Log(LOG_ERROR,   __VA_ARGS__)
 

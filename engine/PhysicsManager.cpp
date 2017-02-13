@@ -93,7 +93,7 @@ void InitPhysicsManager()
     const int major = version/100;
     const int minor = (version-major*100)/10;
     const int patch = version-(major*100 + minor*10);
-    LogDebug("Using Bullet %d.%d.%d", major, minor, patch);
+    LogInfo("Using Bullet %d.%d.%d", major, minor, patch);
 
     CollisionConfiguration = new btDefaultCollisionConfiguration();
     CollisionDispatcher = new btCollisionDispatcher(CollisionConfiguration);

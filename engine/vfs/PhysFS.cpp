@@ -157,11 +157,11 @@ MountSystem* InitVfs_PhysFS( const char* argv0 )
 {
     PHYSFS_Version compiled;
     PHYSFS_VERSION(&compiled);
-    LogDebug("Compiled with PhysFS %d.%d.%d", compiled.major, compiled.minor, compiled.patch);
+    LogInfo("Compiled with PhysFS %d.%d.%d", compiled.major, compiled.minor, compiled.patch);
 
     PHYSFS_Version linked;
     PHYSFS_getLinkedVersion(&linked);
-    LogDebug("Using PhysFS %d.%d.%d", linked.major, linked.minor, linked.patch);
+    LogInfo("Using PhysFS %d.%d.%d", linked.major, linked.minor, linked.patch);
 
     if(!PHYSFS_init(argv0))
         FatalError("PHYSFS_init: %s", PHYSFS_getLastError());

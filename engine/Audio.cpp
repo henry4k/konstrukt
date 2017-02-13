@@ -61,9 +61,9 @@ void InitAudio()
 
     const char* deviceName = GetConfigString("audio.device", NULL);
     if(deviceName)
-        LogDebug("Using audio device: ", deviceName);
+        LogInfo("Using audio device: ", deviceName);
     else
-        LogDebug("Using default audio device.");
+        LogInfo("Using default audio device.");
 
     if(!alureInitDevice(deviceName, NULL))
         FatalError("Failed to initialize audio device: %s", alureGetErrorString());
@@ -72,14 +72,14 @@ void InitAudio()
     ALuint alureMinor = 0;
     alureGetVersion(&alureMajor, &alureMinor);
 
-    LogDebug("Using OpenAL %s\n"
-             "Vendor: %s\n"
-             "Renderer: %s\n"
-             "Alure: %d.%d",
-             alGetString(AL_VERSION),
-             alGetString(AL_VENDOR),
-             alGetString(AL_RENDERER),
-             alureMajor, alureMinor);
+    LogInfo("Using OpenAL %s\n"
+            "Vendor: %s\n"
+            "Renderer: %s\n"
+            "Alure: %d.%d",
+            alGetString(AL_VERSION),
+            alGetString(AL_VENDOR),
+            alGetString(AL_RENDERER),
+            alureMajor, alureMinor);
 
     AudioSourceCount = GetConfigInt("audio.max-sources", 32);
     AudioSources = new AudioSource[AudioSourceCount];
@@ -331,7 +331,7 @@ static void UpdateAudioSource( AudioSource* source )
         {
             ReferenceAudioSource(source);
             source->active = true;
-            LogDebug("Source %p activated!", source);
+            LogInfo("Source %p activated!", source);
         }
     }
     else
@@ -340,7 +340,7 @@ static void UpdateAudioSource( AudioSource* source )
         {
             ReleaseAudioSource(source);
             source->active = false;
-            LogDebug("Source %p deactivated!", source);
+            LogInfo("Source %p deactivated!", source);
         }
     }
 
@@ -401,9 +401,9 @@ static void PrintAudioDevices()
     if(!deviceNames || deviceCount == 0)
         FatalError("Failed to query audio device list: %s", alureGetErrorString());
 
-    LogDebug("Available audio devices:");
+    LogInfo("Available audio devices:");
     for(int i = 0; i < deviceCount; ++i)
-        LogDebug("  %s", deviceNames[i]);
+        LogInfo("  %s", deviceNames[i]);
 
     alureFreeDeviceNames(deviceNames);
 }

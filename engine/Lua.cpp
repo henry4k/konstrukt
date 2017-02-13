@@ -41,12 +41,12 @@ void InitLua()
     assert(g_LuaState == NULL);
     assert(g_LuaEvents.empty());
 
-    LogDebug("Compiled with " LUA_COPYRIGHT);
+    LogInfo("Compiled with " LUA_COPYRIGHT);
     const int version = (int)*lua_version(NULL);
     const int major = version/100;
     const int minor = (version-major*100)/10;
     const int patch = version-(major*100 + minor*10);
-    LogDebug("Using Lua %d.%d.%d", major, minor, patch);
+    LogInfo("Using Lua %d.%d.%d", major, minor, patch);
 
     lua_State* l = g_LuaState = luaL_newstate();
     g_LuaEvents.clear();
@@ -109,7 +109,7 @@ void UpdateLua()
     lua_gc(g_LuaState, LUA_GCCOLLECT, 0);
     const int memAfterGC = GetLuaMemoryInBytes();
 
-    LogDebug("LUA GC UPDATE: %d bytes in use. %d bytes collected.",
+    LogInfo("LUA GC UPDATE: %d bytes in use. %d bytes collected.",
         memAfterGC,
         memBeforeGC-memAfterGC
     );
@@ -297,7 +297,7 @@ static const char* ReadLuaChunk( lua_State* l, void* userData, size_t* bytesRead
 
 void RunLuaScript( lua_State* l, const char* vfsPath )
 {
-    LogInfo("Running %s ...", vfsPath);
+    LogNotice("Running %s ...", vfsPath);
 
     lua_pushcfunction(l, Lua_ErrorProxy);
 
@@ -385,6 +385,7 @@ int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues
     lua_remove(l, -(returnValueCount+1)); // Remove error function
 
     HandleLuaCallResult(l, callResult);
+
     return returnValueCount;
 }
 
@@ -405,10 +406,11 @@ static int Lua_Log( lua_State* l )
 {
     static const char* levelNames[] =
     {
-        "debug",
         "info",
+        "notice",
         "warning",
-        "error"
+        "error",
+        "fatal error"
     };
     const LogLevel level = (LogLevel)luaL_checkoption(l, 1, NULL, levelNames);
     const char* message = luaL_checkstring(l, 2);

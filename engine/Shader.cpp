@@ -440,7 +440,7 @@ static void ReadUniformBlockDefinitions( ShaderProgram* program )
                                   i,
                                   GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS,
                                   &uniformCount);
-        LogDebug("BLOCK: %d %s size=%d uniforms=%d", i, name, size, uniformCount);
+        LogInfo("BLOCK: %d %s size=%d uniforms=%d", i, name, size, uniformCount);
 
         int* uniformIndices_ = new int[uniformCount];
         GLuint* uniformIndices = new GLuint[uniformCount];
@@ -458,7 +458,7 @@ static void ReadUniformBlockDefinitions( ShaderProgram* program )
         glGetActiveUniformsiv(program->handle, uniformCount, uniformIndices, GL_UNIFORM_ARRAY_STRIDE, uniformArrStride);
         glGetActiveUniformsiv(program->handle, uniformCount, uniformIndices, GL_UNIFORM_MATRIX_STRIDE, uniformMatStride);
         REPEAT(uniformCount, j)
-            LogDebug("  %d location=%d offset=%d arrStride=%d matStride=%d",
+            LogInfo("  %d location=%d offset=%d arrStride=%d matStride=%d",
                      j, uniformIndices[j], uniformOffset[j], uniformArrStride[j], uniformMatStride[j]);
         delete[] uniformIndices;
         delete[] uniformOffset;

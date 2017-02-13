@@ -34,7 +34,7 @@ scenarios.  Without this option the engine will create a temporary directory.
 #### `--search-paths=...;...;...` (optional)
 
 A semicolon separated list of directories, which are used to resolve package
-file names.  The engines directory is always tried first.
+file names.  The engines default search path is always tried first.
 
 
 ### Packages

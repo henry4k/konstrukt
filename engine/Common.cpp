@@ -2,6 +2,10 @@
     #include <unistd.h> // isatty
 #endif
 
+#if defined(__linux__)
+    #include <execinfo.h> // backtrace
+#endif
+
 #include <string.h> // strncpy, strcmp
 #include <stdlib.h> // exit, malloc, realloc, free
 #include <stdio.h> // printf
@@ -14,6 +18,7 @@ BEGIN_EXTERNAL_CODE
 END_EXTERNAL_CODE
 
 #include "Config.h"
+#include "ArrayList.h"
 #include "Common.h"
 
 
@@ -94,6 +99,44 @@ bool CopyString( const char* source, char* destination, int destinationSize )
 
 // --- Logging ---
 
+static void LogCallStack( LogLevel level )
+{
+    static const int MAX_STACK_DEPTH = 64;
+    Log(level, "Engine call stack:");
+#if defined(_WIN32)
+    static const int SYMBOL_NAME_SIZE = 128;
+
+    const HANDLE process = GetCurrentProcess();
+    SymInitialize(process, NULL, true);
+
+    void* frames[MAX_STACK_DEPTH];
+    const int frameCount = CaptureStackBackTrace(0, MAX_STACK_DEPTH, frames, NULL);
+
+    SYMBOL_INFO* symbol = (SYMBOL_INFO*)AllocZeroed(sizeof(SYMBOL_INFO) + SYMBOL_NAME_SIZE, 1);
+    symbol->MaxNameLen = SYMBOL_NAME_SIZE - 1;
+    symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+
+    REPEAT(frameCount, i)
+    {
+         SymFromAddr(process, (DWORD64)(frames[i]), 0, symbol);
+         Log(level, "\t%2d: %s", i+1, symbol->Name);
+    }
+
+    Free(symbol);
+#elif defined(__linux__)
+    void* frames[MAX_STACK_DEPTH];
+    const int frameCount = backtrace(frames, MAX_STACK_DEPTH);
+    char** frameSymbols = backtrace_symbols(frames, frameCount);
+
+    REPEAT(frameCount, i)
+        Log(level, "\t%2d: %s", i+1, frameSymbols[i]);
+
+    free(frameSymbols); // allocated by backtrace_symbols
+#else
+    #warning No stack trace implementation
+#endif
+}
+
 static void SimpleLogHandler( LogLevel level, const char* line )
 {
     const char* prefix = "";
@@ -101,11 +144,8 @@ static void SimpleLogHandler( LogLevel level, const char* line )
     FILE* file = NULL;
     switch(level)
     {
-        case LOG_DEBUG:
-            file = stdout;
-            break;
-
         case LOG_INFO:
+        case LOG_NOTICE:
             file = stdout;
             break;
 
@@ -116,6 +156,11 @@ static void SimpleLogHandler( LogLevel level, const char* line )
 
         case LOG_ERROR:
             prefix = "ERROR: ";
+            file = stderr;
+            break;
+
+        case LOG_FATAL_ERROR:
+            prefix = "FATAL ERROR: ";
             file = stderr;
             break;
     }
@@ -130,13 +175,13 @@ static void ColorLogHandler( LogLevel level, const char* line )
     FILE* file = NULL;
     switch(level)
     {
-        case LOG_DEBUG:
+        case LOG_INFO:
             prefix = "\033[30;1m";
             postfix = "\033[0m";
             file = stdout;
             break;
 
-        case LOG_INFO:
+        case LOG_NOTICE:
             file = stdout;
             break;
 
@@ -147,7 +192,13 @@ static void ColorLogHandler( LogLevel level, const char* line )
             break;
 
         case LOG_ERROR:
-            prefix = "\033[31;1mERROR: ";
+            prefix = "\033[31mERROR: ";
+            postfix = "\033[0m";
+            file = stderr;
+            break;
+
+        case LOG_FATAL_ERROR:
+            prefix = "\033[31;1mFATAL ERROR: ";
             postfix = "\033[0m";
             file = stderr;
             break;
@@ -203,7 +254,8 @@ void FatalError( const char* format, ... )
 {
     va_list vl;
     va_start(vl, format);
-    LogV(LOG_ERROR, format, vl);
+    LogV(LOG_FATAL_ERROR, format, vl);
+    LogCallStack(LOG_FATAL_ERROR);
     va_end(vl);
     exit(EXIT_FAILURE);
 }

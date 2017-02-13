@@ -30,7 +30,7 @@ static JoystickData* g_Joysticks = NULL;
 
 static void PrintJoysticks()
 {
-    LogDebug("Joysticks:");
+    LogInfo("Joysticks:");
     for(int i = 0; true; ++i)
     {
         const char* name = glfwGetJoystickName(i);
@@ -47,7 +47,7 @@ static void PrintJoysticks()
         }
         END_EXTERNAL_CODE
 
-        LogDebug("  Joystick %d '%s' with %d buttons and %d axes.",
+        LogInfo("  Joystick %d '%s' with %d buttons and %d axes.",
             i,
             name,
             buttonCount,

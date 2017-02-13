@@ -63,11 +63,11 @@ void InitWindow()
     const bool debug = GetConfigBool("opengl.debug", false);
     const bool vsync = GetConfigBool("opengl.vsync", true);
 
-    LogDebug("Compiled with GLFW %d.%d.%d",
+    LogInfo("Compiled with GLFW %d.%d.%d",
              GLFW_VERSION_MAJOR,
              GLFW_VERSION_MINOR,
              GLFW_VERSION_REVISION);
-    LogDebug("Using GLFW %s", glfwGetVersionString());
+    LogInfo("Using GLFW %s", glfwGetVersionString());
 
     assert(g_Window == NULL);
     glfwSetErrorCallback(OnGLFWError);
@@ -96,14 +96,14 @@ void InitWindow()
     if(!flextInit(g_Window))
         FatalError("Failed to load OpenGL extensions.");
 
-    LogDebug("Using OpenGL %s\n"
-             "Vendor: %s\n"
-             "Renderer: %s\n"
-             "GLSL: %s",
-             glGetString(GL_VERSION),
-             glGetString(GL_VENDOR),
-             glGetString(GL_RENDERER),
-             glGetString(GL_SHADING_LANGUAGE_VERSION));
+    LogInfo("Using OpenGL %s\n"
+            "Vendor: %s\n"
+            "Renderer: %s\n"
+            "GLSL: %s",
+            glGetString(GL_VERSION),
+            glGetString(GL_VENDOR),
+            glGetString(GL_RENDERER),
+            glGetString(GL_SHADING_LANGUAGE_VERSION));
 
     if(vsync)
     {
@@ -129,7 +129,7 @@ void InitWindow()
 
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
         glDebugMessageCallbackARB(OnDebugEvent, NULL);
-        LogDebug("Debug output supported! You may receive debug messages from your OpenGL driver.");
+        LogInfo("Debug output supported! You may receive debug messages from your OpenGL driver.");
     }
 
     glfwSetWindowSizeCallback(g_Window, OnWindowResize);

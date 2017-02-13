@@ -43,10 +43,10 @@ static void TestDirEntries( const char* path,
                             const char** entries,
                             int entryCount )
 {
-    LogDebug("%s:", path);
+    LogInfo("%s:", path);
     PathList* list = GetVfsDirEntries(path);
     REPEAT(list->length, i)
-        LogDebug("\t%s", list->data[i].str);
+        LogInfo("\t%s", list->data[i].str);
 
     Require(list->length == entryCount);
 
