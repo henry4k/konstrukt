@@ -25,7 +25,7 @@ function print( ... )
     for i, arg in ipairs(args) do
         args[i] = tostring(arg)
     end
-    engine.Log('debug', table.concat(args, '\t'))
+    engine.Log('info', table.concat(args, '\t'))
 end
 
 function loadfile( fileName, ... )
@@ -78,33 +78,12 @@ engine.SetEventCallback('Shutdown', function()
 end)
 
 
--- Process command line arguments
+-- Initialize scenario
 
 local Scenario = require 'core/Scenario'
 
-local interactive = false
-local packages = {}
-
--- luacheck: globals ARGS
-for _, argument in ipairs(ARGS) do
-    if argument:match('-.*') then
-        if argument == '-i' then
-            interactive = true
-        end
-    else
-        if argument:match('.+%.lua') then
-            dofile(argument)
-        else
-            table.insert(packages, argument)
-        end
-    end
-end
-
-if #packages > 0 then
-    Scenario.load(packages[1], packages)
-end
-
-if interactive then
-    debug.debug()
-    engine.StopGameLoop()
+-- luacheck: globals _scenario
+if _scenario then
+    Scenario.load(_scenario)
+    _scenario = nil
 end

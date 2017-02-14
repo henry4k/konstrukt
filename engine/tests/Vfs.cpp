@@ -58,9 +58,11 @@ static void TestDirEntries( const char* path,
 
 static void TestReadingMount()
 {
-    Require(GetVfsFileInfo("package/textfile").type == FILE_TYPE_REGULAR);
-    Require(GetVfsFileInfo("package/subdir").type == FILE_TYPE_DIRECTORY);
-    Require(GetVfsFileInfo("package/subdir/textfile").type == FILE_TYPE_REGULAR);
+    Require(GetVfsFileType("") == FILE_TYPE_DIRECTORY);
+    Require(GetVfsFileType("package") == FILE_TYPE_DIRECTORY);
+    Require(GetVfsFileType("package/textfile") == FILE_TYPE_REGULAR);
+    Require(GetVfsFileType("package/subdir") == FILE_TYPE_DIRECTORY);
+    Require(GetVfsFileType("package/subdir/textfile") == FILE_TYPE_REGULAR);
 
     TestReadTextFile("package/textfile");
     TestReadTextFile("package/subdir/textfile");

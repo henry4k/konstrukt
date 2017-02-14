@@ -1059,7 +1059,14 @@ void SetShaderProgramUniforms( ShaderProgram* program,
                                                     variableSetCount,
                                                     definition->nameHash);
         if(!var)
-        //    FatalError("Can\'t set uniform %s:  Not available in any ShaderVariableSet.", definition->name);
+        {
+            // DEBUG
+            LogError("Can\'t set uniform %s:  Not available in any ShaderVariableSet.", definition->name);
+            continue;
+        }
+
+        if(!var)
+            FatalError("Can\'t set uniform %s:  Not available in any ShaderVariableSet.", definition->name);
 
         switch(var->type)
         {

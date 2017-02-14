@@ -36,38 +36,24 @@ local FileSystem = {
 function FileSystem._loadPackageMetadata( packageName )
     assertIsPackageName(packageName)
     local Json = require 'core/Json'
-    local metadata = Json.decodeFromFile(packageName..'/package.json')
-    return setmetatable(metadata, packageMetadataMetatable)
-end
-
---- Mounts the package and returns its metadata on success.
-function FileSystem.mountPackage( packageName )
-    assertIsPackageName(packageName)
-    if engine.MountPackage(packageName) then
-        local meta = FileSystem._loadPackageMetadata(packageName) or {}
-        FileSystem.mountedPackages[packageName] = meta
-        return meta
+    local metadataFileName = packageName..'/package.json'
+    if FileSystem.fileExists(metadataFileName) then
+        local metadata = Json.decodeFromFile(metadataFileName)
+        return setmetatable(metadata, packageMetadataMetatable)
     else
-        return nil
+        return {}
     end
-end
-
---- Unmounts a previously mounted package.
---
--- This does *not* unload any loaded resources of that package.
---
--- @return[type=boolean] `true` if the operation succeeded.
---
-function FileSystem.unmountPackage( packageName )
-    assertIsPackageName(packageName)
-    FileSystem.mountedPackages[packageName] = nil
-    return engine.UnmountPackage(packageName)
 end
 
 --- Returns the metadata of a mounted package.
 function FileSystem.getPackageMetadata( packageName )
     assertIsPackageName(packageName)
-    return FileSystem.mountedPackages[packageName]
+    local mountedPackages = FileSystem.mountedPackages
+    if not mountedPackages[packageName] then
+        local meta = FileSystem._loadPackageMetadata(packageName)
+        mountedPackages[packageName] = meta
+    end
+    return mountedPackages[packageName]
 end
 
 --- Returns the contents of a regular file as a string.
@@ -108,10 +94,10 @@ end
 --- Tests whether a file exists at the given path.
 function FileSystem.fileExists( filePath )
     assertIsFilePath(filePath)
-    return engine.GetFileInfo(filePath) ~= nil
+    return engine.GetFileType(filePath) ~= 'invalid'
 end
 
---- Retrieves file attributes.
+--- Retrieves file type.
 -- @return:
 -- A table in the following entries:
 --
@@ -119,9 +105,13 @@ end
 --
 -- Keep in mind that the timestamps may or may not be available.
 --
-function FileSystem.getFileInfo( filePath )
+function FileSystem.getFileType( filePath )
     assertIsFilePath(filePath)
-    return engine.GetFileInfo(filePath)
+    local fileType = engine.GetFileType(filePath)
+    if fileType == 'invalid' then
+        error(string.format('\'%s\' does not exist.', filePath))
+    end
+    return fileType
 end
 
 --- Create a direcotry.
@@ -134,7 +124,12 @@ function FileSystem.makeDirectory( filePath )
 end
 
 local function buildEntryComparision( directory, directoriesFirst )
-    local prefix = directory..'/'
+    local prefix
+    if directory == '' then
+        prefix = ''
+    else
+        prefix = directory..'/'
+    end
     return function( a, b )
         local aIsDirectory = 0
         local bIsDirectory = 0
@@ -142,11 +137,11 @@ local function buildEntryComparision( directory, directoriesFirst )
         local aPath = prefix..a
         local bPath = prefix..b
 
-        if FileSystem.getFileInfo(aPath).type == 'directory' then
+        if FileSystem.getFileType(aPath) == 'directory' then
             aIsDirectory = 1
         end
 
-        if FileSystem.getFileInfo(bPath).type == 'directory' then
+        if FileSystem.getFileType(bPath) == 'directory' then
             bIsDirectory = 1
         end
 
@@ -175,7 +170,7 @@ local sortFunctions = {
         table.sort(entries, buildEntryComparision(directory, false))
     end,
 
-    fileSystem = function( directory, entries )
+    none = function( directory, entries )
         -- Just retain the file system order.
     end,
 
@@ -200,7 +195,7 @@ assert(sortFunctions[defaultSortMethod], 'Unknown default sort method: '..defaul
 -- - `alphabetic`:  Order entries alphabetically.
 -- - `directoriesFirst`:  Like `alphabetic`, but prefer directories.
 -- - `directoriesLast`:  Like `alphabetic`, but defer directories.
--- - `fileSystem`:  Retain the file system order.
+-- - `none`:  Retain the file system order.
 -- - `random`:  Directory entries are shuffled. (Useful for testing, see @{debug.default-sort-method})
 --
 function FileSystem.getDirectoryEntries( filePath, sortMethod )
@@ -215,14 +210,14 @@ function FileSystem.getDirectoryEntries( filePath, sortMethod )
     return entries
 end
 
---- Iterates over directory entries and provides file paths and file information.
+--- Iterates over directory entries and provides file paths.
 --
 -- @param filePath
 --
 -- @param sortMethod
 -- See @{getDirectoryEntries}.
 --
--- @usage for path, info in FS.directory('example/directory') do ... end
+-- @usage for path in FS.directory('example/directory') do ... end
 --
 function FileSystem.directory( filePath, sortMethod )
     local entries = FileSystem.getDirectoryEntries(filePath, sortMethod)
@@ -239,8 +234,7 @@ function FileSystem.directory( filePath, sortMethod )
         if index <= count then
             local entry = entries[index]
             local entryPath = prefix..entry
-            local entryInfo = FileSystem.getFileInfo(entryPath)
-            return entryPath, entryInfo
+            return entryPath
         end
     end
 end
@@ -252,13 +246,13 @@ end
 -- @param sortMethod
 -- See @{getDirectoryEntries}.
 --
--- @usage for path, info in FS.directoryTree('example/directory') do ... end
+-- @usage for path in FS.directoryTree('example/directory') do ... end
 --
 function FileSystem.directoryTree( filePath, sortMethod )
     local function yieldTree( directory )
-        for entryPath, entryInfo in FileSystem.directory(directory, sortMethod) do
-            coroutine.yield(entryPath, entryInfo)
-            if entryInfo.type == 'directory' then
+        for entryPath in FileSystem.directory(directory, sortMethod) do
+            coroutine.yield(entryPath)
+            if FileSystem.getFileType(entryPath) == 'directory' then
                 yieldTree(entryPath)
             end
         end
@@ -289,7 +283,7 @@ end
 -- @param sortMethod
 -- See @{getDirectoryEntries}.
 --
--- @usage for path, info in FS.matchingFiles('example/.+%.png') do ... end
+-- @usage for path in FS.matchingFiles('example/.+%.png') do ... end
 --
 function FileSystem.matchingFiles( filePattern, sortMethod )
     assert(type(filePattern) == 'string', 'File pattern must be a string.')
@@ -297,9 +291,9 @@ function FileSystem.matchingFiles( filePattern, sortMethod )
     staticPath = staticPath or ''
     filePattern = '^'..filePattern..'$'
     return coroutine.wrap(function()
-        for path, info in FileSystem.directoryTree(staticPath, sortMethod) do
+        for path in FileSystem.directoryTree(staticPath, sortMethod) do
             if string.match(path, filePattern) then
-                coroutine.yield(path, info)
+                coroutine.yield(path)
             end
         end
     end)

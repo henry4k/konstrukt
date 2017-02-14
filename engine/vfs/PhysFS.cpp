@@ -120,7 +120,7 @@ static PathList* GetVfsDirEntries_PhysFS( const Mount* mount, const char* subMou
     return list;
 }
 
-static VfsFileInfo GetVfsFileInfo_PhysFS( const Mount* mount, const char* subMountPath )
+static FileType GetVfsFileType_PhysFS( const Mount* mount, const char* subMountPath )
 {
     const char* path;
     if(subMountPath)
@@ -128,19 +128,14 @@ static VfsFileInfo GetVfsFileInfo_PhysFS( const Mount* mount, const char* subMou
     else
         path = mount->vfsPath;
 
-    VfsFileInfo info;
-
     if(PHYSFS_exists(path))
     {
         if(PHYSFS_isDirectory(path))
-            info.type = FILE_TYPE_DIRECTORY;
+            return FILE_TYPE_DIRECTORY;
         else
-            info.type = FILE_TYPE_REGULAR;
+            return FILE_TYPE_REGULAR;
     }
-    else
-        info.type = FILE_TYPE_INVALID;
-
-    return info;
+    return FILE_TYPE_INVALID;
 }
 
 static void DeleteVfsFile_PhysFS( Mount* mount, const char* subMountPath )
@@ -181,7 +176,7 @@ MountSystem* InitVfs_PhysFS( const char* argv0 )
     sys.getFileSize   = GetVfsFileSize_PhysFS;
     sys.hasFileEnded  = HasVfsFileEnded_PhysFS;
     sys.getDirEntries = GetVfsDirEntries_PhysFS;
-    sys.getFileInfo   = GetVfsFileInfo_PhysFS;
+    sys.getFileType   = GetVfsFileType_PhysFS;
     sys.deleteFile    = DeleteVfsFile_PhysFS;
     sys.makeDir       = MakeVfsDir_PhysFS;
     return &sys;

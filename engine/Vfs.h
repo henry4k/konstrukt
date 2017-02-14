@@ -19,12 +19,6 @@ enum VfsOpenMode
 struct VfsFile;
 
 
-struct VfsFileInfo
-{
-    FileType type;
-};
-
-
 /**
  * @param stateDirectory
  * Path to a directory in which the simulation state can be stored.  Passing
@@ -144,10 +138,9 @@ PathList* GetVfsDirEntries( const char* vfsPath );
 /**
  * Retrieve information about a file.
  *
- * If the file doesn't exists `VfsFileInfo` will have its `type` section set
- * to `FILE_TYPE_INVALID`.
+ * If the file doesn't exists `FILE_TYPE_INVALID` is returned.
  */
-VfsFileInfo GetVfsFileInfo( const char* vfsPath );
+FileType GetVfsFileType( const char* vfsPath );
 
 /**
  * Tries to delete a regular file or an empty directory.

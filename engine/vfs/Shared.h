@@ -31,7 +31,7 @@ struct MountSystem
     int  (*getFileSize)( const void* file );
     bool (*hasFileEnded)( const void* file );
     PathList* (*getDirEntries)( const Mount* mount, const char* subMountPath );
-    VfsFileInfo (*getFileInfo)( const Mount* mount, const char* subMountPath );
+    FileType (*getFileType)( const Mount* mount, const char* subMountPath );
     void (*deleteFile)( Mount* mount, const char* subMountPath );
     void (*makeDir)( Mount* mount, const char* subMountPath );
 };

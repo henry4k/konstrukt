@@ -2,6 +2,7 @@
 #include <string.h> // strcmp, strncpy
 #include <stdio.h> // printf
 
+#include "ArrayList.h"
 #include "Common.h"
 #include "Math.h"
 #include "Crc32.h"
@@ -47,7 +48,7 @@ struct Arguments
     const char* state;
     const char* sharedState;
     const char* searchPaths;
-    const char* scenario;
+    ArrayList(const char*) packages;
 };
 
 
@@ -112,9 +113,21 @@ static void DestroyModules()
     DestroyVfs();
 }
 
-static void InitScript( const char* scenarioPackage )
+static void InitScript( const Arguments* args )
 {
     MountPackage("core");
+    REPEAT(args->packages.length, i)
+    {
+        const char* package = args->packages.data[i];
+        MountPackage(package);
+    }
+
+    if(args->packages.length >= 1)
+    {
+        lua_pushstring(GetLuaState(), args->packages.data[0]);
+        lua_setglobal(GetLuaState(), "_scenario");
+    }
+
     RunLuaScript(GetLuaState(), "core/bootstrap/init.lua");
 }
 
@@ -202,6 +215,9 @@ static void ParseArguments( const int argc, char** argv, Arguments* out )
         const char* arg = argv[i];
         const char* match;
 
+        match = MatchPrefix("--help", arg);
+        if(match) { PrintHelpAndExit(argv[0]); }
+
         match = MatchPrefix("--state=", arg);
         if(match) { out->state = match; continue; }
 
@@ -217,20 +233,11 @@ static void ParseArguments( const int argc, char** argv, Arguments* out )
         match = MatchPrefix("-D", arg);
         if(match) { ParseConfigString(match); continue; }
 
-        match = MatchPrefix("--help", arg);
-        if(match) { PrintHelpAndExit(argv[0]); }
-
         match = MatchPrefix("-", arg);
         if(match) { FatalError("Unknown argument '%s'", arg); }
 
-        // TODO: Mount package `arg`
-        LogNotice("Mounting '%s' ...", arg);
-        if(!out->scenario) // first package is the scenario
-            out->scenario = arg;
+        AppendToArrayList(&out->packages, 1, &arg);
     }
-
-    if(!out->scenario)
-        FatalError("Needs at least one package to use as scenario!");
 }
 
 int KonstruktMain( const int argc, char** argv )
@@ -240,10 +247,15 @@ int KonstruktMain( const int argc, char** argv )
 
     Arguments args;
     memset(&args, 0, sizeof(args));
+    InitArrayList(&args.packages);
+
     ParseArguments(argc, argv, &args);
 
     InitModules(argv[0], &args);
-    InitScript(args.scenario);
+    InitScript(&args);
+
+    DestroyArrayList(&args.packages);
+
     RunSimulation();
     DestroyModules();
 

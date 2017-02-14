@@ -27,6 +27,8 @@ void DestroyLua();
 
 lua_State* GetLuaState();
 
+bool IsLuaRunning();
+
 void UpdateLua();
 
 /**

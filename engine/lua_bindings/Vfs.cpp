@@ -60,15 +60,10 @@ static int Lua_GetDirEntries( lua_State* l )
     return 1;
 }
 
-static int Lua_GetFileInfo( lua_State* l )
+static int Lua_GetFileType( lua_State* l )
 {
     const char* vfsPath = luaL_checkstring(l, 1);
-    VfsFileInfo info = GetVfsFileInfo(vfsPath);
-    if(info.type == FILE_TYPE_INVALID)
-        return 0;
-
-    lua_createtable(l, 0, 1);
-    switch(info.type)
+    switch(GetVfsFileType(vfsPath))
     {
         case FILE_TYPE_REGULAR:
             lua_pushstring(l, "regular");
@@ -79,11 +74,13 @@ static int Lua_GetFileInfo( lua_State* l )
             break;
 
         case FILE_TYPE_UNKNOWN:
-        default:
             lua_pushstring(l, "unknown");
             break;
+
+        case FILE_TYPE_INVALID:
+            lua_pushstring(l, "invalid");
+            break;
     }
-    lua_setfield(l, -2, "type");
     return 1;
 }
 
@@ -106,7 +103,7 @@ void RegisterVfsInLua()
     RegisterFunctionInLua("ReadFile", Lua_ReadFile);
     RegisterFunctionInLua("WriteFile", Lua_WriteFile);
     RegisterFunctionInLua("GetDirEntries", Lua_GetDirEntries);
-    RegisterFunctionInLua("GetFileInfo", Lua_GetFileInfo);
+    RegisterFunctionInLua("GetFileType", Lua_GetFileType);
     RegisterFunctionInLua("DeleteFile", Lua_DeleteFile);
     RegisterFunctionInLua("MakeDir", Lua_MakeDir);
 }

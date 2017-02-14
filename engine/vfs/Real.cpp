@@ -151,12 +151,10 @@ static PathList* GetVfsDirEntries_Real( const Mount* mount, const char* subMount
     return GetDirEntries(path);
 }
 
-static VfsFileInfo GetVfsFileInfo_Real( const Mount* mount, const char* subMountPath )
+static FileType GetVfsFileType_Real( const Mount* mount, const char* subMountPath )
 {
     const char* path = GetRealPath(mount, subMountPath);
-    VfsFileInfo info;
-    info.type = GetFileType(path);
-    return info;
+    return GetFileType(path);
 }
 
 static void DeleteVfsFile_Real( Mount* mount, const char* subMountPath )
@@ -186,7 +184,7 @@ MountSystem* InitVfs_Real()
     sys.getFileSize   = GetVfsFileSize_Real;
     sys.hasFileEnded  = HasVfsFileEnded_Real;
     sys.getDirEntries = GetVfsDirEntries_Real;
-    sys.getFileInfo   = GetVfsFileInfo_Real;
+    sys.getFileType   = GetVfsFileType_Real;
     sys.deleteFile    = DeleteVfsFile_Real;
     sys.makeDir       = MakeVfsDir_Real;
     return &sys;

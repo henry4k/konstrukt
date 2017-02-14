@@ -57,7 +57,7 @@ void _RemoveFromArrayList( CharArrayList* list,
     assert(pos >= 0);
     assert(pos < list->length);
     assert(amount > 0);
-    assert(amount < (list->length-pos));
+    assert(pos+amount <= list->length);
 
     char* dst = list->data + pos*elementSize;
     char* src = list->data + (pos + amount)*elementSize;

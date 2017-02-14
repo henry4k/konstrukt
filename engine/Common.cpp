@@ -7,7 +7,7 @@
 #endif
 
 #include <string.h> // strncpy, strcmp
-#include <stdlib.h> // exit, malloc, realloc, free
+#include <stdlib.h> // abort, malloc, realloc, free
 #include <stdio.h> // printf
 #include <stdarg.h>
 #include <assert.h>
@@ -19,6 +19,7 @@ END_EXTERNAL_CODE
 
 #include "Config.h"
 #include "ArrayList.h"
+#include "Lua.h"
 #include "Common.h"
 
 
@@ -70,14 +71,20 @@ int FormatBuffer( char* buffer, int size, const char* format, ... )
     return length;
 }
 
-const char* Format( const char* format, ... )
+static const char* FormatV( const char* format, va_list va )
 {
     static char buffer[512];
+    FormatBufferV(buffer, 512, format, va);
+    return buffer;
+}
+
+const char* Format( const char* format, ... )
+{
     va_list vl;
     va_start(vl, format);
-    FormatBufferV(buffer, 512, format, vl);
+    const char* result = FormatV(format, vl);
     va_end(vl);
-    return buffer;
+    return result;
 }
 
 bool CopyString( const char* source, char* destination, int destinationSize )
@@ -102,7 +109,7 @@ bool CopyString( const char* source, char* destination, int destinationSize )
 static void LogCallStack( LogLevel level )
 {
     static const int MAX_STACK_DEPTH = 64;
-    Log(level, "Engine call stack:");
+    Log(level, "engine stack traceback:");
 #if defined(_WIN32)
     static const int SYMBOL_NAME_SIZE = 128;
 
@@ -119,7 +126,7 @@ static void LogCallStack( LogLevel level )
     REPEAT(frameCount, i)
     {
          SymFromAddr(process, (DWORD64)(frames[i]), 0, symbol);
-         Log(level, "\t%2d: %s", i+1, symbol->Name);
+         Log(level, "\t%s", symbol->Name);
     }
 
     Free(symbol);
@@ -129,7 +136,7 @@ static void LogCallStack( LogLevel level )
     char** frameSymbols = backtrace_symbols(frames, frameCount);
 
     REPEAT(frameCount, i)
-        Log(level, "\t%2d: %s", i+1, frameSymbols[i]);
+        Log(level, "\t%s", frameSymbols[i]);
 
     free(frameSymbols); // allocated by backtrace_symbols
 #else
@@ -254,10 +261,20 @@ void FatalError( const char* format, ... )
 {
     va_list vl;
     va_start(vl, format);
-    LogV(LOG_FATAL_ERROR, format, vl);
-    LogCallStack(LOG_FATAL_ERROR);
-    va_end(vl);
-    exit(EXIT_FAILURE);
+    if(IsLuaRunning())
+    {
+        const char* message = FormatV(format, vl);
+        va_end(vl);
+        lua_pushstring(GetLuaState(), message);
+        lua_error(GetLuaState());
+    }
+    else
+    {
+        LogV(LOG_FATAL_ERROR, format, vl);
+        va_end(vl);
+        LogCallStack(LOG_FATAL_ERROR);
+        abort();
+    }
 }
 
 #if defined(_WIN32)

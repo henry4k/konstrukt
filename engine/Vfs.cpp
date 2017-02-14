@@ -12,15 +12,20 @@ struct VfsFile
 {
     const MountSystem* mountSystem;
     void* handle;
+
+    // For debugging:
+    char path[MAX_PATH_SIZE];
+    VfsOpenMode mode;
 };
 
 
-MountSystem* RealMountSystem;
-MountSystem* PhysFSMountSystem;
-ArrayList(Mount) Mounts;
-ArrayList(Path) SearchPaths;
-char TempStateDirectory[MAX_PATH_SIZE];
-char TempSharedStateDirectory[MAX_PATH_SIZE];
+static MountSystem* RealMountSystem;
+static MountSystem* PhysFSMountSystem;
+static ArrayList(Mount) Mounts;
+static ArrayList(Path) SearchPaths;
+static ArrayList(const VfsFile*) OpenFiles;
+static char TempStateDirectory[MAX_PATH_SIZE];
+static char TempSharedStateDirectory[MAX_PATH_SIZE];
 
 
 static void SetWriteDirectory( const char* name,
@@ -52,6 +57,7 @@ void InitVfs( const char* argv0,
 
     InitArrayList(&Mounts);
     InitArrayList(&SearchPaths);
+    InitArrayList(&OpenFiles);
 
     SetWriteDirectory("state", stateDirectory, TempStateDirectory);
     SetWriteDirectory("shared-state", sharedStateDirectory, TempSharedStateDirectory);
@@ -59,8 +65,33 @@ void InitVfs( const char* argv0,
     AddPackageSearchPath(DEFAULT_PACKAGE_SEARCH_PATH);
 }
 
+static const char* VfsOpenModeToString( VfsOpenMode mode )
+{
+    switch(mode)
+    {
+        case VFS_OPEN_READ:   return "reading";
+        case VFS_OPEN_WRITE:  return "writing";
+        case VFS_OPEN_APPEND: return "appending to";
+    }
+    FatalError("Unknown VfsOpenMode: %d", mode);
+    return NULL;
+}
+
 void DestroyVfs()
 {
+    if(OpenFiles.length > 0)
+    {
+        Log(LOG_FATAL_ERROR, "There are still files in use:");
+        REPEAT(OpenFiles.length, i)
+        {
+            const VfsFile* file = OpenFiles.data[i];
+
+            Log(LOG_FATAL_ERROR, "\t%12s %s",
+                VfsOpenModeToString(file->mode), file->path);
+        }
+        FatalError("");
+    }
+
     REPEAT(Mounts.length, i)
     {
         Mount* mount = Mounts.data + i;
@@ -74,6 +105,7 @@ void DestroyVfs()
 
     DestroyArrayList(&Mounts);
     DestroyArrayList(&SearchPaths);
+    DestroyArrayList(&OpenFiles);
 
     RealMountSystem->destroy();
     PhysFSMountSystem->destroy();
@@ -234,7 +266,6 @@ void MountPackage( const char* reference )
     const char* packagePath = ResolvePackageReference(reference);
     const char* name = ExtractPackageNameFromReference(reference);
     MountVfsDir(name, packagePath, false);
-    LogNotice("Mounted package '%s' (%s).", name, packagePath);
 }
 
 
@@ -283,12 +314,31 @@ VfsFile* OpenVfsFile( const char* vfsPath, VfsOpenMode mode )
     VfsFile* file = NEW(VfsFile);
     file->mountSystem = mount->mountSystem;
     file->handle = handle;
+    CopyString(vfsPath, file->path, MAX_PATH_SIZE);
+    file->mode = mode;
+
+    AppendToArrayList(&OpenFiles, 1, &file);
+
     return file;
+}
+
+static void RemoveFileFromOpenFileList( const VfsFile* file )
+{
+    REPEAT(OpenFiles.length, i)
+    {
+        if(OpenFiles.data[i] == file)
+        {
+            RemoveFromArrayList(&OpenFiles, i, 1);
+            return;
+        }
+    }
+    FatalError("Open file list does not contain file.");
 }
 
 void CloseVfsFile( VfsFile* file )
 {
     file->mountSystem->closeFile(file->handle);
+    RemoveFileFromOpenFileList(file);
     DELETE(VfsFile, file);
 }
 
@@ -353,12 +403,23 @@ PathList* GetVfsDirEntries( const char* vfsPath )
     }
 }
 
-VfsFileInfo GetVfsFileInfo( const char* vfsPath )
+FileType GetVfsFileType( const char* vfsPath )
 {
+    if(vfsPath[0] == '\0')
+        return FILE_TYPE_DIRECTORY;
+
     const char* subMountPath;
     const char* mountPoint = SplitVfsPath(vfsPath, &subMountPath);
-    const Mount* mount = GetMountByVfsPath(mountPoint, NULL);
-    return mount->mountSystem->getFileInfo(mount, subMountPath);
+    const Mount* mount = TryGetMountByVfsPath(mountPoint, NULL);
+    if(mount)
+    {
+        if(subMountPath)
+            return mount->mountSystem->getFileType(mount, subMountPath);
+        else
+            return FILE_TYPE_DIRECTORY;
+    }
+
+    return FILE_TYPE_INVALID;
 }
 
 void DeleteVfsFile( const char* vfsPath )

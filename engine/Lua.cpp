@@ -29,6 +29,7 @@ static std::vector<LuaEvent> g_LuaEvents;
 static int g_LuaErrorFunction = LUA_NOREF;
 static int g_LuaFunctionTable = LUA_NOREF;
 static int g_LuaShutdownEvent = INVALID_LUA_EVENT;
+static bool g_LuaRunning = false;
 
 static int Lua_SetErrorFunction( lua_State* l );
 static int Lua_SetEventCallback( lua_State* l );
@@ -49,6 +50,7 @@ void InitLua()
     LogInfo("Using Lua %d.%d.%d", major, minor, patch);
 
     lua_State* l = g_LuaState = luaL_newstate();
+    g_LuaRunning = false;
     g_LuaEvents.clear();
 
     lua_gc(l, LUA_GCSTOP, 0); // only collect manually
@@ -87,13 +89,18 @@ void DestroyLua()
 
     lua_close(g_LuaState);
     g_LuaState = NULL;
-
+    g_LuaRunning = false;
     g_LuaEvents.clear();
 }
 
 lua_State* GetLuaState()
 {
     return g_LuaState;
+}
+
+bool IsLuaRunning()
+{
+    return g_LuaRunning;
 }
 
 static int GetLuaMemoryInBytes()
@@ -306,7 +313,9 @@ void RunLuaScript( lua_State* l, const char* vfsPath )
     state.file = file;
     if(lua_load(l, ReadLuaChunk, &state, vfsPath, "t") == LUA_OK)
     {
+        g_LuaRunning = true;
         const int callResult = lua_pcall(l, 0, 0, -2);
+        g_LuaRunning = false;
         HandleLuaCallResult(l, callResult);
     }
     else
@@ -314,6 +323,7 @@ void RunLuaScript( lua_State* l, const char* vfsPath )
         FatalError("%s", lua_tostring(l, -1));
         lua_pop(l, 2); // pop error function and error message
     }
+    CloseVfsFile(file);
 }
 
 static int FindLuaEventByName( const char* name )
@@ -372,11 +382,13 @@ int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues
     // arg n
 
     const int stackSizeBeforeCall = lua_gettop(l);
+    g_LuaRunning = true;
     const int callResult = lua_pcall(
         l, argumentCount,
         pushReturnValues ? LUA_MULTRET : 0, // return value count
         -(argumentCount+2) // error func
     );
+    g_LuaRunning = false;
     const int stackSizeAfterCall = lua_gettop(l);
 
     const int poppedValueCount = argumentCount + 1;
