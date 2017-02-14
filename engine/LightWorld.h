@@ -21,7 +21,7 @@ enum LightType
     /**
      * Illuminates only a small part of the scene.
      *
-     * These light source have a position and a maximum range.
+     * These light sources have a position and a maximum range.
      */
     POINT_LIGHT
 };
@@ -54,6 +54,7 @@ void ReleaseLightWorld( LightWorld* world );
 void SetMaxActiveLightCount( LightWorld* world, int max );
 void UpdateLights( LightWorld* world );
 ShaderVariableSet* GetLightWorldShaderVariableSet( const LightWorld* world );
+ShaderVariableSet* GetLightWorldUnusedLightShaderVariableSet( const LightWorld* world );
 void GenerateLightShaderVariables( const LightWorld* world,
                                    ShaderVariableSet* variableSet,
                                    Vec3 objectPosition,

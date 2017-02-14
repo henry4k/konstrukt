@@ -34,6 +34,7 @@ struct LightWorld
     int maxActiveLightCount;
     Light lights[MAX_LIGHTS];
     ShaderVariableSet* shaderVariableSet;
+    ShaderVariableSet* unusedLightShaderVariableSet;
 };
 
 struct ActiveLight
@@ -59,6 +60,7 @@ LightWorld* CreateLightWorld( const char* lightCountUniformName,
                world->lightPositionName,
                sizeof(world->lightPositionName));
     world->shaderVariableSet = CreateShaderVariableSet();
+    world->unusedLightShaderVariableSet = CreateShaderVariableSet();
     return world;
 }
 
@@ -75,6 +77,7 @@ static void FreeLightWorld( LightWorld* world )
         }
     }
     FreeShaderVariableSet(world->shaderVariableSet);
+    FreeShaderVariableSet(world->unusedLightShaderVariableSet);
     delete world;
 }
 
@@ -122,6 +125,11 @@ ShaderVariableSet* GetLightWorldShaderVariableSet( const LightWorld* world )
     return world->shaderVariableSet;
 }
 
+ShaderVariableSet* GetLightWorldUnusedLightShaderVariableSet( const LightWorld* world )
+{
+    return world->unusedLightShaderVariableSet;
+}
+
 static float CalcLightIlluminance( const Light* light,
                                    Vec3 objectPosition,
                                    float objectRadius )
@@ -154,7 +162,7 @@ void GenerateLightShaderVariables( const LightWorld* world,
 {
     const int maxCount = world->maxActiveLightCount;
     int count = 0;
-    ActiveLight* activeLights = new ActiveLight[maxCount]; // TODO: Optimize
+    ActiveLight* activeLights = new ActiveLight[maxCount];
 
     ActiveLight* leastImportantActiveLight = NULL;
 
@@ -211,15 +219,21 @@ void GenerateLightShaderVariables( const LightWorld* world,
     {
         const Light* light = activeLights[i].light;
 
-        if(light->type != GLOBAL_LIGHT)
-        {
-            // Position:
-            const char* positionName = Format("%s[%d]", world->lightPositionName, i);
+        // Position:
+        const char* positionName = Format("%s[%d]", world->lightPositionName, i);
+
+        if(light->type == GLOBAL_LIGHT)
+            SetUnusedShaderVariable(variableSet, positionName);
+        else
             SetVec3Uniform(variableSet, positionName, light->position);
-        }
 
         // Other uniforms:
         CopyShaderVariablesAsArrayElements(variableSet, light->shaderVariableSet, i);
+    }
+    for(int i = count; i < maxCount; i++)
+    {
+        // Use the 'unused light' variable set for ... well ... unused lights:
+        CopyShaderVariablesAsArrayElements(variableSet, world->unusedLightShaderVariableSet, i);
     }
 
     delete[] activeLights;

@@ -155,6 +155,14 @@ ShaderProgramSet* CheckShaderProgramSetFromLua( lua_State* l, int stackPosition 
 
 // --- ShaderVariableSet ---
 
+static int Lua_SetUnusedShaderVariable( lua_State* l )
+{
+    ShaderVariableSet* set = CheckShaderVariableSetFromLua(l, 1);
+    const char* name = luaL_checkstring(l, 2);
+    SetUnusedShaderVariable(set, name);
+    return 0;
+}
+
 static int Lua_SetIntUniform( lua_State* l )
 {
     ShaderVariableSet* set = CheckShaderVariableSetFromLua(l, 1);
@@ -250,6 +258,7 @@ void RegisterShaderInLua()
     RegisterFunctionInLua("DestroyShaderProgramSet", Lua_DestroyShaderProgramSet);
     RegisterFunctionInLua("SetShaderProgramFamily", Lua_SetShaderProgramFamily);
 
+    RegisterFunctionInLua("SetUnusedShaderVariable", Lua_SetUnusedShaderVariable);
     RegisterFunctionInLua("SetIntUniform", Lua_SetIntUniform);
     RegisterFunctionInLua("SetFloatUniform", Lua_SetFloatUniform);
     RegisterFunctionInLua("SetVec3Uniform", Lua_SetVec3Uniform);

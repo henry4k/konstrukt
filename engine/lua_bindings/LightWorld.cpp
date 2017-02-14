@@ -50,6 +50,13 @@ static int Lua_GetLightWorldShaderVariableSet( lua_State* l )
     return 1;
 }
 
+static int Lua_GetLightWorldUnusedLightShaderVariableSet( lua_State* l )
+{
+    LightWorld* world = CheckLightWorldFromLua(l, 1);
+    PushShaderVariableSetToLua(l, GetLightWorldUnusedLightShaderVariableSet(world));
+    return 1;
+}
+
 LightWorld* GetLightWorldFromLua( lua_State* l, int stackPosition )
 {
     return (LightWorld*)GetPointerFromLua(l, stackPosition);
@@ -152,6 +159,7 @@ void RegisterLightWorldInLua()
     RegisterFunctionInLua("DestroyLightWorld", Lua_DestroyLightWorld);
     RegisterFunctionInLua("SetMaxActiveLightCount", Lua_SetMaxActiveLightCount);
     RegisterFunctionInLua("GetLightWorldShaderVariableSet", Lua_GetLightWorldShaderVariableSet);
+    RegisterFunctionInLua("GetLightWorldUnusedLightShaderVariableSet", Lua_GetLightWorldUnusedLightShaderVariableSet);
 
     RegisterFunctionInLua("CreateLight", Lua_CreateLight);
     RegisterFunctionInLua("DestroyLight", Lua_DestroyLight);

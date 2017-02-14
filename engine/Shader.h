@@ -5,11 +5,8 @@
 #include "Texture.h"
 
 
-static const int INVALID_UNIFORM_INDEX = -1;
 static const int MAX_UNIFORM_NAME_SIZE = 32;
-static const int MAX_PROGRAM_FAMILY_SIZE = 32;
 static const int MAX_PROGRAM_FAMILY_LIST_SIZE = 128;
-static const int MAX_SHADER_VARIABLE_SET_ENTRIES = 16;
 
 
 /**
@@ -59,16 +56,6 @@ struct UniformBuffer;
  */
 struct ShaderVariableSet;
 
-enum UniformType
-{
-    INT_UNIFORM,
-    SAMPLER_UNIFORM,
-    FLOAT_UNIFORM,
-    VEC3_UNIFORM,
-    MAT3_UNIFORM,
-    MAT4_UNIFORM
-};
-
 typedef union
 {
     int i;
@@ -89,9 +76,6 @@ void InitShader();
 void DestroyShader();
 
 ShaderVariableSet* GetGlobalShaderVariableSet();
-
-int GetUniformSize( UniformType type );
-
 
 /**
  * Creates a shader by reading the given `vfsPath`.
@@ -165,6 +149,11 @@ void ReleaseUniformBuffer( UniformBuffer* buffer );
 ShaderVariableSet* CreateShaderVariableSet();
 void FreeShaderVariableSet( ShaderVariableSet* set );
 
+/**
+ * Let the shader system know that a variable is not used, even though it may
+ * be present in a shader.
+ */
+void SetUnusedShaderVariable( ShaderVariableSet* set, const char* name );
 void SetIntUniform(    ShaderVariableSet* set, const char* name, int value );
 void SetFloatUniform(  ShaderVariableSet* set, const char* name, float value );
 void SetVec3Uniform(   ShaderVariableSet* set, const char* name, Vec3 value );

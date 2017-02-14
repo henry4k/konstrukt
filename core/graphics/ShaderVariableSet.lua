@@ -23,6 +23,7 @@ end
 
 function ShaderVariableSet:set( name, value, type )
     assert(self.handle)
+    assert(value, 'Needs a value.')
     self.variables[name] = value
     if Object.isInstanceOf(value, Texture) then
         engine.SetTexture(self.handle, name, value.handle)
@@ -36,6 +37,17 @@ function ShaderVariableSet:set( name, value, type )
     else
         engine.SetFloatUniform(self.handle, name, value)
     end
+end
+
+---
+-- Let the shader system know that a variable is not used, even though it may
+-- be present in a shader.
+function ShaderVariableSet:setUnused( name )
+    engine.SetUnusedShaderVariable(self.handle, name)
+end
+
+function ShaderVariableSet:unset( name )
+    engine.UnsetShaderVariable(self.handle, name)
 end
 
 function ShaderVariableSet:clear()

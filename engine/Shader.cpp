@@ -13,15 +13,30 @@
 #include "Shader.h"
 
 
+static const int INVALID_UNIFORM_INDEX = -1;
 static const GLuint INVALID_SHADER_HANDLE = 0;
 static const int MAX_GLOBAL_UNIFORMS = 32;
 static const int MAX_SHADER_PROGRAM_SET_ENTRIES = 16;
+static const int MAX_SHADER_VARIABLE_SET_ENTRIES = 32;
+static const int MAX_PROGRAM_FAMILY_SIZE = 32;
+
 
 enum ShaderVariableType
 {
+    UNUSED_VARIABLE,
     UNIFORM_VARIABLE,
     TEXTURE_VARIABLE,
     UNIFORM_BUFFER_VARIABLE
+};
+
+enum UniformType
+{
+    INT_UNIFORM,
+    SAMPLER_UNIFORM,
+    FLOAT_UNIFORM,
+    VEC3_UNIFORM,
+    MAT3_UNIFORM,
+    MAT4_UNIFORM
 };
 
 
@@ -279,7 +294,7 @@ static UniformType GLToUniformType( GLenum glType )
     }
 }
 
-int GetUniformSize( UniformType type )
+static int GetUniformSize( UniformType type )
 {
     switch(type)
     {
@@ -820,6 +835,7 @@ static void FreeShaderVariable( ShaderVariable* var )
     //var->nameHash = 0;
     switch(var->type)
     {
+        case UNUSED_VARIABLE:
         case UNIFORM_VARIABLE:
             break;
 
@@ -894,6 +910,12 @@ static ShaderVariable* PrepareNewShaderVariable( ShaderVariableSet* set,
     var->type = type;
 
     return var;
+}
+
+void SetUnusedShaderVariable( ShaderVariableSet* set, const char* name )
+{
+    PrepareNewShaderVariable(set, name, UNUSED_VARIABLE);
+    // No further processing required.
 }
 
 static void SetUniformVariable( ShaderVariableSet* set,
@@ -1019,11 +1041,11 @@ void GatherShaderVariableBindings( const ShaderProgram* program,
                                                         variableSetCount,
                                                         definition->nameHash);
             if(!var)
-            //    FatalError("Can\'t bind uniform %s:  Not available in any ShaderVariableSet.", definition->name);
+                FatalError("Can\'t bind uniform %s:  Not available in any ShaderVariableSet.", definition->name);
 
             assert(var->type == TEXTURE_VARIABLE);
             AddTextureBinding(bindings,
-                                var->value.texture);
+                              var->value.texture);
         }
     }
 
@@ -1059,17 +1081,13 @@ void SetShaderProgramUniforms( ShaderProgram* program,
                                                     variableSetCount,
                                                     definition->nameHash);
         if(!var)
-        {
-            // DEBUG
-            LogError("Can\'t set uniform %s:  Not available in any ShaderVariableSet.", definition->name);
-            continue;
-        }
-
-        if(!var)
             FatalError("Can\'t set uniform %s:  Not available in any ShaderVariableSet.", definition->name);
 
         switch(var->type)
         {
+            case UNUSED_VARIABLE:
+                break;
+
             case UNIFORM_VARIABLE:
                 SetUniform(program, i, &var->value.uniform.value);
                 break;

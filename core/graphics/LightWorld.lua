@@ -15,6 +15,8 @@ function LightWorld:initialize( lightCountUniformName,
                                           lightPositionUniformName)
     self.shaderVariables =
         ShaderVariableSet(engine.GetLightWorldShaderVariableSet(self.handle))
+    self.unusedLightShaderVariables =
+        ShaderVariableSet(engine.GetLightWorldUnusedLightShaderVariableSet(self.handle))
 end
 
 function LightWorld:destroy()
@@ -22,6 +24,8 @@ function LightWorld:destroy()
     self.handle = nil
     self.shaderVariables:destroy()
     self.shaderVariables = nil
+    self.unusedLightShaderVariables:destroy()
+    self.unusedLightShaderVariables = nil
 end
 
 function LightWorld:setMaxActiveLightCount( count )
