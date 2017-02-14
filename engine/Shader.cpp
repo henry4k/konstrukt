@@ -178,7 +178,10 @@ static void ShowShaderLog( Shader* shader, bool success, const char* vfsPath )
     }
 
     if(success)
-        LogWarning("Compiled shader: %s\n%s", vfsPath, log);
+    {
+        if(log)
+            LogWarning("Compiled shader: %s\n%s", vfsPath, log);
+    }
     else
         FatalError("Error compiling shader %s\n%s", vfsPath, log);
 
@@ -266,7 +269,10 @@ static void ShowShaderProgramLog( ShaderProgram* program, bool success, const ch
     }
 
     if(success)
-        LogWarning("%s\n%s", message, log);
+    {
+        if(log)
+            LogWarning("%s\n%s", message, log);
+    }
     else
         FatalError("%s\n%s", message, log);
 
