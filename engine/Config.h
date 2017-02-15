@@ -14,6 +14,6 @@ int         GetConfigInt(    const char* key, int         defaultValue );
 float       GetConfigFloat(  const char* key, float       defaultValue );
 bool        GetConfigBool(   const char* key, bool        defaultValue );
 
-void ReadConfigFile( const char* fileName );
+void ReadConfigFile( const char* fileName, bool overWrite );
 
 #endif

@@ -98,18 +98,21 @@ static int IniEntryCallback( void* user, const char* section, const char* name, 
 {
     using namespace std;
 
+    bool overWrite = *(bool*)user;
+
     string key;
     if(section == NULL || section[0] == '\0')
         key = string(name);
     else
         key = string(section) + string(".") + string(name);
 
-    SetConfigString(key.c_str(), value);
+    if(overWrite || !GetConfigString(key.c_str(), NULL))
+        SetConfigString(key.c_str(), value);
     return 1;
 }
 
-void ReadConfigFile( const char* fileName )
+void ReadConfigFile( const char* fileName, bool overWrite )
 {
     LogNotice("Reading config file %s ..", fileName);
-    ini_parse(fileName, IniEntryCallback, NULL);
+    ini_parse(fileName, IniEntryCallback, &overWrite);
 }

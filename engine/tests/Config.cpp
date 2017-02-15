@@ -93,7 +93,7 @@ int main( int argc, char** argv )
         .it("can parse ini files.", [](){
 
             ConfigScope scope;
-            ReadConfigFile("data/Test.ini");
+            ReadConfigFile("data/Test.ini", true);
 
             Require(strcmp(GetConfigString("aaa", ""), "bbb") == 0);
             Require(strcmp(GetConfigString("foo.bar", ""), "baz") == 0);

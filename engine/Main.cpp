@@ -47,7 +47,7 @@ struct Arguments
 {
     const char* state;
     const char* sharedState;
-    const char* searchPaths;
+    ArrayList(const char*) searchPaths;
     ArrayList(const char*) packages;
 };
 
@@ -115,6 +115,12 @@ static void DestroyModules()
 
 static void InitScript( const Arguments* args )
 {
+    REPEAT(args->searchPaths.length, i)
+    {
+        const char* searchPath = args->searchPaths.data[i];
+        AddPackageSearchPath(searchPath);
+    }
+
     MountPackage("core");
     REPEAT(args->packages.length, i)
     {
@@ -154,38 +160,41 @@ static void RunSimulation()
 
 static void PrintHelpAndExit( const char* arg0 )
 {
-    printf("Usage: %s [options] <packages>\n"
+    printf("Usage: %s [options] <scenario package> <other packages ...>\n"
            "\n"
            "Options:\n"
            "\t--state=...        - Directory which stores the scenario state.\n"
            "\t--shared-state=... - Directory that is shared by all/multiple scenarios.\n"
-           "\t--search-paths=...;...;... - Directories that are used to find packages.\n"
+           "\t-I...              - Add a package search path.\n"
            "\t--config=...       - Read the given config file.\n"
            "\t-D<key>=<value>    - Set a config value.\n"
            "\t--help             - Show this help message.\n"
            "\n"
            "Packages:\n"
            "\tPackages must be passed either using their base name or file path.\n"
-           "\tA base name looks like this: `<name>.<major>.<minor>.<patch>`\n", arg0);
+           "\tA base name looks like this: `<name>.<major>.<minor>.<patch>`\n"
+           "\tThe first package is used as scenario.\n", arg0);
     exit(EXIT_FAILURE);
 }
 
 static void ParseConfigString( const char* value )
 {
-    static char key[128];
+    static const int KEY_SIZE = 128;
+
+    static char key[KEY_SIZE];
     int i = 0;
     char c;
 
     for(;; i++)
     {
-        if(i > 127)
+        if(i > KEY_SIZE-1)
             return;
 
         c = value[i];
         if(c == '=' ||
            c == '\0')
         {
-            strncpy(key, value, i-1);
+            strncpy(key, value, i);
             break;
         }
     }
@@ -224,11 +233,11 @@ static void ParseArguments( const int argc, char** argv, Arguments* out )
         match = MatchPrefix("--shared-state=", arg);
         if(match) { out->sharedState = match; continue; }
 
-        match = MatchPrefix("--search-paths=", arg);
-        if(match) { out->searchPaths = match; continue; }
+        match = MatchPrefix("-I", arg);
+        if(match) { AppendToArrayList(&out->searchPaths, 1, &match); continue; }
 
         match = MatchPrefix("--config=", arg);
-        if(match) { ReadConfigFile(match); continue; }
+        if(match) { ReadConfigFile(match, true); continue; }
 
         match = MatchPrefix("-D", arg);
         if(match) { ParseConfigString(match); continue; }
@@ -247,6 +256,7 @@ int KonstruktMain( const int argc, char** argv )
 
     Arguments args;
     memset(&args, 0, sizeof(args));
+    InitArrayList(&args.searchPaths);
     InitArrayList(&args.packages);
 
     ParseArguments(argc, argv, &args);
@@ -254,6 +264,7 @@ int KonstruktMain( const int argc, char** argv )
     InitModules(argv[0], &args);
     InitScript(&args);
 
+    DestroyArrayList(&args.searchPaths);
     DestroyArrayList(&args.packages);
 
     RunSimulation();

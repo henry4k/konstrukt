@@ -14,7 +14,7 @@ at https://github.com/henry4k/apoapsis-example to see how it can be used.
 
 The engine has the following command line interface:
 
-`konstrukt [options] <scenario package> <other packages ...> [-- <scenario arguments>]`
+`konstrukt [options] <scenario package> <other packages ...>`
 
 
 ### Options
@@ -31,10 +31,20 @@ Path to a directory which stores data, that is shared by all/multiple
 scenarios.  Without this option the engine will create a temporary directory.
 
 
-#### `--search-paths=...;...;...` (optional)
+#### `-I...` (optional)
 
-A semicolon separated list of directories, which are used to resolve package
-file names.  The engines default search path is always tried first.
+Add a package search path.  That is a directory, which is used to resolve
+package file names.  The engines default search path is always tried first.
+
+
+#### `--config=...` (optional)
+
+Add config values by parsing the given [INI file](https://en.wikipedia.org/wiki/INI_file).
+
+
+#### `-D<key>=<value>` (optional)
+
+Set a config value.
 
 
 ### Packages
@@ -45,6 +55,8 @@ A packages base name looks like this: `<name>.<major>.<minor>.<patch>` (e. g. `e
 
 If a package is passed using its base name, the engine uses the search paths
 to resolve its file path.
+
+The first package is used as scenario.
 
 
 ## Dependencies
