@@ -66,7 +66,7 @@ Control.pushControllable(GlobalControls())
 -- @control exit
 GlobalControls:mapControl('exit', function( self, absolute, delta )
     if delta > 0 then
-        engine.StopGameLoop()
+        engine.StopSimulation()
     end
 end)
 

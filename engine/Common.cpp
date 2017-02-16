@@ -263,6 +263,7 @@ void FatalError( const char* format, ... )
     va_start(vl, format);
     if(IsLuaRunning())
     {
+        LogCallStack(LOG_FATAL_ERROR);
         const char* message = FormatV(format, vl);
         va_end(vl);
         lua_pushstring(GetLuaState(), message);
