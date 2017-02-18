@@ -2,7 +2,7 @@
 #include <string.h> // memset
 
 #include "Common.h"
-#include "List.h"
+#include "Array.h"
 #include "Math.h"
 #include "Mesh.h"
 #include "MeshBuffer.h"
@@ -54,25 +54,33 @@ struct MeshChunkGenerator
     BitConditionSolver* meshConditions;
 };
 
+typedef Array<VoxelMesh*> VoxelMeshList;
+
+struct MaterialMeshBuffer
+{
+    int materialId;
+    MeshBuffer* meshBuffer;
+};
+
 struct ChunkEnvironment
 {
     int w, h, d;
-    const Voxel* voxels;
-    List** meshLists;
-    const bool* transparentVoxels;
-    const int*  transparentNeighbors;
-    MeshBuffer** materialMeshBuffers;
-    int*         materialIds;
-    int          materialCount;
+
+    // Each of these arrays has `w*h*d` elements:
+    Voxel*         voxels;
+    VoxelMeshList* meshLists;
+    char*          transparentVoxels;
+    int*           transparentNeighbors;
+
+    Array<MaterialMeshBuffer> materialMeshBuffers;
 };
 
 
-static void FreeVoxelMesh( VoxelMesh* mesh );
+static void DestroyVoxelMesh( VoxelMesh* mesh );
 
 MeshChunkGenerator* CreateMeshChunkGenerator()
 {
-    MeshChunkGenerator* generator = new MeshChunkGenerator;
-    memset(generator, 0, sizeof(MeshChunkGenerator));
+    MeshChunkGenerator* generator = NEW(MeshChunkGenerator);
     InitReferenceCounter(&generator->refCounter);
     generator->meshConditions = CreateBitConditionSolver();
     return generator;
@@ -80,13 +88,13 @@ MeshChunkGenerator* CreateMeshChunkGenerator()
 
 static void FreeMeshChunkGenerator( MeshChunkGenerator* generator )
 {
-    for(int i = 0; i < generator->voxelMeshCount; i++)
+    REPEAT(generator->voxelMeshCount, i)
     {
         VoxelMesh* mesh = &generator->voxelMeshes[i];
-        FreeVoxelMesh(mesh);
+        DestroyVoxelMesh(mesh);
     }
     FreeBitConditionSolver(generator->meshConditions);
-    delete generator;
+    DELETE(generator);
 }
 
 void ReferenceMeshChunkGenerator( MeshChunkGenerator* generator )
@@ -122,7 +130,7 @@ static void* CreateVoxelMesh( MeshChunkGenerator* generator,
     return (void*)&mesh->data;
 }
 
-bool CreateBlockVoxelMesh( MeshChunkGenerator* generator,
+void CreateBlockVoxelMesh( MeshChunkGenerator* generator,
                            int materialId,
                            const BitCondition* conditions,
                            int conditionCount,
@@ -135,40 +143,31 @@ bool CreateBlockVoxelMesh( MeshChunkGenerator* generator,
                                                             materialId,
                                                             conditions,
                                                             conditionCount);
-    if(mesh)
-    {
-        mesh->transparent = transparent;
+    mesh->transparent = transparent;
 
-        memcpy(mesh->meshBuffers, meshBuffers,
-               sizeof(MeshBuffer*) * BLOCK_VOXEL_MATERIAL_BUFFER_COUNT);
+    memcpy(mesh->meshBuffers, meshBuffers,
+            sizeof(MeshBuffer*) * BLOCK_VOXEL_MATERIAL_BUFFER_COUNT);
 
-        memcpy(mesh->transformations, transformations,
-               sizeof(Mat4) * BLOCK_VOXEL_MATERIAL_BUFFER_COUNT);
+    memcpy(mesh->transformations, transformations,
+            sizeof(Mat4) * BLOCK_VOXEL_MATERIAL_BUFFER_COUNT);
 
-        for(int i = 0; i < BLOCK_VOXEL_MATERIAL_BUFFER_COUNT; i++)
-            if(mesh->meshBuffers[i])
-                ReferenceMeshBuffer(mesh->meshBuffers[i]);
-
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    REPEAT(BLOCK_VOXEL_MATERIAL_BUFFER_COUNT, i)
+        if(mesh->meshBuffers[i])
+            ReferenceMeshBuffer(mesh->meshBuffers[i]);
 }
 
-static void FreeBlockVoxelMesh( BlockVoxelMesh* mesh )
+static void DestroyBlockVoxelMesh( BlockVoxelMesh* mesh )
 {
-    for(int i = 0; i < BLOCK_VOXEL_MATERIAL_BUFFER_COUNT; i++)
+    REPEAT(BLOCK_VOXEL_MATERIAL_BUFFER_COUNT, i)
         ReleaseMeshBuffer(mesh->meshBuffers[i]);
 }
 
-static void FreeVoxelMesh( VoxelMesh* mesh )
+static void DestroyVoxelMesh( VoxelMesh* mesh )
 {
     switch(mesh->type)
     {
         case BLOCK_VOXEL_MESH:
-            FreeBlockVoxelMesh((BlockVoxelMesh*)&mesh->data);
+            DestroyBlockVoxelMesh((BlockVoxelMesh*)&mesh->data);
             return;
     }
     FatalError("Unknown voxel mesh type.");
@@ -203,51 +202,57 @@ static Voxel* ReadVoxelChunk( VoxelVolume* volume,
                               int sx, int sy, int sz,
                               int w, int h, int d )
 {
-    const int voxelCount = w*h*d;
-    Voxel* voxels = new Voxel[voxelCount];
-    memset(voxels, 0, sizeof(Voxel)*voxelCount);
-
-    for(int z = 0; z < d; z++)
-    for(int y = 0; y < h; y++)
-    for(int x = 0; x < w; x++)
+    Voxel* voxels = (Voxel*)AllocZeroed(sizeof(Voxel)*w*h*d);
+    REPEAT(d,z)
+    REPEAT(h,y)
+    REPEAT(w,x)
         ReadVoxelData(volume, sx+x, sy+y, sz+z, &voxels[Get3DArrayIndex(x,y,z,w,h,d)]);
-
     return voxels;
 }
 
-static List* GetVoxelMeshList( MeshChunkGenerator* generator,
-                               const Voxel* voxel )
+static void ReadVoxelMeshList( const MeshChunkGenerator* generator,
+                               const Voxel* voxel,
+                               VoxelMeshList* meshList )
 {
-    return GatherPayloadFromBitField(generator->meshConditions,
-                                     voxel,
-                                     sizeof(Voxel));
+    BitFieldPayloadList payloadList =
+        GatherPayloadFromBitField(generator->meshConditions,
+                                  voxel,
+                                  sizeof(Voxel));
+
+    if(payloadList.length > 0)
+        AppendToArray(meshList, payloadList.length, (VoxelMesh**)payloadList.data);
+
+    DestroyBitFieldPayloadList(&payloadList);
 }
 
-static List** GatherVoxelMeshListsForChunk( MeshChunkGenerator* generator,
-                                            const Voxel* voxels,
-                                            int w, int h, int d )
+static VoxelMeshList* GatherVoxelMeshListsForChunk( const MeshChunkGenerator* generator,
+                                                    const Voxel* voxels,
+                                                    int w, int h, int d )
 {
     const int voxelCount = w*h*d;
-    List** meshLists = new List*[voxelCount];
-    for(int i = 0; i < voxelCount; i++)
-        meshLists[i] = GetVoxelMeshList(generator, &voxels[i]);
+
+    VoxelMeshList* meshLists =
+        (VoxelMeshList*)Alloc(sizeof(VoxelMeshList) * voxelCount);
+    REPEAT(voxelCount, i)
+    {
+        InitArray(meshLists + i);
+        ReadVoxelMeshList(generator, &voxels[i], meshLists + i);
+    }
     return meshLists;
 }
 
-static bool* GatherTransparentVoxelsForChunk( List** meshLists,
+static char* GatherTransparentVoxelsForChunk( const VoxelMeshList* meshLists,
                                               int w, int h, int d )
 {
     const int voxelCount = w*h*d;
-    bool* transparentVoxels = new bool[voxelCount];
-    for(int i = 0; i < voxelCount; i++)
+    char* transparentVoxels = (char*)Alloc(voxelCount);
+    REPEAT(voxelCount, i)
     {
-        const List* meshList = meshLists[i];
+        const VoxelMeshList* meshList = meshLists + i;
         bool transparent = true;
-        const int meshCount = GetListLength(meshList);
-        for(int j = 0; j < meshCount; j++)
+        REPEAT(meshList->length, j)
         {
-            const VoxelMesh* mesh =
-                *(const VoxelMesh**)GetConstListEntry(meshList, j);
+            const VoxelMesh* mesh = meshList->data[j];
             if(!IsVoxelMeshTransparent(mesh))
             {
                 transparent = false;
@@ -259,7 +264,7 @@ static bool* GatherTransparentVoxelsForChunk( List** meshLists,
     return transparentVoxels;
 }
 
-static int GetTransparentNeighborhood( const bool* transparentVoxels,
+static int GetTransparentNeighborhood( const char* transparentVoxels,
                                        int x, int y, int z,
                                        int w, int h, int d )
 {
@@ -280,12 +285,10 @@ static int GetTransparentNeighborhood( const bool* transparentVoxels,
     return transparentNeighbors;
 }
 
-static int* GatherTransparentNeighborsForChunk( const bool* transparentVoxels,
+static int* GatherTransparentNeighborsForChunk( const char* transparentVoxels,
                                                  int w, int h, int d )
 {
-    const int voxelCount = w*h*d;
-    int* transparentNeighbors = new int[voxelCount];
-    memset(transparentNeighbors, 0, sizeof(int)*voxelCount);
+    int* transparentNeighbors = (int*)AllocZeroed(sizeof(int)*w*h*d);
     for(int z = 1; z < d-1; z++)
     for(int y = 1; y < h-1; y++)
     for(int x = 1; x < w-1; x++)
@@ -299,37 +302,21 @@ static int* GatherTransparentNeighborsForChunk( const bool* transparentVoxels,
 static MeshBuffer* GetMeshBufferForMaterial( ChunkEnvironment* env,
                                              int materialId )
 {
-    int materialCount = env->materialCount;
+    Array<MaterialMeshBuffer>* buffers = &env->materialMeshBuffers;
 
     // Look if the material has already been used:
-    for(int i = 0; i < materialCount; i++)
-        if(env->materialIds[i] == materialId)
-            return env->materialMeshBuffers[i];
+    REPEAT(buffers->length, i)
+        if(buffers->data[i].materialId == materialId)
+            return buffers->data[i].meshBuffer;
 
     // Create a new entry:
+    MaterialMeshBuffer* buffer = AllocateAtEndOfArray(buffers, 1);
+    buffer->materialId = materialId;
+    buffer->meshBuffer = CreateMeshBuffer();
+    ReferenceMeshBuffer(buffer->meshBuffer);
 
-    // Extend the arrays by one:
-    materialCount++;
-    env->materialCount = materialCount;
-    env->materialMeshBuffers =
-        (MeshBuffer**)ReAlloc(env->materialMeshBuffers,
-                              sizeof(MeshBuffer*)*materialCount);
-    env->materialIds =
-        (int*)ReAlloc(env->materialIds,
-                      sizeof(int)*materialCount);
-
-    // Insert the material:
-    MeshBuffer* buffer = CreateMeshBuffer();
-    ReferenceMeshBuffer(buffer);
-    env->materialIds[materialCount-1] = materialId;
-    env->materialMeshBuffers[materialCount-1] = buffer;
-
-    return buffer;
+    return buffer->meshBuffer;
 }
-
-static const float HalfPI = (float)(PI/2.0);
-
-
 
 static void ProcessBlockVoxelMesh( ChunkEnvironment* env,
                                    int transparentNeighbors,
@@ -373,7 +360,7 @@ static void ProcessBlockVoxelMesh( ChunkEnvironment* env,
                          &transformation);
     }
 
-    for(int i = 0; i < dirCount; i++)
+    REPEAT(dirCount, i)
     {
         if(transparentNeighbors & neighborDirs[i] && meshBuffers[dirs[i]])
         {
@@ -416,9 +403,9 @@ static void ProcessVoxelMeshes( ChunkEnvironment* env )
     const float hh = ((float)h) / 2.f;
     const float hd = ((float)d) / 2.f;
 
-    for(int z = 0; z < d; z++)
-    for(int y = 0; y < h; y++)
-    for(int x = 0; x < w; x++)
+    REPEAT(d,z)
+    REPEAT(h,y)
+    REPEAT(w,x)
     {
         const int envIndex = Get3DArrayIndex(x+1,
                                              y+1,
@@ -427,12 +414,11 @@ static void ProcessVoxelMeshes( ChunkEnvironment* env )
                                              env->h,
                                              env->d);
         const int transparentNeighbors = env->transparentNeighbors[envIndex];
-        List* meshList = env->meshLists[envIndex];
+        VoxelMeshList* meshList = env->meshLists + envIndex;
 
-        const int meshCount = GetListLength(meshList);
-        for(int i = 0; i < meshCount; i++)
+        REPEAT(meshList->length, i)
         {
-            const VoxelMesh* mesh = *(VoxelMesh**)GetListEntry(meshList, i);
+            const VoxelMesh* mesh = meshList->data[i];
             const float xTranslation = ((float)x) - hw + 0.5f;
             const float yTranslation = ((float)y) - hh + 0.5f;
             const float zTranslation = ((float)z) - hd + 0.5f;
@@ -451,22 +437,24 @@ static ChunkEnvironment* CreateChunkEnvironment( MeshChunkGenerator* generator,
                                                  int sx, int sy, int sz,
                                                  int w, int h, int d )
 {
-    ChunkEnvironment* env = new ChunkEnvironment;
-    memset(env, 0, sizeof(ChunkEnvironment));
+    ChunkEnvironment* env = NEW(ChunkEnvironment);
+
     env->w = w;
     env->h = h;
     env->d = d;
-    env->voxels = ReadVoxelChunk(volume,
-                                 sx, sy, sz,
-                                  w,  h,  d);
-    env->meshLists = GatherVoxelMeshListsForChunk(generator,
-                                                  env->voxels,
-                                                  w, h, d);
-    env->transparentVoxels = GatherTransparentVoxelsForChunk(env->meshLists,
-                                                             w, h, d);
+
+    env->voxels =
+        ReadVoxelChunk(volume, sx, sy, sz, w, h, d);
+
+    env->meshLists =
+        GatherVoxelMeshListsForChunk(generator, env->voxels, w, h, d);
+
+    env->transparentVoxels =
+        GatherTransparentVoxelsForChunk(env->meshLists, w, h, d);
+
     env->transparentNeighbors =
-        GatherTransparentNeighborsForChunk(env->transparentVoxels,
-                                           w, h, d);
+        GatherTransparentNeighborsForChunk(env->transparentVoxels, w, h, d);
+
     ProcessVoxelMeshes(env);
     return env;
 }
@@ -476,40 +464,42 @@ static void FreeChunkEnvironment( ChunkEnvironment* env )
     const int voxelCount = env->w *
                            env->h *
                            env->d;
-    for(int i = 0; i < voxelCount; i++)
-        FreeList(env->meshLists[i]);
 
-    delete[] env->voxels;
-    delete[] env->meshLists;
-    delete[] env->transparentVoxels;
-    delete[] env->transparentNeighbors;
+    REPEAT(voxelCount, i)
+        DestroyArray(env->meshLists + i);
 
-    for(int i = 0; i < env->materialCount; i++)
-        ReleaseMeshBuffer(env->materialMeshBuffers[i]);
-    Free(env->materialMeshBuffers);
-    Free(env->materialIds);
+    Free(env->voxels);
+    Free(env->meshLists);
+    Free(env->transparentVoxels);
+    Free(env->transparentNeighbors);
 
-    delete env;
+
+    REPEAT(env->materialMeshBuffers.length, i)
+        ReleaseMeshBuffer(env->materialMeshBuffers.data[i].meshBuffer);
+    DestroyArray(&env->materialMeshBuffers);
+
+    DELETE(env);
 }
 
 // ----------------------------------------------------------------------
 
 static MeshChunk* GenerateMeshChunkWithEnv( ChunkEnvironment* env )
 {
-    MeshChunk* chunk = new MeshChunk;
-    memset(chunk, 0, sizeof(MeshChunk));
+    MeshChunk* chunk = NEW(MeshChunk);
 
-    const int materialCount = env->materialCount;
-    chunk->materialCount    = env->materialCount;
-    chunk->materialIds      = new int[materialCount];
-    chunk->materialMeshes   = new Mesh*[materialCount];
+    const Array<MaterialMeshBuffer>* buffers = &env->materialMeshBuffers;
 
-    memcpy(chunk->materialIds, env->materialIds, sizeof(int)*materialCount);
-    for(int i = 0; i < materialCount; i++)
+    chunk->materialCount    = buffers->length;
+    chunk->materialIds      =   (int*)Alloc(sizeof(int)   * buffers->length);
+    chunk->materialMeshes   = (Mesh**)Alloc(sizeof(Mesh*) * buffers->length);
+
+    REPEAT(buffers->length, i)
     {
-        Mesh* mesh = CreateMesh(env->materialMeshBuffers[i]);
+        const MaterialMeshBuffer* buffer = buffers->data + i;
+        Mesh* mesh = CreateMesh(buffer->meshBuffer);
         ReferenceMesh(mesh);
         chunk->materialMeshes[i] = mesh;
+        chunk->materialIds[i] = buffer->materialId;
     }
 
     return chunk;
@@ -534,9 +524,9 @@ MeshChunk* GenerateMeshChunk( MeshChunkGenerator* generator,
 
 void FreeMeshChunk( MeshChunk* chunk )
 {
-    for(int i = 0; i < chunk->materialCount; i++)
+    REPEAT(chunk->materialCount, i)
         ReleaseMesh(chunk->materialMeshes[i]);
-    delete[] chunk->materialMeshes;
-    delete[] chunk->materialIds;
-    delete chunk;
+    Free(chunk->materialMeshes);
+    Free(chunk->materialIds);
+    DELETE(chunk);
 }

@@ -1,9 +1,6 @@
 #ifndef __KONSTRUKT_BIT_CONDITION__
 #define __KONSTRUKT_BIT_CONDITION__
 
-struct List;
-
-
 /**
  * Used to extract and test bits from a bit field.
  */
@@ -12,6 +9,12 @@ struct BitCondition
     int offset; /** Position in the bit field. */
     int length; /** Amount of bits extracted for comparision. */
     int value;  /** Value to which the bits are compared to. */
+};
+
+struct BitFieldPayloadList
+{
+    int length;
+    void** data;
 };
 
 /**
@@ -39,8 +42,10 @@ void AddBitConditions( BitConditionSolver* solver,
  * @return
  * A list which contains the results.
  */
-List* GatherPayloadFromBitField( const BitConditionSolver* solver,
-                                 const void* bitField,
-                                 int bitFieldSize );
+BitFieldPayloadList GatherPayloadFromBitField( const BitConditionSolver* solver,
+                                               const void* bitField,
+                                               int bitFieldSize );
+
+void DestroyBitFieldPayloadList( BitFieldPayloadList* list );
 
 #endif

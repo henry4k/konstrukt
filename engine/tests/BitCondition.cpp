@@ -1,6 +1,5 @@
 #include <stdlib.h> // NULL
 #include "../Common.h"
-#include "../List.h"
 #include "../BitCondition.h"
 #include "TestTools.h"
 #include <dummy/inline.hpp>
@@ -32,10 +31,10 @@ static char payloadB[] = "B";
 static char payloadC[] = "C";
 static char payloadD[] = "D";
 
-static bool HasPayload( List* results, void* payload )
+static bool HasPayload( const BitFieldPayloadList results, void* payload )
 {
-    REPEAT(GetListLength(results), i)
-        if(GetListEntry(results, i) == payload)
+    REPEAT(results.length, i)
+        if(results.data[i] == payload)
             return true;
     return false;
 }
@@ -48,10 +47,10 @@ InlineTest("BitConditionSolver can gather matching payloads.", dummySignalSandbo
     AddBitConditions(solver, conditionsC, 2, (void*)payloadC);
     AddBitConditions(solver, conditionsC, 2, (void*)payloadD);
 
-    List* results = GatherPayloadFromBitField(solver, NULL, 0);
+    const BitFieldPayloadList results =
+        GatherPayloadFromBitField(solver, NULL, 0);
 
-    Require(results != NULL);
-    Require(GetListLength(results) == 4);
+    Require(results.length == 4);
     Require(HasPayload(results, payloadA));
     Require(HasPayload(results, payloadB));
     Require(HasPayload(results, payloadC));

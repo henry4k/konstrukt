@@ -34,7 +34,7 @@ void ReserveInArray( Array<T>* array, int newCapacity )
     assert(newCapacity >= 0);
     if(newCapacity > array->capacity)
     {
-        array->data = (T*)ReAlloc((void*)array->data, newCapacity*sizeof(T));
+        array->data = (T*)ReAlloc(array->data, newCapacity*sizeof(T));
         array->capacity = newCapacity;
     }
 }
@@ -51,7 +51,7 @@ T* AllocateInArray( Array<T>* array, int pos, int amount )
     T* dst = array->data + (pos + amount);
     T* src = array->data + pos;
     const size_t count = array->length - pos;
-    memmove((void*)dst, (void*)src, count*sizeof(T));
+    memmove(dst, src, count*sizeof(T));
     array->length += amount;
 
     return src;
@@ -67,7 +67,7 @@ template<typename T>
 T* InsertInArray( Array<T>* array, int pos, int amount, const T* data )
 {
     T* r = AllocateInArray(array, pos, amount);
-    memcpy((void*)r, (void*)data, sizeof(T)*amount);
+    memcpy(r, data, sizeof(T)*amount);
     return r;
 }
 
@@ -88,7 +88,7 @@ void RemoveFromArray( Array<T>* array, int pos, int amount )
     T* dst = array->data + pos;
     T* src = array->data + pos + amount;
     const size_t count = array->length - pos;
-    memmove((void*)dst, (void*)src, count*sizeof(T));
+    memmove(dst, src, count*sizeof(T));
     array->length -= amount;
 }
 

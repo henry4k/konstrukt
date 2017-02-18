@@ -171,7 +171,7 @@ PathList GetDirEntries( const char* path )
     return r;
 }
 
-void FreePathList( PathList* list )
+void DestroyPathList( PathList* list )
 {
     Free(list->data);
     memset(list, 0, sizeof(PathList));
@@ -201,7 +201,7 @@ void RemoveDirectoryTree( const char* path )
                         path, NATIVE_DIR_SEP, entry->str);
                 RemoveDirectoryTree(entryPath);
             }
-            FreePathList(&entries);
+            DestroyPathList(&entries);
             return RemoveFile(path);
         }
 

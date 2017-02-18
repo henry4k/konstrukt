@@ -56,7 +56,7 @@ static int Lua_GetDirEntries( lua_State* l )
         lua_rawseti(l, -2, i+1);
     }
 
-    FreePathList(&list);
+    DestroyPathList(&list);
     return 1;
 }
 

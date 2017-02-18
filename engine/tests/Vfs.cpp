@@ -54,7 +54,7 @@ static void TestDirEntries( const char* path,
     REPEAT(entryCount, i)
         Require(IsEntryInPathList(list, entries[i]));
 
-    FreePathList(&list);
+    DestroyPathList(&list);
 }
 
 static void TestReadingMount()

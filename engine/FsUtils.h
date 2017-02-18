@@ -46,11 +46,11 @@ const char* CreateTemporaryDirectory( const char* name );
  *
  * @return
  * A list of directory entries.
- * Use #FreePathList when you don't need it anymore.
+ * Use #DestroyPathList when you don't need it anymore.
  */
 PathList GetDirEntries( const char* path );
 
-void FreePathList( PathList* list );
+void DestroyPathList( PathList* list );
 
 /**
  * Deletes files and empty directories.

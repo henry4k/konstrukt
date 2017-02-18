@@ -76,7 +76,7 @@ void ReleaseMeshChunkGenerator( MeshChunkGenerator* generator );
  * @return
  * Whether the voxel mesh has been created successfully.
  */
-bool CreateBlockVoxelMesh( MeshChunkGenerator* generator,
+void CreateBlockVoxelMesh( MeshChunkGenerator* generator,
                            int materialId,
                            const BitCondition* conditions,
                            int conditionCount,
