@@ -1,6 +1,7 @@
 #include <assert.h>
 
 #include "Common.h"
+#include "Array.h"
 #include "Constants.h"
 #include "Vfs.h"
 #include "vfs/Shared.h"
@@ -21,9 +22,9 @@ struct VfsFile
 
 static MountSystem* RealMountSystem;
 static MountSystem* PhysFSMountSystem;
-static ArrayList(Mount) Mounts;
-static ArrayList(Path) SearchPaths;
-static ArrayList(const VfsFile*) OpenFiles;
+static Array<Mount> Mounts;
+static Array<Path> SearchPaths;
+static Array<VfsFile*> OpenFiles;
 static char TempStateDirectory[MAX_PATH_SIZE];
 static char TempSharedStateDirectory[MAX_PATH_SIZE];
 
@@ -55,9 +56,9 @@ void InitVfs( const char* argv0,
     RealMountSystem = InitVfs_Real();
     PhysFSMountSystem = InitVfs_PhysFS(argv0);
 
-    InitArrayList(&Mounts);
-    InitArrayList(&SearchPaths);
-    InitArrayList(&OpenFiles);
+    InitArray(&Mounts);
+    InitArray(&SearchPaths);
+    InitArray(&OpenFiles);
 
     SetWriteDirectory("state", stateDirectory, TempStateDirectory);
     SetWriteDirectory("shared-state", sharedStateDirectory, TempSharedStateDirectory);
@@ -103,9 +104,9 @@ void DestroyVfs()
     if(TempSharedStateDirectory[0] != '\0')
         RemoveDirectoryTree(TempSharedStateDirectory);
 
-    DestroyArrayList(&Mounts);
-    DestroyArrayList(&SearchPaths);
-    DestroyArrayList(&OpenFiles);
+    DestroyArray(&Mounts);
+    DestroyArray(&SearchPaths);
+    DestroyArray(&OpenFiles);
 
     RealMountSystem->destroy();
     PhysFSMountSystem->destroy();
@@ -159,7 +160,7 @@ void MountVfsDir( const char* vfsPath,
     else
         mountSystem = PhysFSMountSystem;
 
-    Mount* mount = AllocateAtEndOfArrayList(&Mounts, 1);
+    Mount* mount = AllocateAtEndOfArray(&Mounts, 1);
     memset(mount, 0, sizeof(Mount));
     mount->mountSystem = mountSystem;
     CopyString(vfsPath,  mount->vfsPath,  MAX_PATH_SIZE);
@@ -177,7 +178,7 @@ void UnmountVfsDir( const char* vfsPath )
     Mount* mount = GetMountByVfsPath(vfsPath, &mountIndex);
     mount->mountSystem->unmount(mount);
     LogNotice("Unmounted '%s' from '%s'.", mount->realPath, mount->vfsPath);
-    RemoveFromArrayList(&Mounts, mountIndex, 1);
+    RemoveFromArray(&Mounts, mountIndex, 1);
 }
 
 
@@ -185,7 +186,7 @@ void UnmountVfsDir( const char* vfsPath )
 
 void AddPackageSearchPath( const char* path )
 {
-    Path* searchPath = AllocateAtEndOfArrayList(&SearchPaths, 1);
+    Path* searchPath = AllocateAtEndOfArray(&SearchPaths, 1);
     CopyString(path, searchPath->str, sizeof(Path));
 }
 
@@ -317,7 +318,7 @@ VfsFile* OpenVfsFile( const char* vfsPath, VfsOpenMode mode )
     CopyString(vfsPath, file->path, MAX_PATH_SIZE);
     file->mode = mode;
 
-    AppendToArrayList(&OpenFiles, 1, &file);
+    AppendToArray(&OpenFiles, 1, &file);
 
     return file;
 }
@@ -328,7 +329,7 @@ static void RemoveFileFromOpenFileList( const VfsFile* file )
     {
         if(OpenFiles.data[i] == file)
         {
-            RemoveFromArrayList(&OpenFiles, i, 1);
+            RemoveFromArray(&OpenFiles, i, 1);
             return;
         }
     }
@@ -339,7 +340,7 @@ void CloseVfsFile( VfsFile* file )
 {
     file->mountSystem->closeFile(file->handle);
     RemoveFileFromOpenFileList(file);
-    DELETE(VfsFile, file);
+    DELETE(file);
 }
 
 int ReadVfsFile( VfsFile* file, void* buffer, int size )
@@ -375,20 +376,22 @@ bool HasVfsFileEnded( const VfsFile* file )
 
 // --- File system access ---
 
-static PathList* GetMountNames()
+static PathList GetMountNames()
 {
-    PathList* list = NEW(PathList);
+    Array<Path> list;
+    InitArray(&list);
     REPEAT(Mounts.length, i)
     {
         const Mount* mount = Mounts.data + i;
         const char* entryName = mount->vfsPath;
-        Path* entry = AllocateAtEndOfArrayList(list, 1);
+        Path* entry = AllocateAtEndOfArray(&list, 1);
         CopyString(entryName, entry->str, sizeof(Path));
     }
-    return list;
+    PathList r = {list.length, list.data};
+    return r;
 }
 
-PathList* GetVfsDirEntries( const char* vfsPath )
+PathList GetVfsDirEntries( const char* vfsPath )
 {
     if(vfsPath[0] == '\0')
     {

@@ -133,7 +133,7 @@ bool HasVfsFileEnded( const VfsFile* file );
  * A list of directory entries.
  * Use #FreePathList when you don't need it anymore.
  */
-PathList* GetVfsDirEntries( const char* vfsPath );
+PathList GetVfsDirEntries( const char* vfsPath );
 
 /**
  * Retrieve information about a file.

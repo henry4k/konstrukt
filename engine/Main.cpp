@@ -2,7 +2,7 @@
 #include <string.h> // strcmp, strncpy
 #include <stdio.h> // printf
 
-#include "ArrayList.h"
+#include "Array.h"
 #include "Common.h"
 #include "Math.h"
 #include "Crc32.h"
@@ -47,8 +47,8 @@ struct Arguments
 {
     const char* state;
     const char* sharedState;
-    ArrayList(const char*) searchPaths;
-    ArrayList(const char*) packages;
+    Array<const char*> searchPaths;
+    Array<const char*> packages;
 };
 
 
@@ -234,7 +234,7 @@ static void ParseArguments( const int argc, char** argv, Arguments* out )
         if(match) { out->sharedState = match; continue; }
 
         match = MatchPrefix("-I", arg);
-        if(match) { AppendToArrayList(&out->searchPaths, 1, &match); continue; }
+        if(match) { AppendToArray(&out->searchPaths, 1, &match); continue; }
 
         match = MatchPrefix("--config=", arg);
         if(match) { ReadConfigFile(match, true); continue; }
@@ -245,7 +245,7 @@ static void ParseArguments( const int argc, char** argv, Arguments* out )
         match = MatchPrefix("-", arg);
         if(match) { FatalError("Unknown argument '%s'", arg); }
 
-        AppendToArrayList(&out->packages, 1, &arg);
+        AppendToArray(&out->packages, 1, &arg);
     }
 }
 
@@ -256,16 +256,16 @@ int KonstruktMain( const int argc, char** argv )
 
     Arguments args;
     memset(&args, 0, sizeof(args));
-    InitArrayList(&args.searchPaths);
-    InitArrayList(&args.packages);
+    InitArray(&args.searchPaths);
+    InitArray(&args.packages);
 
     ParseArguments(argc, argv, &args);
 
     InitModules(argv[0], &args);
     InitScript(&args);
 
-    DestroyArrayList(&args.searchPaths);
-    DestroyArrayList(&args.packages);
+    DestroyArray(&args.searchPaths);
+    DestroyArray(&args.packages);
 
     RunSimulation();
     DestroyModules();

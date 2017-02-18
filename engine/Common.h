@@ -12,7 +12,7 @@ void* ReAlloc( void* oldPointer, size_t size );
 #define AllocZeroed(size) memset(Alloc(size), 0, (size))
 
 #define NEW(S) (S*)AllocZeroed(sizeof(S))
-#define DELETE(S,P) { memset(P, 0, sizeof(S)); Free(P); }
+#define DELETE(P) { memset((P), 0, sizeof(*(P))); Free(P); }
 
 
 // --- Strings ---
@@ -73,17 +73,18 @@ void Log( LogLevel level, const char* format, ... );
 #define LogWarning(...) Log(LOG_WARNING, __VA_ARGS__)
 #define LogError(...)   Log(LOG_ERROR,   __VA_ARGS__)
 
-/**
- * Will abort the program after emitting the log message.
- */
-void FatalError( const char* format, ... );
-
 bool PostConfigInitLog();
 
 
 // --- Other utilities ---
 
+/**
+ * Will abort the program after emitting the log message.
+ */
+void FatalError( const char* format, ... );
+
+#define Ensure( test ) if(!(test)) FatalError("Expression failed: %s", #test)
+
 #define REPEAT(N,I) for(int _n = (int)(N), I = 0; I < _n; I++)
-//#define REPEAT(N,I) for(int I = 0; I < (N); I++)
 
 #endif

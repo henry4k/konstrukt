@@ -45,18 +45,18 @@ static int Lua_WriteFile( lua_State* l )
 static int Lua_GetDirEntries( lua_State* l )
 {
     const char* vfsPath = luaL_checkstring(l, 1);
-    PathList* list = GetVfsDirEntries(vfsPath);
+    PathList list = GetVfsDirEntries(vfsPath);
 
-    lua_createtable(l, list->length, 0);
+    lua_createtable(l, list.length, 0);
 
-    REPEAT(list->length, i)
+    REPEAT(list.length, i)
     {
-        const Path* entry = list->data + i;
+        const Path* entry = list.data + i;
         lua_pushstring(l, entry->str);
         lua_rawseti(l, -2, i+1);
     }
 
-    FreePathList(list);
+    FreePathList(&list);
     return 1;
 }
 

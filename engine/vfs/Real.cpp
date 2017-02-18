@@ -145,7 +145,7 @@ static bool HasVfsFileEnded_Real( const void* file )
     return feof((FILE*)file);
 }
 
-static PathList* GetVfsDirEntries_Real( const Mount* mount, const char* subMountPath )
+static PathList GetVfsDirEntries_Real( const Mount* mount, const char* subMountPath )
 {
     const char* path = GetRealPath(mount, subMountPath);
     return GetDirEntries(path);

@@ -1,9 +1,6 @@
 #ifndef __KONSTRUKT_FS_UTILS__
 #define __KONSTRUKT_FS_UTILS__
 
-#include "ArrayList.h"
-
-
 static const int MAX_PATH_SIZE = 256;
 
 #if defined(_WIN32)
@@ -26,7 +23,11 @@ struct Path
     char str[MAX_PATH_SIZE];
 };
 
-typedef ArrayList(Path) PathList;
+struct PathList
+{
+    int length;
+    Path* data;
+};
 
 
 FileType GetFileType( const char* path );
@@ -47,7 +48,7 @@ const char* CreateTemporaryDirectory( const char* name );
  * A list of directory entries.
  * Use #FreePathList when you don't need it anymore.
  */
-PathList* GetDirEntries( const char* path );
+PathList GetDirEntries( const char* path );
 
 void FreePathList( PathList* list );
 

@@ -1,4 +1,5 @@
 #include <string.h> // strcmp
+#include "../Common.h"
 #include "../Vfs.h"
 #include "TestTools.h"
 #include <dummy/inline.hpp>
@@ -31,10 +32,10 @@ static void TestReadTextFile( const char* path )
 
     CloseVfsFile(file);
 }
-static bool IsEntryInPathList( const PathList* list, const char* entry )
+static bool IsEntryInPathList( const PathList list, const char* entry )
 {
-    REPEAT(list->length, i)
-        if(strcmp(list->data[i].str, entry) == 0)
+    REPEAT(list.length, i)
+        if(strcmp(list.data[i].str, entry) == 0)
             return true;
     return false;
 }
@@ -44,16 +45,16 @@ static void TestDirEntries( const char* path,
                             int entryCount )
 {
     LogInfo("%s:", path);
-    PathList* list = GetVfsDirEntries(path);
-    REPEAT(list->length, i)
-        LogInfo("\t%s", list->data[i].str);
+    PathList list = GetVfsDirEntries(path);
+    REPEAT(list.length, i)
+        LogInfo("\t%s", list.data[i].str);
 
-    Require(list->length == entryCount);
+    Require(list.length == entryCount);
 
     REPEAT(entryCount, i)
         Require(IsEntryInPathList(list, entries[i]));
 
-    FreePathList(list);
+    FreePathList(&list);
 }
 
 static void TestReadingMount()

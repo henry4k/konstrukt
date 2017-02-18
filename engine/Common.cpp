@@ -18,7 +18,6 @@ BEGIN_EXTERNAL_CODE
 END_EXTERNAL_CODE
 
 #include "Config.h"
-#include "ArrayList.h"
 #include "Lua.h"
 #include "Common.h"
 
@@ -105,44 +104,6 @@ bool CopyString( const char* source, char* destination, int destinationSize )
 
 
 // --- Logging ---
-
-static void LogCallStack( LogLevel level )
-{
-    static const int MAX_STACK_DEPTH = 64;
-    Log(level, "engine stack traceback:");
-#if defined(_WIN32)
-    static const int SYMBOL_NAME_SIZE = 128;
-
-    const HANDLE process = GetCurrentProcess();
-    SymInitialize(process, NULL, true);
-
-    void* frames[MAX_STACK_DEPTH];
-    const int frameCount = CaptureStackBackTrace(0, MAX_STACK_DEPTH, frames, NULL);
-
-    SYMBOL_INFO* symbol = (SYMBOL_INFO*)AllocZeroed(sizeof(SYMBOL_INFO) + SYMBOL_NAME_SIZE, 1);
-    symbol->MaxNameLen = SYMBOL_NAME_SIZE - 1;
-    symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-
-    REPEAT(frameCount, i)
-    {
-         SymFromAddr(process, (DWORD64)(frames[i]), 0, symbol);
-         Log(level, "\t%s", symbol->Name);
-    }
-
-    Free(symbol);
-#elif defined(__linux__)
-    void* frames[MAX_STACK_DEPTH];
-    const int frameCount = backtrace(frames, MAX_STACK_DEPTH);
-    char** frameSymbols = backtrace_symbols(frames, frameCount);
-
-    REPEAT(frameCount, i)
-        Log(level, "\t%s", frameSymbols[i]);
-
-    free(frameSymbols); // allocated by backtrace_symbols
-#else
-    #warning No stack trace implementation
-#endif
-}
 
 static void SimpleLogHandler( LogLevel level, const char* line )
 {
@@ -257,27 +218,6 @@ void Log( LogLevel level, const char* format, ... )
     va_end(vl);
 }
 
-void FatalError( const char* format, ... )
-{
-    va_list vl;
-    va_start(vl, format);
-    if(IsLuaRunning())
-    {
-        LogCallStack(LOG_FATAL_ERROR);
-        const char* message = FormatV(format, vl);
-        va_end(vl);
-        lua_pushstring(GetLuaState(), message);
-        lua_error(GetLuaState());
-    }
-    else
-    {
-        LogV(LOG_FATAL_ERROR, format, vl);
-        va_end(vl);
-        LogCallStack(LOG_FATAL_ERROR);
-        abort();
-    }
-}
-
 #if defined(_WIN32)
 static LogHandler AutodetectLogHandler()
 {
@@ -314,5 +254,67 @@ bool PostConfigInitLog()
     {
         FatalError("Unknown log handler '%s'.", handlerName);
         return false;
+    }
+}
+
+
+// --- Other utilities ---
+
+static void LogCallStack( LogLevel level )
+{
+    static const int MAX_STACK_DEPTH = 64;
+    Log(level, "engine stack traceback:");
+#if defined(_WIN32)
+    static const int SYMBOL_NAME_SIZE = 128;
+
+    const HANDLE process = GetCurrentProcess();
+    SymInitialize(process, NULL, true);
+
+    void* frames[MAX_STACK_DEPTH];
+    const int frameCount = CaptureStackBackTrace(0, MAX_STACK_DEPTH, frames, NULL);
+
+    SYMBOL_INFO* symbol = (SYMBOL_INFO*)AllocZeroed(sizeof(SYMBOL_INFO) + SYMBOL_NAME_SIZE, 1);
+    symbol->MaxNameLen = SYMBOL_NAME_SIZE - 1;
+    symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+
+    REPEAT(frameCount, i)
+    {
+         SymFromAddr(process, (DWORD64)(frames[i]), 0, symbol);
+         Log(level, "\t%s", symbol->Name);
+    }
+
+    Free(symbol);
+#elif defined(__linux__)
+    void* frames[MAX_STACK_DEPTH];
+    const int frameCount = backtrace(frames, MAX_STACK_DEPTH);
+    char** frameSymbols = backtrace_symbols(frames, frameCount);
+
+    REPEAT(frameCount, i)
+        Log(level, "\t%s", frameSymbols[i]);
+
+    free(frameSymbols); // allocated by backtrace_symbols
+#else
+    #warning No stack trace implementation
+#endif
+}
+
+void FatalError( const char* format, ... )
+{
+    va_list vl;
+    va_start(vl, format);
+    if(IsLuaRunning())
+    {
+        LogCallStack(LOG_FATAL_ERROR);
+        const char* message = FormatV(format, vl);
+        va_end(vl);
+        lua_pushstring(GetLuaState(), message);
+        lua_error(GetLuaState());
+    }
+    else
+    {
+        LogV(LOG_FATAL_ERROR, format, vl);
+        va_end(vl);
+        LogCallStack(LOG_FATAL_ERROR);
+        abort();
     }
 }

@@ -16,6 +16,7 @@
 #include <errno.h>
 
 #include "Common.h"
+#include "Array.h"
 #include "FsUtils.h"
 
 
@@ -119,10 +120,10 @@ static bool IsValidEntry( const char* entry )
            (strcmp(entry, "..") != 0);
 }
 
-PathList* GetDirEntries( const char* path )
+PathList GetDirEntries( const char* path )
 {
-    PathList* list = NEW(PathList);
-    InitArrayList(list);
+    Array<Path> list;
+    InitArray(&list);
 #if defined(_WIN32)
     // Add "\\*" to path:
     char buffer[MAX_PATH_SIZE];
@@ -138,7 +139,7 @@ PathList* GetDirEntries( const char* path )
     {
         if(IsValidEntry(dirEntry.cFileName))
         {
-            Path* entry = AllocateAtEndOfArrayList(list, 1);
+            Path* entry = AllocateAtEndOfArray(&list, 1);
             CopyString(dirEntry.cFileName, entry->str, sizeof(Path));
         }
     } while(FindNextFile(dir, &dirEntry));
@@ -156,7 +157,7 @@ PathList* GetDirEntries( const char* path )
         {
             if(IsValidEntry(dirEntry->d_name))
             {
-                Path* entry = AllocateAtEndOfArrayList(list, 1);
+                Path* entry = AllocateAtEndOfArray(&list, 1);
                 CopyString(dirEntry->d_name, entry->str, sizeof(Path));
             }
         }
@@ -166,13 +167,14 @@ PathList* GetDirEntries( const char* path )
 
     closedir(dir);
 #endif
-    return list;
+    PathList r = {list.length, list.data};
+    return r;
 }
 
 void FreePathList( PathList* list )
 {
-    DestroyArrayList(list);
-    DELETE(PathList, list);
+    Free(list->data);
+    memset(list, 0, sizeof(PathList));
 }
 
 void RemoveFile( const char* path )
@@ -190,16 +192,16 @@ void RemoveDirectoryTree( const char* path )
 
         case FILE_TYPE_DIRECTORY:
         {
-            PathList* entries = GetDirEntries(path);
-            REPEAT(entries->length, i)
+            PathList entries = GetDirEntries(path);
+            REPEAT(entries.length, i)
             {
-                const Path* entry = entries->data + i;
+                const Path* entry = entries.data + i;
                 char entryPath[MAX_PATH_SIZE];
                 FormatBuffer(entryPath, MAX_PATH_SIZE, "%s%c%s",
                         path, NATIVE_DIR_SEP, entry->str);
                 RemoveDirectoryTree(entryPath);
             }
-            FreePathList(entries);
+            FreePathList(&entries);
             return RemoveFile(path);
         }
 

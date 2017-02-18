@@ -1,6 +1,7 @@
 #include <physfs.h>
 
 #include "../Common.h"
+#include "../Array.h"
 #include "../Vfs.h"
 #include "Shared.h"
 
@@ -98,7 +99,7 @@ static bool HasVfsFileEnded_PhysFS( const void* file )
     return PHYSFS_eof((PHYSFS_File*)file);
 }
 
-static PathList* GetVfsDirEntries_PhysFS( const Mount* mount, const char* subMountPath )
+static PathList GetVfsDirEntries_PhysFS( const Mount* mount, const char* subMountPath )
 {
     const char* path;
     if(subMountPath)
@@ -106,18 +107,19 @@ static PathList* GetVfsDirEntries_PhysFS( const Mount* mount, const char* subMou
     else
         path = mount->vfsPath;
 
-    PathList* list = NEW(PathList);
-    InitArrayList(list);
+    Array<Path> list;
+    InitArray(&list);
 
     char** fileList = PHYSFS_enumerateFiles(path);
     for(int i = 0; fileList[i] != NULL; i++)
     {
-        Path* entry = AllocateAtEndOfArrayList(list, 1);
+        Path* entry = AllocateAtEndOfArray(&list, 1);
         CopyString(fileList[i], entry->str, sizeof(Path));
     }
     PHYSFS_freeList(fileList);
 
-    return list;
+    PathList r = {list.length, list.data};
+    return r;
 }
 
 static FileType GetVfsFileType_PhysFS( const Mount* mount, const char* subMountPath )
