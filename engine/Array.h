@@ -1,7 +1,6 @@
 #ifndef __KONSTRUKT_ARRAY__
 #define __KONSTRUKT_ARRAY__
 
-#include <assert.h>
 #include <string.h> // memset, memcpy
 
 #include "Common.h" // ReAlloc, Free
@@ -14,6 +13,7 @@ struct Array
     int capacity;
     T* data;
 };
+
 
 template<typename T>
 void InitArray( Array<T>* array )
@@ -31,7 +31,7 @@ void DestroyArray( Array<T>* array )
 template<typename T>
 void ReserveInArray( Array<T>* array, int newCapacity )
 {
-    assert(newCapacity >= 0);
+    Ensure(newCapacity >= 0);
     if(newCapacity > array->capacity)
     {
         array->data = (T*)ReAlloc(array->data, newCapacity*sizeof(T));
@@ -42,9 +42,9 @@ void ReserveInArray( Array<T>* array, int newCapacity )
 template<typename T>
 T* AllocateInArray( Array<T>* array, int pos, int amount )
 {
-    assert(pos >= 0);
-    assert(pos <= array->length);
-    assert(amount > 0);
+    Ensure(pos >= 0);
+    Ensure(pos <= array->length);
+    Ensure(amount > 0);
 
     ReserveInArray(array, array->length+amount);
 
@@ -80,10 +80,10 @@ T* AppendToArray( Array<T>* array, int amount, const T* data )
 template<typename T>
 void RemoveFromArray( Array<T>* array, int pos, int amount )
 {
-    assert(pos >= 0);
-    assert(pos < array->length);
-    assert(amount > 0);
-    assert(pos+amount <= array->length);
+    Ensure(pos >= 0);
+    Ensure(pos < array->length);
+    Ensure(amount > 0);
+    Ensure(pos+amount <= array->length);
 
     T* dst = array->data + pos;
     T* src = array->data + pos + amount;

@@ -18,7 +18,8 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}"
                     "${PROJECT_SOURCE_DIR}/third-party/lua-cjson"
                     "${PROJECT_SOURCE_DIR}/third-party/stb_image_resize"
                     "${PROJECT_SOURCE_DIR}/third-party/stb_image"
-                    "${PROJECT_SOURCE_DIR}/third-party/stb_sprintf")
+                    "${PROJECT_SOURCE_DIR}/third-party/stb_sprintf"
+                    "${PROJECT_SOURCE_DIR}/third-party/tinycthread")
 
 target_link_libraries(konstruktlib stb_image
                                    stb_image_resize
@@ -26,6 +27,7 @@ target_link_libraries(konstruktlib stb_image
                                    inih
                                    lua-cjson
                                    flextGL
+                                   tinycthread
                                    ${LUA_LIBRARY}
                                    ${OPENAL_LIBRARY}
                                    ${ALURE_LIBRARIES}

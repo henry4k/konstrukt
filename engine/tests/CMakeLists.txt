@@ -15,6 +15,7 @@ if(KONSTRUKT_BUILD_TESTS)
     AddTest(PhysicsManager)
     AddTest(Time)
     AddTest(Vfs)
+    AddTest(JobManager)
 
     file(COPY data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 endif()
