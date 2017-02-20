@@ -17,16 +17,6 @@ struct JobManagerConfig
 {
     /**
      * Number of worker threads, that are spawned.
-     *
-     * Possible values are:
-     *
-     * - a positive number
-     * - zero (you need to call `RunJobs` manually)
-     * - a negative number: number of CPU cores minus X
-     *
-     * So with a quadcore CPU and `workerThreads` set to `-1` you would end up
-     * with 3 worker threads.  This way the remaining core can be used by the
-     * main thread.
      */
     int workerThreads;
 };
@@ -34,6 +24,14 @@ struct JobManagerConfig
 JobManager* CreateJobManager( JobManagerConfig config );
 
 void DestroyJobManager( JobManager* manager );
+
+/**
+ * Must be run before accessing the job manager.
+ *
+ * Except for #DestroyJobManager.
+ */
+void LockJobManager( JobManager* manager );
+void UnlockJobManager( JobManager* manager );
 
 /**
  * Use the current thread to work on jobs for a given duration.

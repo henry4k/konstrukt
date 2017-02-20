@@ -12,7 +12,7 @@ void* ReAlloc( void* oldPointer, size_t size );
 #define AllocZeroed(size) memset(Alloc(size), 0, (size))
 
 #define NEW(S) (S*)AllocZeroed(sizeof(S))
-#define DELETE(P) { memset((P), 0, sizeof(*(P))); Free(P); }
+#define DELETE(P) do { memset((P), 0, sizeof(*(P))); Free(P); } while(0)
 
 
 // --- Strings ---
@@ -83,7 +83,7 @@ bool PostConfigInitLog();
  */
 void FatalError( const char* format, ... );
 
-#define Ensure( test ) if(!(test)) FatalError("Expression failed: %s", #test)
+#define Ensure( test ) do { if(!(test)) FatalError("Expression failed: %s", #test); } while(0)
 
 #define REPEAT(N,I) for(int _n = (int)(N), I = 0; I < _n; I++)
 

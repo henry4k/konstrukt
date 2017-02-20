@@ -29,6 +29,13 @@ void DestroyArray( Array<T>* array )
 }
 
 template<typename T>
+T* GetArrayElement( Array<T>* array, int pos )
+{
+    Ensure(pos >= 0 && pos < array->length);
+    return array->data + pos;
+}
+
+template<typename T>
 void ReserveInArray( Array<T>* array, int newCapacity )
 {
     Ensure(newCapacity >= 0);
