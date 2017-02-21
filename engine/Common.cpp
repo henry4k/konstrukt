@@ -15,6 +15,7 @@
 #include "Warnings.h"
 BEGIN_EXTERNAL_CODE
 #include <konstrukt_stb_sprintf.h>
+#include <dbgtools/callstack.h>
 END_EXTERNAL_CODE
 
 #include "Config.h"
@@ -260,42 +261,30 @@ bool PostConfigInitLog()
 
 // --- Other utilities ---
 
-static void LogCallStack( LogLevel level )
+static void LogCallStack( LogLevel level, int skippedFrames )
 {
     static const int MAX_STACK_DEPTH = 64;
     Log(level, "engine stack traceback:");
-#if defined(_WIN32)
-    static const int SYMBOL_NAME_SIZE = 128;
-
-    const HANDLE process = GetCurrentProcess();
-    SymInitialize(process, NULL, true);
 
     void* frames[MAX_STACK_DEPTH];
-    const int frameCount = CaptureStackBackTrace(0, MAX_STACK_DEPTH, frames, NULL);
+    const int frameCount = callstack(skippedFrames+1, frames, MAX_STACK_DEPTH);
 
-    SYMBOL_INFO* symbol = (SYMBOL_INFO*)AllocZeroed(sizeof(SYMBOL_INFO) + SYMBOL_NAME_SIZE, 1);
-    symbol->MaxNameLen = SYMBOL_NAME_SIZE - 1;
-    symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+    callstack_symbol_t symbols[MAX_STACK_DEPTH];
+    char symbolBuffer[1024];
 
-    REPEAT(frameCount, i)
+    const int symbolCount =
+        callstack_symbols(frames, symbols, frameCount, symbolBuffer, sizeof(symbolBuffer));
+
+    REPEAT(symbolCount, i)
     {
-         SymFromAddr(process, (DWORD64)(frames[i]), 0, symbol);
-         Log(level, "\t%s", symbol->Name);
+        if(symbols[i].line == 0) // if the location seems to be unavailable
+            Log(level, "\tin %s", symbols[i].function);
+        else
+            Log(level, "\t%s:%d in %s",
+                       symbols[i].file,
+                       symbols[i].line,
+                       symbols[i].function);
     }
-
-    Free(symbol);
-#elif defined(__linux__)
-    void* frames[MAX_STACK_DEPTH];
-    const int frameCount = backtrace(frames, MAX_STACK_DEPTH);
-    char** frameSymbols = backtrace_symbols(frames, frameCount);
-
-    REPEAT(frameCount, i)
-        Log(level, "\t%s", frameSymbols[i]);
-
-    free(frameSymbols); // allocated by backtrace_symbols
-#else
-    #warning No stack trace implementation
-#endif
 }
 
 void FatalError( const char* format, ... )
@@ -304,7 +293,7 @@ void FatalError( const char* format, ... )
     va_start(vl, format);
     if(IsLuaRunning())
     {
-        LogCallStack(LOG_FATAL_ERROR);
+        LogCallStack(LOG_FATAL_ERROR, 1);
         const char* message = FormatV(format, vl);
         va_end(vl);
         lua_pushstring(GetLuaState(), message);
@@ -314,7 +303,7 @@ void FatalError( const char* format, ... )
     {
         LogV(LOG_FATAL_ERROR, format, vl);
         va_end(vl);
-        LogCallStack(LOG_FATAL_ERROR);
+        LogCallStack(LOG_FATAL_ERROR, 1);
         abort();
     }
 }

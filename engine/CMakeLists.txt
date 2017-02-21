@@ -28,6 +28,7 @@ target_link_libraries(konstruktlib stb_image
                                    lua-cjson
                                    flextGL
                                    tinycthread
+                                   dbgtools
                                    ${LUA_LIBRARY}
                                    ${OPENAL_LIBRARY}
                                    ${ALURE_LIBRARIES}

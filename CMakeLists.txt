@@ -31,6 +31,11 @@ include_directories(${OPENGL_INCLUDE_DIR}
 
 ### Further definitions:
 
+if(UNIX)
+    # Use relative file paths in debug symbols:
+    set_property(DIRECTORY PROPERTY COMPILE_OPTIONS "-fdebug-prefix-map=${PROJECT_SOURCE_DIR}=")
+endif()
+
 add_subdirectory(third-party)
 add_subdirectory(engine)
 
