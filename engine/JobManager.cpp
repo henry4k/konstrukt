@@ -6,6 +6,8 @@
 #include "JobManager.h"
 
 
+static const int INVALID_JOB_ID = -1;
+
 struct JobType
 {
     JobTypeConfig config;
@@ -27,11 +29,15 @@ struct JobManager
 {
     JobManagerConfig config;
     mtx_t mutex;
-    cnd_t updateCondition;
-    bool isStopping;
+
+    cnd_t updateCondition; // notifies workers
+    bool isStopping; // workers should stop
+    Array<Worker> workers;
+
     Array<JobType> jobTypes;
     FixedArray<Job> jobs;
-    Array<Worker> workers;
+    Array<cnd_t> jobCompletionConditions; // indices map to job ids
+    Array<JobId> jobQueue; // sorted list of queued jobs
 };
 
 
@@ -46,9 +52,11 @@ JobManager* CreateJobManager( JobManagerConfig config )
     Ensure(mtx_init(&manager->mutex, mtx_plain) == thrd_success);
     Ensure(cnd_init(&manager->updateCondition) == thrd_success);
     manager->isStopping = false;
+    InitArray(&manager->workers);
     InitArray(&manager->jobTypes);
     InitFixedArray(&manager->jobs);
-    InitArray(&manager->workers);
+    InitArray(&manager->jobCompletionConditions);
+    InitArray(&manager->jobQueue);
 
     AllocateAtEndOfArray(&manager->workers, config.workerThreads);
     REPEAT(manager->workers.length, i)
@@ -59,8 +67,6 @@ JobManager* CreateJobManager( JobManagerConfig config )
 
     return manager;
 }
-
-static void Sleep( double seconds );
 
 void DestroyJobManager( JobManager* manager )
 {
@@ -75,11 +81,16 @@ void DestroyJobManager( JobManager* manager )
         Ensure(thrd_join(worker->thread, NULL) == thrd_success);
     }
 
+    REPEAT(manager->jobCompletionConditions.length, i)
+        cnd_destroy(manager->jobCompletionConditions.data + i);
+
     mtx_destroy(&manager->mutex);
     cnd_destroy(&manager->updateCondition);
+    DestroyArray(&manager->workers);
     DestroyArray(&manager->jobTypes);
     DestroyFixedArray(&manager->jobs);
-    DestroyArray(&manager->workers);
+    DestroyArray(&manager->jobCompletionConditions);
+    DestroyArray(&manager->jobQueue);
     DELETE(manager);
 }
 
@@ -93,6 +104,7 @@ void UnlockJobManager( JobManager* manager )
     Ensure(mtx_unlock(&manager->mutex) == thrd_success);
 }
 
+/*
 static void Sleep( double seconds )
 {
     if(seconds > 0)
@@ -118,10 +130,20 @@ static void Sleep( double seconds )
         thrd_yield();
     }
 }
+*/
 
-void RunJobs( double duration )
+void WaitForJobs( JobManager* manager, const JobId* jobIds, int jobIdCount )
 {
-    Sleep(duration);
+    REPEAT(jobIdCount, i)
+    {
+        const JobId id = jobIds[i];
+        while(GetJobStatus(manager, id) != COMPLETED_JOB)
+        {
+            cnd_t* completionCondition =
+                GetArrayElement(&manager->jobCompletionConditions, id);
+            Ensure(cnd_wait(completionCondition, &manager->mutex) == thrd_success);
+        }
+    }
 }
 
 JobTypeId CreateJobType( JobManager* manager, JobTypeConfig config )
@@ -139,11 +161,29 @@ JobId CreateJob( JobManager* manager, JobTypeId typeId, void* data )
     job->typeId = typeId;
     job->status = QUEUED_JOB;
     job->data = data;
-    return (JobId)allocation.pos;
+
+    const JobId id = (JobId)allocation.pos;
+
+    // Ensure that a condition variable is available:
+    for(int i = manager->jobCompletionConditions.length; i <= id; i++)
+    {
+        cnd_t* completionCondition =
+            AllocateAtEndOfArray(&manager->jobCompletionConditions, 1);
+        cnd_init(completionCondition);
+    }
+
+    // Insert into job queue:
+    InsertInArray(&manager->jobQueue, 0, 1, &id);
+    // ^- Naive implementation
+
+    cnd_signal(&manager->updateCondition);
+    return id;
 }
 
 void RemoveJob( JobManager* manager, JobId jobId )
 {
+    const Job* job = GetFixedArrayElement(&manager->jobs, jobId);
+    Ensure(job->status == COMPLETED_JOB);
     RemoveFromFixedArray(&manager->jobs, jobId);
 }
 
@@ -161,34 +201,32 @@ void* GetJobData( JobManager* manager, JobId jobId )
 // --- Worker specific ---
 
 // Needs access to manager
-static Job* TryToGetQueuedJob( JobManager* manager )
+static JobId TryToGetQueuedJob( JobManager* manager )
 {
-    REPEAT(manager->jobs._.length, i)
-    {
-        FixedArraySlot<Job>* slot = manager->jobs._.data + i;
-        Job* job = &slot->element;
-        if(slot->inUse && job->status == QUEUED_JOB)
-            return job;
-    }
-    return NULL;
-}
+    if(manager->jobQueue.length == 0)
+        return INVALID_JOB_ID;
 
-static void ExecuteJob( JobManager* manager, Job* job, const JobType* jobType )
-{
-    jobType->config.function(job->data);
+    const int queueIndex = manager->jobQueue.length - 1;
+    const JobId id = manager->jobQueue.data[queueIndex];
 
-    LockJobManager(manager);
-    job->status = COMPLETED_JOB;
-    UnlockJobManager(manager);
+    Job* job = GetFixedArrayElement(&manager->jobs, id);
+    Ensure(job->status == QUEUED_JOB);
+
+    RemoveFromArray(&manager->jobQueue, queueIndex, 1);
+
+    job->status = ACTIVE_JOB;
+    return id;
 }
 
 struct UpdateResult
 {
     bool shallStop;
     Job* job;
+    JobId jobId;
     const JobType* jobType;
 };
 
+// Needs access to manager
 static bool GetUpdate( JobManager* manager, UpdateResult* update )
 {
     if(manager->isStopping)
@@ -197,11 +235,12 @@ static bool GetUpdate( JobManager* manager, UpdateResult* update )
         return true;
     }
 
-    Job* job = TryToGetQueuedJob(manager);
-    if(job)
+    const JobId jobId = TryToGetQueuedJob(manager);
+    if(jobId != INVALID_JOB_ID)
     {
-        update->job = job;
-        update->jobType = GetArrayElement(&manager->jobTypes, job->typeId);
+        update->job = GetFixedArrayElement(&manager->jobs, jobId);
+        update->jobId = jobId;
+        update->jobType = GetArrayElement(&manager->jobTypes, update->job->typeId);
         return true;
     }
 
@@ -221,16 +260,26 @@ static int WorkerThreadFn( void* arg )
         while(!GetUpdate(manager, &update))
             Ensure(cnd_wait(&manager->updateCondition, &manager->mutex) == thrd_success);
 
-        if(update.job)
-            update.job->status = ACTIVE_JOB;
-
         UnlockJobManager(manager);
 
 
         if(update.shallStop)
             break;
         else
-            ExecuteJob(manager, update.job, update.jobType);
+        {
+            update.jobType->config.function(update.job->data);
+
+            LockJobManager(manager);
+
+            Ensure(update.job->status == ACTIVE_JOB);
+            update.job->status = COMPLETED_JOB;
+
+            cnd_t* completionCondition =
+                GetArrayElement(&manager->jobCompletionConditions, update.jobId);
+            cnd_broadcast(completionCondition);
+
+            UnlockJobManager(manager);
+        }
     }
 
     return 0;

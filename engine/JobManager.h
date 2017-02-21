@@ -34,9 +34,9 @@ void LockJobManager( JobManager* manager );
 void UnlockJobManager( JobManager* manager );
 
 /**
- * Use the current thread to work on jobs for a given duration.
+ * Block till all given jobs are completed.
  */
-void RunJobs( double duration );
+void WaitForJobs( JobManager* manager, const JobId* jobIds, int jobIdCount );
 
 
 // --- JobType ---
@@ -45,6 +45,7 @@ struct JobTypeConfig
 {
     const char* name; // Useful when debugging the engine.
     void (*function)( void* data );
+    int priority;
 };
 
 JobTypeId CreateJobType( JobManager* manager, JobTypeConfig config );
@@ -70,6 +71,7 @@ void* GetJobData( JobManager* manager, JobId jobId );
 // suspended or stop.
 // TODO: Use longjmp to suspend jobs?  Suspended jobs may need to be locked to
 // their original (working) thread.
+
 
 
 #endif

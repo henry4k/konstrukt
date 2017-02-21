@@ -32,6 +32,8 @@ void Test()
     managerConfig.workerThreads = 4;
     JobManager* manager = CreateJobManager(managerConfig);
 
+    LockJobManager(manager);
+
     JobTypeConfig typeConfig;
     typeConfig.name = "frobnicator";
     typeConfig.function = Frobnicate;
@@ -45,7 +47,9 @@ void Test()
     Require(GetJobStatus(manager, job) == QUEUED_JOB);
     Require(GetJobData(manager, job) == &data);
 
-    RunJobs(2);
+    WaitForJobs(manager, &job, 1);
+
+    UnlockJobManager(manager);
 
     DestroyJobManager(manager);
 
