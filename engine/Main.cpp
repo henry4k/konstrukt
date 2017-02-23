@@ -2,6 +2,7 @@
 #include <string.h> // strcmp, strncpy
 #include <stdio.h> // printf
 
+#include "Profiler.h"
 #include "Array.h"
 #include "Common.h"
 #include "Math.h"
@@ -85,6 +86,7 @@ static void RegisterAllModulesInLua()
 static void InitModules( const char* arg0, const Arguments* arguments )
 {
     InitCrc32();
+    InitProfiler();
     InitVfs(arg0, arguments->state, arguments->sharedState);
     InitLua();
     InitWindow();
@@ -111,6 +113,7 @@ static void DestroyModules()
     DestroyWindow();
     DestroyConfig();
     DestroyVfs();
+    DestroyProfiler();
 }
 
 static void InitScript( const Arguments* args )
@@ -142,6 +145,7 @@ static void RunSimulation()
     double lastTime = glfwGetTime();
     while(!WindowShouldClose())
     {
+        ProfileScope("Simulation");
         // Simulation
         const double curTime = glfwGetTime();
         const double timeDelta = curTime-lastTime;
@@ -269,6 +273,5 @@ int KonstruktMain( const int argc, char** argv )
 
     RunSimulation();
     DestroyModules();
-
     return EXIT_SUCCESS;
 }

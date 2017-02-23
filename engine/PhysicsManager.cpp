@@ -18,6 +18,7 @@ BEGIN_EXTERNAL_CODE
 END_EXTERNAL_CODE
 
 #include "Common.h"
+#include "Profiler.h"
 #include "Constants.h" // SIMULATION_FREQUENCY, MAX_FRAME_FREQUENCY
 #include "Math.h"
 #include "Reference.h"
@@ -120,6 +121,7 @@ void DestroyPhysicsManager()
 
 void UpdatePhysicsManager( double timeDelta )
 {
+    ProfileFunction();
     static const int maxSteps = MAX_FRAME_FREQUENCY / SIMULATION_FREQUENCY;
     static const double stepTimeDelta = 1.0 / (double)SIMULATION_FREQUENCY;
     World->stepSimulation(timeDelta, maxSteps, stepTimeDelta);

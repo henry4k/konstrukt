@@ -4,6 +4,12 @@
 #include <string.h> // memset
 
 
+// --- General ---
+
+void InitCommon();
+void DestroyCommon();
+
+
 // --- Memory allocation ---
 
 void* Alloc( size_t size );

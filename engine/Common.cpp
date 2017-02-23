@@ -15,7 +15,9 @@
 #include "Warnings.h"
 BEGIN_EXTERNAL_CODE
 #include <konstrukt_stb_sprintf.h>
+#if defined(KONSTRUKT_STACKTRACE_ENABLED)
 #include <dbgtools/callstack.h>
+#endif
 END_EXTERNAL_CODE
 
 #include "Config.h"
@@ -261,7 +263,8 @@ bool PostConfigInitLog()
 
 // --- Other utilities ---
 
-static void LogCallStack( LogLevel level, int skippedFrames )
+#if defined(KONSTRUKT_STACKTRACE_ENABLED)
+static void LogStackTrace( LogLevel level, int skippedFrames )
 {
     static const int MAX_STACK_DEPTH = 64;
     Log(level, "engine stack traceback:");
@@ -286,6 +289,9 @@ static void LogCallStack( LogLevel level, int skippedFrames )
                        symbols[i].function);
     }
 }
+#else
+static void LogStackTrace( LogLevel level, int skippedFrames ) {}
+#endif
 
 void FatalError( const char* format, ... )
 {
@@ -293,7 +299,7 @@ void FatalError( const char* format, ... )
     va_start(vl, format);
     if(IsLuaRunning())
     {
-        LogCallStack(LOG_FATAL_ERROR, 1);
+        LogStackTrace(LOG_FATAL_ERROR, 1);
         const char* message = FormatV(format, vl);
         va_end(vl);
         lua_pushstring(GetLuaState(), message);
@@ -303,7 +309,7 @@ void FatalError( const char* format, ... )
     {
         LogV(LOG_FATAL_ERROR, format, vl);
         va_end(vl);
-        LogCallStack(LOG_FATAL_ERROR, 1);
+        LogStackTrace(LOG_FATAL_ERROR, 1);
         abort();
     }
 }

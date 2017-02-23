@@ -12,6 +12,7 @@
 #endif
 
 #include "Common.h"
+#include "Profiler.h"
 #include "Config.h"
 #include "Reference.h"
 #include "PhysicsManager.h"
@@ -112,6 +113,8 @@ void DestroyAudio()
 
 void UpdateAudio()
 {
+    ProfileFunction();
+
     UpdateAudioListener();
 
     for(int i = 0; i < AudioSourceCount; ++i)

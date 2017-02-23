@@ -3,6 +3,7 @@ file(GLOB LibSources
      *.cpp
      control_bindings/*.cpp
      lua_bindings/*.cpp
+     profiler/*.cpp
      vfs/*.cpp)
 list(REMOVE_ITEM LibSources ExecutableMain.cpp)
 
@@ -13,13 +14,13 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Constants.h.in
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}"
                     "${CMAKE_BINARY_DIR}/third-party"
-                    "${PROJECT_SOURCE_DIR}/third-party"
-                    "${PROJECT_SOURCE_DIR}/third-party/inih"
-                    "${PROJECT_SOURCE_DIR}/third-party/lua-cjson"
-                    "${PROJECT_SOURCE_DIR}/third-party/stb_image_resize"
-                    "${PROJECT_SOURCE_DIR}/third-party/stb_image"
-                    "${PROJECT_SOURCE_DIR}/third-party/stb_sprintf"
-                    "${PROJECT_SOURCE_DIR}/third-party/tinycthread")
+                    "../third-party"
+                    "../third-party/inih"
+                    "../third-party/lua-cjson"
+                    "../third-party/stb_image_resize"
+                    "../third-party/stb_image"
+                    "../third-party/stb_sprintf"
+                    "../third-party/tinycthread")
 
 target_link_libraries(konstruktlib stb_image
                                    stb_image_resize
@@ -28,7 +29,6 @@ target_link_libraries(konstruktlib stb_image
                                    lua-cjson
                                    flextGL
                                    tinycthread
-                                   dbgtools
                                    ${LUA_LIBRARY}
                                    ${OPENAL_LIBRARY}
                                    ${ALURE_LIBRARIES}
@@ -67,6 +67,28 @@ if(KONSTRUKT_STRICT_COMPILER)
     else()
         target_compile_options(konstruktlib PRIVATE -std=c++11 -Wall -Wpedantic -Werror)
     endif()
+endif()
+
+option(KONSTRUKT_STACKTRACE_ENABLED "Show native call stack using debug symbols, when encountering a fatal error.")
+if(KONSTRUKT_STACKTRACE_ENABLED)
+    target_compile_definitions(konstruktlib PRIVATE KONSTRUKT_STACKTRACE_ENABLED)
+    target_link_libraries(konstruktlib dbgtools)
+    include_directories("${CMAKE_BINARY_DIR}/third-party")
+    if(UNIX)
+        # Use relative file paths in debug symbols:
+        set_property(DIRECTORY PROPERTY COMPILE_OPTIONS "-fdebug-prefix-map=${PROJECT_SOURCE_DIR}=")
+    endif()
+endif()
+
+option(KONSTRUKT_PROFILER_ENABLED "Enables performance profiling.")
+if(KONSTRUKT_PROFILER_ENABLED)
+    target_compile_definitions(konstruktlib PRIVATE KONSTRUKT_PROFILER_ENABLED)
+
+    # Remotery:
+    target_link_libraries(konstruktlib Remotery)
+    include_directories("../third-party/Remotery")
+    install(DIRECTORY "../third-party/Remotery/vis"
+            DESTINATION share)
 endif()
 
 add_subdirectory(tests)
