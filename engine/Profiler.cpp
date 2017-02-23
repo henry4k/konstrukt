@@ -7,6 +7,7 @@
 #include "Common.h"
 #include "Config.h"
 #include "profiler/Remotery.h"
+#include "profiler/MicroProfile.h"
 
 
 static void NoOp_Setup() {}
@@ -36,6 +37,8 @@ void InitProfiler()
         SetProfiler(&NoOpProfiler);
     else if(strcmp(profilerName, "remotery") == 0)
         SetProfiler(&RemoteryProfiler);
+    else if(strcmp(profilerName, "microprofile") == 0)
+        SetProfiler(&MicroProfileProfiler);
     else
         FatalError("Unknown profiler '%s'", profilerName);
 }
