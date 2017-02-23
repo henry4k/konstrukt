@@ -2,11 +2,6 @@ cmake_minimum_required(VERSION 3.1)
 
 project(konstrukt)
 
-### Configuration variables:
-
-set(KONSTRUKT_SCRIPT_INSTALL_PATH "share/konstrukt"
-    CACHE PATH "Where the scripts shall be installed.")
-
 
 ### Dependencies:
 
@@ -42,9 +37,9 @@ configure_file(package.json.in
                ${CMAKE_CURRENT_BINARY_DIR}/package.json @ONLY)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/package.json
-        DESTINATION "${KONSTRUKT_SCRIPT_INSTALL_PATH}")
+        DESTINATION .)
 
 install(DIRECTORY core
-        DESTINATION "${KONSTRUKT_SCRIPT_INSTALL_PATH}")
+        DESTINATION .)
 
 include(CPack)

@@ -43,12 +43,7 @@ add_executable(konstrukt ExecutableMain.cpp)
 target_link_libraries(konstrukt konstruktlib)
 
 install(TARGETS konstrukt
-        RUNTIME DESTINATION bin)
-
-option(KONSTRUKT_SELFCONTAINED "Everything is located besides the binary.")
-if(KONSTRUKT_SELFCONTAINED)
-    target_compile_definitions(konstruktlib PRIVATE KONSTRUKT_SELFCONTAINED)
-endif()
+        DESTINATION .)
 
 option(KONSTRUKT_GL_DEBUG_FIX "Enable if compiler complains about missing OnDebugEvent function.")
 if(KONSTRUKT_GL_DEBUG_FIX)
@@ -88,7 +83,7 @@ if(KONSTRUKT_PROFILER_ENABLED)
     target_link_libraries(konstruktlib Remotery)
     include_directories("../third-party/Remotery")
     install(DIRECTORY "../third-party/Remotery/vis"
-            DESTINATION share)
+            DESTINATION .)
 endif()
 
 add_subdirectory(tests)
