@@ -2,10 +2,6 @@
     #include <unistd.h> // isatty
 #endif
 
-#if defined(__linux__)
-    #include <execinfo.h> // backtrace
-#endif
-
 #include <string.h> // strncpy, strcmp
 #include <stdlib.h> // abort, malloc, realloc, free
 #include <stdio.h> // printf

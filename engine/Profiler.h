@@ -5,37 +5,41 @@
 #include <stdint.h>
 
 
-struct ProfiledFrame
+enum SampleFlags
+{
+    GPU_SAMPLE = 1 << 1
+};
+
+struct Sample
 {
     // Generated fields:
     const char* name;
-    const char* fileName;
+    int flags;
 
     // Profiler specific fields:
 
     /**
-     * Id which the profiler may use to identify a frame.
+     * Id which the profiler may use to identify a sample.
      */
     uint64_t id;
-    char module[32];
 };
 
 /**
- * Is called *once* before the frame is used.
+ * Is called *once* before the sample is used.
  */
-typedef void (*InitProfiledFrameFn)( ProfiledFrame* frame );
+typedef void (*InitSampleFn)( Sample* sample );
 
-typedef void (*BeginProfiledFrameFn)( ProfiledFrame* frame );
+typedef void (*BeginSampleFn)( Sample* sample );
 
-typedef void (*EndProfiledFrameFn)();
+typedef void (*EndSampleFn)( Sample* sample );
 
 struct Profiler
 {
     void (*setup)();
     void (*teardown)();
-    InitProfiledFrameFn  initFrame;
-    BeginProfiledFrameFn beginFrame;
-    EndProfiledFrameFn   endFrame;
+    InitSampleFn  initSample;
+    BeginSampleFn beginSample;
+    EndSampleFn   endSample;
 };
 
 
@@ -58,34 +62,41 @@ void SetProfiler( const Profiler* profiler );
 /**
  *
  */
-#define ProfileScope( name ) \
-    static ProfiledFrame CONCAT(profiledFrame,__LINE__) = _CreateProfiledFrame({name,__FILE__}); \
-    _BeginProfiledFrame(&CONCAT(profiledFrame,__LINE__)); \
-    _EndProfiledFrameOnExit endProfiledFrameOnExit
+#define ProfileScope( ... ) \
+    static Sample CONCAT(profiledSample,__LINE__) = _CreateSample({__VA_ARGS__}); \
+    _ProfileSampleInScope CONCAT(profileSampleInScope,__LINE__)(&CONCAT(profiledSample,__LINE__)); \
 
 /**
  *
  */
-#define ProfileFunction() ProfileScope(__func__)
+#define ProfileFunction( ... ) ProfileScope(__func__, __VA_ARGS__)
 
 
 // --- implementation details ---
 
-extern InitProfiledFrameFn  _InitProfiledFrame;
-extern BeginProfiledFrameFn _BeginProfiledFrame;
-extern EndProfiledFrameFn   _EndProfiledFrame;
+extern InitSampleFn  _InitSample;
+extern BeginSampleFn _BeginSample;
+extern EndSampleFn   _EndSample;
 
-inline ProfiledFrame _CreateProfiledFrame( ProfiledFrame frame )
+inline Sample _CreateSample( Sample sample )
 {
-    _InitProfiledFrame(&frame);
-    return frame;
+    _InitSample(&sample);
+    return sample;
 }
 
-struct _EndProfiledFrameOnExit
+struct _ProfileSampleInScope
 {
-    ~_EndProfiledFrameOnExit()
+    Sample* mSample;
+
+    _ProfileSampleInScope( Sample* sample )
     {
-        _EndProfiledFrame();
+        mSample = sample;
+        _BeginSample(sample);
+    }
+
+    ~_ProfileSampleInScope()
+    {
+        _EndSample(mSample);
     }
 };
 

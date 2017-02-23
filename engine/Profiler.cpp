@@ -11,20 +11,20 @@
 
 static void NoOp_Setup() {}
 static void NoOp_Teardown() {}
-static void NoOp_InitProfiledFrame( ProfiledFrame* frame ) {}
-static void NoOp_BeginProfiledFrame( ProfiledFrame* frame ) {}
-static void NoOp_EndProfiledFrame() {}
+static void NoOp_InitSample( Sample* sample ) {}
+static void NoOp_BeginSample( Sample* sample ) {}
+static void NoOp_EndSample( Sample* sample ) {}
 
 static const Profiler NoOpProfiler = {NoOp_Setup,
                                       NoOp_Teardown,
-                                      NoOp_InitProfiledFrame,
-                                      NoOp_BeginProfiledFrame,
-                                      NoOp_EndProfiledFrame};
+                                      NoOp_InitSample,
+                                      NoOp_BeginSample,
+                                      NoOp_EndSample};
 
 
-InitProfiledFrameFn  _InitProfiledFrame  = NoOp_InitProfiledFrame;
-BeginProfiledFrameFn _BeginProfiledFrame = NoOp_BeginProfiledFrame;
-EndProfiledFrameFn   _EndProfiledFrame   = NoOp_EndProfiledFrame;
+InitSampleFn  _InitSample  = NoOp_InitSample;
+BeginSampleFn _BeginSample = NoOp_BeginSample;
+EndSampleFn   _EndSample   = NoOp_EndSample;
 
 static const Profiler* CurrentProfiler = &NoOpProfiler;
 
@@ -52,11 +52,10 @@ void SetProfiler( const Profiler* profiler )
 
     CurrentProfiler->teardown();
     CurrentProfiler = profiler;
-    _InitProfiledFrame  = profiler->initFrame;
-    _BeginProfiledFrame = profiler->beginFrame;
-    _EndProfiledFrame   = profiler->endFrame;
+    _InitSample  = profiler->initSample;
+    _BeginSample = profiler->beginSample;
+    _EndSample   = profiler->endSample;
     CurrentProfiler->setup();
 }
-
 
 #endif // KONSTRUKT_PROFILER_ENABLED
