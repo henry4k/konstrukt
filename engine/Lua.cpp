@@ -10,6 +10,7 @@ extern "C"
 }
 
 #include "Common.h"
+#include "Profiler.h"
 #include "Vfs.h"
 #include "Lua.h"
 
@@ -103,23 +104,25 @@ bool IsLuaRunning()
     return g_LuaRunning;
 }
 
-static int GetLuaMemoryInBytes()
-{
-    assert(g_LuaState);
-    return lua_gc(g_LuaState, LUA_GCCOUNT, 0)*1024 +
-           lua_gc(g_LuaState, LUA_GCCOUNTB, 0);
-}
+//static int GetLuaMemoryInBytes()
+//{
+//    assert(g_LuaState);
+//    return lua_gc(g_LuaState, LUA_GCCOUNT, 0)*1024 +
+//           lua_gc(g_LuaState, LUA_GCCOUNTB, 0);
+//}
 
 void UpdateLua()
 {
-    const int memBeforeGC = GetLuaMemoryInBytes();
-    lua_gc(g_LuaState, LUA_GCCOLLECT, 0);
-    const int memAfterGC = GetLuaMemoryInBytes();
+    ProfileScope("Lua GC");
 
-    LogInfo("LUA GC UPDATE: %d bytes in use. %d bytes collected.",
-        memAfterGC,
-        memBeforeGC-memAfterGC
-    );
+    //const int memBeforeGC = GetLuaMemoryInBytes();
+    lua_gc(g_LuaState, LUA_GCCOLLECT, 0);
+    //const int memAfterGC = GetLuaMemoryInBytes();
+
+    //const int delta = memBeforeGC - memAfterGC;
+    //if(delta > 0)
+    //    LogInfo("LUA GC UPDATE: %d bytes in use. %d bytes collected.",
+    //            memAfterGC, delta);
 }
 
 void RegisterFunctionInLua( const char* name, lua_CFunction fn )

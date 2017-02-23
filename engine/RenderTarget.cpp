@@ -2,6 +2,7 @@
 #include <string.h> // memset
 
 #include "Common.h"
+#include "Profiler.h"
 #include "OpenGL.h"
 #include "Reference.h"
 #include "Texture.h"
@@ -198,6 +199,9 @@ static bool RenderTargetIsComplete( const RenderTarget* target )
 
 void UpdateRenderTarget( RenderTarget* target )
 {
+    ProfileFunction();
+    ProfileFunction(GPU_SAMPLE);
+
     if(!RenderTargetIsComplete(target))
         FatalError("Can't update incomplete render target %p.", target);
 

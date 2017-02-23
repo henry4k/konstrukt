@@ -86,11 +86,11 @@ static void RegisterAllModulesInLua()
 static void InitModules( const char* arg0, const Arguments* arguments )
 {
     InitCrc32();
-    InitProfiler();
     InitVfs(arg0, arguments->state, arguments->sharedState);
     InitLua();
     InitWindow();
     InitTime();
+    InitProfiler();
     InitAudio();
     InitControls();
     InitPhysicsManager();
@@ -109,11 +109,11 @@ static void DestroyModules()
     DestroyPhysicsManager();
     DestroyControls();
     DestroyAudio();
+    DestroyProfiler();
     DestroyTime();
     DestroyWindow();
     DestroyConfig();
     DestroyVfs();
-    DestroyProfiler();
 }
 
 static void InitScript( const Arguments* args )
@@ -146,10 +146,9 @@ static void RunSimulation()
     while(!WindowShouldClose())
     {
         ProfileScope("Simulation");
-        // Simulation
         const double curTime = glfwGetTime();
         const double timeDelta = curTime-lastTime;
-        //UpdateLua();
+        UpdateLua();
         UpdateTime(timeDelta);
         UpdateAudio();
         UpdateControls(timeDelta);

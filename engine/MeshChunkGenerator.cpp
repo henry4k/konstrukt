@@ -2,6 +2,7 @@
 #include <string.h> // memset
 
 #include "Common.h"
+#include "Profiler.h"
 #include "Array.h"
 #include "Math.h"
 #include "Mesh.h"
@@ -510,6 +511,8 @@ MeshChunk* GenerateMeshChunk( MeshChunkGenerator* generator,
                               int sx, int sy, int sz,
                               int w, int h, int d )
 {
+    ProfileFunction();
+
     ChunkEnvironment* env = CreateChunkEnvironment(generator,
                                                    volume,
                                                    sx-1, sy-1, sz-1,

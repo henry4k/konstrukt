@@ -45,7 +45,6 @@ struct JobTypeConfig
 {
     const char* name; // Useful when debugging the engine.
     void (*function)( void* data );
-    int priority;
 };
 
 JobTypeId CreateJobType( JobManager* manager, JobTypeConfig config );

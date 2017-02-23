@@ -1,5 +1,4 @@
 #include "Common.h"
-#include "Profiler.h"
 #include "Math.h"
 #include "OpenGL.h" // glfwGetTime
 #include "Vertex.h"
@@ -38,8 +37,6 @@ void DestroyRenderManager()
 
 void RenderScene()
 {
-    ProfileFunction(GPU_SAMPLE);
-
     SetFloatUniform(GetGlobalShaderVariableSet(), "Time", GetTime());
 
     RenderTarget* defaultRenderTarget = GetDefaultRenderTarget();

@@ -3,6 +3,7 @@
 #include <stdint.h> // uintptr_t
 
 #include "Common.h"
+#include "Profiler.h"
 #include "Mesh.h"
 #include "Texture.h"
 #include "Shader.h"
@@ -221,6 +222,9 @@ void DrawModelWorld( ModelWorld* world,
                      const ShaderProgramSet* programSet,
                      Camera* camera )
 {
+    ProfileFunction();
+    ProfileFunction(GPU_SAMPLE);
+
     const Model* models = world->models;
     ModelDrawEntry* drawEntries = world->drawEntries;
     int drawEntryCount = 0;

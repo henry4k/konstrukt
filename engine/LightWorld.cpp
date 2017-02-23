@@ -2,6 +2,7 @@
 #include <stdlib.h> // qsort
 
 #include "Common.h"
+#include "Profiler.h"
 #include "Reference.h"
 #include "PhysicsManager.h"
 #include "Shader.h"
@@ -108,6 +109,7 @@ static Mat4 CalculateLightTransformation( const Light* light )
 
 void UpdateLights( LightWorld* world )
 {
+    ProfileFunction();
     REPEAT(MAX_LIGHTS, i)
     {
         Light* light = &world->lights[i];

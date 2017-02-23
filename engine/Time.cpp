@@ -2,6 +2,7 @@
 #include <string.h> // memset
 
 #include "Common.h"
+#include "Profiler.h"
 #include "Time.h"
 
 
@@ -36,6 +37,8 @@ void DestroyTime()
 
 void UpdateTime( double timeDelta )
 {
+    ProfileFunction();
+
     assert(timeDelta >= 0);
     Time += timeDelta;
     for(int i = 0; i < MAX_TIMERS; i++)

@@ -1,6 +1,7 @@
 #include <tinycthread.h>
 
 #include "Common.h"
+#include "Profiler.h"
 #include "Array.h"
 #include "FixedArray.h"
 #include "JobManager.h"
@@ -174,7 +175,6 @@ JobId CreateJob( JobManager* manager, JobTypeId typeId, void* data )
 
     // Insert into job queue:
     InsertInArray(&manager->jobQueue, 0, 1, &id);
-    // ^- Naive implementation
 
     cnd_signal(&manager->updateCondition);
     return id;
@@ -267,7 +267,10 @@ static int WorkerThreadFn( void* arg )
             break;
         else
         {
-            update.jobType->config.function(update.job->data);
+            {
+                ProfileScope("ExecuteJob");
+                update.jobType->config.function(update.job->data);
+            }
 
             LockJobManager(manager);
 
