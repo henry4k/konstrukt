@@ -25,6 +25,7 @@ struct LuaEvent
 };
 
 
+DefineCounter(MemoryCounter, "memory", BYTE_COUNTER);
 static lua_State* g_LuaState = NULL;
 static std::vector<LuaEvent> g_LuaEvents;
 static int g_LuaErrorFunction = LUA_NOREF;
@@ -42,6 +43,7 @@ void InitLua()
 {
     assert(g_LuaState == NULL);
     assert(g_LuaEvents.empty());
+    InitCounter(MemoryCounter);
 
     LogInfo("Compiled with " LUA_COPYRIGHT);
     const int version = (int)*lua_version(NULL);
@@ -104,12 +106,12 @@ bool IsLuaRunning()
     return g_LuaRunning;
 }
 
-//static int GetLuaMemoryInBytes()
-//{
-//    assert(g_LuaState);
-//    return lua_gc(g_LuaState, LUA_GCCOUNT, 0)*1024 +
-//           lua_gc(g_LuaState, LUA_GCCOUNTB, 0);
-//}
+static int GetLuaMemoryInBytes()
+{
+    assert(g_LuaState);
+    return lua_gc(g_LuaState, LUA_GCCOUNT, 0)*1024 +
+           lua_gc(g_LuaState, LUA_GCCOUNTB, 0);
+}
 
 void UpdateLua()
 {
@@ -117,7 +119,8 @@ void UpdateLua()
 
     //const int memBeforeGC = GetLuaMemoryInBytes();
     lua_gc(g_LuaState, LUA_GCCOLLECT, 0);
-    //const int memAfterGC = GetLuaMemoryInBytes();
+    const int memAfterGC = GetLuaMemoryInBytes();
+    SetCounter(MemoryCounter, memAfterGC);
 
     //const int delta = memBeforeGC - memAfterGC;
     //if(delta > 0)

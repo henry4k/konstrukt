@@ -1,4 +1,5 @@
 #include "Common.h"
+#include "Profiler.h"
 #include "Math.h"
 #include "OpenGL.h" // glfwGetTime
 #include "Vertex.h"
@@ -13,12 +14,14 @@
 #include "RenderManager.h"
 
 
+DefineCounter(FrameTimeCounter, "frame time (ms)");
 static double LastFrameTimestamp;
 static double FrameTime;
 
 
 void InitRenderManager()
 {
+    InitCounter(FrameTimeCounter);
     EnableVertexArrays();
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
@@ -46,6 +49,8 @@ void RenderScene()
     const double curTimestamp = glfwGetTime();
     FrameTime = curTimestamp - LastFrameTimestamp;
     LastFrameTimestamp = curTimestamp;
+
+    SetCounter(FrameTimeCounter, FrameTime*1000);
 
     /*
     // Render shadow map

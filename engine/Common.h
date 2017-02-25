@@ -1,7 +1,12 @@
 #ifndef __KONSTRUKT_COMMON__
 #define __KONSTRUKT_COMMON__
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include <string.h> // memset
+#include <stdbool.h>
 
 
 // --- General ---
@@ -36,7 +41,7 @@ bool CopyString( const char* source, char* destination, int destinationSize );
 
 // --- Logging ---
 
-enum LogLevel
+typedef enum LogLevel
 {
     /**
      * Normal operational messages that require no action.
@@ -64,7 +69,7 @@ enum LogLevel
      * A serious error occured - program will usually end soon.
      */
     LOG_FATAL_ERROR
-};
+} LogLevel;
 
 typedef void (*LogHandler)( LogLevel level, const char* line );
 
@@ -92,5 +97,13 @@ void FatalError( const char* format, ... );
 #define Ensure( test ) do { if(!(test)) FatalError("Expression failed: %s", #test); } while(0)
 
 #define REPEAT(N,I) for(int _n = (int)(N), I = 0; I < _n; I++)
+
+#if !defined(FIELD_SIZE)
+#define FIELD_SIZE(container, field) sizeof(((container*)0)->field)
+#endif
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif

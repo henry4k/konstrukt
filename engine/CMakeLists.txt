@@ -84,6 +84,21 @@ if(KONSTRUKT_PROFILER_ENABLED)
     include_directories("../third-party/Remotery")
     install(DIRECTORY "../third-party/Remotery/vis"
             DESTINATION .)
+
+    # microprofile:
+    target_link_libraries(konstruktlib microprofile)
+    include_directories("../third-party/microprofile")
+    if(WIN32)
+        if("${CMAKE_SIZEOF_VOID_P}" EQUAL 8)
+            install(DIRECTORY "../third-party/microprofile/bin/"
+                    DESTINATION .
+                    PATTERN "*_x64*")
+        else()
+            install(DIRECTORY "../third-party/microprofile/bin/"
+                    DESTINATION .
+                    PATTERN "*_x86*")
+        endif()
+    endif()
 endif()
 
 add_subdirectory(tests)

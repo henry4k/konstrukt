@@ -2,6 +2,67 @@
 #define __KONSTRUKT_PROFILER__
 #if defined(KONSTRUKT_PROFILER_ENABLED)
 
+void InitProfiler();
+void DestroyProfiler();
+void InitGPUProfiler();
+void DestroyGPUProfiler();
+
+
+#define CONCAT_(a, b) a ## b
+#define CONCAT(a, b) CONCAT_(a,b)
+
+/**
+ *
+ */
+#define ProfileScope( ... ) \
+    static Sample CONCAT(sample_,__LINE__) = _CreateSample({__FILE__,__VA_ARGS__}); \
+    _ProfileSampleInScope CONCAT(profileSampleInScope,__LINE__)(&CONCAT(sample_,__LINE__)); \
+
+/**
+ *
+ */
+#define ProfileFunction( ... ) \
+    ProfileScope(__func__, __VA_ARGS__)
+
+/**
+ *
+ */
+#define DefineCounter( counter, ... ) \
+    static Counter counter = {__FILE__,__VA_ARGS__}
+
+/**
+ *
+ */
+#define InitCounter( counter ) \
+    _Profiler.initCounter(&counter)
+
+/**
+ *
+ */
+#define SetCounter( counter, value ) \
+    _Profiler.setCounter(&counter, value)
+
+/**
+ *
+ */
+#define IncreaseCounter( counter, value ) \
+    _Profiler.increaseCounter(&counter, value)
+
+/**
+ *
+ */
+#define DecreaseCounter( counter, value ) \
+    _Profiler.increaseCounter(&counter, -(value))
+
+/**
+ * Call when one simulation step has been completed.
+ */
+#define CompleteProfilerStep() \
+    _Profiler.completeProfilerStep()
+
+
+// --- implementation details ---
+
 #include <stdint.h>
 
 
@@ -13,6 +74,7 @@ enum SampleFlags
 struct Sample
 {
     // Generated fields:
+    const char* fileName;
     const char* name;
     int flags;
 
@@ -22,65 +84,55 @@ struct Sample
      * Id which the profiler may use to identify a sample.
      */
     uint64_t id;
+    char module[32];
 };
 
-/**
- * Is called *once* before the sample is used.
- */
-typedef void (*InitSampleFn)( Sample* sample );
+enum CounterType
+{
+    DEFAULT_COUNTER,
+    BYTE_COUNTER
+};
 
-typedef void (*BeginSampleFn)( Sample* sample );
+struct Counter
+{
+    // Generated fields:
+    const char* fileName;
+    const char* name;
+    CounterType type;
 
-typedef void (*EndSampleFn)( Sample* sample );
+    // Profiler specific fields:
+
+    /**
+     * Id which the profiler may use to identify a counter.
+     */
+    uint64_t id;
+    char path[64];
+};
 
 struct Profiler
 {
     void (*setup)();
     void (*teardown)();
-    InitSampleFn  initSample;
-    BeginSampleFn beginSample;
-    EndSampleFn   endSample;
+    void (*setupGPU)();
+    void (*teardownGPU)();
+
+    void (*initSample)( Sample* sample );
+    void (*beginSample)( Sample* sample );
+    void (*endSample)( Sample* sample );
+
+    void (*initCounter)( Counter* counter );
+    void (*setCounter)( Counter* counter, int64_t value );
+    void (*increaseCounter)( Counter* counter, int64_t value );
+
+    void (*completeProfilerStep)();
 };
 
 
-void InitProfiler();
-void DestroyProfiler();
-
-/**
- * Installs a profiler.  Uninstalls the previous one - if there was one.
- *
- * This will call the respective `setup` and `teardown` functions.
- *
- * Passing `NULL` will disable profiling.
- * This essentially points all profiling hooks to no-op functions.
- */
-void SetProfiler( const Profiler* profiler );
-
-#define CONCAT_(a, b) a ## b
-#define CONCAT(a, b) CONCAT_(a,b)
-
-/**
- *
- */
-#define ProfileScope( ... ) \
-    static Sample CONCAT(profiledSample,__LINE__) = _CreateSample({__VA_ARGS__}); \
-    _ProfileSampleInScope CONCAT(profileSampleInScope,__LINE__)(&CONCAT(profiledSample,__LINE__)); \
-
-/**
- *
- */
-#define ProfileFunction( ... ) ProfileScope(__func__, __VA_ARGS__)
-
-
-// --- implementation details ---
-
-extern InitSampleFn  _InitSample;
-extern BeginSampleFn _BeginSample;
-extern EndSampleFn   _EndSample;
+extern Profiler _Profiler;
 
 inline Sample _CreateSample( Sample sample )
 {
-    _InitSample(&sample);
+    _Profiler.initSample(&sample);
     return sample;
 }
 
@@ -91,21 +143,29 @@ struct _ProfileSampleInScope
     _ProfileSampleInScope( Sample* sample )
     {
         mSample = sample;
-        _BeginSample(sample);
+        _Profiler.beginSample(sample);
     }
 
     ~_ProfileSampleInScope()
     {
-        _EndSample(mSample);
+        _Profiler.endSample(mSample);
     }
 };
 
 #else
 
-inline void InitProfiler() {}
-inline void DestroyProfiler() {}
-#define ProfileScope( name )
-#define ProfileFunction()
+#define InitProfiler()
+#define DestroyProfiler()
+#define InitGPUProfiler()
+#define DestroyGPUProfiler()
+#define ProfileScope(...)
+#define ProfileFunction(...)
+#define DefineCounter( counter, ... )
+#define InitCounter( counter )
+#define SetCounter( counter, value )
+#define IncreaseCounter( counter, value )
+#define DecreaseCounter( counter, value )
+#define CompleteProfilerStep()
 
 #endif // KONSTRUKT_PROFILER_ENABLED
 #endif

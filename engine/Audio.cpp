@@ -44,6 +44,7 @@ static const char* GetALErrorString();
 static void CheckALError( const char* origin );
 static void PrintAudioDevices();
 
+DefineCounter(AudioSourceCounter, "source count");
 static AudioSource* AudioSources = NULL;
 static int AudioSourceCount = 0;
 static float MaxAudioSourceDistance = 0;
@@ -57,6 +58,8 @@ static Mat4 ListenerTransformation = Mat4Identity;
 
 void InitAudio()
 {
+    InitCounter(AudioSourceCounter);
+
     if(GetConfigBool("audio.print-devices", false))
         PrintAudioDevices();
 
@@ -243,6 +246,7 @@ AudioSource* CreateAudioSource()
     alSourcef(handle, AL_MAX_DISTANCE, MaxAudioSourceDistance);
     alSourcef(handle, AL_REFERENCE_DISTANCE, AudioSourceReferenceDistance);
 
+    IncreaseCounter(AudioSourceCounter, 1);
     return source;
 }
 
@@ -251,6 +255,7 @@ static void FreeAudioSource( AudioSource* source )
     alDeleteSources(1, &source->handle);
     source->handle = AL_NONE;
     CheckALError("FreeAudioSourceAtIndex");
+    DecreaseCounter(AudioSourceCounter, 1);
 }
 
 void ReferenceAudioSource( AudioSource* source )

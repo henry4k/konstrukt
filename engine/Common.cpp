@@ -18,35 +18,107 @@ END_EXTERNAL_CODE
 
 #include "Config.h"
 #include "Lua.h"
+#include "Profiler.h"
 #include "Common.h"
+
+
+// --- General ---
+
+static void InitMemoryAllocator();
+
+void InitCommon()
+{
+    InitMemoryAllocator();
+}
+
+void DestroyCommon()
+{
+}
 
 
 // --- Memory allocation ---
 
-static void HandleAllocationError( size_t size )
+#if defined(KONSTRUKT_PROFILER_ENABLED)
+#define USE_ALLOCATION_INFO
+#endif
+
+#if defined(USE_ALLOCATION_INFO)
+DefineCounter(MemoryAllocationCounter, "memory allocations");
+DefineCounter(MemoryCounter, "memory", BYTE_COUNTER);
+
+struct AllocationInfo
 {
-    FatalError("Memory allocation of %$.2d bytes failed.", size);
+    size_t size;
+};
+
+static const size_t AllocationInfoSize = sizeof(AllocationInfo);
+
+static void InitMemoryAllocator()
+{
+    InitCounter(MemoryAllocationCounter);
+    InitCounter(MemoryCounter);
+}
+
+static void* GetAllocationPointer( void* data )
+{
+    if(data)
+        return ((AllocationInfo*)data) - 1;
+    else
+        return NULL;
+}
+
+static void* GetDataPointer( void* data )
+{
+    return ((AllocationInfo*)data) + 1;
+}
+
+static void BeforeAllocationDisposal( void* allocation )
+{
+    if(allocation)
+    {
+        AllocationInfo* info = (AllocationInfo*)allocation;
+        DecreaseCounter(MemoryAllocationCounter, 1);
+        DecreaseCounter(MemoryCounter, info->size);
+    }
+}
+
+static void AfterAllocationCreation( void* allocation, size_t size )
+{
+    AllocationInfo* info = (AllocationInfo*)allocation;
+    info->size = size;
+    IncreaseCounter(MemoryAllocationCounter, 1);
+    IncreaseCounter(MemoryCounter, size);
+}
+#else
+static const size_t AllocationInfoSize = 0;
+static void InitMemoryAllocator() {}
+static void* GetAllocationPointer( void* data ) { return data; }
+static void* GetDataPointer( void* allocation ) { return allocation; }
+static void BeforeAllocationDisposal( void* allocation ) {}
+static void AfterAllocationCreation( void* allocation, size_t size ) {}
+#endif
+
+void Free( void* data )
+{
+    void* allocation = GetAllocationPointer(data);
+    BeforeAllocationDisposal(allocation);
+    free(allocation);
+}
+
+void* ReAlloc( void* oldData, size_t size )
+{
+    void* oldAllocation = GetAllocationPointer(oldData);
+    BeforeAllocationDisposal(oldAllocation);
+    void* newAllocation = realloc(oldAllocation, AllocationInfoSize+size);
+    if(!newAllocation)
+        FatalError("Memory allocation of %$.2d bytes failed.", size);
+    AfterAllocationCreation(newAllocation, size);
+    return GetDataPointer(newAllocation);
 }
 
 void* Alloc( size_t size )
 {
-    void* r = malloc(size);
-    if(!r)
-        HandleAllocationError(size);
-    return r;
-}
-
-void Free( void* pointer )
-{
-    free(pointer);
-}
-
-void* ReAlloc( void* oldPointer, size_t size )
-{
-    void* r = realloc(oldPointer, size);
-    if(!r)
-        HandleAllocationError(size);
-    return r;
+    return ReAlloc(NULL, size);
 }
 
 
