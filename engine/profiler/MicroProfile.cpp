@@ -118,6 +118,10 @@ static void MicroProfile_EndSample( Sample* sample )
 
 static void MicroProfile_InitCounter( Counter* counter )
 {
+    // Has already been initialized.
+    if(counter->path[0] != '\0')
+        return;
+
     char module[32];
     GetModuleName(counter->fileName, module, sizeof(module));
     FormatBuffer(counter->path, FIELD_SIZE(Counter, path), "%s/%s", module, counter->name);
@@ -148,9 +152,14 @@ static void MicroProfile_IncreaseCounter( Counter* counter, int64_t value )
     MicroProfileCounterAdd(counter->id, value);
 }
 
-static void MicroProfile_CompleteProfilerStep()
+static void MicroProfile_NotifyStepCompletion()
 {
     MicroProfileFlip(NULL);
+}
+
+static void MicroProfile_NotifyThreadCreation( const char* name )
+{
+    MicroProfileOnThreadCreate(name);
 }
 
 const Profiler MicroProfileProfiler = {MicroProfile_Setup,
@@ -163,6 +172,7 @@ const Profiler MicroProfileProfiler = {MicroProfile_Setup,
                                        MicroProfile_InitCounter,
                                        MicroProfile_SetCounter,
                                        MicroProfile_IncreaseCounter,
-                                       MicroProfile_CompleteProfilerStep};
+                                       MicroProfile_NotifyStepCompletion,
+                                       MicroProfile_NotifyThreadCreation};
 
 #endif // KONSTRUKT_PROFILER_ENABLED

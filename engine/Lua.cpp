@@ -11,6 +11,7 @@ extern "C"
 
 #include "Common.h"
 #include "Profiler.h"
+#include "JobManager.h"
 #include "Vfs.h"
 #include "Lua.h"
 
@@ -32,6 +33,7 @@ static int g_LuaErrorFunction = LUA_NOREF;
 static int g_LuaFunctionTable = LUA_NOREF;
 static int g_LuaShutdownEvent = INVALID_LUA_EVENT;
 static bool g_LuaRunning = false;
+static JobId LuaUpdateJob;
 
 static int Lua_SetErrorFunction( lua_State* l );
 static int Lua_SetEventCallback( lua_State* l );
@@ -113,7 +115,7 @@ static int GetLuaMemoryInBytes()
            lua_gc(g_LuaState, LUA_GCCOUNTB, 0);
 }
 
-void UpdateLua()
+static void UpdateLua( void* data )
 {
     ProfileScope("Lua GC");
 
@@ -126,6 +128,16 @@ void UpdateLua()
     //if(delta > 0)
     //    LogInfo("LUA GC UPDATE: %d bytes in use. %d bytes collected.",
     //            memAfterGC, delta);
+}
+
+void BeginLuaUpdate( JobManager* jobManager )
+{
+    LuaUpdateJob = CreateJob(jobManager, {"UpdateLua", UpdateLua});
+}
+
+void CompleteLuaUpdate( JobManager* jobManager )
+{
+    WaitForJobs(jobManager, &LuaUpdateJob, 1);
 }
 
 void RegisterFunctionInLua( const char* name, lua_CFunction fn )

@@ -9,21 +9,21 @@
 
 static const int INVALID_JOB_ID = -1;
 
-struct JobType
-{
-    JobTypeConfig config;
-};
-
 struct Job
 {
-    JobTypeId typeId;
     JobStatus status;
-    void* data;
+    JobConfig config;
 };
 
 struct Worker
 {
     thrd_t thread;
+};
+
+struct WorkerArgument
+{
+    JobManager* manager;
+    int workerId;
 };
 
 struct JobManager
@@ -35,17 +35,21 @@ struct JobManager
     bool isStopping; // workers should stop
     Array<Worker> workers;
 
-    Array<JobType> jobTypes;
     FixedArray<Job> jobs;
     Array<cnd_t> jobCompletionConditions; // indices map to job ids
     Array<JobId> jobQueue; // sorted list of queued jobs
 };
 
 
+DefineCounter(JobCounter, "job count");
+
+
 static int WorkerThreadFn( void* arg );
 
 JobManager* CreateJobManager( JobManagerConfig config )
 {
+    InitCounter(JobCounter);
+
     Ensure(config.workerThreads >= 0);
 
     JobManager* manager = NEW(JobManager);
@@ -54,7 +58,6 @@ JobManager* CreateJobManager( JobManagerConfig config )
     Ensure(cnd_init(&manager->updateCondition) == thrd_success);
     manager->isStopping = false;
     InitArray(&manager->workers);
-    InitArray(&manager->jobTypes);
     InitFixedArray(&manager->jobs);
     InitArray(&manager->jobCompletionConditions);
     InitArray(&manager->jobQueue);
@@ -63,7 +66,11 @@ JobManager* CreateJobManager( JobManagerConfig config )
     REPEAT(manager->workers.length, i)
     {
         Worker* worker = manager->workers.data + i;
-        Ensure(thrd_create(&worker->thread, WorkerThreadFn, manager) == thrd_success);
+
+        WorkerArgument* arg = NEW(WorkerArgument);
+        arg->manager = manager;
+        arg->workerId = i;
+        Ensure(thrd_create(&worker->thread, WorkerThreadFn, arg) == thrd_success);
     }
 
     return manager;
@@ -88,7 +95,6 @@ void DestroyJobManager( JobManager* manager )
     mtx_destroy(&manager->mutex);
     cnd_destroy(&manager->updateCondition);
     DestroyArray(&manager->workers);
-    DestroyArray(&manager->jobTypes);
     DestroyFixedArray(&manager->jobs);
     DestroyArray(&manager->jobCompletionConditions);
     DestroyArray(&manager->jobQueue);
@@ -105,34 +111,6 @@ void UnlockJobManager( JobManager* manager )
     Ensure(mtx_unlock(&manager->mutex) == thrd_success);
 }
 
-/*
-static void Sleep( double seconds )
-{
-    if(seconds > 0)
-    {
-        timespec duration;
-        duration.tv_sec = (int)seconds;
-        duration.tv_nsec = (seconds - (int)seconds) * 1e9;
-
-        timespec remaining;
-        for(;;)
-        {
-            const int sleepResult = thrd_sleep(&duration, &remaining);
-            Ensure(sleepResult == 0 || sleepResult == -1);
-
-            if(sleepResult == 0)
-                break;
-            else
-                duration = remaining;
-        }
-    }
-    else
-    {
-        thrd_yield();
-    }
-}
-*/
-
 void WaitForJobs( JobManager* manager, const JobId* jobIds, int jobIdCount )
 {
     REPEAT(jobIdCount, i)
@@ -147,21 +125,13 @@ void WaitForJobs( JobManager* manager, const JobId* jobIds, int jobIdCount )
     }
 }
 
-JobTypeId CreateJobType( JobManager* manager, JobTypeConfig config )
-{
-    JobType* type = AllocateAtEndOfArray(&manager->jobTypes, 1);
-    type->config = config;
-    JobTypeId typeId = manager->jobTypes.length - 1;
-    return typeId;
-}
-
-JobId CreateJob( JobManager* manager, JobTypeId typeId, void* data )
+JobId CreateJob( JobManager* manager, JobConfig config )
 {
     FixedArrayAllocation<Job> allocation = AllocateInFixedArray(&manager->jobs);
     Job* job = allocation.element;
-    job->typeId = typeId;
     job->status = QUEUED_JOB;
-    job->data = data;
+    job->config = config;
+    IncreaseCounter(JobCounter, 1);
 
     const JobId id = (JobId)allocation.pos;
 
@@ -185,6 +155,7 @@ void RemoveJob( JobManager* manager, JobId jobId )
     const Job* job = GetFixedArrayElement(&manager->jobs, jobId);
     Ensure(job->status == COMPLETED_JOB);
     RemoveFromFixedArray(&manager->jobs, jobId);
+    DecreaseCounter(JobCounter, 1);
 }
 
 JobStatus GetJobStatus( JobManager* manager, JobId jobId )
@@ -194,7 +165,7 @@ JobStatus GetJobStatus( JobManager* manager, JobId jobId )
 
 void* GetJobData( JobManager* manager, JobId jobId )
 {
-    return GetFixedArrayElement(&manager->jobs, jobId)->data;
+    return GetFixedArrayElement(&manager->jobs, jobId)->config.data;
 }
 
 
@@ -223,7 +194,6 @@ struct UpdateResult
     bool shallStop;
     Job* job;
     JobId jobId;
-    const JobType* jobType;
 };
 
 // Needs access to manager
@@ -240,16 +210,18 @@ static bool GetUpdate( JobManager* manager, UpdateResult* update )
     {
         update->job = GetFixedArrayElement(&manager->jobs, jobId);
         update->jobId = jobId;
-        update->jobType = GetArrayElement(&manager->jobTypes, update->job->typeId);
         return true;
     }
 
     return false;
 }
 
-static int WorkerThreadFn( void* arg )
+static int WorkerThreadFn( void* arg_ )
 {
-    JobManager* manager = (JobManager*)arg;
+    WorkerArgument* arg = (WorkerArgument*)arg_;
+    JobManager* manager = arg->manager;
+    NotifyProfilerAboutThreadCreation(Format("Worker %d", arg->workerId));
+    DELETE(arg);
 
     for(;;)
     {
@@ -267,10 +239,7 @@ static int WorkerThreadFn( void* arg )
             break;
         else
         {
-            {
-                ProfileScope("ExecuteJob");
-                update.jobType->config.function(update.job->data);
-            }
+            update.job->config.function(update.job->config.data);
 
             LockJobManager(manager);
 
@@ -287,3 +256,30 @@ static int WorkerThreadFn( void* arg )
 
     return 0;
 }
+
+void Sleep( double seconds )
+{
+    if(seconds > 0)
+    {
+        timespec duration;
+        duration.tv_sec = (int)seconds;
+        duration.tv_nsec = (seconds - (int)seconds) * 1e9;
+
+        timespec remaining;
+        for(;;)
+        {
+            const int sleepResult = thrd_sleep(&duration, &remaining);
+            Ensure(sleepResult == 0 || sleepResult == -1);
+
+            if(sleepResult == 0)
+                break;
+            else
+                duration = remaining;
+        }
+    }
+    else
+    {
+        thrd_yield();
+    }
+}
+

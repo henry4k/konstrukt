@@ -34,15 +34,10 @@ void Test()
 
     LockJobManager(manager);
 
-    JobTypeConfig typeConfig;
-    typeConfig.name = "frobnicator";
-    typeConfig.function = Frobnicate;
-    JobTypeId type = CreateJobType(manager, typeConfig);
-
     static Frobnicatable data;
     data.processingTime = 3;
     data.done = false;
-    JobId job = CreateJob(manager, type, &data);
+    JobId job = CreateJob(manager, {"frobnicator", Frobnicate, &data});
 
     Require(GetJobStatus(manager, job) == QUEUED_JOB);
     Require(GetJobData(manager, job) == &data);

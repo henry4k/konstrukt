@@ -2,7 +2,6 @@
 #define __KONSTRUKT_JOB_MANAGER__
 
 struct JobManager;
-typedef int JobTypeId;
 typedef int JobId;
 
 enum JobStatus
@@ -39,20 +38,16 @@ void UnlockJobManager( JobManager* manager );
 void WaitForJobs( JobManager* manager, const JobId* jobIds, int jobIdCount );
 
 
-// --- JobType ---
+// --- Job ---
 
-struct JobTypeConfig
+struct JobConfig
 {
     const char* name; // Useful when debugging the engine.
     void (*function)( void* data );
+    void* data;
 };
 
-JobTypeId CreateJobType( JobManager* manager, JobTypeConfig config );
-
-
-// --- Job ---
-
-JobId CreateJob( JobManager* manager, JobTypeId typeId, void* data );
+JobId CreateJob( JobManager* manager, JobConfig config );
 
 void RemoveJob( JobManager* manager, JobId jobId );
 
@@ -71,6 +66,8 @@ void* GetJobData( JobManager* manager, JobId jobId );
 // TODO: Use longjmp to suspend jobs?  Suspended jobs may need to be locked to
 // their original (working) thread.
 
+// For debugging purposes.
+void Sleep( double seconds );
 
 
 #endif

@@ -57,8 +57,17 @@ void DestroyGPUProfiler();
 /**
  * Call when one simulation step has been completed.
  */
-#define CompleteProfilerStep() \
-    _Profiler.completeProfilerStep()
+#define NotifyProfilerAboutStepCompletion() \
+    _Profiler.notifyStepCompletion()
+
+/**
+ * Call at the beginning of a new thread.
+ *
+ * @param name
+ * The threads name.
+ */
+#define NotifyProfilerAboutThreadCreation( name ) \
+    _Profiler.notifyThreadCreation(name)
 
 
 // --- implementation details ---
@@ -124,7 +133,8 @@ struct Profiler
     void (*setCounter)( Counter* counter, int64_t value );
     void (*increaseCounter)( Counter* counter, int64_t value );
 
-    void (*completeProfilerStep)();
+    void (*notifyStepCompletion)();
+    void (*notifyThreadCreation)( const char* name );
 };
 
 
@@ -165,7 +175,8 @@ struct _ProfileSampleInScope
 #define SetCounter( counter, value )
 #define IncreaseCounter( counter, value )
 #define DecreaseCounter( counter, value )
-#define CompleteProfilerStep()
+#define NotifyProfilerAboutStepCompletion()
+#define NotifyProfilerAboutThreadCreation()
 
 #endif // KONSTRUKT_PROFILER_ENABLED
 #endif

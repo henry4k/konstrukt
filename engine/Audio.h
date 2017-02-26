@@ -5,6 +5,7 @@
 
 
 struct Solid;
+struct JobManager;
 
 
 /** @class AudioListener
@@ -49,9 +50,14 @@ void InitAudio();
 void DestroyAudio();
 
 /**
- * Needs to be called regularly, e.g. once per frame.
+ * Will enqueue audio processing in a job.
  */
-void UpdateAudio();
+void BeginAudioUpdate( JobManager* jobManager );
+
+/**
+ * Waits till audio processing is done.
+ */
+void CompleteAudioUpdate( JobManager* jobManager );
 
 /**
  * Set global audio volume.

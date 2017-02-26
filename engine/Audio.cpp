@@ -12,6 +12,7 @@
 #endif
 
 #include "Common.h"
+#include "JobManager.h"
 #include "Profiler.h"
 #include "Config.h"
 #include "Reference.h"
@@ -52,6 +53,7 @@ static float AudioSourceReferenceDistance = 0;
 static Solid* ListenerAttachmentTarget = NULL;
 static int ListenerAttachmentFlags = 0;
 static Mat4 ListenerTransformation = Mat4Identity;
+static JobId AudioUpdateJob;
 
 
 // --- Global ---
@@ -114,7 +116,7 @@ void DestroyAudio()
     alureShutdownDevice();
 }
 
-void UpdateAudio()
+static void UpdateAudio( void* data )
 {
     ProfileFunction();
 
@@ -123,6 +125,19 @@ void UpdateAudio()
     for(int i = 0; i < AudioSourceCount; ++i)
         if(IsActiveAudioSource(&AudioSources[i]))
             UpdateAudioSource(&AudioSources[i]);
+
+    Sleep(0.0007);
+}
+
+void BeginAudioUpdate( JobManager* jobManager )
+{
+    // TODO: gather solid positions
+    AudioUpdateJob = CreateJob(jobManager, {"UpdateAudio", UpdateAudio});
+}
+
+void CompleteAudioUpdate( JobManager* jobManager )
+{
+    WaitForJobs(jobManager, &AudioUpdateJob, 1);
 }
 
 

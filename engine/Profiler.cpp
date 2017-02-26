@@ -21,7 +21,8 @@ static void NoOp_EndSample( Sample* sample ) {}
 static void NoOp_InitCounter( Counter* counter ) {}
 static void NoOp_SetCounter( Counter* counter, int64_t value ) {}
 static void NoOp_IncreaseCounter( Counter* counter, int64_t value ) {}
-static void NoOp_CompleteProfilerStep() {}
+static void NoOp_NotifyProfilerAboutStepCompletion() {}
+static void NoOp_NotifyProfilerAboutThreadCreation( const char* name ) {}
 
 static const Profiler NoOpProfiler = {NoOp_Setup,
                                       NoOp_Teardown,
@@ -33,7 +34,8 @@ static const Profiler NoOpProfiler = {NoOp_Setup,
                                       NoOp_InitCounter,
                                       NoOp_SetCounter,
                                       NoOp_IncreaseCounter,
-                                      NoOp_CompleteProfilerStep};
+                                      NoOp_NotifyProfilerAboutStepCompletion,
+                                      NoOp_NotifyProfilerAboutThreadCreation};
 
 Profiler _Profiler = NoOpProfiler;
 
@@ -62,7 +64,8 @@ void InitProfiler()
     DEFAULT_TO_NOOP(initCounter)
     DEFAULT_TO_NOOP(setCounter)
     DEFAULT_TO_NOOP(increaseCounter)
-    DEFAULT_TO_NOOP(completeProfilerStep)
+    DEFAULT_TO_NOOP(notifyStepCompletion)
+    DEFAULT_TO_NOOP(notifyThreadCreation)
 #undef DEFAULT_TO_NOOP
 
     _Profiler.setup();

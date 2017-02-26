@@ -22,6 +22,7 @@
 #include "Shader.h"
 #include "Time.h"
 #include "Vfs.h"
+#include "JobManager.h"
 
 #include "lua_bindings/Audio.h"
 #include "lua_bindings/Camera.h"
@@ -51,6 +52,8 @@ struct Arguments
     Array<const char*> searchPaths;
     Array<const char*> packages;
 };
+
+static JobManager* JobManagerInstance = NULL;
 
 
 static int Lua_StopSimulation( lua_State* l )
@@ -88,6 +91,7 @@ static void InitModules( const char* arg0, const Arguments* arguments )
     InitCrc32();
     InitProfiler();
     InitCommon();
+    JobManagerInstance = CreateJobManager({3});
     InitWindow();
     InitGPUProfiler();
     InitVfs(arg0, arguments->state, arguments->sharedState);
@@ -116,6 +120,7 @@ static void DestroyModules()
     DestroyVfs();
     DestroyGPUProfiler();
     DestroyWindow();
+    DestroyJobManager(JobManagerInstance);
     DestroyCommon();
     DestroyProfiler();
 }
@@ -146,21 +151,32 @@ static void InitScript( const Arguments* args )
 
 static void RunSimulation()
 {
+    LockJobManager(JobManagerInstance);
+
     double lastTime = glfwGetTime();
     while(!WindowShouldClose())
     {
         ProfileScope("Simulation");
         const double curTime = glfwGetTime();
         const double timeDelta = curTime-lastTime;
-        UpdateLua();
         UpdateTime(timeDelta);
-        UpdateAudio();
         UpdateControls(timeDelta);
         UpdatePhysicsManager(timeDelta);
         lastTime = curTime;
         RenderScene();
-        CompleteProfilerStep();
+        NotifyProfilerAboutStepCompletion();
+
+
+        // (gesynctes zeugs hier tun)
+
+        BeginLuaUpdate(JobManagerInstance);
+        BeginAudioUpdate(JobManagerInstance);
+
+        CompleteLuaUpdate(JobManagerInstance);
+        CompleteAudioUpdate(JobManagerInstance);
     }
+
+    UnlockJobManager(JobManagerInstance);
 }
 
 

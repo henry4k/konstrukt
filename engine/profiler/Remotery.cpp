@@ -50,6 +50,11 @@ static void Remotery_EndSample( Sample* sample )
         rmt_EndCPUSample();
 }
 
+static void Remotery_NotifyThreadCreation( const char* name )
+{
+    rmt_SetCurrentThreadName(name);
+}
+
 const Profiler RemoteryProfiler = {Remotery_Setup,
                                    Remotery_Teardown,
                                    Remotery_SetupGPU,
@@ -60,6 +65,7 @@ const Profiler RemoteryProfiler = {Remotery_Setup,
                                    NULL, // initCounter
                                    NULL, // setCounter
                                    NULL, // increaseCounter
-                                   NULL}; // completeProfilerStep
+                                   NULL, // notifyStepCompletion
+                                   Remotery_NotifyThreadCreation};
 
 #endif // KONSTRUKT_PROFILER_ENABLED
