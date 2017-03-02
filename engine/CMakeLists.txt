@@ -69,10 +69,6 @@ if(KONSTRUKT_STACKTRACE_ENABLED)
     target_compile_definitions(konstruktlib PRIVATE KONSTRUKT_STACKTRACE_ENABLED)
     target_link_libraries(konstruktlib dbgtools)
     include_directories("${CMAKE_BINARY_DIR}/third-party")
-    if(UNIX)
-        # Use relative file paths in debug symbols:
-        set_property(DIRECTORY PROPERTY COMPILE_OPTIONS "-fdebug-prefix-map=${PROJECT_SOURCE_DIR}=")
-    endif()
 endif()
 
 option(KONSTRUKT_PROFILER_ENABLED "Enables performance profiling.")

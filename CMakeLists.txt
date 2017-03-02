@@ -26,6 +26,16 @@ include_directories(${OPENGL_INCLUDE_DIR}
 
 ### Further definitions:
 
+option(KONSTRUKT_USE_RELATIVE_PATHS_IN_DEBUG_SYMBOLS "Use relative file paths in debug symbols.")
+if(KONSTRUKT_USE_RELATIVE_PATHS_IN_DEBUG_SYMBOLS)
+    if(UNIX)
+        set_property(DIRECTORY PROPERTY COMPILE_OPTIONS "-fdebug-prefix-map=${PROJECT_SOURCE_DIR}/=")
+    endif()
+    # MSVC should do this by default.
+    # If this is not the case, try to remove the /FC flag.
+    # See https://msdn.microsoft.com/en-us/library/027c4t2s.aspx
+endif()
+
 add_subdirectory(third-party)
 add_subdirectory(engine)
 
