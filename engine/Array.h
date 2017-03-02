@@ -36,11 +36,17 @@ T* GetArrayElement( Array<T>* array, int pos )
 }
 
 template<typename T>
-void ReserveInArray( Array<T>* array, int newCapacity )
+void ReserveInArray( Array<T>* array, int amount )
 {
-    Ensure(newCapacity >= 0);
-    if(newCapacity > array->capacity)
+    Ensure(amount >= 0);
+    if(amount > array->capacity)
     {
+        int newCapacity = (array->capacity == 0) ? 1 : array->capacity;
+        do
+        {
+            newCapacity += newCapacity * 3/2; // 1.5
+        } while(newCapacity < array->capacity);
+
         array->data = (T*)ReAlloc(array->data, newCapacity*sizeof(T));
         array->capacity = newCapacity;
     }
