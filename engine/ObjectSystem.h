@@ -6,7 +6,7 @@
 #include <stdint.h> // uint16_t, uint32_t, ...
 #include <string.h> // memset
 
-#include "Common.h"
+#include "Common.h" // static_assert
 #include "Array.h"
 
 
@@ -34,11 +34,15 @@ typedef uint32_t ObjectId;
 typedef uint16_t ObjectIndex;
 
 static const int OBJECT_INDEX_BITS = 12; // See #ObjectIndex
+static_assert(OBJECT_INDEX_BITS <= sizeof(ObjectIndex)*8, "");
+static_assert(OBJECT_INDEX_BITS < sizeof(ObjectId)*8, "");
+
 static const int OBJECT_REFERENCE_COUNT = 1 << OBJECT_INDEX_BITS;
 static const int MAX_OBJECTS            = (1 << OBJECT_INDEX_BITS) - 1; // for use in tests
 static const ObjectId OBJECT_INDEX_MASK = (1 << OBJECT_INDEX_BITS) - 1;
 static const ObjectId OBJECT_ID_UNIQUE_INCREMENT = OBJECT_INDEX_MASK + 1;
 static const ObjectIndex INVALID_OBJECT_INDEX = UINT16_MAX;
+
 
 /**
  * Maps IDs to object indices and sim maintains a list of free IDs.
@@ -224,5 +228,24 @@ void ReserveObjects( ObjectSystem<T>* sys, int capacity )
     assert(capacity <= OBJECT_REFERENCE_COUNT);
     ReserveInArray(&sys->objects, capacity);
 }
+
+template<typename T>
+T* GetObjectByIndex( ObjectSystem<T>* sys, ObjectIndex index )
+{
+    return &GetArrayElement(&sys->objects, index)->object;
+}
+
+template<typename T>
+ObjectId GetObjectIdByIndex( ObjectSystem<T>* sys, ObjectIndex index )
+{
+    return GetArrayElement(&sys->objects, index)->id;
+}
+
+template<typename T>
+int GetObjectCount( ObjectSystem<T>* sys )
+{
+    return sys->objects.length;
+}
+
 
 #endif

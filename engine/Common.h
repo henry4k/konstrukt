@@ -98,4 +98,16 @@ void FatalError( const char* format, ... );
 #define FIELD_SIZE(container, field) sizeof(((container*)0)->field)
 #endif
 
+#define CONCAT_(a, b) a ## b
+#define CONCAT(a, b) CONCAT_(a,b)
+
+#if !defined(__cplusplus) && defined(__USE_ISOC11)
+    #define static_assert _Static_assert
+#elif defined(__cplusplus) && __cplusplus >= 201103L
+    // static_assert is provided by C++11
+#else
+    #define static_assert( test, message ) \
+        typedef struct { int value: !!(test); } static_assert_##__COUNTER__
+#endif
+
 #endif

@@ -98,4 +98,35 @@ void CompactFixedArray( FixedArray<T>* array )
     }
 }
 
+
+// test
+
+/*
+template<typename T>
+struct FixedArrayIterator
+{
+    int pos;
+    T* element;
+};
+
+template<typename T>
+bool NextFixedArrayElement( FixedArray<T>* array, FixedArrayIterator<T>* it )
+{
+    for(int pos = it->pos+1; pos < array->_.length; pos++)
+    {
+        FixedArraySlot<T>* slot = array->_.data + pos;
+        if(slot->inUse)
+        {
+            it->pos = pos;
+            it->element = element;
+            return true;
+        }
+    }
+    return false;
+}
+
+#define EACH_FIXED_ARRAY_ELEMENT( it, array ) \
+    for(FixedArrayIterator<*array->_.data->element> it = {-1}; NextFixedArrayElement<T>(array, &it);)
+*/
+
 #endif

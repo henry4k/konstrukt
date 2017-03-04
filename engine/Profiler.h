@@ -2,14 +2,13 @@
 #define __KONSTRUKT_PROFILER__
 #if defined(KONSTRUKT_PROFILER_ENABLED)
 
+#include "Common.h" // CONCAT
+
 void InitProfiler();
 void DestroyProfiler();
 void InitGPUProfiler();
 void DestroyGPUProfiler();
 
-
-#define CONCAT_(a, b) a ## b
-#define CONCAT(a, b) CONCAT_(a,b)
 
 /**
  *

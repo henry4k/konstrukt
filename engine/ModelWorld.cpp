@@ -264,6 +264,11 @@ static int Compare( uintptr_t a, uintptr_t b )
 
 static int CompareModelDrawEntries( const void* a_, const void* b_ )
 {
+    // TODO: https://bitsquid.blogspot.de/2017/02/stingray-renderer-walkthrough-4-sorting.html
+    // - Sort transparent geometry from back to front,
+    //   *BUT* sort solid geometry from front to back -> reduces overdraw
+
+
     const ModelDrawEntry* a = (const ModelDrawEntry*)a_;
     const ModelDrawEntry* b = (const ModelDrawEntry*)b_;
 

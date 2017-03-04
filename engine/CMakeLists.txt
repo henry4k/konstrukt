@@ -59,8 +59,12 @@ option(KONSTRUKT_STRICT_COMPILER "Enables compiler warnings and has them treated
 if(KONSTRUKT_STRICT_COMPILER)
     if(MSVC)
         target_compile_options(konstruktlib PRIVATE /W4 /WX)
+        # C4514 https://msdn.microsoft.com/en-us/library/cw9x3tcf.aspx
+        # C4505 https://msdn.microsoft.com/en-us/library/z85eyax0.aspx
+        target_compile_options(konstruktlib PRIVATE $<$<NOT:$<CONFIG:Debug>>:/wd4514 /wd4505>)
     else()
         target_compile_options(konstruktlib PRIVATE -std=c++11 -Wall -Wpedantic -Werror)
+        target_compile_options(konstruktlib PRIVATE $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-function>)
     endif()
 endif()
 

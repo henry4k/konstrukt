@@ -45,6 +45,12 @@ static float Hue(float h, float m1, float m2)
     return m1;
 }
 
+union rgba8_helper
+{
+    uint8_t components[4];
+    uint32_t combination;
+};
+
 // Shamelessly stolen from NanoVG (https://github.com/memononen/nanovg)
 static uint32_t HSLtoRGB(float h, float s, float l)
 {
@@ -58,11 +64,12 @@ static uint32_t HSLtoRGB(float h, float s, float l)
     float r = Clamp(Hue(h + 1.0f/3.0f, m1, m2), 0.0f, 1.0f);
     float g = Clamp(Hue(h, m1, m2), 0.0f, 1.0f);
     float b = Clamp(Hue(h - 1.0f/3.0f, m1, m2), 0.0f, 1.0f);
-    const uint8_t rgba[4] = { (uint8_t)(r * 255.0f),
-                              (uint8_t)(g * 255.0f),
-                              (uint8_t)(b * 255.0f),
-                              0 };
-    return *(uint32_t*)rgba;
+    rgba8_helper rgba;
+    rgba.components[0] = (uint8_t)(r * 255.0f);
+    rgba.components[1] = (uint8_t)(g * 255.0f);
+    rgba.components[2] = (uint8_t)(b * 255.0f);
+    rgba.components[3] = 0;
+    return rgba.combination;
 }
 
 static const char* GetBaseName( const char* path )
@@ -138,6 +145,10 @@ static void MicroProfile_InitCounter( Counter* counter )
         case BYTE_COUNTER:
             format = MICROPROFILE_COUNTER_FORMAT_BYTES;
             break;
+
+        default:
+            format = 0;
+            FatalError("Unknown format.");
     }
     MicroProfileCounterConfig(counter->path, format, 0, MICROPROFILE_COUNTER_FLAG_DETAILED);
 }

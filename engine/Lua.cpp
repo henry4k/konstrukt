@@ -152,8 +152,7 @@ void RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback )
 {
     lua_State* l = g_LuaState;
 
-    const bool newTable = luaL_newmetatable(l, name);
-    assert(newTable);
+    luaL_newmetatable(l, name);
 
     if(gcCallback)
     {

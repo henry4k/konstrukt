@@ -272,45 +272,49 @@ void MountPackage( const char* reference )
 
 // --- File access ---
 
-/**
- * @param subMountPath
- * The sub mount path. (Which is the rear part of `vfsPath`.)
- *
- * @return
- * Returns the mount point, which starts at the beginning of `vfsPath`.
- */
-static const char* SplitVfsPath( const char* vfsPath,
-                                 const char** subMountPath )
+struct SplitResult
 {
-    static char mountPointBuffer[MAX_PATH_SIZE];
+    /**
+     * The mount point, which starts at the beginning of `vfsPath`.
+     */
+    char mountPoint[MAX_PATH_SIZE];
 
+    /**
+     * The sub mount path. (Which is the rear part of `vfsPath`.)
+     *
+     * May be `NULL` if there is no rear part.
+     */
+    const char* subMountPath;
+};
+
+static SplitResult SplitVfsPath( const char* vfsPath )
+{
     const char* separator = strchr(vfsPath, '/');
+    SplitResult result;
     if(separator)
     {
         const size_t pos = separator - vfsPath;
-        if(pos >= MAX_PATH_SIZE)
-            return NULL;
-        CopyString(vfsPath, mountPointBuffer, pos+1);
-        *subMountPath = separator+1; // sub mount path starts behind first separator
+        Ensure(pos < MAX_PATH_SIZE);
+        CopyString(vfsPath, result.mountPoint, pos+1);
+        result.subMountPath = separator+1; // sub mount path starts behind first separator
     }
     else
     {
-        CopyString(vfsPath, mountPointBuffer, MAX_PATH_SIZE);
-        *subMountPath = NULL;
+        CopyString(vfsPath, result.mountPoint, MAX_PATH_SIZE);
+        result.subMountPath = NULL;
     }
-    return mountPointBuffer;
+    return result;
 }
 
 VfsFile* OpenVfsFile( const char* vfsPath, VfsOpenMode mode )
 {
-    const char* subMountPath;
-    const char* mountPoint = SplitVfsPath(vfsPath, &subMountPath);
+    const SplitResult split = SplitVfsPath(vfsPath);
 
-    if(!mountPoint || !subMountPath)
+    if(!split.subMountPath)
         FatalError("Can't open file '%s'.", vfsPath);
 
-    const Mount* mount = GetMountByVfsPath(mountPoint, NULL);
-    void* handle = mount->mountSystem->openFile(mount, subMountPath, mode);
+    const Mount* mount = GetMountByVfsPath(split.mountPoint, NULL);
+    void* handle = mount->mountSystem->openFile(mount, split.subMountPath, mode);
 
     VfsFile* file = NEW(VfsFile);
     file->mountSystem = mount->mountSystem;
@@ -399,10 +403,9 @@ PathList GetVfsDirEntries( const char* vfsPath )
     }
     else
     {
-        const char* subMountPath;
-        const char* mountPoint = SplitVfsPath(vfsPath, &subMountPath);
-        const Mount* mount = GetMountByVfsPath(mountPoint, NULL);
-        return mount->mountSystem->getDirEntries(mount, subMountPath);
+        const SplitResult split = SplitVfsPath(vfsPath);
+        const Mount* mount = GetMountByVfsPath(split.mountPoint, NULL);
+        return mount->mountSystem->getDirEntries(mount, split.subMountPath);
     }
 }
 
@@ -411,13 +414,12 @@ FileType GetVfsFileType( const char* vfsPath )
     if(vfsPath[0] == '\0')
         return FILE_TYPE_DIRECTORY;
 
-    const char* subMountPath;
-    const char* mountPoint = SplitVfsPath(vfsPath, &subMountPath);
-    const Mount* mount = TryGetMountByVfsPath(mountPoint, NULL);
+    const SplitResult split = SplitVfsPath(vfsPath);
+    const Mount* mount = TryGetMountByVfsPath(split.mountPoint, NULL);
     if(mount)
     {
-        if(subMountPath)
-            return mount->mountSystem->getFileType(mount, subMountPath);
+        if(split.subMountPath)
+            return mount->mountSystem->getFileType(mount, split.subMountPath);
         else
             return FILE_TYPE_DIRECTORY;
     }
@@ -427,16 +429,14 @@ FileType GetVfsFileType( const char* vfsPath )
 
 void DeleteVfsFile( const char* vfsPath )
 {
-    const char* subMountPath;
-    const char* mountPoint = SplitVfsPath(vfsPath, &subMountPath);
-    Mount* mount = GetMountByVfsPath(mountPoint, NULL);
-    return mount->mountSystem->deleteFile(mount, subMountPath);
+    const SplitResult split = SplitVfsPath(vfsPath);
+    Mount* mount = GetMountByVfsPath(split.mountPoint, NULL);
+    return mount->mountSystem->deleteFile(mount, split.subMountPath);
 }
 
 void MakeVfsDir( const char* vfsPath )
 {
-    const char* subMountPath;
-    const char* mountPoint = SplitVfsPath(vfsPath, &subMountPath);
-    Mount* mount = GetMountByVfsPath(mountPoint, NULL);
-    return mount->mountSystem->makeDir(mount, subMountPath);
+    const SplitResult split = SplitVfsPath(vfsPath);
+    Mount* mount = GetMountByVfsPath(split.mountPoint, NULL);
+    return mount->mountSystem->makeDir(mount, split.subMountPath);
 }

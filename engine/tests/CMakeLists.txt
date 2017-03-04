@@ -20,3 +20,6 @@ if(KONSTRUKT_BUILD_TESTS)
 
     file(COPY data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 endif()
+
+add_executable(ObjectSystemPerformance ObjectSystemPerformance.cpp)
+target_link_libraries(ObjectSystemPerformance konstruktlib)

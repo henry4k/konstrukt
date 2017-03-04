@@ -32,7 +32,10 @@ static int Lua_WriteFile( lua_State* l )
     else if(modeStr[0] == 'a')
         mode = VFS_OPEN_APPEND;
     else
+    {
         FatalError("Unknown mode '%c'.", modeStr[0]);
+        mode = VFS_OPEN_WRITE;
+    }
 
     VfsFile* file = OpenVfsFile(vfsPath, mode);
 
