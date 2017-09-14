@@ -1,7 +1,7 @@
 #include "../Lua.h"
 #include "../Audio.h"
 #include "Math.h"
-#include "PhysicsManager.h"
+#include "AttachmentTarget.h"
 #include "Audio.h"
 
 
@@ -9,9 +9,8 @@
 
 static int Lua_SetAudioListenerAttachmentTarget( lua_State* l )
 {
-    Solid* target = CheckSolidFromLua(l, 1);
-    const int flags = CheckTransformationFlagsFromLua(l, 2);
-    SetAudioListenerAttachmentTarget(target, flags);
+    const AttachmentTarget* target = GetAttachmentTargetFromLua(l, 1);
+    SetAudioListenerAttachmentTarget(target);
     return 0;
 }
 
@@ -127,9 +126,8 @@ static int Lua_SetAudioSourceGain( lua_State* l )
 static int Lua_SetAudioSourceAttachmentTarget( lua_State* l )
 {
     AudioSource* source = CheckAudioSourceFromLua(l, 1);
-    Solid* target = GetSolidFromLua(l, 2);
-    const int flags = CheckTransformationFlagsFromLua(l, 3);
-    SetAudioSourceAttachmentTarget(source, target, flags);
+    const AttachmentTarget* target = GetAttachmentTargetFromLua(l, 2);
+    SetAudioSourceAttachmentTarget(source, target);
     return 0;
 }
 

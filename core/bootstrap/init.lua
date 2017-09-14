@@ -21,11 +21,12 @@ math.randomseed(engine.GetTime())
 -- luacheck: globals print loadfile dofile
 
 function print( ... )
-    local args = {...}
-    for i, arg in ipairs(args) do
-        args[i] = tostring(arg)
+    local count = select('#', ...)
+    local strings = {}
+    for i = 1, count do
+        strings[i] = tostring(select(i, ...))
     end
-    engine.Log('info', table.concat(args, '\t'))
+    engine.Log('info', table.concat(strings, '\t'))
 end
 
 function loadfile( fileName, ... )

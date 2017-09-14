@@ -233,29 +233,6 @@ Mat4* CheckMatrix4FromLua( lua_State* l, int stackPosition )
     return (Mat4*)CheckUserDataFromLua(l, stackPosition, MATRIX_TYPE);
 }
 
-int CheckTransformationFlagsFromLua( lua_State* l, int stackPosition )
-{
-    const char* flagString = luaL_checkstring(l, stackPosition);
-    int flags = 0;
-    for(const char* c = flagString; *c != '\0'; c++)
-    {
-        switch(*c)
-        {
-            case 'r':
-                flags |= COPY_ROTATION;
-                break;
-
-            case 't':
-                flags |= COPY_TRANSLATION;
-                break;
-
-            default:
-                FatalError("Unknown flag: %c in '%s'", *c, flagString);
-        }
-    }
-    return flags;
-}
-
 
 // --- Register in Lua ---
 

@@ -8,7 +8,7 @@
 #include "Mesh.h"
 #include "Texture.h"
 #include "Shader.h"
-#include "PhysicsManager.h"
+#include "AttachmentTarget.h"
 #include "ModelWorld.h"
 
 
@@ -76,9 +76,8 @@ static int Lua_DestroyModel( lua_State* l )
 static int Lua_SetModelAttachmentTarget( lua_State* l )
 {
     Model* model = CheckModelFromLua(l, 1);
-    Solid* target = GetSolidFromLua(l, 2);
-    const int flags = CheckTransformationFlagsFromLua(l, 3);
-    SetModelAttachmentTarget(model, target, flags);
+    const AttachmentTarget* target = GetAttachmentTargetFromLua(l, 2);
+    SetModelAttachmentTarget(model, target);
     return 0;
 }
 

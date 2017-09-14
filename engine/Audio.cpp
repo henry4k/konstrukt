@@ -16,7 +16,7 @@
 #include "Profiler.h"
 #include "Config.h"
 #include "Reference.h"
-#include "PhysicsManager.h"
+#include "AttachmentTarget.h"
 #include "Audio.h"
 
 
@@ -31,7 +31,7 @@ struct AudioSource
     ReferenceCounter refCounter;
     ALuint handle;
     bool active;
-    Solid* attachmentTarget;
+    AttachmentTarget attachmentTarget;
     int attachmentFlags;
     Mat4 transformation;
 };
@@ -50,8 +50,7 @@ static AudioSource* AudioSources = NULL;
 static int AudioSourceCount = 0;
 static float MaxAudioSourceDistance = 0;
 static float AudioSourceReferenceDistance = 0;
-static Solid* ListenerAttachmentTarget = NULL;
-static int ListenerAttachmentFlags = 0;
+static AttachmentTarget ListenerAttachmentTarget;
 static Mat4 ListenerTransformation = Mat4Identity;
 static JobId AudioUpdateJob;
 
@@ -94,7 +93,7 @@ void InitAudio()
     MaxAudioSourceDistance = GetConfigFloat("audio.max-distance", 100);
     AudioSourceReferenceDistance = GetConfigFloat("audio.reference-distance", 100);
 
-    ListenerAttachmentTarget = NULL;
+    InitAttachmentTarget(&ListenerAttachmentTarget);
 
     SetAudioGain(GetConfigFloat("audio.gain", 1.0f));
 
@@ -106,7 +105,7 @@ void InitAudio()
 
 void DestroyAudio()
 {
-    SetAudioListenerAttachmentTarget(NULL, 0);
+    DestroyAttachmentTarget(&ListenerAttachmentTarget);
 
     for(int i = 0; i < AudioSourceCount; ++i)
         if(IsActiveAudioSource(&AudioSources[i]))
@@ -131,7 +130,6 @@ static void UpdateAudio( void* data )
 
 void BeginAudioUpdate( JobManager* jobManager )
 {
-    // TODO: gather solid positions
     AudioUpdateJob = CreateJob(jobManager, {"UpdateAudio", UpdateAudio});
 }
 
@@ -148,14 +146,9 @@ void SetAudioGain( float gain )
     alListenerf(AL_GAIN, gain);
 }
 
-void SetAudioListenerAttachmentTarget( Solid* target, int flags )
+void SetAudioListenerAttachmentTarget( const AttachmentTarget* target )
 {
-    if(ListenerAttachmentTarget)
-        ReleaseSolid(ListenerAttachmentTarget);
-    ListenerAttachmentTarget = target;
-    ListenerAttachmentFlags = flags;
-    if(ListenerAttachmentTarget)
-        ReferenceSolid(ListenerAttachmentTarget);
+    CopyAttachmentTarget(&ListenerAttachmentTarget, target);
 }
 
 void SetAudioListenerTransformation( Mat4 transformation )
@@ -169,8 +162,7 @@ const Vec3 Up      = {{0,1,0}};
 static void UpdateAudioListener()
 {
     const Mat4 targetTransformation =
-        TryToGetSolidTransformation(ListenerAttachmentTarget,
-                                    ListenerAttachmentFlags);
+        GetAttachmentTargetTransformation(&ListenerAttachmentTarget);
 
     const Mat4 finalTransformation = MulMat4(targetTransformation,
                                              ListenerTransformation);
@@ -180,9 +172,7 @@ static void UpdateAudioListener()
     const Vec3 direction = MulMat4ByVec3(rotation, Forward);
     const Vec3 up        = MulMat4ByVec3(rotation, Up);
 
-    Vec3 velocity = Vec3Zero;
-    if(ListenerAttachmentTarget)
-        velocity = GetSolidLinearVelocity(ListenerAttachmentTarget);
+    const Vec3 velocity = GetAttachmentTargetLinearVelocity(&ListenerAttachmentTarget);
 
     float orientation[6];
     memcpy(orientation,   direction._, sizeof(float)*3);
@@ -309,14 +299,10 @@ void SetAudioSourceGain( AudioSource* source, float gain )
     CheckALError("SetAudioSourceGain");
 }
 
-void SetAudioSourceAttachmentTarget( AudioSource* source, Solid* target, int flags )
+void SetAudioSourceAttachmentTarget( AudioSource* source,
+                                     const AttachmentTarget* target )
 {
-    if(source->attachmentTarget)
-        ReleaseSolid(source->attachmentTarget);
-    source->attachmentTarget = target;
-    source->attachmentFlags = flags;
-    if(source->attachmentTarget)
-        ReferenceSolid(source->attachmentTarget);
+    CopyAttachmentTarget(&source->attachmentTarget, target);
 }
 
 void SetAudioSourceTransformation( AudioSource* source, Mat4 transformation )
@@ -331,17 +317,16 @@ static void UpdateAudioSource( AudioSource* source )
     if(state == AL_PLAYING)
     {
         Mat4 targetTransformation =
-            TryToGetSolidTransformation(source->attachmentTarget,
-                                        source->attachmentFlags);
+            GetAttachmentTargetTransformation(&source->attachmentTarget);
         const Mat4 finalTransformation = MulMat4(targetTransformation,
                                                  source->transformation);
 
         const Vec3 position = MulMat4ByVec3(finalTransformation, Vec3Zero);
         alSourcefv(source->handle, AL_POSITION, position._);
 
-        if(source->attachmentTarget)
+        if(AttachmentTargetIsSet(&source->attachmentTarget))
         {
-            const Vec3 velocity = GetSolidLinearVelocity(source->attachmentTarget);
+            const Vec3 velocity = GetAttachmentTargetLinearVelocity(&source->attachmentTarget);
 
             const Mat4 rotation  = ClipTranslationOfMat4(finalTransformation);
             const Vec3 direction = MulMat4ByVec3(rotation, Vec3Zero);

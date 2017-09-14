@@ -1,12 +1,7 @@
 #include "Common.h"
 #include "Profiler.h"
-#include "Math.h"
 #include "OpenGL.h" // glfwGetTime
 #include "Vertex.h"
-#include "Reference.h"
-#include "PhysicsManager.h"
-#include "ModelWorld.h"
-#include "Camera.h"
 #include "Time.h"
 #include "Shader.h"
 #include "RenderTarget.h"

@@ -4,7 +4,7 @@
 #include "Math.h"
 
 
-struct Solid;
+struct AttachmentTarget;
 struct JobManager;
 
 
@@ -66,12 +66,10 @@ void SetAudioGain( float gain );
 
 
 /**
- * Attaches the listener to a solid.
- *
  * Passing `NULL` detaches the listener; this has the same effect as if it the
  * solid has been positioned at 0,0,0.
  */
-void SetAudioListenerAttachmentTarget( Solid* target, int flags );
+void SetAudioListenerAttachmentTarget( const AttachmentTarget* target );
 
 void SetAudioListenerTransformation( Mat4 transformation );
 
@@ -113,7 +111,7 @@ void SetAudioSourcePitch( AudioSource* source, float pitch );
 
 void SetAudioSourceGain( AudioSource* source, float gain );
 
-void SetAudioSourceAttachmentTarget( AudioSource* source, Solid* target, int flags );
+void SetAudioSourceAttachmentTarget( AudioSource* source, const AttachmentTarget* target );
 
 void SetAudioSourceTransformation( AudioSource* source, Mat4 transformation );
 

@@ -8,7 +8,7 @@ struct Mesh;
 struct ShaderProgram;
 struct ShaderProgramSet;
 struct ShaderVariableSet;
-struct Solid;
+struct AttachmentTarget;
 struct Camera;
 
 
@@ -42,7 +42,7 @@ Model* CreateModel( ModelWorld* world );
 void ReferenceModel( Model* model );
 void ReleaseModel( Model* model );
 
-void SetModelAttachmentTarget( Model* model, Solid* target, int flags );
+void SetModelAttachmentTarget( Model* model, const AttachmentTarget* target );
 void SetModelTransformation( Model* model, Mat4 transformation );
 void SetModelOverlayLevel( Model* model, int level );
 void SetModelMesh( Model* model, Mesh* mesh );

@@ -133,6 +133,10 @@ void* GetPointerFromLua( lua_State* l, int stackPosition );
  */
 void* CheckPointerFromLua( lua_State* l, int stackPosition );
 
+void PushIdToLua( lua_State* l, unsigned int id );
+unsigned int GetIdFromLua( lua_State* l, int stackPosition );
+unsigned int CheckIdFromLua( lua_State* l, int stackPosition );
+
 /**
  * Loads a script from `vfsPath` and executes it.
  */

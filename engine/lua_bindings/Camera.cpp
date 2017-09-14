@@ -1,7 +1,7 @@
 #include "../Lua.h"
 #include "../Camera.h"
 #include "Math.h"
-#include "PhysicsManager.h"
+#include "AttachmentTarget.h"
 #include "ModelWorld.h"
 #include "LightWorld.h"
 #include "Shader.h"
@@ -35,9 +35,8 @@ static int Lua_DestroyCamera( lua_State* l )
 static int Lua_SetCameraAttachmentTarget( lua_State* l )
 {
     Camera* camera = CheckCameraFromLua(l, 1);
-    Solid* attachmentTarget = GetSolidFromLua(l, 2);
-    const int attachmentFlags = CheckTransformationFlagsFromLua(l, 3);
-    SetCameraAttachmentTarget(camera, attachmentTarget, attachmentFlags);
+    const AttachmentTarget* target = GetAttachmentTargetFromLua(l, 2);
+    SetCameraAttachmentTarget(camera, target);
     return 0;
 }
 

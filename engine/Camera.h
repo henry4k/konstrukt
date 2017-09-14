@@ -6,7 +6,7 @@
 
 struct ModelWorld;
 struct LightWorld;
-struct Solid;
+struct AttachmentTarget;
 struct Camera;
 struct ShaderProgram;
 struct ShaderProgramSet;
@@ -29,7 +29,7 @@ Camera* CreateCamera( ModelWorld* modelWorld,
 void ReferenceCamera( Camera* camera );
 void ReleaseCamera( Camera* camera );
 
-void SetCameraAttachmentTarget( Camera* camera, Solid* target, int flags);
+void SetCameraAttachmentTarget( Camera* camera, const AttachmentTarget* target );
 void SetCameraModelTransformation( Camera* camera, Mat4 transformation );
 void SetCameraViewTransformation( Camera* camera, Mat4 transformation );
 void SetCameraAspect( Camera* camera, float aspect );

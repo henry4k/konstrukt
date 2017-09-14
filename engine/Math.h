@@ -5,12 +5,6 @@
 static const double PI = 3.14159265358979323846;
 static const double TAU = PI*2.0;
 
-enum Mat4FilterFlags
-{
-    COPY_ROTATION    = (1 << 0),
-    COPY_TRANSLATION = (1 << 1)
-};
-
 
 typedef struct
 {
@@ -109,7 +103,6 @@ Mat4 OrthographicProjection( float left,
                              float far );
 Mat4 CreateLookAtMat4( Vec3 eye, Vec3 center, Vec3 up );
 Mat4 ClipTranslationOfMat4( Mat4 m );
-Mat4 FilterMat4( Mat4 m, int flags );
 
 
 // Quat

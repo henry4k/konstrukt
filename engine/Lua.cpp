@@ -243,6 +243,21 @@ void* CheckPointerFromLua( lua_State* l, int stackPosition )
     }
 }
 
+void PushIdToLua( lua_State* l, unsigned int id )
+{
+    lua_pushunsigned(l, id);
+}
+
+unsigned int GetIdFromLua( lua_State* l, int stackPosition )
+{
+    return lua_tounsigned(l, stackPosition);
+}
+
+unsigned int CheckIdFromLua( lua_State* l, int stackPosition )
+{
+    return luaL_checkunsigned(l, stackPosition);
+}
+
 static int Lua_SetErrorFunction( lua_State* l )
 {
     luaL_checktype(l, 1, LUA_TFUNCTION);

@@ -8,6 +8,7 @@
                                 _Pragma("GCC diagnostic ignored \"-Wpedantic\"") \
                                 _Pragma("GCC diagnostic ignored \"-Wunused-variable\"") \
                                 _Pragma("GCC diagnostic ignored \"-Wlong-long\"")
+                                _Pragma("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
 #    define END_EXTERNAL_CODE   _Pragma("GCC diagnostic pop")
 #else
 #    define BEGIN_EXTERNAL_CODE

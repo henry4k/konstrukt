@@ -539,27 +539,6 @@ Mat4 ClipTranslationOfMat4( Mat4 m )
     return m;
 }
 
-Mat4 FilterMat4( Mat4 m, int flags )
-{
-    switch(flags)
-    {
-        case 0:
-            return Mat4Identity;
-        case COPY_ROTATION:
-            return ClipTranslationOfMat4(m);
-        case COPY_TRANSLATION:
-        {
-            const Vec3 t = MulMat4ByVec3(m, Vec3Zero);
-            return TranslateMat4(Mat4Identity, t);
-        }
-        case COPY_ROTATION | COPY_TRANSLATION:
-            return m;
-        default:
-            FatalError("Unknown copy flags.");
-            return Mat4Identity;
-    }
-}
-
 
 // Quaternion:
 

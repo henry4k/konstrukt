@@ -7,7 +7,6 @@
 #include "../MeshChunkGenerator.h"
 #include "Math.h"
 #include "MeshBuffer.h"
-#include "PhysicsManager.h"
 #include "VoxelVolume.h"
 #include "MeshChunkGenerator.h"
 

@@ -4,7 +4,7 @@
 #include "Common.h"
 #include "Profiler.h"
 #include "Reference.h"
-#include "PhysicsManager.h"
+#include "AttachmentTarget.h"
 #include "Shader.h"
 #include "LightWorld.h"
 
@@ -17,8 +17,7 @@ struct Light
     bool active;
     ReferenceCounter refCounter;
     ShaderVariableSet* shaderVariableSet;
-    Solid* attachmentTarget;
-    int attachmentFlags;
+    AttachmentTarget attachmentTarget;
     Mat4 transformation;
 
     LightType type;
@@ -101,10 +100,9 @@ void SetMaxActiveLightCount( LightWorld* world, int count )
 
 static Mat4 CalculateLightTransformation( const Light* light )
 {
-    const Mat4 solidTransformation =
-        TryToGetSolidTransformation(light->attachmentTarget,
-                                    light->attachmentFlags);
-    return MulMat4(solidTransformation, light->transformation);
+    const Mat4 t =
+        GetAttachmentTargetTransformation(&light->attachmentTarget);
+    return MulMat4(t, light->transformation);
 }
 
 void UpdateLights( LightWorld* world )
@@ -264,6 +262,7 @@ Light* CreateLight( LightWorld* world, LightType type )
     InitReferenceCounter(&light->refCounter);
     light->shaderVariableSet = CreateShaderVariableSet();
     light->transformation = Mat4Identity;
+    InitAttachmentTarget(&light->attachmentTarget);
     return light;
 }
 
@@ -271,9 +270,8 @@ static void FreeLight( Light* light )
 {
     light->active = false;
     FreeReferenceCounter(&light->refCounter);
-    if(light->attachmentTarget)
-        ReleaseSolid(light->attachmentTarget);
     FreeShaderVariableSet(light->shaderVariableSet);
+    DestroyAttachmentTarget(&light->attachmentTarget);
 }
 
 void ReferenceLight( Light* light )
@@ -288,14 +286,9 @@ void ReleaseLight( Light* light )
         FreeLight(light);
 }
 
-void SetLightAttachmentTarget( Light* light, Solid* target, int flags )
+void SetLightAttachmentTarget( Light* light, const AttachmentTarget* target )
 {
-    if(light->attachmentTarget)
-        ReleaseSolid(light->attachmentTarget);
-    light->attachmentTarget = target;
-    light->attachmentFlags = flags;
-    if(light->attachmentTarget)
-        ReferenceSolid(light->attachmentTarget);
+    CopyAttachmentTarget(&light->attachmentTarget, target);
 }
 
 void SetLightTransformation( Light* light, Mat4 transformation )

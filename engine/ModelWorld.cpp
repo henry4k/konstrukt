@@ -8,7 +8,7 @@
 #include "Texture.h"
 #include "Shader.h"
 #include "Reference.h"
-#include "PhysicsManager.h"
+#include "AttachmentTarget.h"
 #include "Camera.h"
 #include "LightWorld.h"
 #include "ModelWorld.h"
@@ -25,8 +25,7 @@ struct Model
     Mesh* mesh;
     char programFamilyList[MAX_PROGRAM_FAMILY_LIST_SIZE];
     ShaderVariableSet* shaderVariableSet;
-    Solid* attachmentTarget;
-    int attachmentFlags;
+    AttachmentTarget attachmentTarget;
     int overlayLevel;
 };
 
@@ -159,10 +158,9 @@ static int GetShaderVariableSets( const ShaderVariableSet*** setsOut,
 
 static Mat4 CalculateModelTransformation( const Model* model )
 {
-    const Mat4 solidTransformation =
-        TryToGetSolidTransformation(model->attachmentTarget,
-                                    model->attachmentFlags);
-    return MulMat4(solidTransformation, model->transformation);
+    const Mat4 t =
+        GetAttachmentTargetTransformation(&model->attachmentTarget);
+    return MulMat4(t, model->transformation);
 }
 
 static void SetModelDrawEntry( ModelDrawEntry* entry,
@@ -319,6 +317,7 @@ Model* CreateModel( ModelWorld* world )
     InitReferenceCounter(&model->refCounter);
     model->transformation = Mat4Identity;
     model->shaderVariableSet = CreateShaderVariableSet();
+    InitAttachmentTarget(&model->attachmentTarget);
     return model;
 }
 
@@ -329,8 +328,7 @@ static void FreeModel( Model* model )
     FreeShaderVariableSet(model->shaderVariableSet);
     if(model->mesh)
         ReleaseMesh(model->mesh);
-    if(model->attachmentTarget)
-        ReleaseSolid(model->attachmentTarget);
+    DestroyAttachmentTarget(&model->attachmentTarget);
 }
 
 void ReferenceModel( Model* model )
@@ -345,14 +343,9 @@ void ReleaseModel( Model* model )
         FreeModel(model);
 }
 
-void SetModelAttachmentTarget( Model* model, Solid* target, int flags )
+void SetModelAttachmentTarget( Model* model, const AttachmentTarget* target )
 {
-    if(model->attachmentTarget)
-        ReleaseSolid(model->attachmentTarget);
-    model->attachmentTarget = target;
-    model->attachmentFlags = flags;
-    if(model->attachmentTarget)
-        ReferenceSolid(model->attachmentTarget);
+    CopyAttachmentTarget(&model->attachmentTarget, target);
 }
 
 void SetModelTransformation( Model* model, Mat4 transformation )

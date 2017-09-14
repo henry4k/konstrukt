@@ -5,7 +5,7 @@
 #include "Shader.h" // UniformType
 
 
-struct Solid;
+struct AttachmentTarget;
 struct ShaderVariableSet;
 
 
@@ -66,7 +66,7 @@ Light* CreateLight( LightWorld* world, LightType type );
 void ReferenceLight( Light* light );
 void ReleaseLight( Light* light );
 
-void SetLightAttachmentTarget( Light* light, Solid* target, int flags );
+void SetLightAttachmentTarget( Light* light, const AttachmentTarget* target );
 void SetLightTransformation( Light* light, Mat4 transformation );
 void SetLightValue( Light* light, float value );
 void SetLightRange( Light* light, float range );

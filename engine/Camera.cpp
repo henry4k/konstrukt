@@ -5,7 +5,7 @@
 #include "Reference.h"
 #include "ModelWorld.h"
 #include "LightWorld.h"
-#include "PhysicsManager.h"
+#include "AttachmentTarget.h"
 #include "Shader.h"
 #include "Camera.h"
 
@@ -16,8 +16,7 @@ struct Camera
     ModelWorld* modelWorld;
     LightWorld* lightWorld;
     ShaderVariableSet* shaderVariableSet;
-    Solid* attachmentTarget;
-    int attachmentFlags;
+    AttachmentTarget attachmentTarget;
     Mat4 modelTransformation;
     Mat4 viewTransformation;
 
@@ -45,6 +44,7 @@ Camera* CreateCamera( ModelWorld* modelWorld,
     if(camera->lightWorld)
         ReferenceLightWorld(lightWorld);
     camera->shaderVariableSet = CreateShaderVariableSet();
+    InitAttachmentTarget(&camera->attachmentTarget);
 
     camera->modelTransformation = Mat4Identity;
     camera->viewTransformation  = Mat4Identity;
@@ -66,8 +66,7 @@ static void FreeCamera( Camera* camera )
     ReleaseModelWorld(camera->modelWorld);
     if(camera->lightWorld)
         ReleaseLightWorld(camera->lightWorld);
-    if(camera->attachmentTarget)
-        ReleaseSolid(camera->attachmentTarget);
+    DestroyAttachmentTarget(&camera->attachmentTarget);
     FreeShaderVariableSet(camera->shaderVariableSet);
     delete camera;
 }
@@ -84,14 +83,9 @@ void ReleaseCamera( Camera* camera )
         FreeCamera(camera);
 }
 
-void SetCameraAttachmentTarget( Camera* camera, Solid* target, int flags )
+void SetCameraAttachmentTarget( Camera* camera, const AttachmentTarget* target )
 {
-    if(camera->attachmentTarget)
-        ReleaseSolid(camera->attachmentTarget);
-    camera->attachmentTarget = target;
-    camera->attachmentFlags = flags;
-    if(camera->attachmentTarget)
-        ReferenceSolid(camera->attachmentTarget);
+    CopyAttachmentTarget(&camera->attachmentTarget, target);
 }
 
 void SetCameraModelTransformation( Camera* camera, Mat4 transformation )
@@ -174,10 +168,9 @@ static void UpdateCameraProjection( Camera* camera )
 
 static const Mat4 GetCameraModelTransformation( const Camera* camera )
 {
-    const Mat4 solidTransformation =
-        TryToGetSolidTransformation(camera->attachmentTarget,
-                                    camera->attachmentFlags);
-    return MulMat4(InverseMat4(solidTransformation),
+    const Mat4 t =
+        GetAttachmentTargetTransformation(&camera->attachmentTarget);
+    return MulMat4(InverseMat4(t),
                    camera->modelTransformation);
 }
 

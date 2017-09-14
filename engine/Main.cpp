@@ -15,7 +15,7 @@
 #include "Audio.h"
 #include "Math.h"
 #include "Lua.h"
-#include "PhysicsManager.h"
+#include "PhysicsWorld.h"
 #include "RenderTarget.h"
 #include "RenderManager.h"
 #include "Camera.h"
@@ -25,6 +25,7 @@
 #include "JobManager.h"
 
 #include "lua_bindings/Audio.h"
+#include "lua_bindings/AttachmentTarget.h"
 #include "lua_bindings/Camera.h"
 #include "lua_bindings/Config.h"
 #include "lua_bindings/Controls.h"
@@ -37,7 +38,7 @@
 #include "lua_bindings/RenderTarget.h"
 #include "lua_bindings/ModelWorld.h"
 #include "lua_bindings/LightWorld.h"
-#include "lua_bindings/PhysicsManager.h"
+#include "lua_bindings/PhysicsWorld.h"
 #include "lua_bindings/Shader.h"
 #include "lua_bindings/Time.h"
 #include "lua_bindings/Texture.h"
@@ -65,6 +66,7 @@ static int Lua_StopSimulation( lua_State* l )
 static void RegisterAllModulesInLua()
 {
     RegisterAudioInLua();
+    RegisterAttachmentTargetInLua();
     RegisterCameraInLua();
     RegisterConfigInLua();
     RegisterControlsInLua();
@@ -77,7 +79,7 @@ static void RegisterAllModulesInLua()
     RegisterRenderTargetInLua();
     RegisterModelWorldInLua();
     RegisterLightWorldInLua();
-    RegisterPhysicsManagerInLua();
+    RegisterPhysicsWorldInLua();
     RegisterShaderInLua();
     RegisterTimeInLua();
     RegisterTextureInLua();
@@ -99,7 +101,6 @@ static void InitModules( const char* arg0, const Arguments* arguments )
     InitTime();
     InitAudio();
     InitControls();
-    InitPhysicsManager();
     InitShader();
     InitRenderManager();
     InitDefaultRenderTarget();
@@ -112,7 +113,6 @@ static void DestroyModules()
     DestroyDefaultRenderTarget();
     DestroyRenderManager();
     DestroyShader();
-    DestroyPhysicsManager();
     DestroyControls();
     DestroyAudio();
     DestroyTime();
@@ -161,7 +161,6 @@ static void RunSimulation()
         const double timeDelta = curTime-lastTime;
         UpdateTime(timeDelta);
         UpdateControls(timeDelta);
-        UpdatePhysicsManager(timeDelta);
         lastTime = curTime;
         RenderScene();
         NotifyProfilerAboutStepCompletion();

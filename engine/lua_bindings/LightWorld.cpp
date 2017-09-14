@@ -3,7 +3,7 @@
 #include "../Lua.h"
 #include "../LightWorld.h"
 #include "Math.h"
-#include "PhysicsManager.h"
+#include "AttachmentTarget.h"
 #include "Shader.h"
 #include "LightWorld.h"
 
@@ -106,9 +106,8 @@ static int Lua_DestroyLight( lua_State* l )
 static int Lua_SetLightAttachmentTarget( lua_State* l )
 {
     Light* light = CheckLightFromLua(l, 1);
-    Solid* target = GetSolidFromLua(l, 2);
-    const int flags = CheckTransformationFlagsFromLua(l, 3);
-    SetLightAttachmentTarget(light, target, flags);
+    const AttachmentTarget* target = GetAttachmentTargetFromLua(l, 2);
+    SetLightAttachmentTarget(light, target);
     return 0;
 }
 
