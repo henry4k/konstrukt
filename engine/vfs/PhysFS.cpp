@@ -13,11 +13,19 @@
 #define PHYSFS_unmount PHYSFS_removeFromSearchPath
 #endif
 
+static const char* GetPhysFSError()
+{
+#if PHYSFS_VER_MAJOR < 3
+    return PHYSFS_getLastError();
+#else
+    return PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode());
+#endif
+}
 
 static void DestroyVfs_PhysFS()
 {
     if(!PHYSFS_deinit())
-        FatalError("PHYSFS_deinit: %s", PHYSFS_getLastError());
+        FatalError("PHYSFS_deinit: %s", GetPhysFSError());
 }
 
 static void MountVfsDir_PhysFS( Mount* mount )
@@ -26,7 +34,7 @@ static void MountVfsDir_PhysFS( Mount* mount )
         FatalError("Can't mount '%s' as '%s': %s",
                    mount->realPath,
                    mount->vfsPath,
-                   PHYSFS_getLastError());
+                   GetPhysFSError());
 }
 
 static void UnmountVfsDir_PhysFS( const Mount* mount )
@@ -34,7 +42,7 @@ static void UnmountVfsDir_PhysFS( const Mount* mount )
     if(!PHYSFS_unmount(mount->realPath))
         FatalError("Can't unmount '%s': %s",
                    mount->realPath,
-                   PHYSFS_getLastError());
+                   GetPhysFSError());
 }
 
 static void* OpenVfsFile_PhysFS( const Mount* mount,
@@ -50,7 +58,7 @@ static void* OpenVfsFile_PhysFS( const Mount* mount,
     const char* path = Format("%s/%s", mount->vfsPath, subMountPath);
     PHYSFS_File* file = PHYSFS_openRead(path);
     if(!file)
-        FatalError("PHYSFS_openRead: %s", PHYSFS_getLastError());
+        FatalError("PHYSFS_openRead: %s", GetPhysFSError());
 
     return (void*)file;
 }
@@ -58,7 +66,7 @@ static void* OpenVfsFile_PhysFS( const Mount* mount,
 static void CloseVfsFile_PhysFS( const void* file )
 {
     if(!PHYSFS_close((PHYSFS_File*)file))
-        FatalError("PHYSFS_close: %s", PHYSFS_getLastError());
+        FatalError("PHYSFS_close: %s", GetPhysFSError());
 }
 
 static int ReadVfsFile_PhysFS( void* file, void* buffer, int size )
@@ -75,14 +83,14 @@ static int WriteVfsFile_PhysFS( void* file, const void* buffer, int size )
 static void SetVfsFilePos_PhysFS( void* file, int position )
 {
     if(!PHYSFS_seek((PHYSFS_File*)file, position))
-        FatalError("PHYSFS_seek: %s", PHYSFS_getLastError());
+        FatalError("PHYSFS_seek: %s", GetPhysFSError());
 }
 
 static int GetVfsFilePos_PhysFS( const void* file )
 {
     const int pos = PHYSFS_tell((PHYSFS_File*)file);
     if(pos < 0)
-        FatalError("PHYSFS_tell: %s", PHYSFS_getLastError());
+        FatalError("PHYSFS_tell: %s", GetPhysFSError());
     return pos;
 }
 
@@ -90,7 +98,7 @@ static int GetVfsFileSize_PhysFS( const void* file )
 {
     const int length = PHYSFS_fileLength((PHYSFS_File*)file);
     if(length < 0)
-        FatalError("PHYSFS_fileLength: %s", PHYSFS_getLastError());
+        FatalError("PHYSFS_fileLength: %s", GetPhysFSError());
     return length;
 }
 
@@ -130,6 +138,7 @@ static FileType GetVfsFileType_PhysFS( const Mount* mount, const char* subMountP
     else
         path = mount->vfsPath;
 
+#if PHYSFS_VER_MAJOR < 3
     if(PHYSFS_exists(path))
     {
         if(PHYSFS_isDirectory(path))
@@ -137,6 +146,25 @@ static FileType GetVfsFileType_PhysFS( const Mount* mount, const char* subMountP
         else
             return FILE_TYPE_REGULAR;
     }
+#else
+    PHYSFS_Stat stat;
+    if(PHYSFS_stat(path, &stat))
+    {
+        switch(stat.filetype)
+        {
+            case PHYSFS_FILETYPE_DIRECTORY:
+                return FILE_TYPE_DIRECTORY;
+
+            case PHYSFS_FILETYPE_REGULAR:
+                return FILE_TYPE_REGULAR;
+
+            case PHYSFS_FILETYPE_SYMLINK:
+            case PHYSFS_FILETYPE_OTHER:
+                return FILE_TYPE_INVALID;
+        }
+    }
+#endif
+
     return FILE_TYPE_INVALID;
 }
 
@@ -161,7 +189,7 @@ MountSystem* InitVfs_PhysFS( const char* argv0 )
     LogInfo("Using PhysFS %d.%d.%d", linked.major, linked.minor, linked.patch);
 
     if(!PHYSFS_init(argv0))
-        FatalError("PHYSFS_init: %s", PHYSFS_getLastError());
+        FatalError("PHYSFS_init: %s", GetPhysFSError());
 
     PHYSFS_permitSymbolicLinks(true);
 
