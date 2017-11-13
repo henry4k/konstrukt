@@ -1,9 +1,11 @@
 #include <string.h> // strcmp
 #include "../Common.h"
 #include "TestTools.h"
+#include <dummy/inline.hpp>
 
+#define InlineTest DUMMY_INLINE_TEST
 
-void FormatTest()
+InlineTest("Format", dummySignalSandbox)
 {
     Require(strcmp(Format("foo"), "foo") == 0);
     Require(strcmp(Format("bar%d",1), "bar1") == 0);
@@ -14,57 +16,61 @@ void FormatTest()
     Require(strcmp(aaa, "aaa") != 0);
 }
 
+static void LogHandlerCleanup( void* logHandler )
+{
+    SetLogHandler((LogHandler)logHandler);
+}
 
-LogHandler OriginalLogHandler;
+
 int CallCount;
 
-void LogHandlerTest()
+static void TestLogHandler( LogLevel level, const char* line )
 {
-    OriginalLogHandler = GetLogHandler();
-    dummyAddCleanup(
-        []( void* _ ){ SetLogHandler(OriginalLogHandler); },
-        NULL);
+    dummyLog("level=%d line='%s'", level, line);
+    CallCount++;
+    switch(CallCount)
+    {
+        case 1:
+            Require(level == LOG_INFO);
+            Require(strcmp(line, "foo") == 0);
+            break;
 
-    SetLogHandler([]( LogLevel level, const char* line ){
-        dummyLog("level=%d line='%s'", level, line);
-        CallCount++;
-        switch(CallCount)
-        {
-            case 1:
-                Require(level == LOG_INFO);
-                Require(strcmp(line, "foo") == 0);
-                break;
+        case 2:
+            Require(level == LOG_WARNING);
+            Require(strcmp(line, "bar") == 0);
+            break;
 
-            case 2:
-                Require(level == LOG_WARNING);
-                Require(strcmp(line, "bar") == 0);
-                break;
+        case 3:
+            Require(level == LOG_INFO);
+            Require(strcmp(line, "aaa") == 0);
+            break;
 
-            case 3:
-                Require(level == LOG_INFO);
-                Require(strcmp(line, "aaa") == 0);
-                break;
+        case 4:
+            Require(level == LOG_INFO);
+            Require(strcmp(line, "bbb") == 0);
+            break;
 
-            case 4:
-                Require(level == LOG_INFO);
-                Require(strcmp(line, "bbb") == 0);
-                break;
+        case 5:
+            Require(level == LOG_INFO);
+            Require(strcmp(line, "ccc") == 0);
+            break;
 
-            case 5:
-                Require(level == LOG_INFO);
-                Require(strcmp(line, "ccc") == 0);
-                break;
+        case 6:
+            Require(level == LOG_INFO);
+            Require(strcmp(line, "") == 0);
+            break;
 
-            case 6:
-                Require(level == LOG_INFO);
-                Require(strcmp(line, "") == 0);
-                break;
+        default:
+            dummyAbortTest(DUMMY_FAIL_TEST,
+                "Invalid log handler call count: %d", CallCount);
+    }
+}
 
-            default:
-                dummyAbortTest(DUMMY_FAIL_TEST,
-                    "Invalid log handler call count: %d", CallCount);
-        }
-    });
+InlineTest("Log", dummySignalSandbox)
+{
+    dummyAddCleanup(LogHandlerCleanup, (void*)GetLogHandler());
+
+    SetLogHandler(TestLogHandler);
 
     CallCount = 0;
 
@@ -76,8 +82,7 @@ void LogHandlerTest()
     Require(CallCount == 6);
 }
 
-
-void CopyStringTest()
+InlineTest("CopyString", dummySignalSandbox)
 {
     static const int maxLength = 7;
     char destination[maxLength+1];
@@ -97,12 +102,9 @@ void CopyStringTest()
     Require(memcmp(largeSourceDestination, destination, sizeof(destination)) == 0);
 }
 
-
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
-    AddTest("Format() works correct.", FormatTest);
-    AddTest("Log handler can handle log lines.", LogHandlerTest);
-    AddTest("CopyString() is correct.", CopyStringTest);
+    dummyAddInlineTests();
     return RunTests();
 }
