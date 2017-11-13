@@ -1,9 +1,11 @@
 #include <assert.h>
+#include <stdlib.h> // atexit
 #include <string.h> // strrchr, strncpy
 #include <stdio.h> // stdout
 #include <dummy/tap_reporter.h>
 
 #include "../Common.h"
+#include "../Vfs.h"
 
 #include "TestTools.h"
 
@@ -87,4 +89,10 @@ void ChangeDirectoryToExecutableOrigin( const char* executablePath )
     {
         // Already in the directory of the executable.
     }
+}
+
+void InitTestVfs( const char* argv0 )
+{
+    InitVfs(argv0, NULL, NULL);
+    atexit(DestroyVfs);
 }
