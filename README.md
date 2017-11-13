@@ -1,9 +1,7 @@
 Konstrukt
 =========
 
-![](icons/blueprint_square.svg)
-
-![](icons/blueprint_circle.svg)
+![](icons/blueprint_square_cutout.svg)
 
 A 3D game engine.
 
