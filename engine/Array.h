@@ -44,8 +44,8 @@ void ReserveInArray( Array<T>* array, int amount )
         int newCapacity = (array->capacity == 0) ? 1 : array->capacity;
         do
         {
-            newCapacity += newCapacity * 3/2; // 1.5
-        } while(newCapacity < array->capacity);
+            newCapacity += newCapacity * 3 / 2; // 1.5
+        } while(newCapacity < amount);
 
         array->data = (T*)ReAlloc(array->data, newCapacity*sizeof(T));
         array->capacity = newCapacity;
@@ -57,7 +57,7 @@ T* AllocateInArray( Array<T>* array, int pos, int amount )
 {
     Ensure(pos >= 0);
     Ensure(pos <= array->length);
-    Ensure(amount > 0);
+    Ensure(amount >= 0);
 
     ReserveInArray(array, array->length+amount);
 
@@ -95,7 +95,7 @@ void RemoveFromArray( Array<T>* array, int pos, int amount )
 {
     Ensure(pos >= 0);
     Ensure(pos < array->length);
-    Ensure(amount > 0);
+    Ensure(amount >= 0);
     Ensure(pos+amount <= array->length);
 
     T* dst = array->data + pos;
