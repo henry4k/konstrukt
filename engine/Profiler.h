@@ -175,7 +175,7 @@ struct _ProfileSampleInScope
 #define IncreaseCounter( counter, value )
 #define DecreaseCounter( counter, value )
 #define NotifyProfilerAboutStepCompletion()
-#define NotifyProfilerAboutThreadCreation()
+#define NotifyProfilerAboutThreadCreation( name )
 
 #endif // KONSTRUKT_PROFILER_ENABLED
 #endif

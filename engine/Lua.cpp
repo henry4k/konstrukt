@@ -115,7 +115,7 @@ static int GetLuaMemoryInBytes()
            lua_gc(g_LuaState, LUA_GCCOUNTB, 0);
 }
 
-static void UpdateLua( void* data )
+static void UpdateLua( void* _data )
 {
     ProfileScope("Lua GC");
 

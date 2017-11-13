@@ -162,17 +162,18 @@ static void RunSimulation()
         UpdateTime(timeDelta);
         UpdateControls(timeDelta);
         lastTime = curTime;
-        RenderScene();
-        NotifyProfilerAboutStepCompletion();
-
 
         // (gesynctes zeugs hier tun)
 
         BeginLuaUpdate(JobManagerInstance);
         BeginAudioUpdate(JobManagerInstance);
+        BeginRenderManagerUpdate(NULL, JobManagerInstance, timeDelta);
 
         CompleteLuaUpdate(JobManagerInstance);
         CompleteAudioUpdate(JobManagerInstance);
+        CompleteRenderManagerUpdate(NULL, JobManagerInstance);
+
+        NotifyProfilerAboutStepCompletion();
     }
 
     UnlockJobManager(JobManagerInstance);

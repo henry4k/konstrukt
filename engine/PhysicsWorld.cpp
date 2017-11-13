@@ -78,7 +78,6 @@ struct PhysicsWorld
 static CollisionCallback CurrentCollisionCallback = NULL;
 
 
-static void FreeSolid( Solid* solid );
 static void DestroyAllFocesOfSolid( PhysicsWorld* world, SolidId solidId );
 static void WorldTickCallback( btDynamicsWorld* world, btScalar duration );
 static void HandleCollisions( PhysicsWorld* world );

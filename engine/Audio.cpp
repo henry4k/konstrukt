@@ -115,7 +115,7 @@ void DestroyAudio()
     alureShutdownDevice();
 }
 
-static void UpdateAudio( void* data )
+static void UpdateAudio( void* _data )
 {
     ProfileFunction();
 
@@ -124,8 +124,6 @@ static void UpdateAudio( void* data )
     for(int i = 0; i < AudioSourceCount; ++i)
         if(IsActiveAudioSource(&AudioSources[i]))
             UpdateAudioSource(&AudioSources[i]);
-
-    Sleep(0.0007);
 }
 
 void BeginAudioUpdate( JobManager* jobManager )
@@ -156,8 +154,8 @@ void SetAudioListenerTransformation( Mat4 transformation )
     ListenerTransformation = transformation;
 }
 
-const Vec3 Forward = {{0,0,1}};
-const Vec3 Up      = {{0,1,0}};
+static const Vec3 Forward = {{0,0,1}};
+static const Vec3 Up      = {{0,1,0}};
 
 static void UpdateAudioListener()
 {

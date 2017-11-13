@@ -6,12 +6,14 @@
 #include "Shader.h"
 #include "RenderTarget.h"
 #include "Window.h" // SwapBuffers
+#include "JobManager.h"
 #include "RenderManager.h"
 
 
 DefineCounter(FrameTimeCounter, "frame time (ms)");
 static double LastFrameTimestamp;
 static double FrameTime;
+static JobId UpdateJob;
 
 
 void InitRenderManager()
@@ -33,8 +35,10 @@ void DestroyRenderManager()
 {
 }
 
-void RenderScene()
+static void RenderScene( void* _data )
 {
+    ProfileScope("RenderScene");
+
     SetFloatUniform(GetGlobalShaderVariableSet(), "Time", GetTime());
 
     RenderTarget* defaultRenderTarget = GetDefaultRenderTarget();
@@ -73,4 +77,14 @@ void RenderScene()
 double GetFrameTime()
 {
     return FrameTime;
+}
+
+void BeginRenderManagerUpdate( void* _context, JobManager* jobManager, double _timeDelta )
+{
+    UpdateJob = CreateJob(jobManager, {"RenderScene", RenderScene});
+}
+
+void CompleteRenderManagerUpdate( void* _context, JobManager* jobManager )
+{
+    WaitForJobs(jobManager, &UpdateJob, 1);
 }
