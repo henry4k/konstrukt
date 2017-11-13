@@ -1,6 +1,10 @@
 Konstrukt
 =========
 
+![](icons/blueprint_square.svg)
+
+![](icons/blueprint_circle.svg)
+
 A 3D game engine.
 
 The project is still very WIP!
