@@ -11,7 +11,7 @@ struct BitCondition
     int value;  /** Value to which the bits are compared to. */
 };
 
-struct BitFieldPayloadList
+struct BitFieldPayloadList // TODO: Use Array<void*> instead?
 {
     int length;
     void** data;

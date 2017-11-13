@@ -74,9 +74,8 @@ static OptimizedBitCondition OptimizeBitCondition( const BitCondition in )
     assert(in.length <= MAX_BIT_CONDITION_BYTES*BITS_PER_BYTE);
     OptimizedBitCondition out;
     memset(&out, 0, sizeof(out));
-    out.byteCount = ceili(in.offset+in.length, BITS_PER_BYTE) -
-                    floori(in.offset, BITS_PER_BYTE);
-    out.byteOffset = floorf((float)in.offset / (float)BITS_PER_BYTE);
+    out.byteOffset = floori(in.offset, BITS_PER_BYTE);
+    out.byteCount = ceili(in.offset+in.length, BITS_PER_BYTE) - out.byteOffset;
     assert(out.byteCount >= 0); // == 0 could be used for funny hacks.
     assert(out.byteCount <= MAX_BIT_CONDITION_BYTES);
     REPEAT(out.byteCount, i)
@@ -86,7 +85,7 @@ static OptimizedBitCondition OptimizeBitCondition( const BitCondition in )
         if(out.byteCount == 1)
         {
             const int start = in.offset % BITS_PER_BYTE;
-            const int end = (in.offset + in.length) % BITS_PER_BYTE;
+            const int end = (in.offset + in.length - 1) % BITS_PER_BYTE + 1; // -1 and +1 to avoid a zero
             mask = CreateMask(start, BITS_PER_BYTE-start) &
                    CreateMask(0, end);
             value = in.value << start;
@@ -99,7 +98,7 @@ static OptimizedBitCondition OptimizeBitCondition( const BitCondition in )
         }
         else if(i == out.byteCount-1) // last
         {
-            const int end = (in.offset + in.length) % BITS_PER_BYTE;
+            const int end = (in.offset + in.length - 1) % BITS_PER_BYTE + 1; // -1 and +1 to avoid a zero
             mask = CreateMask(0, end);
             value = in.value >> (in.length - end);
         }
