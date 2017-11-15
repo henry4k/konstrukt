@@ -151,7 +151,7 @@ static void InitScript( const Arguments* args )
 
 static void RunSimulation()
 {
-    LockJobManager(JobManagerInstance);
+    //LockJobManager(JobManagerInstance);
 
     double lastTime = glfwGetTime();
     while(!WindowShouldClose())
@@ -176,7 +176,7 @@ static void RunSimulation()
         NotifyProfilerAboutStepCompletion();
     }
 
-    UnlockJobManager(JobManagerInstance);
+    //UnlockJobManager(JobManagerInstance);
 }
 
 

@@ -20,20 +20,24 @@ struct JobManagerConfig
     int workerThreads;
 };
 
+/**
+ * Creating thread has initially a lock on the job manager.
+ */
 JobManager* CreateJobManager( JobManagerConfig config );
 
 void DestroyJobManager( JobManager* manager );
 
 /**
  * Must be run before accessing the job manager.
- *
- * Except for #DestroyJobManager.
  */
 void LockJobManager( JobManager* manager );
 void UnlockJobManager( JobManager* manager );
 
 /**
  * Block till all given jobs are completed.
+ *
+ * The job manager gets unlocked while waiting and is locked again when
+ * control is returned to the calling thread.
  */
 void WaitForJobs( JobManager* manager, const JobId* jobIds, int jobIdCount );
 

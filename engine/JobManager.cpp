@@ -73,12 +73,13 @@ JobManager* CreateJobManager( JobManagerConfig config )
         Ensure(thrd_create(&worker->thread, WorkerThreadFn, arg) == thrd_success);
     }
 
+    LockJobManager(manager);
+
     return manager;
 }
 
 void DestroyJobManager( JobManager* manager )
 {
-    LockJobManager(manager);
     manager->isStopping = true;
     cnd_broadcast(&manager->updateCondition);
     UnlockJobManager(manager);
