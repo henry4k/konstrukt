@@ -3,6 +3,9 @@
 #include "../Common.h"
 #include "../Math.h"
 #include "TestTools.h"
+#include <dummy/inline.hpp>
+
+#define InlineTest DUMMY_INLINE_TEST
 
 
 const float Epsilon = FLT_EPSILON;
@@ -10,7 +13,7 @@ const float Epsilon = FLT_EPSILON;
 
 // Vector:
 
-void Vec3LengthTest()
+InlineTest("Vec3Length", dummySignalSandbox)
 {
     {
         Vec3 v = {{1,0,0}};
@@ -33,7 +36,7 @@ void Vec3LengthTest()
     }
 }
 
-void NormalizeVec3Test()
+InlineTest("NormalizeVec3", dummySignalSandbox)
 {
     {
         Vec3 v = {{1,0,0}};
@@ -49,7 +52,7 @@ void NormalizeVec3Test()
     }
 }
 
-void CrossProductOfVec3Test()
+InlineTest("CrossProductOfVec3", dummySignalSandbox)
 {
     Vec3 a = {{1,0,0}};
     Vec3 b = {{0,1,0}};
@@ -81,14 +84,14 @@ static void LogMat4( const char* name, Mat4 m )
     }
 }
 
-void MulMat4Test()
+InlineTest("MulMat4", dummySignalSandbox)
 {
     const Mat4 m = {{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}};
     const Mat4 r = MulMat4(m, Mat4Identity);
     Require(ArraysAreEqual(r._, m._, 4*4));
 }
 
-void ScaleMat4Test()
+InlineTest("ScaleMat4", dummySignalSandbox)
 {
     Mat4 m = Mat4Identity;
     MAT4_AT(m,3,0) = 1;
@@ -106,7 +109,7 @@ void ScaleMat4Test()
     Require(MAT4_AT(r,2,2) == 2);
 }
 
-void RotateMat4ByAngleAndAxisTest()
+InlineTest("RotateMat4ByAngleAndAxis", dummySignalSandbox)
 {
     Mat4 t = Mat4Identity;
     MAT4_AT(t,3,0) = 1;
@@ -121,7 +124,7 @@ void RotateMat4ByAngleAndAxisTest()
     Require(ArraysAreNearlyEqual(r._, e._, 3, Epsilon*14));
 }
 
-void TranslateMat4Test()
+InlineTest("TranslateMat4", dummySignalSandbox)
 {
     Mat4 m = Mat4Identity;
     MAT4_AT(m,3,0) = 1;
@@ -136,7 +139,7 @@ void TranslateMat4Test()
     Require(MAT4_AT(r,3,2) == 3);
 }
 
-void TranslateScaleRotateMat4Test()
+InlineTest("TranslateScaleRotateMat4", dummySignalSandbox)
 {
     const Vec3 t = {{10,0,0}};
     const Vec3 s = {{2,2,2}};
@@ -149,7 +152,7 @@ void TranslateScaleRotateMat4Test()
     Require(ArraysAreNearlyEqual(r._, e._, 3, Epsilon*2));
 }
 
-void TransposeMat4Test()
+InlineTest("TransposeMat4", dummySignalSandbox)
 {
     const Mat4 m = {{1,0,0,1,
                      0,1,0,0,
@@ -164,7 +167,7 @@ void TransposeMat4Test()
     Require(ArraysAreNearlyEqual(r._, e._, 4*4, Epsilon));
 }
 
-void MulMat4ByVec3Test()
+InlineTest("MulMat4ByVec3", dummySignalSandbox)
 {
     Mat4 m = Mat4Identity;
     MAT4_AT(m,3,0) = 10; // translate X by 10
@@ -175,7 +178,7 @@ void MulMat4ByVec3Test()
     Require(ArraysAreEqual(r._, e._, 3));
 }
 
-void InverseMat4Test()
+InlineTest("InverseMat4", dummySignalSandbox)
 {
     // A matrix, multiplied by its inverse should give the identity matrix:
     //const Mat4 m = CreateMat4(1);
@@ -189,7 +192,7 @@ void InverseMat4Test()
     // TODO: This is a stupid test. :/
 }
 
-void PerspectivicProjectionTest()
+InlineTest("PerspectivicProjection", dummySignalSandbox)
 {
     const Mat4 r = PerspectivicProjection(80, 0.8f, 1, 100);
 
@@ -200,7 +203,7 @@ void PerspectivicProjectionTest()
     Require(ArraysAreNearlyEqual(r._, e._, 4*4, Epsilon));
 }
 
-void OrthographicProjectionTest()
+InlineTest("OrthographicProjection", dummySignalSandbox)
 {
     const Mat4 r = OrthographicProjection(1,2,3,4,5,6);
 
@@ -211,7 +214,7 @@ void OrthographicProjectionTest()
     Require(ArraysAreNearlyEqual(r._, e._, 4*4, Epsilon));
 }
 
-void CreateLookAtMat4Test()
+InlineTest("CreateLookAtMat4", dummySignalSandbox)
 {
     const Vec3 eye    = {{0,0,0}};
     const Vec3 center = {{1,0,0}};
@@ -228,7 +231,7 @@ void CreateLookAtMat4Test()
 
 // Quaternion:
 
-void QuatFromAngleAndAxisTest()
+InlineTest("QuatFromAngleAndAxis", dummySignalSandbox)
 {
     const Vec3 axis = {{1,0,0}};
     const Quat r = QuatFromAngleAndAxis(4, axis);
@@ -237,7 +240,7 @@ void QuatFromAngleAndAxisTest()
     Require(ArraysAreEqual(r._, e._, 4));
 }
 
-void NormalizeQuatTest()
+InlineTest("NormalizeQuat", dummySignalSandbox)
 {
     const Quat q = {{1,2,3,4}};
     const Quat r = NormalizeQuat(q);
@@ -246,7 +249,7 @@ void NormalizeQuatTest()
     Require(ArraysAreEqual(r._, e._, 4));
 }
 
-void QuatConjugateTest()
+InlineTest("QuatConjugate", dummySignalSandbox)
 {
     const Quat q = {{1,2,3,4}};
     const Quat r = QuatConjugate(q);
@@ -255,7 +258,7 @@ void QuatConjugateTest()
     Require(ArraysAreEqual(r._, e._, 4));
 }
 
-void InvertQuatTest()
+InlineTest("InvertQuat", dummySignalSandbox)
 {
     const Quat q = {{1,2,3,4}};
     const Quat r = InvertQuat(q);
@@ -264,7 +267,7 @@ void InvertQuatTest()
     Require(ArraysAreEqual(r._, e._, 4));
 }
 
-void MulQuatTest()
+InlineTest("MulQuat", dummySignalSandbox)
 {
     const Quat a = {{1,2,3,4}};
     const Quat b = {{4,3,2,1}};
@@ -274,7 +277,7 @@ void MulQuatTest()
     Require(ArraysAreEqual(r._, e._, 4));
 }
 
-void MulQuatByVec3Test()
+InlineTest("MulQuatByVec3", dummySignalSandbox)
 {
     const Quat q = {{1,2,3,4}};
     const Vec3 v = {{5,6,7}};
@@ -284,7 +287,7 @@ void MulQuatByVec3Test()
     Require(ArraysAreEqual(r._, e._, 3));
 }
 
-void Mat4FromQuatTest()
+InlineTest("Mat4FromQuat", dummySignalSandbox)
 {
     const Vec3 axis = {{0,1,0}};
     const Quat q = QuatFromAngleAndAxis(PI/2, axis);
@@ -299,30 +302,6 @@ void Mat4FromQuatTest()
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
-
-    AddTest("Vec3Length", Vec3LengthTest);
-    AddTest("NormalizeVec3", NormalizeVec3Test);
-    AddTest("CrossProductOfVec3", CrossProductOfVec3Test);
-
-    AddTest("MulMat4", MulMat4Test);
-    AddTest("ScaleMat4", ScaleMat4Test);
-    AddTest("RotateMat4ByAngleAndAxis", RotateMat4ByAngleAndAxisTest);
-    AddTest("TranslateMat4", TranslateMat4Test);
-    AddTest("TranslateScaleRotateMat4", TranslateScaleRotateMat4Test);
-    AddTest("TransposeMat4", TransposeMat4Test);
-    AddTest("MulMat4ByVec3", MulMat4ByVec3Test);
-    AddTest("InverseMat4", InverseMat4Test);
-    AddTest("PerspectivicProjection", PerspectivicProjectionTest);
-    AddTest("OrthographicProjection", OrthographicProjectionTest);
-    AddTest("CreateLookAtMat4", CreateLookAtMat4Test);
-
-    AddTest("QuatFromAngleAndAxis", QuatFromAngleAndAxisTest);
-    AddTest("NormalizeQuat", NormalizeQuatTest);
-    AddTest("QuatConjugate", QuatConjugateTest);
-    AddTest("InvertQuat", InvertQuatTest);
-    AddTest("MulQuat", MulQuatTest);
-    AddTest("MulQuatByVec3", MulQuatByVec3Test);
-    AddTest("Mat4FromQuat", Mat4FromQuatTest);
-
+    dummyAddInlineTests();
     return RunTests();
 }
