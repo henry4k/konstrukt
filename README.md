@@ -12,6 +12,46 @@ This repository contains the engine and the core package.
 at https://github.com/henry4k/apoapsis-example to see how it can be used.
 
 
+## Features
+
+### General
+
+- audio
+- physics
+- rendering (optimized for 3D; OpenGL 3.2)
+- shaders (GLSL)
+- image loading/processing
+- mesh processing
+- integrated profilers
+- scripting (Lua)
+- package oriented
+
+
+### Highlights
+
+- attachment targets
+  - relevant 'engine objects' (like audio sources, models, lights, cameras) can be attached
+  - currently attachment targets are only solids, but this can easily be extended if needed
+  - can be the foundation for a scene graph, which could be implemented entirely in Lua
+- shaders see variables from their environment
+  - model, light, camera, shader program, global
+- textures are bound directly to GLSL samplers, no need to care about texture units
+- only models affected by a light source are rendered with it
+- logic takes place in scripts (Lua), while performance critical code is implemented natively
+- packages group assets and scripts and are accessible via a virtual file system
+  - konstrukt has a separate package manager and launcher: [konstrukt-pkman](https://github.com/henry4k/konstrukt-pkman)
+
+
+### Planned Features
+
+- multiplayer
+- better support for voxel-based games
+    - cellular automata for fluid simulation (a [prototype](https://git.b4sh.de/henry4k/ca-test) is being developed)
+    - mesh generators
+- concurrency (this includes deferred loading and reloading of assets)
+- render-to-texture (via the render target interface, which is already present)
+
+
 ## Running the engine
 
 The engine has the following command line interface:
