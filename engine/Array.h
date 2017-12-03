@@ -42,11 +42,8 @@ void ReserveInArray( Array<T>* array, int amount )
     if(amount > array->capacity)
     {
         int newCapacity = (array->capacity == 0) ? 1 : array->capacity;
-        do
-        {
+        while(newCapacity < amount)
             newCapacity += newCapacity * 3 / 2; // 1.5
-        } while(newCapacity < amount);
-
         array->data = (T*)ReAlloc(array->data, newCapacity*sizeof(T));
         array->capacity = newCapacity;
     }
