@@ -2,7 +2,7 @@
 #include <exception>
 
 #include "signal.h"
-#include "exception_sandbox.h"
+#include "exception_sandbox.hpp"
 
 
 class AbortError

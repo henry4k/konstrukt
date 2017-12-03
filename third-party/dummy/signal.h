@@ -7,6 +7,10 @@
 
 #include <signal.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 typedef void (*dummySignalHandler)(int);
 
@@ -14,5 +18,9 @@ void dummyPushSignalHandler( dummySignalHandler fn );
 void dummyPopSignalHandler();
 
 const char* dummySignalToAbortReason( int signal );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
