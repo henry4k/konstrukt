@@ -84,7 +84,7 @@ InlineTest("queue job while another is running", dummySignalSandbox)
     Require(GetJobData(manager, jobA) == &workA);
 
     // Queue second job:
-    Work workB = {1, false};
+    Work workB = {2, false};
     JobId jobB = CreateJob(manager, {"worker B", DoWork, &workB});
 
     UnlockJobManager(manager);

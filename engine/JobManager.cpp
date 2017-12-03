@@ -169,6 +169,11 @@ void* GetJobData( JobManager* manager, JobId jobId )
     return GetFixedArrayElement(&manager->jobs, jobId)->config.data;
 }
 
+static Job* GetJob( JobManager* manager, JobId jobId )
+{
+    return GetFixedArrayElement(&manager->jobs, jobId);
+}
+
 
 // --- Worker specific ---
 
@@ -193,7 +198,6 @@ static JobId TryToGetQueuedJob( JobManager* manager )
 struct UpdateResult
 {
     bool shallStop;
-    Job* job;
     JobId jobId;
 };
 
@@ -209,7 +213,6 @@ static bool GetUpdate( JobManager* manager, UpdateResult* update )
     const JobId jobId = TryToGetQueuedJob(manager);
     if(jobId != INVALID_JOB_ID)
     {
-        update->job = GetFixedArrayElement(&manager->jobs, jobId);
         update->jobId = jobId;
         return true;
     }
@@ -226,26 +229,32 @@ static int WorkerThreadFn( void* arg_ )
 
     for(;;)
     {
-        LockJobManager(manager);
+        LockJobManager(manager); // Can be released at different locations!
 
         UpdateResult update;
         memset(&update, 0, sizeof(update));
         while(!GetUpdate(manager, &update))
             Ensure(cnd_wait(&manager->updateCondition, &manager->mutex) == thrd_success);
 
+        JobConfig jobConfig; // May be uninitialized! See below ...
+        if(!update.shallStop)
+            jobConfig = GetJob(manager, update.jobId)->config;
+
         UnlockJobManager(manager);
 
-
         if(update.shallStop)
+        {
             break;
+        }
         else
         {
-            update.job->config.function(update.job->config.data);
+            jobConfig.function(jobConfig.data);
 
             LockJobManager(manager);
 
-            Ensure(update.job->status == ACTIVE_JOB);
-            update.job->status = COMPLETED_JOB;
+            Job* job = GetJob(manager, update.jobId);
+            Ensure(job->status == ACTIVE_JOB);
+            job->status = COMPLETED_JOB;
 
             cnd_t* completionCondition =
                 GetArrayElement(&manager->jobCompletionConditions, update.jobId);
