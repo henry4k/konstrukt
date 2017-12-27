@@ -41,8 +41,8 @@ static void RenderScene( void* _data )
 
     SetFloatUniform(GetGlobalShaderVariableSet(), "Time", GetTime());
 
-    RenderTarget* defaultRenderTarget = GetDefaultRenderTarget();
-    UpdateRenderTarget(defaultRenderTarget);
+    //RenderTarget* defaultRenderTarget = GetDefaultRenderTarget();
+    //UpdateRenderTarget(defaultRenderTarget); // TODO
 
     SwapBuffers();
     const double curTimestamp = glfwGetTime();

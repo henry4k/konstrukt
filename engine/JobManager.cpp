@@ -93,6 +93,10 @@ void DestroyJobManager( JobManager* manager )
     REPEAT(manager->jobCompletionConditions.length, i)
         cnd_destroy(manager->jobCompletionConditions.data + i);
 
+    REPEAT(manager->jobs._.length, i)
+        if(manager->jobs._.data[i].inUse)
+            RemoveJob(manager, i);
+
     mtx_destroy(&manager->mutex);
     cnd_destroy(&manager->updateCondition);
     DestroyArray(&manager->workers);
@@ -155,6 +159,8 @@ void RemoveJob( JobManager* manager, JobId jobId )
 {
     const Job* job = GetFixedArrayElement(&manager->jobs, jobId);
     Ensure(job->status == COMPLETED_JOB);
+    if(job->config.destructor)
+        job->config.destructor(job->config.data);
     RemoveFromFixedArray(&manager->jobs, jobId);
     DecreaseCounter(JobCounter, 1);
 }

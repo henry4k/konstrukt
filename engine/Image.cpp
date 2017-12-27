@@ -9,6 +9,7 @@ END_EXTERNAL_CODE
 
 #include "Common.h"
 #include "Vfs.h"
+#include "JobManager.h" //
 #include "OpenGL.h"
 #include "Image.h"
 
@@ -161,4 +162,26 @@ void FreeImage( const Image* image )
 {
     if(image->data)
         Free(image->data);
+}
+
+// ---------------------------------------------------------------------------
+
+struct LoadImageJobDesc
+{
+    Image* image;
+    const char* vfsPath;
+};
+
+static void LoadImageJobFn( void* _data )
+{
+    const LoadImageJobDesc* desc = (LoadImageJobDesc*)_data;
+    LoadImage(desc->image, desc->vfsPath);
+}
+
+JobId LoadImageAsync( JobManager* jobManager, Image* image, const char* vfsPath )
+{
+    LoadImageJobDesc* desc = NEW(LoadImageJobDesc);
+    desc->image = image;
+    desc->vfsPath = vfsPath;
+    return CreateJob(jobManager, {"LoadImage", LoadImageJobFn, Free, desc});
 }

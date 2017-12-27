@@ -205,6 +205,36 @@ InlineTest("CreateResizedImage", dummySignalSandbox)
     FreeImage(&resizedImage);
 }
 
+#include "../JobManager.h"
+
+InlineTest("load image asynchronously", dummySignalSandbox)
+{
+    JobManagerConfig managerConfig;
+    managerConfig.workerThreads = 3;
+    JobManager* manager = CreateJobManager(managerConfig);
+
+    Image image;
+    const JobId job = LoadImageAsync(manager, &image, "data/Image/rgb.png");
+
+    LogNotice("loading ...");
+    WaitForJobs(manager, &job, 1);
+    RemoveJob(manager, job);
+    LogNotice("loaded");
+
+    DestroyJobManager(manager);
+
+    Require(image.width  == 32);
+    Require(image.height == 32);
+    Require(image.channelCount == 3);
+    Require(image.data != NULL);
+
+    Require(GetPixel(&image, 0,  0) == 0xFF0000);
+    Require(GetPixel(&image, 15, 0) == 0x00FF00);
+    Require(GetPixel(&image, 31, 0) == 0x0000FF);
+
+    FreeImage(&image);
+}
+
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);

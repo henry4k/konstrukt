@@ -183,12 +183,13 @@ static void UpdatePhysicsWorld( void* _data )
 
 void BeginPhysicsWorldUpdate( PhysicsWorld* world, JobManager* jobManager, double duration )
 {
-    world->updateJob = CreateJob(jobManager, {"UpdatePhysicsWorld", UpdatePhysicsWorld, world});
+    world->updateJob = CreateJob(jobManager, {"UpdatePhysicsWorld", UpdatePhysicsWorld, NULL, world});
 }
 
 void CompletePhysicsWorldUpdate( PhysicsWorld* world, JobManager* jobManager )
 {
     WaitForJobs(jobManager, &world->updateJob, 1);
+    RemoveJob(jobManager, world->updateJob);
     UpdateSolidMotionStates(world);
 }
 
