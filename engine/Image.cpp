@@ -178,10 +178,10 @@ static void LoadImageJobFn( void* _data )
     LoadImage(desc->image, desc->vfsPath);
 }
 
-JobId LoadImageAsync( JobManager* jobManager, Image* image, const char* vfsPath )
+JobId LoadImageAsync( Image* image, const char* vfsPath )
 {
     LoadImageJobDesc* desc = NEW(LoadImageJobDesc);
     desc->image = image;
     desc->vfsPath = vfsPath;
-    return CreateJob(jobManager, {"LoadImage", LoadImageJobFn, Free, desc});
+    return CreateJob({"LoadImage", LoadImageJobFn, Free, desc});
 }

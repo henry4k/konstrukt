@@ -52,12 +52,12 @@ void DestroyAudio();
 /**
  * Will enqueue audio processing in a job.
  */
-void BeginAudioUpdate( JobManager* jobManager );
+void BeginAudioUpdate();
 
 /**
  * Waits till audio processing is done.
  */
-void CompleteAudioUpdate( JobManager* jobManager );
+void CompleteAudioUpdate();
 
 /**
  * Set global audio volume.

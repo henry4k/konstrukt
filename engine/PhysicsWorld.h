@@ -5,9 +5,6 @@
 #include "Math.h"
 
 
-struct JobManager;
-
-
 /**
  * Simulates body collision and movement.
  */
@@ -101,8 +98,8 @@ typedef void (*CollisionCallback)( PhysicsWorld* world, const Collision* collisi
 
 PhysicsWorld* CreatePhysicsWorld();
 void DestroyPhysicsWorld( PhysicsWorld* world );
-void BeginPhysicsWorldUpdate( PhysicsWorld* world, JobManager* jobManager, double timeDelta );
-void CompletePhysicsWorldUpdate( PhysicsWorld* world, JobManager* jobManager );
+void BeginPhysicsWorldUpdate( PhysicsWorld* world, double timeDelta );
+void CompletePhysicsWorldUpdate( PhysicsWorld* world );
 void SetCollisionCallback( CollisionCallback callback );
 void SetGravity( PhysicsWorld* world, Vec3 force );
 

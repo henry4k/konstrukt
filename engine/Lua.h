@@ -8,8 +8,6 @@ extern "C"
 #include <lauxlib.h>
 }
 
-struct JobManager;
-
 
 enum
 {
@@ -31,8 +29,8 @@ lua_State* GetLuaState();
 
 bool IsLuaRunning();
 
-void BeginLuaUpdate( JobManager* jobManager );
-void CompleteLuaUpdate( JobManager* jobManager );
+void BeginLuaUpdate();
+void CompleteLuaUpdate();
 
 /**
  * Registers a native function in Lua.

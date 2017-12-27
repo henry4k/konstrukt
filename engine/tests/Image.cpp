@@ -211,17 +211,17 @@ InlineTest("load image asynchronously", dummySignalSandbox)
 {
     JobManagerConfig managerConfig;
     managerConfig.workerThreads = 3;
-    JobManager* manager = CreateJobManager(managerConfig);
+    InitJobManager(managerConfig);
 
     Image image;
-    const JobId job = LoadImageAsync(manager, &image, "data/Image/rgb.png");
+    const JobId job = LoadImageAsync(&image, "data/Image/rgb.png");
 
     LogNotice("loading ...");
-    WaitForJobs(manager, &job, 1);
-    RemoveJob(manager, job);
+    WaitForJobs(&job, 1);
+    RemoveJob(job);
     LogNotice("loaded");
 
-    DestroyJobManager(manager);
+    DestroyJobManager();
 
     Require(image.width  == 32);
     Require(image.height == 32);

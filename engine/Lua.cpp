@@ -130,14 +130,14 @@ static void UpdateLua( void* _data )
     //            memAfterGC, delta);
 }
 
-void BeginLuaUpdate( JobManager* jobManager )
+void BeginLuaUpdate()
 {
-    LuaUpdateJob = CreateJob(jobManager, {"UpdateLua", UpdateLua});
+    LuaUpdateJob = CreateJob({"UpdateLua", UpdateLua});
 }
 
-void CompleteLuaUpdate( JobManager* jobManager )
+void CompleteLuaUpdate()
 {
-    WaitForJobs(jobManager, &LuaUpdateJob, 1);
+    WaitForJobs(&LuaUpdateJob, 1);
 }
 
 void RegisterFunctionInLua( const char* name, lua_CFunction fn )

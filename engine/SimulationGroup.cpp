@@ -17,7 +17,6 @@ struct SimulationGroup
     double timeFactor;
     double totalTime;
     bool updateRunning; // true between begin and complete update calls
-    JobManager* currentJobManager; // is set on BeginSimulationGroupUpdate
     ObjectSystem<Simulation> simulations;
 };
 
@@ -28,7 +27,6 @@ SimulationGroup* CreateSimulationGroup()
     group->timeFactor = 1.0;
     group->totalTime = 0.0;
     group->updateRunning = false;
-    group->currentJobManager = NULL;
     InitObjectSystem(&group->simulations);
     return group;
 }
@@ -66,14 +64,10 @@ void SetSimulationTimeFactor( SimulationGroup* group, double factor )
     group->timeFactor = factor;
 }
 
-void BeginSimulationGroupUpdate( SimulationGroup* group,
-                                 JobManager* jobManager,
-                                 double duration )
+void BeginSimulationGroupUpdate( SimulationGroup* group, double duration )
 {
     Ensure(!group->updateRunning);
-    assert(!group->currentJobManager);
     group->updateRunning = true;
-    group->currentJobManager = jobManager;
 
     if(group->timeFactor != 0)
         return;
@@ -84,23 +78,19 @@ void BeginSimulationGroupUpdate( SimulationGroup* group,
     REPEAT(GetObjectCount(&group->simulations), i)
     {
         const Simulation* simulation = GetObjectByIndex(&group->simulations, i);
-        simulation->beginUpdate(simulation->context, jobManager, duration);
+        simulation->beginUpdate(simulation->context, duration);
     }
 }
 
 void CompleteSimulationGroupUpdate( SimulationGroup* group )
 {
     Ensure(group->updateRunning);
-    assert(group->currentJobManager);
-
-    JobManager* jobManager = group->currentJobManager;
 
     REPEAT(GetObjectCount(&group->simulations), i)
     {
         const Simulation* simulation = GetObjectByIndex(&group->simulations, i);
-        simulation->completeUpdate(simulation->context, jobManager);
+        simulation->completeUpdate(simulation->context);
     }
 
     group->updateRunning = false;
-    group->currentJobManager = NULL;
 }
