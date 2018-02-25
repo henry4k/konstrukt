@@ -98,7 +98,7 @@ void dummyInit( const dummyReporter* reporter );
  * Runs all added tests and destroys the current context.
  *
  * @return
- * Number of test tests, that failed.
+ * Number of tests, that failed.
  */
 int dummyRunTests();
 

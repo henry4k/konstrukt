@@ -41,8 +41,8 @@ static void RenderScene( void* _data )
 
     SetFloatUniform(GetGlobalShaderVariableSet(), "Time", GetTime());
 
-    RenderTarget* defaultRenderTarget = GetDefaultRenderTarget();
-    UpdateRenderTarget(defaultRenderTarget);
+    //RenderTarget* defaultRenderTarget = GetDefaultRenderTarget();
+    //UpdateRenderTarget(defaultRenderTarget); // TODO
 
     SwapBuffers();
     const double curTimestamp = glfwGetTime();
@@ -79,12 +79,12 @@ double GetFrameTime()
     return FrameTime;
 }
 
-void BeginRenderManagerUpdate( void* _context, JobManager* jobManager, double _timeDelta )
+void BeginRenderManagerUpdate( void* _context, double _timeDelta )
 {
-    UpdateJob = CreateJob(jobManager, {"RenderScene", RenderScene});
+    UpdateJob = CreateJob({"RenderScene", RenderScene});
 }
 
-void CompleteRenderManagerUpdate( void* _context, JobManager* jobManager )
+void CompleteRenderManagerUpdate( void* _context )
 {
-    WaitForJobs(jobManager, &UpdateJob, 1);
+    WaitForJobs(&UpdateJob, 1);
 }

@@ -1,6 +1,9 @@
 #ifndef __KONSTRUKT_IMAGE__
 #define __KONSTRUKT_IMAGE__
 
+#include "JobManager.h" // JobId
+
+
 struct Image
 {
     int width, height;
@@ -14,5 +17,7 @@ void LoadImage( Image* image, const char* vfsPath );
 void MultiplyImageRgbByAlpha( Image* image );
 void CreateResizedImage( Image* output, const Image* input, int width, int height );
 void FreeImage( const Image* image );
+
+JobId LoadImageAsync( Image* image, const char* vfsPath );
 
 #endif

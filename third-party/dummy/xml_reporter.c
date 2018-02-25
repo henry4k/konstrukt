@@ -71,7 +71,7 @@ static void completedTest( void* ctx_ )
         case DUMMY_TEST_SKIPPED:
             if(abortReason)
             {
-                fprintf(ctx->file, "%s%s<skipped>%s</failure>%s",
+                fprintf(ctx->file, "%s%s<skipped>%s</skipped>%s",
                     ctx->tab,
                     ctx->tab,
                     abortReason,

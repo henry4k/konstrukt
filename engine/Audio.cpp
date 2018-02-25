@@ -126,14 +126,14 @@ static void UpdateAudio( void* _data )
             UpdateAudioSource(&AudioSources[i]);
 }
 
-void BeginAudioUpdate( JobManager* jobManager )
+void BeginAudioUpdate()
 {
-    AudioUpdateJob = CreateJob(jobManager, {"UpdateAudio", UpdateAudio});
+    AudioUpdateJob = CreateJob({"UpdateAudio", UpdateAudio});
 }
 
-void CompleteAudioUpdate( JobManager* jobManager )
+void CompleteAudioUpdate()
 {
-    WaitForJobs(jobManager, &AudioUpdateJob, 1);
+    WaitForJobs(&AudioUpdateJob, 1);
 }
 
 

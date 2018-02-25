@@ -13,6 +13,7 @@ struct Work
 {
     int processingTime;
     bool done;
+    bool destructorCalled;
 };
 
 static void DoWork( void* data )
@@ -24,97 +25,142 @@ static void DoWork( void* data )
     work->done = true;
 }
 
+static void Destructor( void* data )
+{
+    Work* work = (Work*)data;
+    Require(!work->destructorCalled);
+    work->destructorCalled = true;
+}
+
 InlineTest("single job", dummySignalSandbox)
 {
     JobManagerConfig managerConfig;
     managerConfig.workerThreads = 3;
-    JobManager* manager = CreateJobManager(managerConfig);
+    InitJobManager(managerConfig);
 
     static Work work;
     work.processingTime = 1;
     work.done = false;
-    JobId job = CreateJob(manager, {"worker", DoWork, &work});
+    work.destructorCalled = false;
+    JobId job = CreateJob({"worker", DoWork, Destructor, &work});
 
-    Require(GetJobStatus(manager, job) == QUEUED_JOB);
-    Require(GetJobData(manager, job) == &work);
+    Require(GetJobStatus(job) == QUEUED_JOB);
+    Require(GetJobData(job) == &work);
 
-    WaitForJobs(manager, &job, 1);
+    WaitForJobs(&job, 1);
 
-    DestroyJobManager(manager);
+    DestroyJobManager();
 
     Require(work.done);
+    Require(work.destructorCalled);
 }
 
 InlineTest("single job (fixed)", dummySignalSandbox)
 {
     JobManagerConfig managerConfig;
     managerConfig.workerThreads = 3;
-    JobManager* manager = CreateJobManager(managerConfig);
+    InitJobManager(managerConfig);
 
     Work work;
     work.processingTime = 1;
     work.done = false;
-    JobId job = CreateJob(manager, {"worker", DoWork, &work});
+    work.destructorCalled = false;
+    JobId job = CreateJob({"worker", DoWork, Destructor, &work});
 
-    Require(GetJobStatus(manager, job) == QUEUED_JOB);
-    Require(GetJobData(manager, job) == &work);
+    Require(GetJobStatus(job) == QUEUED_JOB);
+    Require(GetJobData(job) == &work);
 
-    WaitForJobs(manager, &job, 1);
+    WaitForJobs(&job, 1);
 
     Require(work.done);
+    Require(!work.destructorCalled);
 
-    DestroyJobManager(manager);
+    DestroyJobManager();
+
+    Require(work.destructorCalled);
+}
+
+InlineTest("call destructor on job removal", dummySignalSandbox)
+{
+    JobManagerConfig managerConfig;
+    managerConfig.workerThreads = 3;
+    InitJobManager(managerConfig);
+
+    static Work work;
+    work.processingTime = 1;
+    work.done = false;
+    work.destructorCalled = false;
+    JobId job = CreateJob({"worker", DoWork, Destructor, &work});
+
+    Require(GetJobStatus(job) == QUEUED_JOB);
+    Require(GetJobData(job) == &work);
+
+    WaitForJobs(&job, 1);
+
+    Require(work.done);
+    Require(!work.destructorCalled);
+
+    RemoveJob(job);
+
+    Require(work.destructorCalled);
+
+    DestroyJobManager();
 }
 
 InlineTest("queue job while another is running", dummySignalSandbox)
 {
     JobManagerConfig managerConfig;
     managerConfig.workerThreads = 1;
-    JobManager* manager = CreateJobManager(managerConfig);
+    InitJobManager(managerConfig);
 
     // Queue first job:
-    Work workA = {3, false};
-    JobId jobA = CreateJob(manager, {"worker A", DoWork, &workA});
+    Work workA = {3, false, false};
+    JobId jobA = CreateJob({"worker A", DoWork, Destructor, &workA});
 
-    UnlockJobManager(manager);
+    UnlockJobManager();
     Sleep(1); // jobA have waited 1 of 3 seconds by now
-    LockJobManager(manager);
+    LockJobManager();
 
-    Require(GetJobStatus(manager, jobA) == ACTIVE_JOB);
-    Require(GetJobData(manager, jobA) == &workA);
+    Require(GetJobStatus(jobA) == ACTIVE_JOB);
+    Require(GetJobData(jobA) == &workA);
 
     // Queue second job:
-    Work workB = {1, false};
-    JobId jobB = CreateJob(manager, {"worker B", DoWork, &workB});
+    Work workB = {2, false, false};
+    JobId jobB = CreateJob({"worker B", DoWork, Destructor, &workB});
 
-    UnlockJobManager(manager);
+    UnlockJobManager();
     Sleep(1); // jobA have waited 2 of 3 seconds by now
-    LockJobManager(manager);
+    LockJobManager();
 
-    Require(GetJobStatus(manager, jobA) == ACTIVE_JOB);
-    Require(GetJobData(manager, jobA) == &workA);
+    Require(GetJobStatus(jobA) == ACTIVE_JOB);
+    Require(GetJobData(jobA) == &workA);
 
-    Require(GetJobStatus(manager, jobB) == QUEUED_JOB);
-    Require(GetJobData(manager, jobB) == &workB);
+    Require(GetJobStatus(jobB) == QUEUED_JOB);
+    Require(GetJobData(jobB) == &workB);
 
-    UnlockJobManager(manager);
+    UnlockJobManager();
     Sleep(2); // jobA should be completed and jobB should be active
-    LockJobManager(manager);
+    LockJobManager();
 
-    Require(GetJobStatus(manager, jobA) == COMPLETED_JOB);
-    Require(GetJobData(manager, jobA) == &workA);
+    Require(GetJobStatus(jobA) == COMPLETED_JOB);
+    Require(GetJobData(jobA) == &workA);
     Require(workA.done);
+    Require(!workA.destructorCalled);
 
-    Require(GetJobStatus(manager, jobB) == ACTIVE_JOB);
-    Require(GetJobData(manager, jobB) == &workB);
+    Require(GetJobStatus(jobB) == ACTIVE_JOB);
+    Require(GetJobData(jobB) == &workB);
 
-    WaitForJobs(manager, &jobB, 1);
+    WaitForJobs(&jobB, 1);
 
-    Require(GetJobStatus(manager, jobB) == COMPLETED_JOB);
-    Require(GetJobData(manager, jobB) == &workB);
+    Require(GetJobStatus(jobB) == COMPLETED_JOB);
+    Require(GetJobData(jobB) == &workB);
     Require(workB.done);
+    Require(!workB.destructorCalled);
 
-    DestroyJobManager(manager);
+    DestroyJobManager();
+
+    Require(workA.destructorCalled);
+    Require(workB.destructorCalled);
 }
 
 /*
@@ -124,7 +170,7 @@ InlineTest("queue many jobs at once", dummySignalSandbox) // is more of a benchm
 
     JobManagerConfig managerConfig;
     managerConfig.workerThreads = 3;
-    JobManager* manager = CreateJobManager(managerConfig);
+    InitJobManager(managerConfig);
 
     // Queue all jobs:
     Work work[JOB_COUNT];
@@ -133,22 +179,21 @@ InlineTest("queue many jobs at once", dummySignalSandbox) // is more of a benchm
     {
         work[i].processingTime = 1;
         work[i].done = false;
-        jobs[i] = CreateJob(manager, {"worker", DoWork, &work[i]});
+        jobs[i] = CreateJob({"worker", DoWork, &work[i]});
 
-        Require(GetJobStatus(manager, jobs[i]) == QUEUED_JOB);
-        Require(GetJobData(manager, jobs[i]) == &work[i]);
+        Require(GetJobStatus(jobs[i]) == QUEUED_JOB);
+        Require(GetJobData(mabs[i]) == &work[i]);
     }
 
-    WaitForJobs(manager, jobs, JOB_COUNT);
-
+    WaitForJobs(manag JOB_COUNT);
     REPEAT(JOB_COUNT, i)
     {
         Require(work[i].done);
-        Require(GetJobStatus(manager, jobs[i]) == COMPLETED_JOB);
-        Require(GetJobData(manager, jobs[i]) == &work[i]);
+        Require(GetJobStatus(jobs[i]) == COMPLETED_JOB);
+        Require(GetJobData(jobs[i]) == &work[i]);
     }
 
-    DestroyJobManager(manager);
+    DestroyJobManager();
 }
 */
 

@@ -1,3 +1,4 @@
+#include <string.h> // strncpy
 #include <stdio.h>
 #include <assert.h>
 #include "tap_reporter.h"
@@ -36,9 +37,34 @@ static const char* dummyTestResultToTAPString( dummyTestResult result )
     }
 }
 
-static void completedTest( void* ctx_ )
+static void log( void* ctx_, const char* message )
 {
     const Context* ctx = (Context*)ctx_;
+
+    char buffer[512];
+    strncpy(buffer, message, sizeof(buffer)-1);
+
+    // separate into lines
+    const char* start = buffer;
+    for(char* current = buffer; ; ++current)
+    {
+        if(*current == '\n')
+        {
+            *current = '\0';
+            fprintf(ctx->file, "# %s\n", start);
+            start = current+1;
+        }
+        else if(*current == '\0')
+        {
+            fprintf(ctx->file, "# %s\n", start);
+            break;
+        }
+    }
+}
+
+static void completedTest( void* ctx_ )
+{
+    Context* ctx = (Context*)ctx_;
 
     dummyTestResult result = dummyGetTestResult();
     const char* resultString = dummyTestResultToTAPString(result);
@@ -46,7 +72,7 @@ static void completedTest( void* ctx_ )
 
     if(result == DUMMY_TEST_FAILED && abortReason)
     {
-        fprintf(ctx->file, "# %s\n", abortReason);
+        log(ctx, abortReason);
     }
 
     fprintf(ctx->file, "%s %d %s",
@@ -70,12 +96,6 @@ static void completedTest( void* ctx_ )
     };
 
     fprintf(ctx->file, "\n");
-}
-
-static void log( void* ctx_, const char* message )
-{
-    const Context* ctx = (Context*)ctx_;
-    fprintf(ctx->file, "# %s\n", message);
 }
 
 const dummyReporter* dummyGetTAPReporter( FILE* file )

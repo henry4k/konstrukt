@@ -6,8 +6,8 @@ struct JobManager;
 
 struct SimulationGroup;
 
-typedef void (*BeginUpdateFn)( void* context, JobManager* jobManager, double duration );
-typedef void (*CompleteUpdateFn)( void* context, JobManager* jobManager );
+typedef void (*BeginUpdateFn)( void* context, double duration );
+typedef void (*CompleteUpdateFn)( void* context );
 typedef unsigned int SimulationId;
 
 
@@ -22,9 +22,7 @@ void RemoveSimulationFromGroup( SimulationGroup* group, SimulationId id );
 
 void SetSimulationSpeed( SimulationGroup* group, double factor );
 
-void BeginSimulationGroupUpdate( SimulationGroup* group,
-                                 JobManager* jobManager,
-                                 double duration );
+void BeginSimulationGroupUpdate( SimulationGroup* group, double duration );
 void CompleteSimulationGroupUpdate( SimulationGroup* group );
 
 

@@ -1,7 +1,6 @@
 #ifndef __KONSTRUKT_JOB_MANAGER__
 #define __KONSTRUKT_JOB_MANAGER__
 
-struct JobManager;
 typedef int JobId;
 
 enum JobStatus
@@ -21,17 +20,17 @@ struct JobManagerConfig
 };
 
 /**
- * Creating thread has initially a lock on the job manager.
+ * The creating thread has initially a lock on the job manager.
  */
-JobManager* CreateJobManager( JobManagerConfig config );
+void InitJobManager( JobManagerConfig config );
 
-void DestroyJobManager( JobManager* manager );
+void DestroyJobManager();
 
 /**
  * Must be run before accessing the job manager.
  */
-void LockJobManager( JobManager* manager );
-void UnlockJobManager( JobManager* manager );
+void LockJobManager();
+void UnlockJobManager();
 
 /**
  * Block till all given jobs are completed.
@@ -39,7 +38,7 @@ void UnlockJobManager( JobManager* manager );
  * The job manager gets unlocked while waiting and is locked again when
  * control is returned to the calling thread.
  */
-void WaitForJobs( JobManager* manager, const JobId* jobIds, int jobIdCount );
+void WaitForJobs( const JobId* jobIds, int jobIdCount );
 
 
 // --- Job ---
@@ -48,19 +47,20 @@ struct JobConfig
 {
     const char* name; // Useful when debugging the engine.
     void (*function)( void* data );
+    void (*destructor)( void* data );
     void* data;
 };
 
-JobId CreateJob( JobManager* manager, JobConfig config );
+JobId CreateJob( JobConfig config );
 
-void RemoveJob( JobManager* manager, JobId jobId );
+void RemoveJob( JobId jobId );
 
-JobStatus GetJobStatus( JobManager* manager, JobId jobId );
+JobStatus GetJobStatus( JobId jobId );
 
 /**
  * May only be called on completed jobs.
  */
-void* GetJobData( JobManager* manager, JobId jobId );
+void* GetJobData( JobId jobId );
 
 
 // --- Job function ---
