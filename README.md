@@ -12,6 +12,22 @@ This repository contains the engine and the core package.
 at https://github.com/henry4k/apoapsis-example to see how it can be used.
 
 
+## Core Features
+
+- physics simulation (using Bullet)
+- rendering (with OpenGL 3.2)
+  - shaders (using GLSL)
+  - cameras
+  - meshes with automatic index, normal, and tangent generation
+  - textures (alpha channel can be premultiplied; images can be scaled)
+  - render targets
+    - *texture targets are not implemented yet*
+  - light optimization (only objects that a light source affects are rendered with it; see `LightWorld`)
+  - generate meshes from voxel data (see `MeshChunkGenerator`)
+- audio (using OpenAL and Ogg Vorbis)
+- integrated profilers (MicroProfile, Remotery)
+
+
 ## Running the engine
 
 The engine has the following command line interface:
@@ -74,7 +90,7 @@ Runtime dependencies:
 - [Bullet](http://bulletphysics.org/)
 
 
-Compile time depencencies:
+Compile time dependencies:
 
 - CMake
 - Python 3 (needed by flextGL)
