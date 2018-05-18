@@ -114,7 +114,7 @@ Runtime dependencies:
 - [Bullet](http://bulletphysics.org/)
 
 
-Compile time depencencies:
+Compile time dependencies:
 
 - CMake
 - Python 3 (needed by flextGL)
