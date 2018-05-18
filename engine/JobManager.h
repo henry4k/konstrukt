@@ -46,7 +46,7 @@ void WaitForJobs( const JobId* jobIds, int jobIdCount );
 struct JobConfig
 {
     const char* name; // Useful when debugging the engine.
-    void (*function)( void* data );
+    void (*processor)( void* data );
     void (*destructor)( void* data );
     void* data;
 };

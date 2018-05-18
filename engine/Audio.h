@@ -2,10 +2,10 @@
 #define __KONSTRUKT_AUDIO__
 
 #include "Math.h"
+#include "JobManager.h" // JobManager, JobId
 
 
 struct AttachmentTarget;
-struct JobManager;
 
 
 /** @class AudioListener
@@ -79,7 +79,9 @@ void SetAudioListenerTransformation( Mat4 transformation );
  *
  * @return The audio buffer or `NULL` if loading failed.
  */
-AudioBuffer* LoadAudioBuffer( const char* fileName );
+JobId BeginLoadingAudioBuffer( const char* fileName );
+
+AudioBuffer* GetLoadedAudioBuffer( JobId job );
 
 void ReferenceAudioBuffer( AudioBuffer* buffer );
 

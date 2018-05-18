@@ -9,6 +9,7 @@ END_EXTERNAL_CODE
 
 #include "Common.h"
 #include "Vfs.h"
+#include "FsUtils.h" // MAX_PATH_SIZE
 #include "JobManager.h" //
 #include "OpenGL.h"
 #include "Image.h"
@@ -169,12 +170,12 @@ void FreeImage( const Image* image )
 struct LoadImageJobDesc
 {
     Image* image;
-    const char* vfsPath;
+    char vfsPath[MAX_PATH_SIZE];
 };
 
-static void LoadImageJobFn( void* _data )
+static void LoadImageJobProcessor( void* _desc )
 {
-    const LoadImageJobDesc* desc = (LoadImageJobDesc*)_data;
+    const LoadImageJobDesc* desc = (LoadImageJobDesc*)_desc;
     LoadImage(desc->image, desc->vfsPath);
 }
 
@@ -182,6 +183,6 @@ JobId LoadImageAsync( Image* image, const char* vfsPath )
 {
     LoadImageJobDesc* desc = NEW(LoadImageJobDesc);
     desc->image = image;
-    desc->vfsPath = vfsPath;
-    return CreateJob({"LoadImage", LoadImageJobFn, Free, desc});
+    CopyString(vfsPath, desc->vfsPath, MAX_PATH_SIZE);
+    return CreateJob({"LoadImage", LoadImageJobProcessor, Free, desc});
 }

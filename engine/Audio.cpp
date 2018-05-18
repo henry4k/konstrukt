@@ -16,6 +16,7 @@
 #include "Profiler.h"
 #include "Config.h"
 #include "Reference.h"
+#include "FsUtils.h" // MAX_PATH_SIZE
 #include "AttachmentTarget.h"
 #include "Audio.h"
 
@@ -184,7 +185,7 @@ static void UpdateAudioListener()
 
 // --- AudioBuffer ---
 
-AudioBuffer* LoadAudioBuffer( const char* fileName )
+static AudioBuffer* LoadAudioBuffer( const char* fileName )
 {
     const ALuint handle = alureCreateBufferFromFile(fileName);
     if(handle == AL_NONE)
@@ -196,6 +197,46 @@ AudioBuffer* LoadAudioBuffer( const char* fileName )
     memset(buffer, 0, sizeof(AudioBuffer));
     buffer->handle = handle;
     return buffer;
+}
+
+struct AudioBufferLoadJobDesc
+{
+    char fileName[MAX_PATH_SIZE];
+    AudioBuffer* buffer;
+};
+
+static void ProcessAudioBufferLoadJob( void* _desc )
+{
+    AudioBufferLoadJobDesc* desc = (AudioBufferLoadJobDesc*)_desc;
+    desc->buffer = LoadAudioBuffer(desc->fileName);
+    if(desc->buffer)
+        ReferenceAudioBuffer(desc->buffer);
+}
+
+static void DestroyAudioBufferLoadJob( void* _desc )
+{
+    AudioBufferLoadJobDesc* desc = (AudioBufferLoadJobDesc*)_desc;
+    if(desc->buffer)
+        ReleaseAudioBuffer(desc->buffer);
+    DELETE(desc);
+}
+
+JobId BeginLoadingAudioBuffer( const char* fileName )
+{
+    AudioBufferLoadJobDesc* desc = NEW(AudioBufferLoadJobDesc);
+    CopyString(fileName, desc->fileName, MAX_PATH_SIZE);
+    desc->buffer = NULL;
+    return CreateJob({"LoadAudioBuffer",
+                      ProcessAudioBufferLoadJob,
+                      DestroyAudioBufferLoadJob,
+                      desc});
+}
+
+AudioBuffer* GetLoadedAudioBuffer( JobId job )
+{
+    Ensure(GetJobStatus(job) == COMPLETED_JOB);
+    AudioBufferLoadJobDesc* desc = (AudioBufferLoadJobDesc*)GetJobData(job);
+    return desc->buffer;
 }
 
 static void FreeAudioBuffer( AudioBuffer* buffer )

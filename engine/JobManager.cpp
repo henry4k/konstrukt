@@ -249,7 +249,7 @@ static int WorkerThreadFn( void* arg_ )
         }
         else
         {
-            jobConfig.function(jobConfig.data);
+            jobConfig.processor(jobConfig.data);
 
             LockJobManager();
 
