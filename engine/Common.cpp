@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include <assert.h>
 
+#include "Constants.h" // KONSTRUKT_STACKTRACE_ENABLED, KONSTRUKT_PROFILER_ENABLED
 #include "Warnings.h"
 BEGIN_EXTERNAL_CODE
 #include <konstrukt_stb_sprintf.h>

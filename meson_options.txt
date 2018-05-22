@@ -1,0 +1,39 @@
+option('use_relative_paths_in_debug_symbols',
+       description: 'Use relative file paths in debug symbols.',
+       type: 'boolean',
+       value: false)
+
+option('gl_debug_fix',
+       description: 'Enable if compiler complains about missing OnDebugEvent function.',
+       type: 'boolean',
+       value: false)
+
+option('debug_mesh',
+       description: 'Generate and draw debug vectors for mesh vertices.',
+       type: 'boolean',
+       value: false)
+
+option('strict_compiler',
+       description: 'Enables compiler warnings and has them treated as errors.  Recommended for developers.',
+       type: 'boolean',
+       value: false)
+
+option('stacktrace',
+       description: 'Show native call stack using debug symbols, when encountering a fatal error.',
+       type: 'boolean',
+       value: false)
+
+option('profiler',
+       description: 'Enables performance profiling.',
+       type: 'boolean',
+       value: false)
+
+option('lua_package',
+       description: 'The Lua package to use.',
+       type: 'string',
+       value: 'lua52')
+
+option('lua_version',
+       description: 'The Lua version to use.  It will be interpreted as comma separated list of Meson version expressions.',
+       type: 'string',
+       value: '>=5.2,<5.3')

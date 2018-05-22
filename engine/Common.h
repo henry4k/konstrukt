@@ -101,6 +101,7 @@ void FatalError( const char* format, ... );
 #define CONCAT_(a, b) a ## b
 #define CONCAT(a, b) CONCAT_(a,b)
 
+// TODO: Alternatively use dbgtools/static_assert.h!
 #if !defined(__cplusplus) && defined(__USE_ISOC11)
     #define static_assert _Static_assert
 #elif defined(__cplusplus) && __cplusplus >= 201103L

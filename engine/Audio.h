@@ -73,12 +73,15 @@ void SetAudioListenerAttachmentTarget( const AttachmentTarget* target );
 
 void SetAudioListenerTransformation( Mat4 transformation );
 
-
 /**
  * Initializes an audio buffer with wave data from a sound file.
  *
  * @return The audio buffer or `NULL` if loading failed.
+ *
+ * @deprecated In favor of BeginLoadingAudioBuffer().
  */
+AudioBuffer* LoadAudioBuffer( const char* fileName );
+
 JobId BeginLoadingAudioBuffer( const char* fileName );
 
 AudioBuffer* GetLoadedAudioBuffer( JobId job );

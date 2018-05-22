@@ -1,0 +1,45 @@
+  Config - um asynchron verwendet werden zu können, muss es readonly sein
+  Reference - darf nur synchron ausgeführt werden
+  Vfs - mounting/unmounting nur synchron!
+  Time - müsste in SimulationGroup integriert werden
+
+  Image (loading/postprocessing/resizing)
+  MeshBuffer (normal + tangent calculations)
+  MeshChunkGenerator
+
+Tests:
+
+X Array
+? AttachmentTarget
+- Audio
+X BitCondition
+- Camera
+X Common
+X Config
+- Controls
+X Crc32
+- ExecutableMain
+X FsUtils
+X Image
+X JobManager
+- LightWorld
+X Lua
+- Main
+X Math
+- Mesh
+X MeshBuffer
+- MeshChunkGenerator
+- ModelWorld
+- PhysicsWorld
+- Profiler
+- Reference
+- RenderManager
+- RenderTarget
+- Shader
+  SimulationGroup
+- Texture
+- Time
+  Vertex
+  Vfs
+  VoxelVolume
+- Window

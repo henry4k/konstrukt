@@ -61,7 +61,7 @@ static int GetImageFormat( int channelCount, bool useSRGB )
 
 static float GetMaxAnisotropy()
 {
-    if(FLEXT_EXT_texture_filter_anisotropic)
+    if(GLAD_GL_EXT_texture_filter_anisotropic)
     {
         const float user = GetConfigFloat("opengl.anisotropy", FLT_MAX);
 

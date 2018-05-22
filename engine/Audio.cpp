@@ -185,7 +185,7 @@ static void UpdateAudioListener()
 
 // --- AudioBuffer ---
 
-static AudioBuffer* LoadAudioBuffer( const char* fileName )
+AudioBuffer* LoadAudioBuffer( const char* fileName )
 {
     const ALuint handle = alureCreateBufferFromFile(fileName);
     if(handle == AL_NONE)

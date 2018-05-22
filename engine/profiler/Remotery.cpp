@@ -1,4 +1,3 @@
-#if defined(KONSTRUKT_PROFILER_ENABLED)
 #include "../Warnings.h"
 BEGIN_EXTERNAL_CODE
 #include <Remotery.h>
@@ -67,5 +66,3 @@ const Profiler RemoteryProfiler = {Remotery_Setup,
                                    NULL, // increaseCounter
                                    NULL, // notifyStepCompletion
                                    Remotery_NotifyThreadCreation};
-
-#endif // KONSTRUKT_PROFILER_ENABLED

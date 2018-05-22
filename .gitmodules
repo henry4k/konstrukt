@@ -1,0 +1,36 @@
+[submodule "subprojects/Remotery/source"]
+	path = subprojects/Remotery/source
+	url = https://github.com/Celtoys/Remotery.git
+[submodule "subprojects/inih/source"]
+	path = subprojects/inih/source
+	url = https://github.com/benhoyt/inih.git
+[submodule "subprojects/dbgtools/source"]
+	path = subprojects/dbgtools/source
+	url = https://github.com/wc-duck/dbgtools.git
+[submodule "subprojects/glad/source"]
+	path = subprojects/glad/source
+	url = https://github.com/Dav1dde/glad.git
+[submodule "subprojects/microprofile/source"]
+	path = subprojects/microprofile/source
+	url = https://github.com/jonasmr/microprofile
+[submodule "subprojects/dummy/source"]
+	path = subprojects/dummy/source
+	url = https://github.com/henry4k/dummy.git
+[submodule "subprojects/stb/stb"]
+	path = subprojects/stb/stb
+	url = https://github.com/nothings/stb
+[submodule "subprojects/stb/source"]
+	path = subprojects/stb/source
+	url = https://github.com/nothings/stb
+[submodule "subprojects/lua-bdd4tap"]
+	path = subprojects/lua-bdd4tap
+	url = https://github.com/henry4k/lua-bdd4tap.git
+[submodule "subprojects/lua-mock"]
+	path = subprojects/lua-mock
+	url = https://github.com/henry4k/lua-mock.git
+[submodule "subprojects/lua-cjson/source"]
+	path = subprojects/lua-cjson/source
+	url = https://github.com/mpx/lua-cjson.git
+[submodule "subprojects/tinycthread/source"]
+	path = subprojects/tinycthread/source
+	url = https://github.com/tinycthread/tinycthread.git

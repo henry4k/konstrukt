@@ -1,0 +1,21 @@
+option('internal_fpconv',
+       description: 'Use internal strtod() / g_fmt() code for performance',
+       type: 'boolean',
+       value: false)
+
+option('multiple_threads',
+       description: 'Support multi-threaded apps with internal fpconv',
+       type: 'boolean',
+       value: true)
+
+option('lua_package',
+       description: 'The Lua package to use.',
+       type: 'string',
+       value: 'lua',
+       yield: true)
+
+option('lua_version',
+       description: 'The Lua version to use.  It will be interpreted as comma separated list of Meson version expressions.',
+       type: 'string',
+       value: '>=0',
+       yield: true)

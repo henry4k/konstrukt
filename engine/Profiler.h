@@ -1,5 +1,6 @@
 #ifndef __KONSTRUKT_PROFILER__
 #define __KONSTRUKT_PROFILER__
+#include "Constants.h" // KONSTRUKT_PROFILER_ENABLED
 #if defined(KONSTRUKT_PROFILER_ENABLED)
 
 #include "Common.h" // CONCAT

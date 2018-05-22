@@ -1,14 +1,14 @@
 {
-   "version": "0.0.0",
+   "version": "@version@",
    "provides":
    {
-       "konstrukt": "0.0.0"
+       "konstrukt": "@version@"
    },
    "type": "native",
-   "operatingSystem": "@LOWERCASE_SYSTEM_NAME@",
-   "architecture": "@CMAKE_SYSTEM_PROCESSOR@",
+   "operatingSystem": "@system@",
+   "architecture": "@architecture@",
    "executables":
    {
-       "konstrukt@CMAKE_EXECUTABLE_SUFFIX@": {}
+       "@executable@": {}
    }
 }

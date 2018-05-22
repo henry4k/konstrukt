@@ -1,4 +1,3 @@
-#if defined(KONSTRUKT_PROFILER_ENABLED)
 #include <string.h> // strlen, strrchr, memcpy
 #include <assert.h>
 #include <stdint.h> // uint32_t
@@ -185,5 +184,3 @@ const Profiler MicroProfileProfiler = {MicroProfile_Setup,
                                        MicroProfile_IncreaseCounter,
                                        MicroProfile_NotifyStepCompletion,
                                        MicroProfile_NotifyThreadCreation};
-
-#endif // KONSTRUKT_PROFILER_ENABLED

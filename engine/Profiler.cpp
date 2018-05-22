@@ -1,6 +1,3 @@
-#if defined(KONSTRUKT_PROFILER_ENABLED)
-#include "Profiler.h"
-
 #include <stdlib.h> // NULL
 #include <string.h> // strcmp
 #include <assert.h>
@@ -9,6 +6,7 @@
 #include "Config.h"
 #include "profiler/Remotery.h"
 #include "profiler/MicroProfile.h"
+#include "Profiler.h"
 
 
 static void NoOp_Setup() {}
@@ -85,5 +83,3 @@ void DestroyGPUProfiler()
 {
     _Profiler.teardownGPU();
 }
-
-#endif // KONSTRUKT_PROFILER_ENABLED

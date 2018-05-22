@@ -2,14 +2,19 @@
 #include <stdlib.h> // NULL
 
 #include "Common.h"
+#include "Constants.h" // OS_CALLING_CONVENTION
 #include "Config.h"
 #include "OpenGL.h"
 #include "Window.h"
 
-#if defined(_WIN32)
-#define CALLBACK_API __attribute__((__stdcall__))
+#if defined(OS_CALLING_CONVENTION)
+    #if defined(_MSC_VER) // using MSVC
+        #define CALLBACK_API OS_CALLING_CONVENTION
+    #else // using a GCC compatible compiler
+        #define CALLBACK_API __attribute__((OS_CALLING_CONVENTION))
+    #endif
 #else
-#define CALLBACK_API
+    #define CALLBACK_API
 #endif
 
 
@@ -93,8 +98,8 @@ void InitWindow()
 
     glfwMakeContextCurrent(g_Window);
 
-    if(!flextInit(g_Window))
-        FatalError("Failed to load OpenGL extensions.");
+    if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+        FatalError("Failed to load OpenGL.");
 
     LogInfo("Using OpenGL %s\n"
             "Vendor: %s\n"
@@ -124,7 +129,7 @@ void InitWindow()
 
     if(debug)
     {
-        if(!FLEXT_ARB_debug_output)
+        if(!GLAD_GL_ARB_debug_output)
             FatalError("Debug output requested, but it's not supported!");
 
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
