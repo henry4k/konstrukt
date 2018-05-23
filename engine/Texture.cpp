@@ -126,18 +126,24 @@ Texture* Create2dTexture( const Image* image, int options )
     if(!texture)
         return NULL;
 
+    const int width        = GetImageWidth(image);
+    const int height       = GetImageHeight(image);
+    const int channelCount = GetImageChannelCount(image);
+    const int type         = GetImageType(image);
+    const void* pixels     = GetImagePixels(image);
+
     glBindTexture(GL_TEXTURE_2D, texture->handle);
-    const int internalFormat = GetImageFormat(image->channelCount, options & TEX_SRGB);
-    const int format         = GetImageFormat(image->channelCount, false);
+    const int internalFormat = GetImageFormat(channelCount, options & TEX_SRGB);
+    const int format         = GetImageFormat(channelCount, false);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  internalFormat,
-                 image->width,
-                 image->height,
+                 width,
+                 height,
                  0,
                  format,
-                 image->type,
-                 image->data);
+                 type,
+                 pixels);
     if(options & TEX_MIPMAP)
         glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, INVALID_TEXTURE_HANDLE);
@@ -154,21 +160,28 @@ Texture* CreateCubeTexture( const Image** images, int options )
         return NULL;
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture->handle);
-    for(int i = 0; i < 6; i++)
+    REPEAT(6, i)
     {
         const Image* image = images[i];
+
+        const int width        = GetImageWidth(image);
+        const int height       = GetImageHeight(image);
+        const int channelCount = GetImageChannelCount(image);
+        const int type         = GetImageType(image);
+        const void* pixels     = GetImagePixels(image);
+
         const GLenum target = GL_TEXTURE_CUBE_MAP_POSITIVE_X+i;
-        const int internalFormat = GetImageFormat(image->channelCount, options & TEX_SRGB);
-        const int format         = GetImageFormat(image->channelCount, false);
+        const int internalFormat = GetImageFormat(channelCount, options & TEX_SRGB);
+        const int format         = GetImageFormat(channelCount, false);
         glTexImage2D(target,
                      0,
                      internalFormat,
-                     image->width,
-                     image->height,
+                     width,
+                     height,
                      0,
                      format,
-                     image->type,
-                     image->data);
+                     type,
+                     pixels);
     }
     if(options & TEX_MIPMAP)
         glGenerateMipmap(GL_TEXTURE_CUBE_MAP);

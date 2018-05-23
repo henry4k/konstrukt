@@ -11,21 +11,43 @@ END_EXTERNAL_CODE
 #include "Vfs.h"
 #include "FsUtils.h" // MAX_PATH_SIZE
 #include "JobManager.h" //
-#include "OpenGL.h"
+#include "OpenGL.h" // GL_UNSIGNED_BYTE
+#include "Reference.h"
 #include "Image.h"
 
-
-void CreateImage( Image* image, int width, int height, int channelCount )
+struct Image
 {
-    memset(image, 0, sizeof(Image));
+    ReferenceCounter refCounter;
+    int width, height;
+    int channelCount;
+    int type;
+    void* data;
+};
 
-    image->width = width;
-    image->height = height;
-    image->channelCount = channelCount;
+static Image* CreateImage()
+{
+    Image* image = NEW(Image);
+    InitReferenceCounter(&image->refCounter);
+    return image;
+}
 
-    image->type = GL_UNSIGNED_BYTE;
+static void FreeImage( Image* image )
+{
+    if(image->data)
+        Free(image->data);
+    DELETE(image);
+}
 
-    image->data = Alloc(width*height*channelCount);
+void ReferenceImage( Image* image )
+{
+    Reference(&image->refCounter);
+}
+
+void ReleaseImage( Image* image )
+{
+    Release(&image->refCounter);
+    if(!HasReferences(&image->refCounter))
+        FreeImage(image);
 }
 
 static int VfsRead( void* user, char* data, int size )
@@ -53,9 +75,9 @@ static const stbi_io_callbacks VfsCallbacks =
    VfsEOF
 };
 
-void LoadImage( Image* image, const char* vfsPath )
+static Image* LoadImage( const char* vfsPath )
 {
-    memset(image, 0, sizeof(Image));
+    Image* image = CreateImage();
 
     VfsFile* file = OpenVfsFile(vfsPath, VFS_OPEN_READ);
 
@@ -75,9 +97,11 @@ void LoadImage( Image* image, const char* vfsPath )
         FatalError("Can't load '%s': %s", vfsPath, stbi_failure_reason());
 
     image->type = GL_UNSIGNED_BYTE;
+
+    return image;
 }
 
-void MultiplyImageRgbByAlpha( Image* image )
+static void MultiplyImageRgbByAlpha( Image* image )
 {
     assert(image->type == GL_UNSIGNED_BYTE);
 
@@ -87,7 +111,7 @@ void MultiplyImageRgbByAlpha( Image* image )
     switch(image->channelCount)
     {
         case 2: // luminance + alpha
-            for(int i = 0; i < pixelCount; i++)
+            REPEAT(pixelCount, i)
             {
                 unsigned char* pixel = &data[i*2];
                 const float alpha = (float)pixel[1] / 255.f;
@@ -97,7 +121,7 @@ void MultiplyImageRgbByAlpha( Image* image )
             break;
 
         case 4: // rgb + alpha
-            for(int i = 0; i < pixelCount; i++)
+            REPEAT(pixelCount, i)
             {
                 unsigned char* pixel = &data[i*4];
                 const float alpha = (float)pixel[3] / 255.f;
@@ -110,14 +134,13 @@ void MultiplyImageRgbByAlpha( Image* image )
     }
 }
 
-void CreateResizedImage( Image* output,
-                         const Image* input,
-                         int width,
-                         int height )
+static Image* CreateResizedImage( const Image* input,
+                                  int width,
+                                  int height )
 {
     assert(input->type == GL_UNSIGNED_BYTE);
 
-    memset(output, 0, sizeof(Image));
+    Image* output = CreateImage();
 
     const int channelCount = input->channelCount;
 
@@ -157,32 +180,158 @@ void CreateResizedImage( Image* output,
                                    STBIR_COLORSPACE_LINEAR,
                                    NULL))
         FatalError("Failed to resize image.");
-}
 
-void FreeImage( const Image* image )
-{
-    if(image->data)
-        Free(image->data);
+    return output;
 }
 
 // ---------------------------------------------------------------------------
 
-struct LoadImageJobDesc
+enum ImageCreationJobType
 {
-    Image* image;
-    char vfsPath[MAX_PATH_SIZE];
+    LOAD_IMAGE_JOB,
+    RESIZE_IMAGE_JOB
 };
 
-static void LoadImageJobProcessor( void* _desc )
+struct ImageCreationJobDesc
 {
-    const LoadImageJobDesc* desc = (LoadImageJobDesc*)_desc;
-    LoadImage(desc->image, desc->vfsPath);
+    Image* result;
+    ImageCreationJobType type;
+    union
+    {
+        struct
+        {
+            char vfsPath[MAX_PATH_SIZE];
+        } loadImage;
+
+        struct
+        {
+            Image* input;
+            int width;
+            int height;
+        } resizeImage;
+    } params;
+};
+
+static void DestroyImageCreationJob( void* _desc )
+{
+    ImageCreationJobDesc* desc = (ImageCreationJobDesc*)_desc;
+
+    if(desc->result)
+        ReleaseImage(desc->result);
+
+    switch(desc->type)
+    {
+        case LOAD_IMAGE_JOB:
+            break;
+
+        case RESIZE_IMAGE_JOB:
+            ReleaseImage(desc->params.resizeImage.input);
+            break;
+    }
+
+    DELETE(desc);
 }
 
-JobId LoadImageAsync( Image* image, const char* vfsPath )
+static void ProcessImageCreationJob( void* _desc )
 {
-    LoadImageJobDesc* desc = NEW(LoadImageJobDesc);
-    desc->image = image;
-    CopyString(vfsPath, desc->vfsPath, MAX_PATH_SIZE);
-    return CreateJob({"LoadImage", LoadImageJobProcessor, Free, desc});
+    ImageCreationJobDesc* desc = (ImageCreationJobDesc*)_desc;
+    assert(desc->result == NULL);
+    switch(desc->type)
+    {
+        case LOAD_IMAGE_JOB:
+            desc->result = LoadImage(desc->params.loadImage.vfsPath);
+            break;
+
+        case RESIZE_IMAGE_JOB:
+            desc->result = CreateResizedImage(desc->params.resizeImage.input,
+                                              desc->params.resizeImage.width,
+                                              desc->params.resizeImage.height);
+            break;
+    }
+    ReferenceImage(desc->result);
+}
+
+JobId BeginLoadingImage( const char* vfsPath )
+{
+    ImageCreationJobDesc* desc = NEW(ImageCreationJobDesc);
+    desc->result = NULL;
+    desc->type = LOAD_IMAGE_JOB;
+    CopyString(vfsPath, desc->params.loadImage.vfsPath, MAX_PATH_SIZE);
+    return CreateJob({"LoadImage",
+                      ProcessImageCreationJob,
+                      DestroyImageCreationJob,
+                      desc});
+}
+
+JobId BeginResizingImage( Image* input, int width, int height )
+{
+    ImageCreationJobDesc* desc = NEW(ImageCreationJobDesc);
+    desc->result = NULL;
+    desc->type = RESIZE_IMAGE_JOB;
+    desc->params.resizeImage.input  = input;
+    desc->params.resizeImage.width  = width;
+    desc->params.resizeImage.height = height;
+    ReferenceImage(input); // released in DestroyImageCreationJob
+    return CreateJob({"ResizeImage",
+                      ProcessImageCreationJob,
+                      DestroyImageCreationJob,
+                      desc});
+}
+
+Image* GetCreatedImage( JobId job )
+{
+    Ensure(GetJobStatus(job) == COMPLETED_JOB);
+    ImageCreationJobDesc* desc = (ImageCreationJobDesc*)GetJobData(job);
+    assert(desc->result);
+    return desc->result;
+}
+
+// ---------------------------------------------------------------------------
+
+static void DestroyImagePremultiplicationJob( void* _desc )
+{
+    Image* image = (Image*)_desc;
+    ReleaseImage(image); // referenced in MultiplyImageRgbByAlpha_
+}
+
+static void ProcessImagePremultiplicationJob( void* _desc )
+{
+    Image* image = (Image*)_desc;
+    MultiplyImageRgbByAlpha(image);
+}
+
+JobId MultiplyImageRgbByAlpha_( Image* image )
+{
+    ReferenceImage(image); // released in DestroyImagePremultiplicationJob
+    return CreateJob({"MultiplyImageRgbByAlpha",
+                      ProcessImagePremultiplicationJob,
+                      DestroyImagePremultiplicationJob,
+                      image});
+}
+
+// ---------------------------------------------------------------------------
+
+int GetImageWidth( const Image* image )
+{
+    return image->width;
+}
+
+int GetImageHeight( const Image* image )
+{
+    return image->height;
+}
+
+int GetImageChannelCount( const Image* image )
+{
+    return image->channelCount;
+}
+
+int GetImageType( const Image* image )
+{
+    return image->type;
+}
+
+void* GetImagePixels( const Image* image )
+{
+    return image->data;
 }

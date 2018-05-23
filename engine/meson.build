@@ -53,6 +53,7 @@ sources = ['AttachmentTarget.cpp',
            'lua_bindings/Time.cpp',
            'lua_bindings/Vfs.cpp',
            'lua_bindings/VoxelVolume.cpp',
+           'lua_bindings/JobManager.cpp',
            'vfs/PhysFS.cpp',
            'vfs/Real.cpp']
 

@@ -9,16 +9,21 @@
 
 static unsigned int GetPixel( const Image* image, int x, int y )
 {
-    assert(x >= 0 && x < image->width);
-    assert(y >= 0 && y < image->height);
+    const int width        = GetImageWidth(image);
+    const int height       = GetImageHeight(image);
+    const int channelCount = GetImageChannelCount(image);
+    const void* pixels     = GetImagePixels(image);
 
-    const int index = image->channelCount*image->width*y +
-                      image->channelCount*x;
+    assert(x >= 0 && x < width);
+    assert(y >= 0 && y < height);
 
-    unsigned char* pixel = (unsigned char*)image->data + index;
+    const int index = channelCount*width*y +
+                      channelCount*x;
+
+    unsigned char* pixel = (unsigned char*)pixels + index;
 
     unsigned int r = 0;
-    REPEAT(image->channelCount, i)
+    REPEAT(channelCount, i)
         r = (r << 8) | pixel[i];
     return r;
 }
@@ -27,28 +32,20 @@ static unsigned char GetPixelChannel( const Image* image,
                                       int x, int y,
                                       int channel )
 {
-    assert(x >= 0 && x < image->width);
-    assert(y >= 0 && y < image->height);
-    assert(channel >= 0 && channel < image->channelCount);
+    const int width        = GetImageWidth(image);
+    const int height       = GetImageHeight(image);
+    const int channelCount = GetImageChannelCount(image);
+    const void* pixels     = GetImagePixels(image);
 
-    const int index = image->channelCount*image->width*y +
-                      image->channelCount*x +
+    assert(x >= 0 && x < width);
+    assert(y >= 0 && y < height);
+    assert(channel >= 0 && channel < channelCount);
+
+    const int index = channelCount*width*y +
+                      channelCount*x +
                       channel;
 
-    return ((unsigned char*)image->data)[index];
-}
-
-InlineTest("CreateImage", dummySignalSandbox)
-{
-    Image image;
-    CreateImage(&image, 32, 64, 3); // 32*64 RGB
-
-    Require(image.width  == 32);
-    Require(image.height == 64);
-    Require(image.channelCount == 3);
-    Require(image.data != NULL);
-
-    FreeImage(&image);
+    return ((unsigned char*)pixels)[index];
 }
 
 InlineTest("load RGB image", dummySignalSandbox)
