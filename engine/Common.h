@@ -21,6 +21,9 @@ void* ReAlloc( void* oldPointer, size_t size );
 #define NEW(S) (S*)AllocZeroed(sizeof(S))
 #define DELETE(P) do { memset((P), 0, sizeof(*(P))); Free(P); } while(0)
 
+#define NEW_ARRAY(S,C) (S*)AllocZeroed(sizeof(S)*(C))
+#define DELETE_ARRAY(P,C) do { memset((P), 0, sizeof(*(P))*(C)); Free(P); } while(0)
+
 
 // --- Strings ---
 

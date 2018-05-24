@@ -14,6 +14,7 @@ struct MeshBuffer
     ReferenceCounter refCounter;
     std::vector<Vertex> vertices;
     std::vector<VertexIndex> indices;
+    // TODO: Replace std::vector with Array!
 };
 
 
@@ -189,21 +190,21 @@ static void IndexVertex( const Vertex* vertex,
     }
 }
 
-void IndexMeshBuffer( MeshBuffer* buffer )
+static void IndexMeshBuffer( MeshBuffer* buffer )
 {
     const Vertex* vertices     = GetMeshBufferVertices(buffer);
     const VertexIndex* indices = GetMeshBufferIndices(buffer);
     const int vertexCount      = GetMeshBufferVertexCount(buffer);
     const int indexCount       = GetMeshBufferIndexCount(buffer);
 
-    Vertex* newVertices     = new Vertex[vertexCount];
-    VertexIndex* newIndices = new VertexIndex[vertexCount];
+    Vertex* newVertices     = NEW_ARRAY(Vertex, vertexCount);
+    VertexIndex* newIndices = NEW_ARRAY(VertexIndex, vertexCount);
     int newVertexCount = 0;
     int newIndexCount  = 0;
 
     if(indexCount > 0)
     {
-        for(int i = 0; i < indexCount; i++)
+        REPEAT(indexCount, i)
         {
             const int index = indices[i];
             const Vertex* vertex = &vertices[index];
@@ -216,7 +217,7 @@ void IndexMeshBuffer( MeshBuffer* buffer )
     }
     else
     {
-        for(int i = 0; i < vertexCount; i++)
+        REPEAT(indexCount, i)
         {
             const Vertex* vertex = &vertices[i];
             IndexVertex(vertex,
@@ -230,8 +231,8 @@ void IndexMeshBuffer( MeshBuffer* buffer )
     buffer->vertices.assign(newVertices, newVertices+newVertexCount);
     buffer->indices.assign(newIndices, newIndices+newIndexCount);
 
-    delete[] newVertices;
-    delete[] newIndices;
+    DELETE_ARRAY(newVertices, vertexCount);
+    DELETE_ARRAY(newIndices, vertexCount);
 }
 
 
@@ -243,7 +244,7 @@ static void ModifyVertices( MeshBuffer* buffer,
 {
     Vertex* vertices      = &buffer->vertices[0];
     const int vertexCount = GetMeshBufferVertexCount(buffer);
-    for(int i = 0; i < vertexCount; i++)
+    REPEAT(vertexCount, i)
     {
         Vertex* vertex = &vertices[i];
         cb(vertex);
@@ -296,7 +297,7 @@ static void NormalizeVertexNormal( Vertex* vertex )
     vertex->normal = NormalizeVec3(vertex->normal);
 }
 
-void CalcMeshBufferNormals( MeshBuffer* buffer )
+static void CalcMeshBufferNormals( MeshBuffer* buffer )
 {
     ModifyVertices(buffer, ResetVertexNormal);
     ModifyTriangles(buffer, CalcTriangleNormal);
@@ -318,9 +319,54 @@ static void NormalizeVertexTangents( Vertex* vertex )
     vertex->bitangent = NormalizeVec3(vertex->bitangent);
 }
 
-void CalcMeshBufferTangents( MeshBuffer* buffer )
+static void CalcMeshBufferTangents( MeshBuffer* buffer )
 {
     ModifyVertices(buffer, ResetVertexTangents);
     ModifyTriangles(buffer, CalcTriangleTangents);
     ModifyVertices(buffer, NormalizeVertexTangents);
+}
+
+
+// ---- jobs ----
+
+struct MeshBufferPostprocessingJobDesc
+{
+    MeshBuffer* buffer;
+    int options;
+};
+
+static void DestroyMeshBufferPostprocessingJob( void* _desc )
+{
+    MeshBufferPostprocessingJobDesc* desc =
+        (MeshBufferPostprocessingJobDesc*)_desc;
+    ReleaseMeshBuffer(desc->buffer);
+    DELETE(desc);
+}
+
+static void ProcessMeshBufferPostprocessingJob( void* _desc )
+{
+    MeshBufferPostprocessingJobDesc* desc =
+        (MeshBufferPostprocessingJobDesc*)_desc;
+
+    if(desc->options & MESH_BUFFER_INDEX)
+        IndexMeshBuffer(desc->buffer);
+
+    if(desc->options & MESH_BUFFER_CALC_NORMALS)
+        CalcMeshBufferNormals(desc->buffer);
+
+    if(desc->options & MESH_BUFFER_CALC_TANGENTS)
+        CalcMeshBufferTangents(desc->buffer);
+}
+
+JobId BeginMeshBufferPostprocessing( MeshBuffer* buffer, int options )
+{
+    MeshBufferPostprocessingJobDesc* desc =
+        NEW(MeshBufferPostprocessingJobDesc);
+    desc->buffer = buffer;
+    desc->options = options;
+    ReferenceMeshBuffer(buffer);
+    return CreateJob({"PostprocessMeshBuffer",
+                      ProcessMeshBufferPostprocessingJob,
+                      DestroyMeshBufferPostprocessingJob,
+                      desc});
 }

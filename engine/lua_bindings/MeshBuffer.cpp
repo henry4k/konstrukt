@@ -1,6 +1,7 @@
 #include "../Lua.h"
 #include "../MeshBuffer.h"
 #include "Math.h"
+#include "JobManager.h"
 #include "MeshBuffer.h"
 
 
@@ -36,25 +37,35 @@ static int Lua_TransformMeshBuffer( lua_State* l )
     return 0;
 }
 
-static int Lua_IndexMeshBuffer( lua_State* l )
+static int Lua_BeginMeshBufferPostprocessing( lua_State* l )
 {
     MeshBuffer* buffer = CheckMeshBufferFromLua(l, 1);
-    IndexMeshBuffer(buffer);
-    return 0;
-}
 
-static int Lua_CalcMeshBufferNormals( lua_State* l )
-{
-    MeshBuffer* buffer = CheckMeshBufferFromLua(l, 1);
-    CalcMeshBufferNormals(buffer);
-    return 0;
-}
+    static const char* optionNames[] =
+    {
+        "indices",
+        "normals",
+        "tangents",
+        NULL
+    };
 
-static int Lua_CalcMeshBufferTangents( lua_State* l )
-{
-    MeshBuffer* buffer = CheckMeshBufferFromLua(l, 1);
-    CalcMeshBufferTangents(buffer);
-    return 0;
+    static int optionMap[] =
+    {
+        MESH_BUFFER_INDEX,
+        MESH_BUFFER_CALC_NORMALS,
+        MESH_BUFFER_CALC_TANGENTS
+    };
+
+    int options = 0;
+    const int top = lua_gettop(l);
+    for(int i = 2; i < top; i++)
+    {
+        const int index = luaL_checkoption(l, i, NULL, optionNames);
+        options |= optionMap[index];
+    }
+
+    PushJobToLua(l, BeginMeshBufferPostprocessing(buffer, options));
+    return 1;
 }
 
 static int Lua_AppendMeshBuffer( lua_State* l )
@@ -122,9 +133,7 @@ void RegisterMeshBufferInLua()
     RegisterFunctionInLua("CreateMeshBuffer", Lua_CreateMeshBuffer);
     RegisterFunctionInLua("DestroyMeshBuffer", Lua_DestroyMeshBuffer);
     RegisterFunctionInLua("TransformMeshBuffer", Lua_TransformMeshBuffer);
-    RegisterFunctionInLua("IndexMeshBuffer", Lua_IndexMeshBuffer);
-    RegisterFunctionInLua("CalcMeshBufferNormals", Lua_CalcMeshBufferNormals);
-    RegisterFunctionInLua("CalcMeshBufferTangents", Lua_CalcMeshBufferTangents);
+    RegisterFunctionInLua("BeginMeshBufferPostprocessing", Lua_BeginMeshBufferPostprocessing);
     RegisterFunctionInLua("AppendMeshBuffer", Lua_AppendMeshBuffer);
     RegisterFunctionInLua("AppendIndexToMeshBuffer", Lua_AppendIndexToMeshBuffer);
     RegisterFunctionInLua("AppendVertexToMeshBuffer", Lua_AppendVertexToMeshBuffer);
