@@ -3,6 +3,7 @@
 
 #include "Math.h"
 #include "BitCondition.h"
+#include "JobManager.h" // JobId
 
 
 struct VoxelVolume;
@@ -87,10 +88,12 @@ void CreateBlockVoxelMesh( MeshChunkGenerator* generator,
 /**
  * Generates a #MeshChunk from a section of a voxel volume.
  */
-MeshChunk* GenerateMeshChunk( MeshChunkGenerator* generator,
-                              VoxelVolume* volume,
-                              int x, int y, int z,
-                              int w, int h, int d );
+JobId BeginGeneratingMeshChunk( MeshChunkGenerator* generator,
+                                VoxelVolume* volume,
+                                int x, int y, int z,
+                                int w, int h, int d );
+
+MeshChunk* GetGeneratedMeshChunk( JobId job );
 
 void FreeMeshChunk( MeshChunk* chunk );
 

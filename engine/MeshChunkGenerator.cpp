@@ -506,10 +506,10 @@ static MeshChunk* GenerateMeshChunkWithEnv( ChunkEnvironment* env )
     return chunk;
 }
 
-MeshChunk* GenerateMeshChunk( MeshChunkGenerator* generator,
-                              VoxelVolume* volume,
-                              int sx, int sy, int sz,
-                              int w, int h, int d )
+static MeshChunk* GenerateMeshChunk( MeshChunkGenerator* generator,
+                                     VoxelVolume* volume,
+                                     int sx, int sy, int sz,
+                                     int w, int h, int d )
 {
     ProfileFunction();
 
@@ -525,6 +525,7 @@ MeshChunk* GenerateMeshChunk( MeshChunkGenerator* generator,
     return chunk;
 }
 
+
 void FreeMeshChunk( MeshChunk* chunk )
 {
     REPEAT(chunk->materialCount, i)
@@ -532,4 +533,69 @@ void FreeMeshChunk( MeshChunk* chunk )
     Free(chunk->materialMeshes);
     Free(chunk->materialIds);
     DELETE(chunk);
+}
+
+struct MeshChunkGenerationJobDesc
+{
+    MeshChunkGenerator* generator;
+    VoxelVolume* volume;
+    int x, y, z;
+    int w, h, d;
+
+    MeshChunk* result;
+};
+
+static void ProcessMeshChunkGenerationJob( void* _desc )
+{
+    MeshChunkGenerationJobDesc* desc =
+        (MeshChunkGenerationJobDesc*)_desc;
+    desc->result = GenerateMeshChunk(desc->generator,
+                                     desc->volume,
+                                     desc->x, desc->y, desc->z,
+                                     desc->w, desc->h, desc->d);
+}
+
+static void DestroyMeshChunkGenerationJob( void* _desc )
+{
+    MeshChunkGenerationJobDesc* desc =
+        (MeshChunkGenerationJobDesc*)_desc;
+    ReleaseMeshChunkGenerator(desc->generator);
+    ReleaseVoxelVolume(desc->volume);
+    if(desc->result)
+        FreeMeshChunk(desc->result);
+    DELETE(desc);
+}
+
+JobId BeginGeneratingMeshChunk( MeshChunkGenerator* generator,
+                                VoxelVolume* volume,
+                                int x, int y, int z,
+                                int w, int h, int d )
+{
+    MeshChunkGenerationJobDesc* desc = NEW(MeshChunkGenerationJobDesc);
+    desc->generator = generator;
+    desc->volume = volume;
+    desc->x = x;
+    desc->y = y;
+    desc->z = z;
+    desc->w = w;
+    desc->h = h;
+    desc->d = d;
+    desc->result = NULL;
+    ReferenceMeshChunkGenerator(generator);
+    ReferenceVoxelVolume(volume);
+    return CreateJob({"GenerateMeshChunk",
+                      ProcessMeshChunkGenerationJob,
+                      DestroyMeshChunkGenerationJob,
+                      desc});
+}
+
+MeshChunk* GetGeneratedMeshChunk( JobId job )
+{
+    Ensure(GetJobStatus(job) == COMPLETED_JOB);
+    MeshChunkGenerationJobDesc* desc =
+        (MeshChunkGenerationJobDesc*)GetJobData(job);
+    assert(desc->result);
+    MeshChunk* result = desc->result;
+    desc->result = NULL;
+    return result;
 }

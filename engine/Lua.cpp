@@ -9,6 +9,7 @@ extern "C"
 #include <lua_cjson.h>
 }
 
+#include "Constants.h" // KONSTRUKT_PROFILER_ENABLED
 #include "Common.h"
 #include "Profiler.h"
 #include "JobManager.h"
@@ -108,26 +109,21 @@ bool IsLuaRunning()
     return g_LuaRunning;
 }
 
+#if defined(KONSTRUKT_PROFILER_ENABLED)
 static int GetLuaMemoryInBytes()
 {
     assert(g_LuaState);
     return lua_gc(g_LuaState, LUA_GCCOUNT, 0)*1024 +
            lua_gc(g_LuaState, LUA_GCCOUNTB, 0);
 }
+#endif
 
 static void UpdateLua( void* _data )
 {
     ProfileScope("Lua GC");
 
-    //const int memBeforeGC = GetLuaMemoryInBytes();
     lua_gc(g_LuaState, LUA_GCCOLLECT, 0);
-    const int memAfterGC = GetLuaMemoryInBytes();
-    SetCounter(MemoryCounter, memAfterGC);
-
-    //const int delta = memBeforeGC - memAfterGC;
-    //if(delta > 0)
-    //    LogInfo("LUA GC UPDATE: %d bytes in use. %d bytes collected.",
-    //            memAfterGC, delta);
+    SetCounter(MemoryCounter, GetLuaMemoryInBytes());
 }
 
 void BeginLuaUpdate()

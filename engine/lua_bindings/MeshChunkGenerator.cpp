@@ -8,6 +8,7 @@
 #include "Math.h"
 #include "MeshBuffer.h"
 #include "VoxelVolume.h"
+#include "JobManager.h"
 #include "MeshChunkGenerator.h"
 
 
@@ -85,7 +86,7 @@ static int Lua_CreateBlockVoxelMesh( lua_State* l )
     return 0;
 }
 
-static int Lua_GenerateMeshChunk( lua_State* l )
+static int Lua_BeginGeneratingMeshChunk( lua_State* l )
 {
     MeshChunkGenerator* generator = CheckMeshChunkGeneratorFromLua(l, 1);
     VoxelVolume* volume           = CheckVoxelVolumeFromLua(l, 2);
@@ -96,10 +97,17 @@ static int Lua_GenerateMeshChunk( lua_State* l )
     const int h = luaL_checkinteger(l, 7);
     const int d = luaL_checkinteger(l, 8);
 
-    MeshChunk* chunk = GenerateMeshChunk(generator,
-                                         volume,
-                                         x, y, z,
-                                         w, h, d);
+    PushJobToLua(l, BeginGeneratingMeshChunk(generator,
+                                             volume,
+                                             x, y, z,
+                                             w, h, d));
+    return 1;
+}
+
+static int Lua_GetGeneratedMeshChunk( lua_State* l )
+{
+    const JobId job = CheckJobFromLua(l, 1);
+    MeshChunk* chunk = GetGeneratedMeshChunk(job);
 
     lua_createtable(l, chunk->materialCount, 0);
     REPEAT(chunk->materialCount, i)
@@ -137,5 +145,6 @@ void RegisterMeshChunkGeneratorInLua()
     RegisterFunctionInLua("CreateMeshChunkGenerator", Lua_CreateMeshChunkGenerator);
     RegisterFunctionInLua("DestroyMeshChunkGenerator", Lua_DestroyMeshChunkGenerator);
     RegisterFunctionInLua("CreateBlockVoxelMesh", Lua_CreateBlockVoxelMesh);
-    RegisterFunctionInLua("GenerateMeshChunk", Lua_GenerateMeshChunk);
+    RegisterFunctionInLua("BeginGeneratingMeshChunk", Lua_BeginGeneratingMeshChunk);
+    RegisterFunctionInLua("GetGeneratedMeshChunk", Lua_GetGeneratedMeshChunk);
 }
