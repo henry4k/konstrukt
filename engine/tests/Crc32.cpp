@@ -1,10 +1,8 @@
 #include "../Crc32.h"
 #include "TestTools.h"
-#include <dummy/inline.hpp>
 
-#define InlineTest DUMMY_INLINE_TEST
 
-InlineTest("CalcCrc32For*", dummySignalSandbox)
+InlineTest("CalcCrc32For*")
 {
     InitCrc32();
     const char buffer[] = "foobar";
@@ -16,6 +14,5 @@ InlineTest("CalcCrc32For*", dummySignalSandbox)
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
-    dummyAddInlineTests();
     return RunTests();
 }

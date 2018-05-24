@@ -174,6 +174,15 @@ bool CopyString( const char* source, char* destination, int destinationSize )
     }
 }
 
+const char* MatchPrefix( const char* prefix, const char* value )
+{
+    const size_t prefixLength = strlen(prefix);
+    if(strncmp(prefix, value, prefixLength) == 0)
+        return &value[prefixLength];
+    else
+        return NULL;
+}
+
 
 // --- Logging ---
 

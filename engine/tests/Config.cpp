@@ -1,18 +1,15 @@
 #include <string.h> // strcmp
 #include "../Config.h"
 #include "TestTools.h"
-#include <dummy/inline.hpp>
-
-#define InlineTest DUMMY_INLINE_TEST
 
 
-InlineTest("can be initialized empty.", dummySignalSandbox)
+InlineTest("can be initialized empty.")
 {
     InitConfig();
     DestroyConfig();
 }
 
-InlineTest("can set and get values.", dummySignalSandbox)
+InlineTest("can set and get values.")
 {
     InitConfig();
 
@@ -22,7 +19,7 @@ InlineTest("can set and get values.", dummySignalSandbox)
     DestroyConfig();
 }
 
-InlineTest("can convert integer values.", dummySignalSandbox)
+InlineTest("can convert integer values.")
 {
     InitConfig();
 
@@ -38,7 +35,7 @@ InlineTest("can convert integer values.", dummySignalSandbox)
     DestroyConfig();
 }
 
-InlineTest("can convert floating point values.", dummySignalSandbox)
+InlineTest("can convert floating point values.")
 {
     InitConfig();
 
@@ -54,7 +51,7 @@ InlineTest("can convert floating point values.", dummySignalSandbox)
     DestroyConfig();
 }
 
-InlineTest("can convert boolean values.", dummySignalSandbox)
+InlineTest("can convert boolean values.")
 {
     InitConfig();
 
@@ -84,7 +81,7 @@ InlineTest("can convert boolean values.", dummySignalSandbox)
     DestroyConfig();
 }
 
-InlineTest("can parse ini files.", dummySignalSandbox)
+InlineTest("can parse ini files.")
 {
     InitConfig();
 
@@ -100,6 +97,5 @@ InlineTest("can parse ini files.", dummySignalSandbox)
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
-    dummyAddInlineTests();
     return RunTests();
 }

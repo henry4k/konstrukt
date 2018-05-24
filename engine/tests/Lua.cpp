@@ -1,9 +1,7 @@
 #include <string.h> // memset
 #include "../Lua.h"
 #include "TestTools.h"
-#include <dummy/inline.hpp>
 
-#define InlineTest DUMMY_INLINE_TEST
 
 /**
  * Should be used inside Lua callbacks.
@@ -15,7 +13,7 @@ static inline void LuaRequire_( lua_State* l, const char* expression, bool resul
         luaL_error(l, "%s failed", expression);
 }
 
-InlineTest("can be initialized and destructed", dummySignalSandbox)
+InlineTest("can be initialized and destructed")
 {
     InitLua();
     Require(GetLuaState() != NULL);
@@ -37,7 +35,7 @@ static int lua_AddOne( lua_State* l )
     return 1;
 }
 
-InlineTest("can register functions", dummySignalSandbox)
+InlineTest("can register functions")
 {
     InitLua();
 
@@ -60,7 +58,7 @@ static int lua_MyData_destructor( lua_State* l )
     return 0;
 }
 
-InlineTest("can register and use custom data types", dummySignalSandbox)
+InlineTest("can register and use custom data types")
 {
     InitLua();
     lua_State* l = GetLuaState();
@@ -83,7 +81,7 @@ InlineTest("can register and use custom data types", dummySignalSandbox)
     Require(retrievedData->value == 43);
 }
 
-InlineTest("can push and retrieve pointers", dummySignalSandbox)
+InlineTest("can push and retrieve pointers")
 {
     InitLua();
     lua_State* l = GetLuaState();
@@ -99,7 +97,7 @@ InlineTest("can push and retrieve pointers", dummySignalSandbox)
     DestroyLua();
 }
 
-InlineTest("pushes nil object instead of null pointer", dummySignalSandbox)
+InlineTest("pushes nil object instead of null pointer")
 {
     InitLua();
     lua_State* l = GetLuaState();
@@ -110,7 +108,7 @@ InlineTest("pushes nil object instead of null pointer", dummySignalSandbox)
     DestroyLua();
 }
 
-InlineTest("can fire events", dummySignalSandbox)
+InlineTest("can fire events")
 {
     InitLua();
     lua_State* l = GetLuaState();
@@ -141,6 +139,5 @@ InlineTest("can fire events", dummySignalSandbox)
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
-    dummyAddInlineTests();
     return RunTests();
 }

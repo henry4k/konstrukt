@@ -1,11 +1,7 @@
-#include <tinycthread.h>
-
 #include "../JobManager.h"
 #include "../Common.h"
 #include "TestTools.h"
-#include <dummy/inline.hpp>
 
-#define InlineTest DUMMY_INLINE_TEST
 
 static double PROCESSING_TIME_FACTOR = 1.0;
 
@@ -32,7 +28,7 @@ static void Destructor( void* data )
     work->destructorCalled = true;
 }
 
-InlineTest("single job", dummySignalSandbox)
+InlineTest("single job")
 {
     JobManagerConfig managerConfig;
     managerConfig.workerThreads = 3;
@@ -55,7 +51,7 @@ InlineTest("single job", dummySignalSandbox)
     Require(work.destructorCalled);
 }
 
-InlineTest("single job (fixed)", dummySignalSandbox)
+InlineTest("single job (fixed)")
 {
     JobManagerConfig managerConfig;
     managerConfig.workerThreads = 3;
@@ -80,7 +76,7 @@ InlineTest("single job (fixed)", dummySignalSandbox)
     Require(work.destructorCalled);
 }
 
-InlineTest("call destructor on job removal", dummySignalSandbox)
+InlineTest("call destructor on job removal")
 {
     JobManagerConfig managerConfig;
     managerConfig.workerThreads = 3;
@@ -107,7 +103,7 @@ InlineTest("call destructor on job removal", dummySignalSandbox)
     DestroyJobManager();
 }
 
-InlineTest("queue job while another is running", dummySignalSandbox)
+InlineTest("queue job while another is running")
 {
     JobManagerConfig managerConfig;
     managerConfig.workerThreads = 1;
@@ -163,43 +159,8 @@ InlineTest("queue job while another is running", dummySignalSandbox)
     Require(workB.destructorCalled);
 }
 
-/*
-InlineTest("queue many jobs at once", dummySignalSandbox) // is more of a benchmark
-{
-    static const int JOB_COUNT = 100;
-
-    JobManagerConfig managerConfig;
-    managerConfig.workerThreads = 3;
-    InitJobManager(managerConfig);
-
-    // Queue all jobs:
-    Work work[JOB_COUNT];
-    JobId jobs[JOB_COUNT];
-    REPEAT(JOB_COUNT, i)
-    {
-        work[i].processingTime = 1;
-        work[i].done = false;
-        jobs[i] = CreateJob({"worker", DoWork, &work[i]});
-
-        Require(GetJobStatus(jobs[i]) == QUEUED_JOB);
-        Require(GetJobData(mabs[i]) == &work[i]);
-    }
-
-    WaitForJobs(manag JOB_COUNT);
-    REPEAT(JOB_COUNT, i)
-    {
-        Require(work[i].done);
-        Require(GetJobStatus(jobs[i]) == COMPLETED_JOB);
-        Require(GetJobData(jobs[i]) == &work[i]);
-    }
-
-    DestroyJobManager();
-}
-*/
-
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
-    dummyAddInlineTests();
     return RunTests();
 }

@@ -201,43 +201,6 @@ static void PrintHelpAndExit( const char* arg0 )
     exit(EXIT_FAILURE);
 }
 
-static void ParseConfigString( const char* value )
-{
-    static const int KEY_SIZE = 128;
-
-    static char key[KEY_SIZE];
-    int i = 0;
-    char c;
-
-    for(;; i++)
-    {
-        if(i > KEY_SIZE-1)
-            return;
-
-        c = value[i];
-        if(c == '=' ||
-           c == '\0')
-        {
-            strncpy(key, value, i);
-            break;
-        }
-    }
-
-    if(c == '=')
-        SetConfigString(key, &value[i+1]);
-    else
-        SetConfigBool(key, true);
-}
-
-static const char* MatchPrefix( const char* prefix, const char* value )
-{
-    const size_t prefixLength = strlen(prefix);
-    if(strncmp(prefix, value, prefixLength) == 0)
-        return &value[prefixLength];
-    else
-        return NULL;
-}
-
 static void ParseArguments( const int argc, char** argv, Arguments* out )
 {
     if(argc == 1)
@@ -264,7 +227,7 @@ static void ParseArguments( const int argc, char** argv, Arguments* out )
         if(match) { ReadConfigFile(match, true); continue; }
 
         match = MatchPrefix("-D", arg);
-        if(match) { ParseConfigString(match); continue; }
+        if(match) { ReadConfigString(match); continue; }
 
         match = MatchPrefix("-", arg);
         if(match) { FatalError("Unknown argument '%s'", arg); }

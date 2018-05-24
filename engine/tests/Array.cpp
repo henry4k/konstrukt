@@ -1,11 +1,8 @@
 #include "../Array.h"
 #include "TestTools.h"
-#include <dummy/inline.hpp>
-
-#define InlineTest DUMMY_INLINE_TEST
 
 
-InlineTest("InitArray", dummySignalSandbox)
+InlineTest("InitArray")
 {
     Array<int> list;
     InitArray(&list);
@@ -15,7 +12,7 @@ InlineTest("InitArray", dummySignalSandbox)
     Require(list.data == NULL);
 }
 
-InlineTest("ReserveInArray", dummySignalSandbox)
+InlineTest("ReserveInArray")
 {
     Array<int> list;
     InitArray(&list);
@@ -44,7 +41,7 @@ InlineTest("ReserveInArray", dummySignalSandbox)
     DestroyArray(&list);
 }
 
-InlineTest("AllocateInArray", dummySignalSandbox)
+InlineTest("AllocateInArray")
 {
     Array<int> list;
     InitArray(&list);
@@ -102,7 +99,7 @@ InlineTest("AllocateInArray", dummySignalSandbox)
     DestroyArray(&list);
 }
 
-InlineTest("AllocateAtEndOfArray", dummySignalSandbox)
+InlineTest("AllocateAtEndOfArray")
 {
     Array<int> list;
     InitArray(&list);
@@ -143,7 +140,7 @@ InlineTest("AllocateAtEndOfArray", dummySignalSandbox)
     DestroyArray(&list);
 }
 
-InlineTest("AppendToArray", dummySignalSandbox)
+InlineTest("AppendToArray")
 {
     Array<int> list;
     InitArray(&list);
@@ -170,7 +167,7 @@ InlineTest("AppendToArray", dummySignalSandbox)
     DestroyArray(&list);
 }
 
-InlineTest("AppendToArray (empty source)", dummySignalSandbox)
+InlineTest("AppendToArray (empty source)")
 {
     Array<int> list;
     InitArray(&list);
@@ -191,7 +188,7 @@ InlineTest("AppendToArray (empty source)", dummySignalSandbox)
     DestroyArray(&list);
 }
 
-InlineTest("InsertInArray", dummySignalSandbox)
+InlineTest("InsertInArray")
 {
     Array<int> list;
     InitArray(&list);
@@ -213,7 +210,7 @@ InlineTest("InsertInArray", dummySignalSandbox)
     DestroyArray(&list);
 }
 
-InlineTest("RemoveFromArray", dummySignalSandbox)
+InlineTest("RemoveFromArray")
 {
     Array<int> list;
     InitArray(&list);
@@ -230,7 +227,7 @@ InlineTest("RemoveFromArray", dummySignalSandbox)
     DestroyArray(&list);
 }
 
-InlineTest("PopFromArray", dummySignalSandbox)
+InlineTest("PopFromArray")
 {
     Array<int> list;
     InitArray(&list);
@@ -246,7 +243,7 @@ InlineTest("PopFromArray", dummySignalSandbox)
     DestroyArray(&list);
 }
 
-InlineTest("ClearArray", dummySignalSandbox)
+InlineTest("ClearArray")
 {
     Array<int> list;
     InitArray(&list);
@@ -263,10 +260,8 @@ InlineTest("ClearArray", dummySignalSandbox)
     DestroyArray(&list);
 }
 
-
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
-    dummyAddInlineTests();
     return RunTests();
 }

@@ -4,12 +4,15 @@
 #include <dummy/core.h>
 #include <dummy/signal_sandbox.h>
 #include <dummy/require.h>
+#include <dummy/inline.hpp>
 
 #define Require dummyRequire
 #define AddTest(Name, Function) dummyAddTest(Name, dummySignalSandbox, Function)
+#define InlineTest(Name) DUMMY_INLINE_TEST(Name, dummySignalSandbox)
 
 void InitTests( int argc, char const * const * argv );
-void InitTestVfs( const char* argv0 ); // call this if you need the VFS module in your test
+void InitTestVfs( const char* argv0 );
+void InitTestJobManager();
 int RunTests();
 
 #endif

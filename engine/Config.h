@@ -16,4 +16,10 @@ bool        GetConfigBool(   const char* key, bool        defaultValue );
 
 void ReadConfigFile( const char* fileName, bool overWrite );
 
+/**
+ * Parses a config value of the form `<key>=<value>` or `<key>`.
+ * The latter form will use `true` as value.
+ */
+void ReadConfigString( const char* str );
+
 #endif

@@ -2,11 +2,9 @@
 #include "../Common.h" // REPEAT
 #include "../FsUtils.h"
 #include "TestTools.h"
-#include <dummy/inline.hpp>
 
-#define InlineTest DUMMY_INLINE_TEST
 
-InlineTest("GetFileType", dummySignalSandbox)
+InlineTest("GetFileType")
 {
     Require(GetFileType("data/FsUtils")     == FILE_TYPE_DIRECTORY);
     Require(GetFileType("data/FsUtils/aaa") == FILE_TYPE_REGULAR);
@@ -21,7 +19,7 @@ static bool HasPath( const PathList list, const char* path )
     return false;
 }
 
-InlineTest("GetDirEntries", dummySignalSandbox)
+InlineTest("GetDirEntries")
 {
     PathList list = GetDirEntries("data/FsUtils");
     Require(list.length == 2);
@@ -33,6 +31,5 @@ InlineTest("GetDirEntries", dummySignalSandbox)
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
-    dummyAddInlineTests();
     return RunTests();
 }

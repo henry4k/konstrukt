@@ -3,9 +3,6 @@
 #include "../Common.h"
 #include "../Math.h"
 #include "TestTools.h"
-#include <dummy/inline.hpp>
-
-#define InlineTest DUMMY_INLINE_TEST
 
 
 const float Epsilon = FLT_EPSILON;
@@ -13,7 +10,7 @@ const float Epsilon = FLT_EPSILON;
 
 // Vector:
 
-InlineTest("Vec3Length", dummySignalSandbox)
+InlineTest("Vec3Length")
 {
     {
         Vec3 v = {{1,0,0}};
@@ -36,7 +33,7 @@ InlineTest("Vec3Length", dummySignalSandbox)
     }
 }
 
-InlineTest("NormalizeVec3", dummySignalSandbox)
+InlineTest("NormalizeVec3")
 {
     {
         Vec3 v = {{1,0,0}};
@@ -52,7 +49,7 @@ InlineTest("NormalizeVec3", dummySignalSandbox)
     }
 }
 
-InlineTest("CrossProductOfVec3", dummySignalSandbox)
+InlineTest("CrossProductOfVec3")
 {
     Vec3 a = {{1,0,0}};
     Vec3 b = {{0,1,0}};
@@ -84,14 +81,14 @@ static void LogMat4( const char* name, Mat4 m )
     }
 }
 
-InlineTest("MulMat4", dummySignalSandbox)
+InlineTest("MulMat4")
 {
     const Mat4 m = {{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}};
     const Mat4 r = MulMat4(m, Mat4Identity);
     Require(ArraysAreEqual(r._, m._, 4*4));
 }
 
-InlineTest("ScaleMat4", dummySignalSandbox)
+InlineTest("ScaleMat4")
 {
     Mat4 m = Mat4Identity;
     MAT4_AT(m,3,0) = 1;
@@ -109,7 +106,7 @@ InlineTest("ScaleMat4", dummySignalSandbox)
     Require(MAT4_AT(r,2,2) == 2);
 }
 
-InlineTest("RotateMat4ByAngleAndAxis", dummySignalSandbox)
+InlineTest("RotateMat4ByAngleAndAxis")
 {
     Mat4 t = Mat4Identity;
     MAT4_AT(t,3,0) = 1;
@@ -124,7 +121,7 @@ InlineTest("RotateMat4ByAngleAndAxis", dummySignalSandbox)
     Require(ArraysAreNearlyEqual(r._, e._, 3, Epsilon*14));
 }
 
-InlineTest("TranslateMat4", dummySignalSandbox)
+InlineTest("TranslateMat4")
 {
     Mat4 m = Mat4Identity;
     MAT4_AT(m,3,0) = 1;
@@ -139,7 +136,7 @@ InlineTest("TranslateMat4", dummySignalSandbox)
     Require(MAT4_AT(r,3,2) == 3);
 }
 
-InlineTest("TranslateScaleRotateMat4", dummySignalSandbox)
+InlineTest("TranslateScaleRotateMat4")
 {
     const Vec3 t = {{10,0,0}};
     const Vec3 s = {{2,2,2}};
@@ -152,7 +149,7 @@ InlineTest("TranslateScaleRotateMat4", dummySignalSandbox)
     Require(ArraysAreNearlyEqual(r._, e._, 3, Epsilon*2));
 }
 
-InlineTest("TransposeMat4", dummySignalSandbox)
+InlineTest("TransposeMat4")
 {
     const Mat4 m = {{1,0,0,1,
                      0,1,0,0,
@@ -167,7 +164,7 @@ InlineTest("TransposeMat4", dummySignalSandbox)
     Require(ArraysAreNearlyEqual(r._, e._, 4*4, Epsilon));
 }
 
-InlineTest("MulMat4ByVec3", dummySignalSandbox)
+InlineTest("MulMat4ByVec3")
 {
     Mat4 m = Mat4Identity;
     MAT4_AT(m,3,0) = 10; // translate X by 10
@@ -178,7 +175,7 @@ InlineTest("MulMat4ByVec3", dummySignalSandbox)
     Require(ArraysAreEqual(r._, e._, 3));
 }
 
-InlineTest("InverseMat4", dummySignalSandbox)
+InlineTest("InverseMat4")
 {
     // A matrix, multiplied by its inverse should give the identity matrix:
     //const Mat4 m = CreateMat4(1);
@@ -192,7 +189,7 @@ InlineTest("InverseMat4", dummySignalSandbox)
     // TODO: This is a stupid test. :/
 }
 
-InlineTest("PerspectivicProjection", dummySignalSandbox)
+InlineTest("PerspectivicProjection")
 {
     const Mat4 r = PerspectivicProjection(80, 0.8f, 1, 100);
 
@@ -203,7 +200,7 @@ InlineTest("PerspectivicProjection", dummySignalSandbox)
     Require(ArraysAreNearlyEqual(r._, e._, 4*4, Epsilon));
 }
 
-InlineTest("OrthographicProjection", dummySignalSandbox)
+InlineTest("OrthographicProjection")
 {
     const Mat4 r = OrthographicProjection(1,2,3,4,5,6);
 
@@ -214,7 +211,7 @@ InlineTest("OrthographicProjection", dummySignalSandbox)
     Require(ArraysAreNearlyEqual(r._, e._, 4*4, Epsilon));
 }
 
-InlineTest("CreateLookAtMat4", dummySignalSandbox)
+InlineTest("CreateLookAtMat4")
 {
     const Vec3 eye    = {{0,0,0}};
     const Vec3 center = {{1,0,0}};
@@ -231,7 +228,7 @@ InlineTest("CreateLookAtMat4", dummySignalSandbox)
 
 // Quaternion:
 
-InlineTest("QuatFromAngleAndAxis", dummySignalSandbox)
+InlineTest("QuatFromAngleAndAxis")
 {
     const Vec3 axis = {{1,0,0}};
     const Quat r = QuatFromAngleAndAxis(4, axis);
@@ -240,7 +237,7 @@ InlineTest("QuatFromAngleAndAxis", dummySignalSandbox)
     Require(ArraysAreEqual(r._, e._, 4));
 }
 
-InlineTest("NormalizeQuat", dummySignalSandbox)
+InlineTest("NormalizeQuat")
 {
     const Quat q = {{1,2,3,4}};
     const Quat r = NormalizeQuat(q);
@@ -249,7 +246,7 @@ InlineTest("NormalizeQuat", dummySignalSandbox)
     Require(ArraysAreEqual(r._, e._, 4));
 }
 
-InlineTest("QuatConjugate", dummySignalSandbox)
+InlineTest("QuatConjugate")
 {
     const Quat q = {{1,2,3,4}};
     const Quat r = QuatConjugate(q);
@@ -258,7 +255,7 @@ InlineTest("QuatConjugate", dummySignalSandbox)
     Require(ArraysAreEqual(r._, e._, 4));
 }
 
-InlineTest("InvertQuat", dummySignalSandbox)
+InlineTest("InvertQuat")
 {
     const Quat q = {{1,2,3,4}};
     const Quat r = InvertQuat(q);
@@ -267,7 +264,7 @@ InlineTest("InvertQuat", dummySignalSandbox)
     Require(ArraysAreEqual(r._, e._, 4));
 }
 
-InlineTest("MulQuat", dummySignalSandbox)
+InlineTest("MulQuat")
 {
     const Quat a = {{1,2,3,4}};
     const Quat b = {{4,3,2,1}};
@@ -277,7 +274,7 @@ InlineTest("MulQuat", dummySignalSandbox)
     Require(ArraysAreEqual(r._, e._, 4));
 }
 
-InlineTest("MulQuatByVec3", dummySignalSandbox)
+InlineTest("MulQuatByVec3")
 {
     const Quat q = {{1,2,3,4}};
     const Vec3 v = {{5,6,7}};
@@ -287,7 +284,7 @@ InlineTest("MulQuatByVec3", dummySignalSandbox)
     Require(ArraysAreEqual(r._, e._, 3));
 }
 
-InlineTest("Mat4FromQuat", dummySignalSandbox)
+InlineTest("Mat4FromQuat")
 {
     const Vec3 axis = {{0,1,0}};
     const Quat q = QuatFromAngleAndAxis(PI/2, axis);
@@ -302,6 +299,5 @@ InlineTest("Mat4FromQuat", dummySignalSandbox)
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
-    dummyAddInlineTests();
     return RunTests();
 }

@@ -1,9 +1,6 @@
 #include <string.h> // memset
 #include "../MeshBuffer.h"
 #include "TestTools.h"
-#include <dummy/inline.hpp>
-
-#define InlineTest DUMMY_INLINE_TEST
 
 
 Vertex* CreateVertex( float x, float y, float z )
@@ -23,7 +20,7 @@ void FreeMeshBuffer( MeshBuffer* buffer )
     ReleaseMeshBuffer(buffer);
 }
 
-InlineTest("can be created, modified and freed", dummySignalSandbox)
+InlineTest("can be created, modified and freed")
 {
     MeshBuffer* buffer = CreateMeshBuffer();
     AddVertexToMeshBuffer(buffer, CreateVertex(0,0,0));
@@ -31,7 +28,7 @@ InlineTest("can be created, modified and freed", dummySignalSandbox)
     FreeMeshBuffer(buffer);
 }
 
-InlineTest("can be transformed", dummySignalSandbox)
+InlineTest("can be transformed")
 {
     MeshBuffer* buffer = CreateMeshBuffer();
 
@@ -54,7 +51,7 @@ InlineTest("can be transformed", dummySignalSandbox)
     FreeMeshBuffer(buffer);
 }
 
-InlineTest("can be appended to another buffer", dummySignalSandbox)
+InlineTest("can be appended to another buffer")
 {
     MeshBuffer* a = CreateMeshBuffer();
 
@@ -88,7 +85,7 @@ InlineTest("can be appended to another buffer", dummySignalSandbox)
     FreeMeshBuffer(b);
 }
 
-InlineTest("can be appended to another buffer while transforming it", dummySignalSandbox)
+InlineTest("can be appended to another buffer while transforming it")
 {
     MeshBuffer* a = CreateMeshBuffer();
 
@@ -126,17 +123,17 @@ InlineTest("can be appended to another buffer while transforming it", dummySigna
     FreeMeshBuffer(b);
 }
 
-InlineTest("can generate indices", dummySignalSandbox)
+InlineTest("can generate indices")
 {
     dummyAbortTest(DUMMY_FAIL_TEST, "test not implemented");
 }
 
-InlineTest("can generate normals", dummySignalSandbox)
+InlineTest("can generate normals")
 {
     dummyAbortTest(DUMMY_FAIL_TEST, "test not implemented");
 }
 
-InlineTest("can generate tangents from normals", dummySignalSandbox)
+InlineTest("can generate tangents from normals")
 {
     dummyAbortTest(DUMMY_FAIL_TEST, "test not implemented");
 }
@@ -144,6 +141,5 @@ InlineTest("can generate tangents from normals", dummySignalSandbox)
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
-    dummyAddInlineTests();
     return RunTests();
 }

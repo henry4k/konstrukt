@@ -116,3 +116,31 @@ void ReadConfigFile( const char* fileName, bool overWrite )
     LogNotice("Reading config file %s ..", fileName);
     ini_parse(fileName, IniEntryCallback, &overWrite);
 }
+
+void ReadConfigString( const char* str )
+{
+    static const int KEY_SIZE = 128;
+
+    static char key[KEY_SIZE];
+    int i = 0;
+    char c;
+
+    for(;; i++)
+    {
+        if(i > KEY_SIZE-1)
+            return;
+
+        c = str[i];
+        if(c == '=' ||
+           c == '\0')
+        {
+            strncpy(key, str, i);
+            break;
+        }
+    }
+
+    if(c == '=')
+        SetConfigString(key, &str[i+1]);
+    else
+        SetConfigBool(key, true);
+}

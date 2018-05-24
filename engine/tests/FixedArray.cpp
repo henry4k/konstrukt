@@ -8,7 +8,7 @@ struct Job
 };
 
 
-void Test()
+InlineTest("...")
 {
     FixedArray<Job> jobs;
     InitFixedArray(&jobs);
@@ -46,12 +46,8 @@ void Test()
     DestroyFixedArray(&jobs);
 }
 
-
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
-
-    AddTest("Test", Test);
-
     return RunTests();
 }

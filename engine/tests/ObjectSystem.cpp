@@ -1,9 +1,6 @@
 #include "../Common.h"
 #include "../ObjectSystem.h"
 #include "TestTools.h"
-#include <dummy/inline.hpp>
-
-#define InlineTest DUMMY_INLINE_TEST
 
 
 static const int THING_VALUE_COUNT = 16;
@@ -13,7 +10,7 @@ struct Thing
     long values[THING_VALUE_COUNT];
 };
 
-InlineTest("Can create and remove objects.", dummySignalSandbox)
+InlineTest("Can create and remove objects.")
 {
     ObjectSystem<Thing> sys;
     InitObjectSystem(&sys);
@@ -35,7 +32,7 @@ InlineTest("Can create and remove objects.", dummySignalSandbox)
     DestroyObjectSystem(&sys);
 }
 
-InlineTest("IDs are not reused.", dummySignalSandbox)
+InlineTest("IDs are not reused.")
 {
     ObjectSystem<Thing> sys;
     InitObjectSystem(&sys);
@@ -49,7 +46,7 @@ InlineTest("IDs are not reused.", dummySignalSandbox)
     DestroyObjectSystem(&sys);
 }
 
-InlineTest("Can remove single objects.", dummySignalSandbox)
+InlineTest("Can remove single objects.")
 {
     ObjectSystem<Thing> sys;
     InitObjectSystem(&sys);
@@ -97,7 +94,7 @@ InlineTest("Can remove single objects.", dummySignalSandbox)
     DestroyObjectSystem(&sys);
 }
 
-InlineTest("Can create MAX_OBJECTS.", dummySignalSandbox)
+InlineTest("Can create MAX_OBJECTS.")
 {
     ObjectSystem<Thing> sys;
     InitObjectSystem(&sys);
@@ -145,6 +142,5 @@ InlineTest("Can create MAX_OBJECTS.", dummySignalSandbox)
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
-    dummyAddInlineTests();
     return RunTests();
 }

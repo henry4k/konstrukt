@@ -1,11 +1,10 @@
 #include <assert.h>
 #include "../Common.h" // REPEAT
 #include "../Vfs.h"
+#include "../JobManager.h"
 #include "../Image.h"
 #include "TestTools.h"
-#include <dummy/inline.hpp>
 
-#define InlineTest DUMMY_INLINE_TEST
 
 static unsigned int GetPixel( const Image* image, int x, int y )
 {
@@ -28,215 +27,166 @@ static unsigned int GetPixel( const Image* image, int x, int y )
     return r;
 }
 
-static unsigned char GetPixelChannel( const Image* image,
-                                      int x, int y,
-                                      int channel )
+static Image* LoadImage( const char* vfsPath )
 {
-    const int width        = GetImageWidth(image);
-    const int height       = GetImageHeight(image);
-    const int channelCount = GetImageChannelCount(image);
-    const void* pixels     = GetImagePixels(image);
-
-    assert(x >= 0 && x < width);
-    assert(y >= 0 && y < height);
-    assert(channel >= 0 && channel < channelCount);
-
-    const int index = channelCount*width*y +
-                      channelCount*x +
-                      channel;
-
-    return ((unsigned char*)pixels)[index];
+    const JobId job = BeginLoadingImage(vfsPath);
+    WaitForJobs(&job, 1);
+    Image* image = GetCreatedImage(job);
+    ReferenceImage(image);
+    RemoveJob(job);
+    return image;
 }
 
-InlineTest("load RGB image", dummySignalSandbox)
+InlineTest("load RGB image")
 {
-    Image image;
-    LoadImage(&image, "data/Image/rgb.png");
+    Image* image = LoadImage("data/Image/rgb.png");
 
-    Require(image.width  == 32);
-    Require(image.height == 32);
-    Require(image.channelCount == 3);
-    Require(image.data != NULL);
+    Require(image != NULL);
+    Require(GetImageWidth(image) == 32);
+    Require(GetImageHeight(image) == 32);
+    Require(GetImageChannelCount(image) == 3);
+    Require(GetImagePixels(image) != NULL);
 
-    Require(GetPixel(&image, 0,  0) == 0xFF0000);
-    Require(GetPixel(&image, 15, 0) == 0x00FF00);
-    Require(GetPixel(&image, 31, 0) == 0x0000FF);
+    Require(GetPixel(image, 0,  0) == 0xFF0000);
+    Require(GetPixel(image, 15, 0) == 0x00FF00);
+    Require(GetPixel(image, 31, 0) == 0x0000FF);
 
-    FreeImage(&image);
+    ReleaseImage(image);
 }
 
-InlineTest("load RGBA image", dummySignalSandbox)
+InlineTest("load RGBA image")
 {
-    Image image;
-    LoadImage(&image, "data/Image/rgb_alpha.png");
+    Image* image = LoadImage("data/Image/rgb_alpha.png");
 
-    Require(image.width  == 32);
-    Require(image.height == 32);
-    Require(image.channelCount == 4);
-    Require(image.data != NULL);
+    Require(image != NULL);
+    Require(GetImageWidth(image) == 32);
+    Require(GetImageHeight(image) == 32);
+    Require(GetImageChannelCount(image) == 4);
+    Require(GetImagePixels(image) != NULL);
 
-    Require(GetPixel(&image, 0,   0) == 0xFF0000FF);
-    Require(GetPixel(&image, 15,  0) == 0x00FF00FF);
-    Require(GetPixel(&image, 31,  0) == 0x0000FFFF);
+    Require(GetPixel(image, 0,   0) == 0xFF0000FF);
+    Require(GetPixel(image, 15,  0) == 0x00FF00FF);
+    Require(GetPixel(image, 31,  0) == 0x0000FFFF);
 
-    Require(GetPixel(&image, 0,  31) == 0xFF000080);
-    Require(GetPixel(&image, 15, 31) == 0x00FF0080);
-    Require(GetPixel(&image, 31, 31) == 0x0000FF80);
+    Require(GetPixel(image, 0,  31) == 0xFF000080);
+    Require(GetPixel(image, 15, 31) == 0x00FF0080);
+    Require(GetPixel(image, 31, 31) == 0x0000FF80);
 
-    FreeImage(&image);
+    ReleaseImage(image);
 }
 
-InlineTest("load greyscale image", dummySignalSandbox)
+InlineTest("load greyscale image")
 {
-    Image image;
-    LoadImage(&image, "data/Image/greyscale.png");
+    Image* image = LoadImage("data/Image/greyscale.png");
 
-    Require(image.width  == 32);
-    Require(image.height == 32);
-    Require(image.channelCount == 1);
-    Require(image.data != NULL);
+    Require(image != NULL);
+    Require(GetImageWidth(image) == 32);
+    Require(GetImageHeight(image) == 32);
+    Require(GetImageChannelCount(image) == 1);
+    Require(GetImagePixels(image) != NULL);
 
-    Require(GetPixel(&image,  0, 0) == 0x00);
-    Require(GetPixel(&image, 31, 0) == 0xFF);
+    Require(GetPixel(image,  0, 0) == 0x00);
+    Require(GetPixel(image, 31, 0) == 0xFF);
 
-    FreeImage(&image);
+    ReleaseImage(image);
 }
 
-InlineTest("load greyscale alpha image", dummySignalSandbox)
+InlineTest("load greyscale alpha image")
 {
-    Image image;
-    LoadImage(&image, "data/Image/greyscale_alpha.png");
+    Image* image = LoadImage("data/Image/greyscale_alpha.png");
 
-    Require(image.width  == 32);
-    Require(image.height == 32);
-    Require(image.channelCount == 2);
-    Require(image.data != NULL);
+    Require(image != NULL);
+    Require(GetImageWidth(image) == 32);
+    Require(GetImageHeight(image) == 32);
+    Require(GetImageChannelCount(image) == 2);
+    Require(GetImagePixels(image) != NULL);
 
-    Require(GetPixel(&image,  0,  0) == 0x00FF);
-    Require(GetPixel(&image, 31,  0) == 0xFFFF);
+    Require(GetPixel(image,  0,  0) == 0x00FF);
+    Require(GetPixel(image, 31,  0) == 0xFFFF);
 
-    Require(GetPixel(&image,  0, 31) == 0x0080);
-    Require(GetPixel(&image, 31, 31) == 0xFF80);
+    Require(GetPixel(image,  0, 31) == 0x0080);
+    Require(GetPixel(image, 31, 31) == 0xFF80);
 
-    FreeImage(&image);
+    ReleaseImage(image);
 }
 
-InlineTest("load indexed rgb image", dummySignalSandbox)
+InlineTest("load indexed rgb image")
 {
-    Image image;
-    LoadImage(&image, "data/Image/indexed.png");
+    Image* image = LoadImage("data/Image/indexed.png");
 
-    Require(image.width  == 32);
-    Require(image.height == 32);
-    Require(image.channelCount == 3);
-    Require(image.data != NULL);
+    Require(image != NULL);
+    Require(GetImageWidth(image) == 32);
+    Require(GetImageHeight(image) == 32);
+    Require(GetImageChannelCount(image) == 3);
+    Require(GetImagePixels(image) != NULL);
 
-    Require(GetPixel(&image,  0, 0) == 0x000000);
-    Require(GetPixel(&image, 31, 0) == 0xFFFFFF);
+    Require(GetPixel(image,  0, 0) == 0x000000);
+    Require(GetPixel(image, 31, 0) == 0xFFFFFF);
 
-    FreeImage(&image);
+    ReleaseImage(image);
 }
 
-InlineTest("load indexed rgb image", dummySignalSandbox)
+InlineTest("MultiplyImageRgbByAlpha")
 {
-    Image image;
-    LoadImage(&image, "data/Image/indexed.png");
+    Image* image = LoadImage("data/Image/gradient.png");
 
-    Require(image.width  == 32);
-    Require(image.height == 32);
-    Require(image.channelCount == 3);
-    Require(image.data != NULL);
+    Require(image != NULL);
+    Require(GetImageWidth(image) == 32);
+    Require(GetImageHeight(image) == 32);
+    Require(GetImageChannelCount(image) == 4);
+    Require(GetImagePixels(image) != NULL);
 
-    Require(GetPixel(&image,  0, 0) == 0x000000);
-    Require(GetPixel(&image, 31, 0) == 0xFFFFFF);
+    Require(GetPixel(image,  0, 0) == 0xFFFFFFFF);
+    Require(GetPixel(image, 31, 0) == 0xFFFFFF00);
 
-    FreeImage(&image);
-}
-
-InlineTest("MultiplyImageRgbByAlpha", dummySignalSandbox)
-{
-    Image image;
-    LoadImage(&image, "data/Image/gradient.png");
-
-    Require(image.width  == 32);
-    Require(image.height == 32);
-    Require(image.channelCount == 4);
-    Require(image.data != NULL);
-
-    Require(GetPixel(&image,  0, 0) == 0xFFFFFFFF);
-    Require(GetPixel(&image, 31, 0) == 0xFFFFFF00);
-
-    MultiplyImageRgbByAlpha(&image);
-
-    Require(GetPixel(&image,  0, 0) == 0xFFFFFFFF);
-    Require(GetPixel(&image, 31, 0) == 0x00000000);
-
-    FreeImage(&image);
-}
-
-InlineTest("CreateResizedImage", dummySignalSandbox)
-{
-    Image image;
-    LoadImage(&image, "data/Image/checker.png");
-
-    Require(image.width  == 32);
-    Require(image.height == 32);
-    Require(image.channelCount == 3);
-    Require(image.data != NULL);
-
-    Require(GetPixel(&image, 0, 0) == 0xFFFFFF);
-    Require(GetPixel(&image, 1, 0) == 0x000000);
-
-    Image resizedImage;
-    CreateResizedImage(&resizedImage, &image, 16, 16);
-
-    Require(resizedImage.width  == 16);
-    Require(resizedImage.height == 16);
-    Require(resizedImage.channelCount == 3);
-    Require(resizedImage.data != NULL);
-
-    Require(GetPixel(&resizedImage,  0,  0) == 0x878787);
-    Require(GetPixel(&resizedImage, 15, 15) == 0x878787);
-
-    FreeImage(&image);
-    FreeImage(&resizedImage);
-}
-
-#include "../JobManager.h"
-
-InlineTest("load image asynchronously", dummySignalSandbox)
-{
-    JobManagerConfig managerConfig;
-    managerConfig.workerThreads = 3;
-    InitJobManager(managerConfig);
-
-    Image image;
-    const JobId job = LoadImageAsync(&image, "data/Image/rgb.png");
-
-    LogNotice("loading ...");
+    const JobId job = MultiplyImageRgbByAlpha_(image);
     WaitForJobs(&job, 1);
     RemoveJob(job);
-    LogNotice("loaded");
 
-    DestroyJobManager();
+    Require(GetPixel(image,  0, 0) == 0xFFFFFFFF);
+    Require(GetPixel(image, 31, 0) == 0x00000000);
 
-    Require(image.width  == 32);
-    Require(image.height == 32);
-    Require(image.channelCount == 3);
-    Require(image.data != NULL);
-
-    Require(GetPixel(&image, 0,  0) == 0xFF0000);
-    Require(GetPixel(&image, 15, 0) == 0x00FF00);
-    Require(GetPixel(&image, 31, 0) == 0x0000FF);
-
-    FreeImage(&image);
+    ReleaseImage(image);
 }
+
+InlineTest("CreateResizedImage")
+{
+    Image* image = LoadImage("data/Image/checker.png");
+
+    Require(image != NULL);
+    Require(GetImageWidth(image) == 32);
+    Require(GetImageHeight(image) == 32);
+    Require(GetImageChannelCount(image) == 3);
+    Require(GetImagePixels(image) != NULL);
+
+    Require(GetPixel(image, 0, 0) == 0xFFFFFF);
+    Require(GetPixel(image, 1, 0) == 0x000000);
+
+    const JobId job = BeginResizingImage(image, 16, 16);
+    WaitForJobs(&job, 1);
+    Image* resizedImage = GetCreatedImage(job);
+    ReferenceImage(resizedImage);
+    RemoveJob(job);
+
+    Require(resizedImage != NULL);
+    Require(GetImageWidth(resizedImage) == 16);
+    Require(GetImageHeight(resizedImage) == 16);
+    Require(GetImageChannelCount(resizedImage) == 3);
+    Require(GetImagePixels(resizedImage) != NULL);
+
+    Require(GetPixel(resizedImage,  0,  0) == 0x878787);
+    Require(GetPixel(resizedImage, 15, 15) == 0x878787);
+
+    ReleaseImage(image);
+    ReleaseImage(resizedImage);
+}
+
 
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
     InitTestVfs(argv[0]);
+    InitTestJobManager();
     MountVfsDir("data", "data", false);
-    dummyAddInlineTests();
     return RunTests();
 }

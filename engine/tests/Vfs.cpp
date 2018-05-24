@@ -2,12 +2,9 @@
 #include "../Common.h"
 #include "../Vfs.h"
 #include "TestTools.h"
-#include <dummy/inline.hpp>
-
-#define InlineTest DUMMY_INLINE_TEST
 
 
-InlineTest("VFS can be initialized and destroyed.", dummySignalSandbox)
+InlineTest("VFS can be initialized and destroyed.")
 {
     InitVfs("test", NULL, NULL);
     DestroyVfs();
@@ -84,7 +81,7 @@ static void TestReadingMount()
     }
 }
 
-InlineTest("Can mount real directories for reading.", dummySignalSandbox)
+InlineTest("Can mount real directories for reading.")
 {
     InitVfs("test", NULL, NULL);
     MountVfsDir("package", "data/package-dir.1.2.3", false);
@@ -92,7 +89,7 @@ InlineTest("Can mount real directories for reading.", dummySignalSandbox)
     DestroyVfs();
 }
 
-InlineTest("Can mount ZIP archives for reading.", dummySignalSandbox)
+InlineTest("Can mount ZIP archives for reading.")
 {
     InitVfs("test", NULL, NULL);
     MountVfsDir("package", "data/package-zip.1.2.3.zip", false);
@@ -100,7 +97,7 @@ InlineTest("Can mount ZIP archives for reading.", dummySignalSandbox)
     DestroyVfs();
 }
 
-InlineTest("Can mount real directories for writing.", dummySignalSandbox)
+InlineTest("Can mount real directories for writing.")
 {
     InitVfs("test", NULL, NULL);
     MountVfsDir("package", "data/package-dir.1.2.3", true);
@@ -111,6 +108,5 @@ InlineTest("Can mount real directories for writing.", dummySignalSandbox)
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
-    dummyAddInlineTests();
     return RunTests();
 }

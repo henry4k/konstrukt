@@ -2,9 +2,7 @@
 #include "../Common.h"
 #include "../BitCondition.h"
 #include "TestTools.h"
-#include <dummy/inline.hpp>
 
-#define InlineTest DUMMY_INLINE_TEST
 
 static bool HasPayload( const BitFieldPayloadList results, void* payload )
 {
@@ -14,7 +12,7 @@ static bool HasPayload( const BitFieldPayloadList results, void* payload )
     return false;
 }
 
-InlineTest("simple single condition", dummySignalSandbox)
+InlineTest("simple single condition")
 {
     const BitCondition condition = {0, 4, 0xF}; // first 4 bits are set
     char payload = 'A';
@@ -75,7 +73,7 @@ InlineTest("simple single condition", dummySignalSandbox)
     FreeBitConditionSolver(solver);
 }
 
-InlineTest("complex single condition", dummySignalSandbox)
+InlineTest("complex single condition")
 {
     const BitCondition condition = {4, 4, 0xF}; // second 4 bit group is 0xF
     char payload = 'A';
@@ -140,7 +138,7 @@ InlineTest("complex single condition", dummySignalSandbox)
     FreeBitConditionSolver(solver);
 }
 
-InlineTest("multiple single conditions", dummySignalSandbox)
+InlineTest("multiple single conditions")
 {
     const BitCondition conditions[] =
     {
@@ -215,7 +213,7 @@ InlineTest("multiple single conditions", dummySignalSandbox)
     FreeBitConditionSolver(solver);
 }
 
-InlineTest("multiple payloads", dummySignalSandbox)
+InlineTest("multiple payloads")
 {
     const BitCondition conditionsA[] =
     {
@@ -302,6 +300,5 @@ InlineTest("multiple payloads", dummySignalSandbox)
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
-    dummyAddInlineTests();
     return RunTests();
 }

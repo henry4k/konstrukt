@@ -1,11 +1,9 @@
 #include <string.h> // strcmp
 #include "../Common.h"
 #include "TestTools.h"
-#include <dummy/inline.hpp>
 
-#define InlineTest DUMMY_INLINE_TEST
 
-InlineTest("Format", dummySignalSandbox)
+InlineTest("Format")
 {
     Require(strcmp(Format("foo"), "foo") == 0);
     Require(strcmp(Format("bar%d",1), "bar1") == 0);
@@ -66,7 +64,7 @@ static void TestLogHandler( LogLevel level, const char* line )
     }
 }
 
-InlineTest("Log", dummySignalSandbox)
+InlineTest("Log")
 {
     dummyAddCleanup(LogHandlerCleanup, (void*)GetLogHandler());
 
@@ -82,7 +80,7 @@ InlineTest("Log", dummySignalSandbox)
     Require(CallCount == 6);
 }
 
-InlineTest("CopyString", dummySignalSandbox)
+InlineTest("CopyString")
 {
     static const int maxLength = 7;
     char destination[maxLength+1];
@@ -105,6 +103,5 @@ InlineTest("CopyString", dummySignalSandbox)
 int main( int argc, char** argv )
 {
     InitTests(argc, argv);
-    dummyAddInlineTests();
     return RunTests();
 }

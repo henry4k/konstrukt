@@ -32,9 +32,11 @@ endforeach
 ObjectSystemPerformance = executable('ObjectSystemPerformance',
                                      'ObjectSystemPerformance.cpp',
                                      dependencies: test_deps)
-benchmark('ObjectSystem: CreateModifyDestroy',
+benchmark('ObjectSystem',
           ObjectSystemPerformance,
-          args: ['--loop-count=5000', 'CreateModifyDestroy'])
-benchmark('ObjectSystem: Iterate',
-          ObjectSystemPerformance,
-          args: ['--loop-count=5000', 'Iterate'])
+          args: ['-Dtest.loop-count=5000'])
+
+benchmark('JobManager',
+          executable('JobManagerBenchmark',
+                     'JobManagerBenchmark.cpp',
+                     dependencies: test_deps))

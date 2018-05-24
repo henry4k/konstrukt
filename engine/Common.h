@@ -34,6 +34,13 @@ const char* Format( const char* format, ... );
  */
 bool CopyString( const char* source, char* destination, int destinationSize );
 
+/**
+ * If the given `prefix` string matches at the beginning of `value` then
+ * a pointer to the characters after the matched prefix is returned -
+ * otherwise `NULL` is returned.
+ */
+const char* MatchPrefix( const char* prefix, const char* value );
+
 
 // --- Logging ---
 

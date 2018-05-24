@@ -6,6 +6,8 @@
 
 #include "../Common.h"
 #include "../Vfs.h"
+#include "../Config.h"
+#include "../JobManager.h"
 
 #include "TestTools.h"
 
@@ -38,11 +40,30 @@ void TestLogHandler( LogLevel level, const char* line )
     }
 }
 
+static void InitTestConfig( int argc, char const * const * argv )
+{
+    InitConfig();
+    atexit(DestroyConfig);
+
+    for(int i = 1; i < argc; i++)
+    {
+        const char* arg = argv[i];
+        const char* match;
+
+        match = MatchPrefix("--config=", arg);
+        if(match) { ReadConfigFile(match, true); continue; }
+
+        match = MatchPrefix("-D", arg);
+        if(match) { ReadConfigString(match); continue; }
+    }
+}
+
 void InitTests( int argc, char const * const * argv )
 {
-    ChangeDirectoryToExecutableOrigin(argv[0]);
+    InitTestConfig(argc, argv);
     SetLogHandler(TestLogHandler);
     dummyInit(dummyGetTAPReporter(stdout));
+    dummyAddInlineTests();
 }
 
 int RunTests()
@@ -51,48 +72,16 @@ int RunTests()
     return 0;
 }
 
-#if defined(_WIN32)
-
-#include <direct.h>
-void ChangeDirectory( const char* directory )
-{
-    _chdir(directory);
-}
-
-#else
-
-#include <unistd.h>
-void ChangeDirectory( const char* directory )
-{
-    chdir(directory);
-}
-
-#endif
-
-void ChangeDirectoryToExecutableOrigin( const char* executablePath )
-{
-#if defined(_WIN32)
-    const char seperator = '\\';
-#else
-    const char seperator = '/';
-#endif
-    const char* lastSeperator = strrchr(executablePath, seperator);
-    if(lastSeperator)
-    {
-        char buffer[256];
-        const int length = lastSeperator - executablePath;
-        strncpy(buffer, executablePath, length);
-        buffer[length] = '\0';
-        ChangeDirectory(buffer);
-    }
-    else
-    {
-        // Already in the directory of the executable.
-    }
-}
-
 void InitTestVfs( const char* argv0 )
 {
     InitVfs(argv0, NULL, NULL);
     atexit(DestroyVfs);
+}
+
+void InitTestJobManager()
+{
+    JobManagerConfig managerConfig;
+    managerConfig.workerThreads = 3;
+    InitJobManager(managerConfig);
+    atexit(DestroyJobManager);
 }
