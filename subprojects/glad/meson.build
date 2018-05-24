@@ -4,7 +4,8 @@ python = import('python3').find_python()
 
 gl_version = '3.2'
 gl_extensions = ['GL_ARB_debug_output',
-                 'GL_EXT_texture_filter_anisotropic']
+                 'GL_EXT_texture_filter_anisotropic',
+                 'GL_ARB_timer_query'] # used by MicroProfile
 
 glad_script = files('source/glad/__main__.py')
 

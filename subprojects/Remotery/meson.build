@@ -1,5 +1,12 @@
 project('Remotery', 'c')
 
+config_data = configuration_data()
+config_data.set('has_little_endian', host_machine.endian() == 'little')
+
+header = configure_file(input: 'Remotery.h.in',
+                        output: 'Remotery.h',
+                        configuration: config_data)
+
 dependencies = [dependency('threads')]
 
 compiler = meson.get_compiler('c')
@@ -12,8 +19,8 @@ else
 endif
 
 remotery_dep = declare_dependency(
-    link_with: static_library('Remotery', 'source/lib/Remotery.c'),
-    include_directories: include_directories('source/lib'),
+    link_with: static_library('Remotery', 'Remotery.c', header),
+    include_directories: include_directories('.'),
     dependencies: dependencies)
 
 install_subdir('source/vis',

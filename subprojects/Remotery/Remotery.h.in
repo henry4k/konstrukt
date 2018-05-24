@@ -1,0 +1,10 @@
+#ifndef __WRAPPED_REMOTERY__
+#define __WRAPPED_REMOTERY__
+
+#define RMT_USE_OPENGL 1
+#define RMT_USE_POSIX_THREADNAMES 1
+#define RMT_ASSUME_LITTLE_ENDIAN @has_little_endian@
+
+#include "source/lib/Remotery.h"
+
+#endif
