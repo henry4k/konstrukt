@@ -7,19 +7,19 @@ gl_extensions = ['GL_ARB_debug_output',
                  'GL_EXT_texture_filter_anisotropic',
                  'GL_ARB_timer_query'] # used by MicroProfile
 
-glad_script = files('source/glad/__main__.py')
+glad_script = files('glad.py')
 
 sources = custom_target('generate-glad-sources',
     output: ['glad.h',
              'glad.c'],
-    command: [python, glad_script,
+    command: [python, '-B', # Don't write bytecode (.pyc files)
+                      glad_script,
                       '--api', 'gl='+gl_version,
                       '--profile', 'core',
                       '--spec', 'gl',
                       '--extensions', ','.join(gl_extensions),
                       '--no-loader',
                       '--generator', 'c',
-                      '--omit-khrplatform',
                       '--local-files',
                       '--out-path', '@OUTDIR@'])
 
