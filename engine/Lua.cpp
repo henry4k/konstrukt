@@ -7,6 +7,7 @@ extern "C"
 #define LUA_LIB
 #include <lualib.h>
 #include <lua_cjson.h>
+#include <lua_taggedcoro.h>
 }
 
 #include "Constants.h" // KONSTRUKT_PROFILER_ENABLED
@@ -33,6 +34,8 @@ static std::vector<LuaEvent> g_LuaEvents;
 static int g_LuaErrorFunction = LUA_NOREF;
 static int g_LuaFunctionTable = LUA_NOREF;
 static int g_LuaShutdownEvent = INVALID_LUA_EVENT;
+static int g_LuaWorkEvent = INVALID_LUA_EVENT;
+static int g_LuaSyncEvent = INVALID_LUA_EVENT;
 static bool g_LuaRunning = false;
 static JobId LuaUpdateJob;
 
@@ -63,13 +66,14 @@ void InitLua()
 
     // Load standard modules (except package and io module)
     luaopen_base(l);
-    luaL_requiref(l, LUA_COLIBNAME,   luaopen_coroutine, true);
-    luaL_requiref(l, LUA_TABLIBNAME,  luaopen_table,     true);
-    luaL_requiref(l, LUA_STRLIBNAME,  luaopen_string,    true);
-    luaL_requiref(l, LUA_BITLIBNAME,  luaopen_bit32,     true);
-    luaL_requiref(l, LUA_MATHLIBNAME, luaopen_math,      true);
-    luaL_requiref(l, LUA_DBLIBNAME,   luaopen_debug,     true);
-    luaL_requiref(l, "cjson",         luaopen_cjson,     true);
+    luaL_requiref(l, LUA_COLIBNAME,   luaopen_coroutine,  true);
+    luaL_requiref(l, LUA_TABLIBNAME,  luaopen_table,      true);
+    luaL_requiref(l, LUA_STRLIBNAME,  luaopen_string,     true);
+    luaL_requiref(l, LUA_BITLIBNAME,  luaopen_bit32,      true);
+    luaL_requiref(l, LUA_MATHLIBNAME, luaopen_math,       true);
+    luaL_requiref(l, LUA_DBLIBNAME,   luaopen_debug,      true);
+    luaL_requiref(l, "cjson",         luaopen_cjson,      true);
+    luaL_requiref(l, "taggedcoro",    luaopen_taggedcoro, true);
 
     lua_createtable(l, 0, 0);
     g_LuaFunctionTable = luaL_ref(l, LUA_REGISTRYINDEX);
@@ -82,6 +86,8 @@ void InitLua()
     RegisterFunctionInLua("Log", Lua_Log);
 
     g_LuaShutdownEvent = RegisterLuaEvent("Shutdown");
+    g_LuaWorkEvent = RegisterLuaEvent("Work");
+    g_LuaSyncEvent = RegisterLuaEvent("Sync");
 }
 
 void DestroyLua()
@@ -120,10 +126,16 @@ static int GetLuaMemoryInBytes()
 
 static void UpdateLua( void* _data )
 {
-    ProfileScope("Lua GC");
+    {
+        ProfileScope("Lua Work");
+        FireLuaEvent(g_LuaState, g_LuaWorkEvent, 0, false);
+    }
 
-    lua_gc(g_LuaState, LUA_GCCOLLECT, 0);
-    SetCounter(MemoryCounter, GetLuaMemoryInBytes());
+    {
+        ProfileScope("Lua GC");
+        lua_gc(g_LuaState, LUA_GCCOLLECT, 0);
+        SetCounter(MemoryCounter, GetLuaMemoryInBytes());
+    }
 }
 
 void BeginLuaUpdate()
@@ -134,6 +146,9 @@ void BeginLuaUpdate()
 void CompleteLuaUpdate()
 {
     WaitForJobs(&LuaUpdateJob, 1);
+
+    ProfileScope("Lua Sync");
+    FireLuaEvent(g_LuaState, g_LuaSyncEvent, 0, false);
 }
 
 void RegisterFunctionInLua( const char* name, lua_CFunction fn )

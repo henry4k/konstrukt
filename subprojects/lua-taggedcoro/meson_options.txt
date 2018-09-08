@@ -1,0 +1,11 @@
+option('lua_package',
+       description: 'The Lua package to use.',
+       type: 'string',
+       value: 'lua',
+       yield: true)
+
+option('lua_version',
+       description: 'The Lua version to use.  It will be interpreted as comma separated list of Meson version expressions.',
+       type: 'string',
+       value: '>=0',
+       yield: true)

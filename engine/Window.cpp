@@ -102,9 +102,9 @@ void InitWindow()
         FatalError("Failed to load OpenGL.");
 
     LogInfo("Using OpenGL %s\n"
-            "Vendor: %s\n"
-            "Renderer: %s\n"
-            "GLSL: %s",
+            "\tVendor: %s\n"
+            "\tRenderer: %s\n"
+            "\tGLSL: %s",
             glGetString(GL_VERSION),
             glGetString(GL_VENDOR),
             glGetString(GL_RENDERER),

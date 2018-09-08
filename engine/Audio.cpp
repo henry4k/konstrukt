@@ -79,9 +79,9 @@ void InitAudio()
     alureGetVersion(&alureMajor, &alureMinor);
 
     LogInfo("Using OpenAL %s\n"
-            "Vendor: %s\n"
-            "Renderer: %s\n"
-            "Alure: %d.%d",
+            "\tVendor: %s\n"
+            "\tRenderer: %s\n"
+            "\tAlure: %d.%d",
             alGetString(AL_VERSION),
             alGetString(AL_VENDOR),
             alGetString(AL_RENDERER),

@@ -66,6 +66,7 @@ dependencies = [dependency('gl'), # TODO: As GLFW dynamically loads OpenGL this 
                 dependency(get_option('lua_package'),
                            version: get_option('lua_version').split(',')),
                 subproject('lua-cjson').get_variable('lua_cjson_dep'),
+                subproject('lua-taggedcoro').get_variable('lua_taggedcoro_dep'),
                 subproject('glad').get_variable('glad_dep'),
                 subproject('inih').get_variable('inih_dep'),
                 subproject('tinycthread').get_variable('tinycthread_dep'),

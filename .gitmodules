@@ -34,3 +34,6 @@
 [submodule "subprojects/tinycthread/source"]
 	path = subprojects/tinycthread/source
 	url = https://github.com/tinycthread/tinycthread.git
+[submodule "subprojects/lua-taggedcoro/source"]
+	path = subprojects/lua-taggedcoro/source
+	url = https://github.com/mascarenhas/taggedcoro.git

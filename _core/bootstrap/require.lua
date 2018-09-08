@@ -1,10 +1,9 @@
 --- @script core.bootstrap.require
 --- Implements @{require} because Konstrukt doesn't access the file system directly.
 
--- luacheck: globals require cjson taggedcoro _engine _dofile
+-- luacheck: globals require cjson _engine
 
 local engine = _engine
-local _dofile = _dofile
 local ResourceManager = _dofile 'core/ResourceManager.lua'
 
 local searchPaths = {
@@ -26,7 +25,6 @@ end)
 
 ResourceManager._put({ value=ResourceManager }, 'module', 'core/ResourceManager')
 ResourceManager._put({ value=cjson },           'module', 'cjson')
-ResourceManager._put({ value=taggedcoro },      'module', 'taggedcoro')
 ResourceManager._put({ value=engine },          'module', 'engine')
 cjson  = nil
 _engine = nil
