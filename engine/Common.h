@@ -15,7 +15,7 @@ void DestroyCommon();
 
 void* Alloc( size_t size );
 void  Free( void* pointer );
-void* ReAlloc( void* oldPointer, size_t size );
+void* Realloc( void* oldPointer, size_t size );
 #define AllocZeroed(size) memset(Alloc(size), 0, (size))
 
 #define NEW(S) (S*)AllocZeroed(sizeof(S))
@@ -99,6 +99,15 @@ bool PostConfigInitLog();
  * Will abort the program after emitting the log message.
  */
 void FatalError( const char* format, ... );
+
+typedef void (*FatalErrorHandlerFn)();
+
+/**
+ * Similar to `atexit` this registers a function which will be called upon
+ * fatal errors (SIGABORT, etc.).
+ * Multiple functions can be registered this way.
+ */
+void OnFatalError(FatalErrorHandlerFn fn);
 
 #define Ensure( test ) do { if(!(test)) FatalError("Expression failed: %s", #test); } while(0)
 

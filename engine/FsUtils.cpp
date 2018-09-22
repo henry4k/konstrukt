@@ -104,7 +104,7 @@ const char* CreateTemporaryDirectory( const char* name )
     return path;
 #else
     static char path[MAX_PATH_SIZE];
-    CopyString(Format("/tmp/konstrukt-%s-XXXXXX", name), path, sizeof(path));
+    FormatBuffer(path, sizeof(path), "/tmp/konstrukt-%s-XXXXXX", name);
     if(!mkdtemp(path))
     {
         FatalError("Can't create temporary directory '%s': %s",

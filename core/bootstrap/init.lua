@@ -1,7 +1,7 @@
 --- @script core.bootstrap.init
 --- Executed during engine initialization.
 
--- luacheck: globals _engine
+-- luacheck: globals _engine taggedcoro
 local engine = _engine
 
 
@@ -12,8 +12,15 @@ engine.SetErrorFunction(function( message )
 end)
 
 
+-- Initialize random generator
+
+math.randomseed(engine.GetTime())
+
+
 -- Reimplement some functions
--- luacheck: globals print loadfile dofile
+-- luacheck: globals coroutine print loadfile dofile
+
+coroutine = taggedcoro.fortag'vanilla'
 
 function print( ... )
     local count = select('#', ...)
@@ -45,11 +52,45 @@ function _dofile( fileName )
     return chunk()
 end
 
-_dofile'core/bootstrap/table.lua'
-_dofile'core/bootstrap/math.lua'
-_dofile'core/bootstrap/path.lua'
-_dofile'core/bootstrap/require.lua'
-
-_dofile'core/bootstrap/test.lua'
-
+_dofile 'core/bootstrap/table.lua'
+_dofile 'core/bootstrap/math.lua'
+_dofile 'core/bootstrap/path.lua'
+_dofile 'core/bootstrap/require.lua'
 _dofile = nil
+
+
+local Scheduler = require 'core/Scheduler'
+Scheduler._run(Scheduler.createScheduledCoroutine(function()
+    -- Register exit key
+
+    local Control        = require 'core/Control'
+    local GlobalControls = require 'core/GlobalControls'
+
+    Control.pushControllable(GlobalControls())
+
+    --- Stops the gameloop and thus stops the game.
+    -- @control exit
+    GlobalControls:mapControl('exit', function( self, absolute, delta )
+        if delta > 0 then
+            engine.StopSimulation()
+        end
+    end)
+
+
+    -- Fire global event on engine shutdown
+    local GlobalEventSource = require 'core/GlobalEventSource'
+    engine.SetEventCallback('Shutdown', function()
+        GlobalEventSource:fireEvent('shutdown')
+    end)
+
+
+    -- Initialize scenario
+
+    local Scenario = require 'core/Scenario'
+
+    -- luacheck: globals _scenario
+    if _scenario then
+        Scenario.load(_scenario)
+        _scenario = nil
+    end
+end))

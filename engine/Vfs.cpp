@@ -49,6 +49,21 @@ static void SetWriteDirectory( const char* name,
         tempDirOut[0] = '\0';
 }
 
+static void RemoveTempDirectories()
+{
+    if(TempStateDirectory[0] != '\0')
+    {
+        RemoveDirectoryTree(TempStateDirectory);
+        TempStateDirectory[0] = '\0';
+    }
+
+    if(TempSharedStateDirectory[0] != '\0')
+    {
+        RemoveDirectoryTree(TempSharedStateDirectory);
+        TempSharedStateDirectory[0] = '\0';
+    }
+}
+
 void InitVfs( const char* argv0,
               const char* stateDirectory,
               const char* sharedStateDirectory )
@@ -62,6 +77,8 @@ void InitVfs( const char* argv0,
 
     SetWriteDirectory("state", stateDirectory, TempStateDirectory);
     SetWriteDirectory("shared-state", sharedStateDirectory, TempSharedStateDirectory);
+
+    OnFatalError(RemoveTempDirectories);
 
     AddPackageSearchPath(DEFAULT_PACKAGE_SEARCH_PATH);
 }
@@ -99,10 +116,7 @@ void DestroyVfs()
         mount->mountSystem->unmount(mount);
     }
 
-    if(TempStateDirectory[0] != '\0')
-        RemoveDirectoryTree(TempStateDirectory);
-    if(TempSharedStateDirectory[0] != '\0')
-        RemoveDirectoryTree(TempSharedStateDirectory);
+    RemoveTempDirectories();
 
     DestroyArray(&Mounts);
     DestroyArray(&SearchPaths);

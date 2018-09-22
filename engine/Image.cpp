@@ -84,7 +84,7 @@ static Image* LoadImage( const char* vfsPath )
     stbi_set_flip_vertically_on_load(1);
 
     stbi_malloc = Alloc;
-    stbi_realloc = ReAlloc;
+    stbi_realloc = Realloc;
     stbi_free = Free;
     image->data = stbi_load_from_callbacks(&VfsCallbacks,
                                            file,

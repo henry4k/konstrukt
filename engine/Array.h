@@ -3,7 +3,7 @@
 
 #include <string.h> // memset, memcpy
 
-#include "Common.h" // ReAlloc, Free
+#include "Common.h" // Realloc, Free
 
 
 template<typename T>
@@ -44,7 +44,7 @@ void ReserveInArray( Array<T>* array, int amount )
         int newCapacity = (array->capacity == 0) ? 1 : array->capacity;
         while(newCapacity < amount)
             newCapacity += newCapacity * 3 / 2; // 1.5
-        array->data = (T*)ReAlloc(array->data, newCapacity*sizeof(T));
+        array->data = (T*)Realloc(array->data, newCapacity*sizeof(T));
         array->capacity = newCapacity;
     }
 }

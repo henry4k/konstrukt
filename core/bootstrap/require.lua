@@ -4,8 +4,8 @@
 -- luacheck: globals require cjson taggedcoro _engine _dofile
 
 local engine = _engine
-local _dofile = _dofile
-local ResourceManager = _dofile 'core/ResourceManager.lua'
+local dofile = _dofile
+local ResourceManager = dofile 'core/ResourceManager.lua'
 
 local searchPaths = {
     '%s.lua',
@@ -16,7 +16,7 @@ ResourceManager.registerLoader('module', function( moduleName )
     for _, searchPath in ipairs(searchPaths) do
         local path = string.format(searchPath, moduleName)
         if engine.GetFileType(path) == 'regular' then
-            local module = _dofile(path)
+            local module = dofile(path)
             assert(module, 'Module at '..path..' did not return anything.')
             return { value=module }
         end

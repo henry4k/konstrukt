@@ -3,8 +3,9 @@
 #endif
 
 #include <string.h> // strncpy, strcmp
-#include <stdlib.h> // abort, malloc, realloc, free
+#include <stdlib.h> // abort, exit, EXIT_FAILURE, malloc, realloc, free
 #include <stdio.h> // printf
+#include <signal.h> // signal, raise, SIG*
 #include <stdarg.h>
 #include <assert.h>
 
@@ -20,20 +21,28 @@ END_EXTERNAL_CODE
 #include "Config.h"
 #include "Lua.h"
 #include "Profiler.h"
+#include "Array.h"
 #include "Common.h"
+
+
+static const int STRING_BUFFER_SIZE = 1024;
 
 
 // --- General ---
 
 static void InitMemoryAllocator();
+static void InitFatalErrorHandler();
+static void DestroyFatalErrorHandler();
 
 void InitCommon()
 {
     InitMemoryAllocator();
+    InitFatalErrorHandler();
 }
 
 void DestroyCommon()
 {
+    DestroyFatalErrorHandler();
 }
 
 
@@ -106,7 +115,7 @@ void Free( void* data )
     free(allocation);
 }
 
-void* ReAlloc( void* oldData, size_t size )
+void* Realloc( void* oldData, size_t size )
 {
     void* oldAllocation = GetAllocationPointer(oldData);
     BeforeAllocationDisposal(oldAllocation);
@@ -119,7 +128,7 @@ void* ReAlloc( void* oldData, size_t size )
 
 void* Alloc( size_t size )
 {
-    return ReAlloc(NULL, size);
+    return Realloc(NULL, size);
 }
 
 
@@ -144,8 +153,8 @@ int FormatBuffer( char* buffer, int size, const char* format, ... )
 
 static const char* FormatV( const char* format, va_list va )
 {
-    static char buffer[512];
-    FormatBufferV(buffer, 512, format, va);
+    static char buffer[STRING_BUFFER_SIZE];
+    FormatBufferV(buffer, STRING_BUFFER_SIZE, format, va);
     return buffer;
 }
 
@@ -271,8 +280,8 @@ LogHandler GetLogHandler()
 
 void LogV( LogLevel level, const char* format, va_list vl )
 {
-    static char buffer[512];
-    vsprintf(buffer, format, vl);
+    static char buffer[STRING_BUFFER_SIZE];
+    FormatBufferV(buffer, STRING_BUFFER_SIZE, format, vl);
 
     const char* start = buffer;
     for(char* current = buffer; ; ++current)
@@ -382,6 +391,9 @@ void FatalError( const char* format, ... )
         va_end(vl);
         lua_pushstring(GetLuaState(), message);
         lua_error(GetLuaState());
+        // TODO: I'm not sure whether this is the right solution.
+        // The intention is to make Lua print a stacktrace but this may
+        // not stop the simulation loop.
     }
     else
     {
@@ -390,4 +402,36 @@ void FatalError( const char* format, ... )
         LogStackTrace(LOG_FATAL_ERROR, 1);
         abort();
     }
+}
+
+static Array<FatalErrorHandlerFn> FatalErrorHandlers;
+
+static void FatalErrorSignalHandler(int sig);
+
+static void InitFatalErrorHandler()
+{
+    InitArray(&FatalErrorHandlers);
+    signal(SIGABRT, FatalErrorSignalHandler);
+    // SIGFPE, SIGILL, SIGSEGV ?
+}
+
+static void DestroyFatalErrorHandler()
+{
+    DestroyArray(&FatalErrorHandlers);
+}
+
+void OnFatalError(FatalErrorHandlerFn fn)
+{
+    AppendToArray(&FatalErrorHandlers, 1, &fn);
+}
+
+static void FatalErrorSignalHandler(int sig)
+{
+    REPEAT(FatalErrorHandlers.length, i)
+    {
+        FatalErrorHandlerFn fn = *GetArrayElement(&FatalErrorHandlers, i);
+        fn();
+    }
+    ClearArray(&FatalErrorHandlers);
+    exit(EXIT_FAILURE);
 }

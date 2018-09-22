@@ -3,6 +3,7 @@
 
 
 local engine = require 'engine'
+local Scheduler = require 'core/Scheduler'
 
 
 local Config = {}
@@ -18,7 +19,7 @@ local Config = {}
 -- The keys value or the default value, if the key was not configurated.
 --
 function Config.get( key, default )
-    return engine.GetConfigValue(key, default)
+    return Scheduler.awaitCall(engine.GetConfigValue, key, default)
 end
 
 return Config
