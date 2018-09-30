@@ -133,11 +133,13 @@ static ShaderVariableSet* GlobalShaderVariableSet = NULL;
 
 void InitShader()
 {
+    assert(InSerialPhase());
     GlobalShaderVariableSet = CreateShaderVariableSet();
 }
 
 void DestroyShader()
 {
+    assert(InSerialPhase());
     FreeShaderVariableSet(GlobalShaderVariableSet);
 }
 
@@ -191,6 +193,8 @@ static void ShowShaderLog( Shader* shader, bool success, const char* vfsPath )
 
 static Shader* CreateShader( const char* vfsPath, int type )
 {
+    assert(InSerialPhase());
+
     VfsFile* file = OpenVfsFile(vfsPath, VFS_OPEN_READ);
     if(!file)
         return NULL;
@@ -234,6 +238,7 @@ Shader* LoadShader( const char* vfsPath )
 
 static void FreeShader( Shader* shader )
 {
+    assert(InSerialPhase());
     FreeReferenceCounter(&shader->refCounter);
     glDeleteShader(shader->handle);
     delete shader;
@@ -499,7 +504,7 @@ static void ReadUniformBlockDefinitions( ShaderProgram* program )
 
 ShaderProgram* LinkShaderProgram( Shader** shaders, int shaderCount )
 {
-    for(int i = 0; i < shaderCount; i++)
+    REPEAT(shaderCount, i)
         if(!shaders[i] || shaders[i]->handle == INVALID_SHADER_HANDLE)
             FatalError("Cannot link a shader program with invalid shaders.");
 
@@ -516,7 +521,7 @@ ShaderProgram* LinkShaderProgram( Shader** shaders, int shaderCount )
     memcpy(program->shaders, shaders, sizeof(Shader*)*shaderCount);
     program->variableSet = CreateShaderVariableSet();
 
-    for(int i = 0; i < shaderCount; i++)
+    REPEAT(shaderCount, i)
     {
         ReferenceShader(shaders[i]);
         glAttachShader(programHandle, shaders[i]->handle);
@@ -564,11 +569,13 @@ ShaderProgram* LinkShaderProgram( Shader** shaders, int shaderCount )
 
 static void FreeShaderProgram( ShaderProgram* program )
 {
+    assert(InSerialPhase());
+
     FreeReferenceCounter(&program->refCounter);
 
     glDeleteProgram(program->handle);
 
-    for(int i = 0; i < program->shaderCount; i++)
+    REPEAT(program->shaderCount, i)
         ReleaseShader(program->shaders[i]);
     delete[] program->shaders;
 
@@ -613,7 +620,7 @@ ShaderVariableSet* GetShaderProgramShaderVariableSet( const ShaderProgram* progr
 
 static int GetUniformIndexByNameHash( const ShaderProgram* program, uint32_t nameHash )
 {
-    for(int i = 0; i < program->uniformCount; i++)
+    REPEAT(program->uniformCount, i)
         if(program->uniformDefinitions[i].nameHash == nameHash)
             return i;
     return INVALID_UNIFORM_INDEX;
@@ -680,6 +687,7 @@ static void SetUniform( ShaderProgram* program, int index, const UniformValue* v
 
 ShaderProgramSet* CreateShaderProgramSet( ShaderProgram* defaultProgram )
 {
+    assert(InSerialPhase());
     ShaderProgramSet* set = new ShaderProgramSet;
     memset(set, 0, sizeof(ShaderProgramSet));
     InitReferenceCounter(&set->refCounter);
@@ -689,9 +697,10 @@ ShaderProgramSet* CreateShaderProgramSet( ShaderProgram* defaultProgram )
 
 static void FreeShaderProgramSet( ShaderProgramSet* set )
 {
+    assert(InSerialPhase());
     FreeReferenceCounter(&set->refCounter);
 
-    for(int i = 0; i < MAX_SHADER_PROGRAM_SET_ENTRIES; i++)
+    REPEAT(MAX_SHADER_PROGRAM_SET_ENTRIES, i)
     {
         ShaderProgram* program = set->entries[i].program;
         if(program)
@@ -716,7 +725,7 @@ void ReleaseShaderProgramSet( ShaderProgramSet* set )
 static ShaderProgramSetEntry* FindShaderProgramSetEntry( ShaderProgramSet* set,
                                                          const char* family )
 {
-    for(int i = 0; i < MAX_SHADER_PROGRAM_SET_ENTRIES; i++)
+    REPEAT(MAX_SHADER_PROGRAM_SET_ENTRIES, i)
     {
         ShaderProgramSetEntry* entry = &set->entries[i];
         if(strncmp(family, entry->family, MAX_PROGRAM_FAMILY_SIZE-1) == 0)
@@ -728,7 +737,7 @@ static ShaderProgramSetEntry* FindShaderProgramSetEntry( ShaderProgramSet* set,
 static const ShaderProgramSetEntry* FindShaderProgramSetEntry( const ShaderProgramSet* set,
                                                                const char* family )
 {
-    for(int i = 0; i < MAX_SHADER_PROGRAM_SET_ENTRIES; i++)
+    REPEAT(MAX_SHADER_PROGRAM_SET_ENTRIES, i)
     {
         const ShaderProgramSetEntry* entry = &set->entries[i];
         if(strncmp(family, entry->family, MAX_PROGRAM_FAMILY_SIZE-1) == 0)
@@ -741,6 +750,7 @@ void SetShaderProgramFamily( ShaderProgramSet* set,
                              const char* family,
                              ShaderProgram* program )
 {
+    assert(InSerialPhase());
     ShaderProgramSetEntry* entry = FindShaderProgramSetEntry(set, family);
     if(!entry)
         entry = FindShaderProgramSetEntry(set, "");
@@ -806,6 +816,7 @@ ShaderProgram* GetShaderProgramByFamilyList( const ShaderProgramSet* set,
 
 UniformBuffer* CreateUniformBuffer()
 {
+    assert(InSerialPhase());
     return NULL; // TODO
 }
 
@@ -825,6 +836,7 @@ void ReleaseUniformBuffer( UniformBuffer* buffer )
 
 ShaderVariableSet* CreateShaderVariableSet()
 {
+    assert(InSerialPhase());
     ShaderVariableSet* set = new ShaderVariableSet;
     memset(set, 0, sizeof(ShaderVariableSet));
     return set;
@@ -832,6 +844,7 @@ ShaderVariableSet* CreateShaderVariableSet()
 
 void FreeShaderVariableSet( ShaderVariableSet* set )
 {
+    assert(InSerialPhase());
     ClearShaderVariableSet(set);
     delete set;
 }
@@ -862,6 +875,7 @@ static void FreeShaderVariable( ShaderVariable* var )
 
 void ClearShaderVariableSet( ShaderVariableSet* set )
 {
+    assert(InSerialPhase());
     REPEAT(MAX_SHADER_VARIABLE_SET_ENTRIES, i)
         FreeShaderVariable(&set->entries[i]);
 }

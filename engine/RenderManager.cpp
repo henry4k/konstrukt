@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "Common.h"
 #include "Profiler.h"
 #include "OpenGL.h" // glfwGetTime
@@ -18,6 +20,7 @@ static JobId UpdateJob;
 
 void InitRenderManager()
 {
+    assert(InSerialPhase());
     InitCounter(FrameTimeCounter);
     EnableVertexArrays();
     glEnable(GL_DEPTH_TEST);
@@ -33,6 +36,7 @@ void InitRenderManager()
 
 void DestroyRenderManager()
 {
+    assert(InSerialPhase());
 }
 
 static void RenderScene( void* _data )
@@ -81,10 +85,12 @@ double GetFrameTime()
 
 void BeginRenderManagerUpdate( void* _context, double _timeDelta )
 {
+    assert(InSerialPhase());
     UpdateJob = CreateJob({"RenderScene", RenderScene});
 }
 
 void CompleteRenderManagerUpdate( void* _context )
 {
+    assert(InSerialPhase());
     WaitForJobs(&UpdateJob, 1);
 }

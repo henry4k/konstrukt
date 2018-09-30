@@ -1,6 +1,5 @@
 #include <assert.h>
 #include <string.h> // memcpy, strlen, strcmp
-#include <vector>
 
 extern "C"
 {
@@ -15,40 +14,69 @@ extern "C"
 #include "Profiler.h"
 #include "JobManager.h"
 #include "Vfs.h"
+#include "Array.h"
 #include "Lua.h"
 
 
-static const int MAX_LUA_EVENT_NAME_SIZE = 32;
+static const int MAX_JOB_NAME_SIZE = 32;
+static const char* LUA_WORKER_KEY = "konstrukt_worker";
 
 
-struct LuaEvent
+struct LuaTypeDescription
 {
-    char name[MAX_LUA_EVENT_NAME_SIZE];
-    int callbackReference;
+    const char* name;
+    lua_CFunction gcCallback;
+};
+
+enum LuaFunctionFlags
+{
+    /**
+     * The function is thread-safe - it can be called anytime, not just during
+     * the serial phase.
+     */
+    LUA_THREAD_SAFE = (1 << 0),
+
+    /**
+     * The function won't return any results.
+     */
+    LUA_NO_RESULTS = (1 << 1)
+};
+
+struct LuaFunctionDescription
+{
+    const char* name;
+    lua_CFunction function;
+    int flags;
+};
+
+struct LuaWorker
+{
+    lua_State* state;
+    int errorHandler;
+    JobId job;
+    char jobName[MAX_JOB_NAME_SIZE];
 };
 
 
-DefineCounter(MemoryCounter, "memory", BYTE_COUNTER);
-static lua_State* g_LuaState = NULL;
-static std::vector<LuaEvent> g_LuaEvents;
-static int g_LuaErrorFunction = LUA_NOREF;
-static int g_LuaFunctionTable = LUA_NOREF;
-static int g_LuaShutdownEvent = INVALID_LUA_EVENT;
-static int g_LuaWorkEvent = INVALID_LUA_EVENT;
-static int g_LuaSyncEvent = INVALID_LUA_EVENT;
-static bool g_LuaRunning = false;
-static JobId LuaUpdateJob;
-
-static int Lua_SetErrorFunction( lua_State* l );
-static int Lua_SetEventCallback( lua_State* l );
-static int Lua_ErrorProxy( lua_State* l );
+static LuaWorker* GetLuaWorkerFromState( lua_State* l );
+static int Lua_SetErrorHandler( lua_State* l );
 static int Lua_Log( lua_State* l );
+static void PushLuaScript( lua_State* l, const char* vfsPath );
+static int CallLuaFunction( lua_State* l, int argumentCount, int returnValueCount );
 
+
+DefineCounter(MemoryCounter, "memory", BYTE_COUNTER);
+static Array<LuaFunctionDescription> LuaFunctions;
+static Array<LuaTypeDescription> LuaTypes;
+static Array<LuaWorker> LuaWorkers;
+
+
+// --- General ---
 
 void InitLua()
 {
-    assert(g_LuaState == NULL);
-    assert(g_LuaEvents.empty());
+    assert(InSerialPhase());
+
     InitCounter(MemoryCounter);
 
     LogInfo("Compiled with " LUA_COPYRIGHT);
@@ -58,61 +86,81 @@ void InitLua()
     const int patch = version-(major*100 + minor*10);
     LogInfo("Using Lua %d.%d.%d", major, minor, patch);
 
-    lua_State* l = g_LuaState = luaL_newstate();
-    g_LuaRunning = false;
-    g_LuaEvents.clear();
+    InitArray(&LuaFunctions);
+    InitArray(&LuaTypes);
+    InitArray(&LuaWorkers);
 
-    lua_gc(l, LUA_GCSTOP, 0); // only collect manually
-
-    // Load standard modules (except package and io module)
-    luaopen_base(l);
-    luaL_requiref(l, LUA_COLIBNAME,   luaopen_coroutine,  true);
-    luaL_requiref(l, LUA_TABLIBNAME,  luaopen_table,      true);
-    luaL_requiref(l, LUA_STRLIBNAME,  luaopen_string,     true);
-    luaL_requiref(l, LUA_BITLIBNAME,  luaopen_bit32,      true);
-    luaL_requiref(l, LUA_MATHLIBNAME, luaopen_math,       true);
-    luaL_requiref(l, LUA_DBLIBNAME,   luaopen_debug,      true);
-    luaL_requiref(l, "cjson",         luaopen_cjson,      true);
-    luaL_requiref(l, "taggedcoro",    luaopen_taggedcoro, true);
-
-    lua_createtable(l, 0, 0);
-    g_LuaFunctionTable = luaL_ref(l, LUA_REGISTRYINDEX);
-
-    lua_rawgeti(l, LUA_REGISTRYINDEX, g_LuaFunctionTable);
-    lua_setglobal(l, "_engine");
-
-    RegisterFunctionInLua("SetErrorFunction", Lua_SetErrorFunction);
-    RegisterFunctionInLua("SetEventCallback", Lua_SetEventCallback);
-    RegisterFunctionInLua("Log", Lua_Log);
-
-    g_LuaShutdownEvent = RegisterLuaEvent("Shutdown");
-    g_LuaWorkEvent = RegisterLuaEvent("Work");
-    g_LuaSyncEvent = RegisterLuaEvent("Sync");
+    REGISTER_LUA_FUNCTION(SetErrorHandler);
+    REGISTER_LUA_FUNCTION(Log);
 }
 
 void DestroyLua()
 {
-    assert(g_LuaState);
+    assert(InSerialPhase());
 
-    FireLuaEvent(g_LuaState, g_LuaShutdownEvent, 0, false);
+    SetLuaWorkerCount(0);
 
-    luaL_unref(g_LuaState, LUA_REGISTRYINDEX, g_LuaErrorFunction);
-    luaL_unref(g_LuaState, LUA_REGISTRYINDEX, g_LuaFunctionTable);
-
-    lua_close(g_LuaState);
-    g_LuaState = NULL;
-    g_LuaRunning = false;
-    g_LuaEvents.clear();
+    DestroyArray(&LuaFunctions);
+    DestroyArray(&LuaTypes);
+    DestroyArray(&LuaWorkers);
 }
 
-lua_State* GetLuaState()
+void RegisterLuaFunction( const char* name, lua_CFunction fn )
 {
-    return g_LuaState;
+    assert(InSerialPhase());
+    assert(LuaWorkers.length == 0);
+    LuaFunctionDescription* desc = AllocateAtEndOfArray(&LuaFunctions, 1);
+    desc->name = name;
+    desc->function = fn;
+    desc->flags = 0;
 }
 
-bool IsLuaRunning()
+void RegisterLuaType( const char* name, lua_CFunction gcCallback )
 {
-    return g_LuaRunning;
+    assert(InSerialPhase());
+    assert(LuaWorkers.length == 0);
+    LuaTypeDescription* desc = AllocateAtEndOfArray(&LuaTypes, 1);
+    desc->name = name;
+    desc->gcCallback = gcCallback;
+}
+
+static int Lua_SetErrorHandler( lua_State* l )
+{
+    luaL_checktype(l, 1, LUA_TFUNCTION);
+    lua_pushvalue(l, 1); // duplicate callback, because luaL_ref pops it
+
+    LuaWorker* worker = GetLuaWorkerFromState(l);
+
+    const int old = worker->errorHandler;
+    worker->errorHandler = luaL_ref(l, LUA_REGISTRYINDEX);
+
+    if((old != LUA_NOREF) &&
+       (old != LUA_REFNIL))
+    {
+        lua_rawgeti(l, LUA_REGISTRYINDEX, old);
+        luaL_unref(l, LUA_REGISTRYINDEX, old);
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+static int Lua_Log( lua_State* l )
+{
+    static const char* levelNames[] =
+    {
+        "info",
+        "notice",
+        "warning",
+        "error",
+        "fatal error"
+    };
+    const LogLevel level = (LogLevel)luaL_checkoption(l, 1, NULL, levelNames);
+    const char* message = luaL_checkstring(l, 2);
+    Log(level, "%s", message);
+    return 0;
 }
 
 #if defined(KONSTRUKT_PROFILER_ENABLED)
@@ -124,57 +172,306 @@ static int GetLuaMemoryInBytes()
 }
 #endif
 
-static void UpdateLua( void* _data )
+static void UpdateLua( void* worker_ )
 {
+    LuaWorker* worker = (LuaWorker*)worker_;
+
     {
-        ProfileScope("Lua Work");
-        FireLuaEvent(g_LuaState, g_LuaWorkEvent, 0, false);
+        ProfileScope("Lua parallel phase");
+        // TODO FireLuaEvent(worker->state, g_LuaParallelEvent, 0, false);
     }
 
     {
         ProfileScope("Lua GC");
-        lua_gc(g_LuaState, LUA_GCCOLLECT, 0);
+        lua_gc(worker->state, LUA_GCCOLLECT, 0);
         SetCounter(MemoryCounter, GetLuaMemoryInBytes());
     }
 }
 
 void BeginLuaUpdate()
 {
-    LuaUpdateJob = CreateJob({"UpdateLua", UpdateLua});
+    assert(InSerialPhase());
+    LuaWorker* workers = LuaWorkers.data;
+    REPEAT(LuaWorkers.length, i)
+    {
+        assert(workers[i].job == INVALID_JOB_ID);
+        workers[i].job = CreateJob({workers[i].jobName, UpdateLua, NULL, &workers[i]});
+    }
 }
 
 void CompleteLuaUpdate()
 {
-    WaitForJobs(&LuaUpdateJob, 1);
+    assert(InSerialPhase());
 
-    ProfileScope("Lua Sync");
-    FireLuaEvent(g_LuaState, g_LuaSyncEvent, 0, false);
-}
+    LuaWorker* workers = LuaWorkers.data;
 
-void RegisterFunctionInLua( const char* name, lua_CFunction fn )
-{
-    lua_rawgeti(g_LuaState, LUA_REGISTRYINDEX, g_LuaFunctionTable);
-    lua_pushcfunction(g_LuaState, fn);
-    lua_setfield(g_LuaState, -2, name);
-    lua_pop(g_LuaState, 1);
-}
-
-void RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback )
-{
-    lua_State* l = g_LuaState;
-
-    luaL_newmetatable(l, name);
-
-    if(gcCallback)
+    REPEAT(LuaWorkers.length, i)
     {
-        // set __gc callback
-        lua_pushcfunction(l, gcCallback);
-        lua_setfield(l, -2, "__gc");
+        assert(workers[i].job != INVALID_JOB_ID);
+        WaitForJobs(&workers[i].job, 1);
+        workers[i].job = INVALID_JOB_ID;
     }
 
-    // pop metatable
-    lua_pop(l, 1);
+    ProfileScope("Lua serial phase");
+    // TODO
+    //REPEAT(LuaWorkers.length, i)
+    //    FireLuaEvent(g_LuaState, g_LuaSerialEvent, 0, false);
 }
+
+
+// --- LuaWorker ---
+
+static void SetLuaModule( lua_State* l, const char* name, lua_CFunction openf )
+{
+    lua_pushcfunction(l, openf);
+    lua_pushstring(l, name);  // argument to open function
+    lua_call(l, 1, 1);  // call openf function (module will be at -1)
+    lua_setfield(l, -2, name); // set k[name] = module (k is at -2)
+}
+
+static void PushEngineTable( lua_State* l )
+{
+    lua_createtable(l, 0, LuaFunctions.length);
+
+    LuaFunctionDescription* functions = LuaFunctions.data;
+    REPEAT(LuaFunctions.length, i)
+    {
+        lua_pushstring(l, functions[i].name);
+
+        lua_createtable(l, 0, 3);
+
+        lua_pushcfunction(l, functions[i].function);
+        lua_setfield(l, -2, "fn");
+
+        lua_pushboolean(l, functions[i].flags & LUA_THREAD_SAFE);
+        lua_setfield(l, -2, "thread_safe");
+
+        lua_pushboolean(l, functions[i].flags & LUA_NO_RESULTS);
+        lua_setfield(l, -2, "no_results");
+
+        // -3: engine table
+        // -2: function name
+        // -1: function table
+
+        lua_settable(l, -3);
+    }
+}
+
+static int PushBootstrapArguments( lua_State* l )
+{
+    lua_createtable(l, 0, 2);
+    SetLuaModule(l, "cjson", luaopen_cjson);
+    SetLuaModule(l, "taggedcoro", luaopen_taggedcoro);
+
+    PushEngineTable(l);
+
+    return 2;
+}
+
+static void InitLuaWorker( LuaWorker* worker, int index )
+{
+    worker->state = luaL_newstate();
+    worker->errorHandler = LUA_NOREF;
+    worker->job = INVALID_JOB_ID;
+    FormatBuffer(worker->jobName, MAX_JOB_NAME_SIZE, "update lua worker %d", index);
+
+    lua_State* l = worker->state;
+
+    lua_gc(l, LUA_GCSTOP, 0); // only collect manually
+
+    lua_pushlightuserdata(l, worker);
+    lua_setfield(l, LUA_REGISTRYINDEX, LUA_WORKER_KEY);
+
+    // Load standard modules (except for the io, os and package modules)
+    luaopen_base(l);
+    luaL_requiref(l, LUA_COLIBNAME,   luaopen_coroutine,  true);
+    luaL_requiref(l, LUA_TABLIBNAME,  luaopen_table,      true);
+    luaL_requiref(l, LUA_STRLIBNAME,  luaopen_string,     true);
+    luaL_requiref(l, LUA_BITLIBNAME,  luaopen_bit32,      true);
+    luaL_requiref(l, LUA_MATHLIBNAME, luaopen_math,       true);
+    luaL_requiref(l, LUA_DBLIBNAME,   luaopen_debug,      true);
+
+    // Register user data types:
+    LuaTypeDescription* types = LuaTypes.data;
+    REPEAT(LuaTypes.length, i)
+    {
+        luaL_newmetatable(l, types[i].name);
+
+        if(types[i].gcCallback)
+        {
+            // set __gc callback
+            lua_pushcfunction(l, types[i].gcCallback);
+            lua_setfield(l, -2, "__gc");
+        }
+
+        // pop metatable
+        lua_pop(l, 1);
+    }
+
+    PushLuaScript(l, "core/bootstrap/init.lua");
+    const int argumentCount = PushBootstrapArguments(l);
+    CallLuaFunction(l, argumentCount, 0);
+
+    assert(worker->errorHandler != LUA_NOREF);
+}
+
+static void DestroyLuaWorker( LuaWorker* worker )
+{
+    assert(worker->state);
+
+    lua_State* l = worker->state;
+
+    luaL_unref(l, LUA_REGISTRYINDEX, worker->errorHandler);
+
+    //FireLuaEvent(l, g_LuaShutdownEvent, 0, false);
+
+    lua_close(l);
+}
+
+void SetLuaWorkerCount( int count )
+{
+    assert(InSerialPhase());
+    assert(count >= 0);
+    assert(count < 1024); // sanity check
+    if(LuaWorkers.length < count) // add workers
+    {
+        const int createdWorkers = count - LuaWorkers.length;
+        LuaWorker* workers = AllocateAtEndOfArray(&LuaWorkers, createdWorkers);
+        REPEAT(createdWorkers, i)
+            InitLuaWorker(&workers[i], i);
+    }
+    else if(LuaWorkers.length > count) // remove workers
+    {
+        const int removedWorkers = LuaWorkers.length - count;
+        for(int i = count; i < LuaWorkers.length; i++)
+            DestroyLuaWorker(GetArrayElement(&LuaWorkers, i));
+        PopFromArray(&LuaWorkers, removedWorkers);
+    }
+}
+
+static LuaWorker* GetLuaWorkerFromState( lua_State* l )
+{
+    lua_getfield(l, LUA_REGISTRYINDEX, LUA_WORKER_KEY);
+    LuaWorker* worker = (LuaWorker*)lua_touserdata(l, -1);
+    lua_pop(l, 1);
+    assert(worker);
+    return worker;
+}
+
+
+// --- loading ---
+
+static const int LOAD_BUFFER_SIZE = 1024;
+struct LoadState
+{
+    VfsFile* file;
+    char buffer[LOAD_BUFFER_SIZE];
+};
+
+static const char* ReadLuaChunk( lua_State* l, void* userData, size_t* bytesRead )
+{
+    LoadState* state = (LoadState*)userData;
+    *bytesRead = ReadVfsFile(state->file, state->buffer, LOAD_BUFFER_SIZE);
+    return state->buffer;
+}
+
+static void PushLuaScript( lua_State* l, const char* vfsPath )
+{
+    VfsFile* file = OpenVfsFile(vfsPath, VFS_OPEN_READ);
+    LoadState state;
+    state.file = file;
+    const char* source = Format("@%s", vfsPath);
+    if(lua_load(l, ReadLuaChunk, &state, source, "t") != LUA_OK)
+    {
+        FatalError("%s", lua_tostring(l, -1));
+        lua_pop(l, 2); // pop error function and error message
+    }
+    CloseVfsFile(file);
+}
+
+
+// --- calling ---
+
+static void HandleLuaCallResult( lua_State* l, int result )
+{
+    switch(result)
+    {
+        case LUA_OK:
+            return;
+
+        case LUA_ERRRUN:
+            {
+                const char* message = lua_tostring(l, -1);
+                FatalError("%s", message);
+                lua_pop(l, 1);
+            }
+
+        case LUA_ERRMEM:
+            FatalError("Lua encountered an memory allocation error.");
+
+        case LUA_ERRERR:
+            FatalError("Lua encountered an error while executing the error handler.");
+
+        default:
+            FatalError("Unknown call result.");
+    }
+}
+
+static int Lua_ErrorProxy( lua_State* l )
+{
+    LuaWorker* worker = GetLuaWorkerFromState(l);
+    if(worker->errorHandler != LUA_NOREF)
+    {
+        lua_rawgeti(l, LUA_REGISTRYINDEX, worker->errorHandler);
+        lua_pushvalue(l, 1); // push message to the top
+        lua_call(l, 1, 1);
+    }
+    else
+    {
+        const char* message = lua_tostring(l, 1);
+        lua_pushfstring(l, "(Via fallback error handler:) %s", message);
+    }
+    return 1;
+}
+
+static int CallLuaFunction( lua_State* l, int argumentCount, int expectedReturnValueCount )
+{
+    assert(argumentCount >= 0);
+    assert(expectedReturnValueCount >= 0 ||
+           expectedReturnValueCount == LUA_MULTRET);
+
+    LuaWorker* worker = GetLuaWorkerFromState(l);
+
+    lua_pushcfunction(l, Lua_ErrorProxy);
+    lua_insert(l, -(argumentCount+2)); // Move before function and arguments)
+
+    // The stack should now look like this:
+    // error proxy
+    // function
+    // arg 1
+    // ...
+    // arg n
+
+    const int stackSizeBeforeCall = lua_gettop(l);
+    const int callResult = lua_pcall(
+        l, argumentCount,
+        expectedReturnValueCount,
+        -(argumentCount+2) // error func
+    );
+    const int stackSizeAfterCall = lua_gettop(l);
+
+    const int poppedValueCount = argumentCount + 1; // arguments and function
+    const int returnValueCount = stackSizeAfterCall -
+                                 (stackSizeBeforeCall-poppedValueCount);
+    lua_remove(l, -(returnValueCount+1)); // Remove error function
+
+    HandleLuaCallResult(l, callResult);
+
+    return returnValueCount;
+}
+
+
+// --- Utils ---
 
 void* PushUserDataToLua( lua_State* l, const char* typeName, int size )
 {
@@ -269,206 +566,17 @@ unsigned int CheckIdFromLua( lua_State* l, int stackPosition )
     return luaL_checkunsigned(l, stackPosition);
 }
 
-static int Lua_SetErrorFunction( lua_State* l )
-{
-    luaL_checktype(l, 1, LUA_TFUNCTION);
-    lua_pushvalue(l, 1); // duplicate callback, because luaL_ref pops it
-    const int old = g_LuaErrorFunction;
-    g_LuaErrorFunction = luaL_ref(l, LUA_REGISTRYINDEX);
 
-    if((old != LUA_NOREF) &&
-       (old != LUA_REFNIL))
-    {
-        lua_rawgeti(l, LUA_REGISTRYINDEX, old);
-        luaL_unref(l, LUA_REGISTRYINDEX, old);
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-static int Lua_ErrorProxy( lua_State* l )
-{
-    if((g_LuaErrorFunction != LUA_NOREF) &&
-       (g_LuaErrorFunction != LUA_REFNIL))
-    {
-        lua_rawgeti(l, LUA_REGISTRYINDEX, g_LuaErrorFunction);
-        lua_pushvalue(l, 1);
-        lua_call(l, 1, 1);
-    }
-    else
-    {
-        const char* message = lua_tostring(l, 1);
-        lua_pushfstring(l, "(Via fallback error handler:) %s", message);
-    }
-    return 1;
-}
-
-static void HandleLuaCallResult( lua_State* l, int result )
-{
-    switch(result)
-    {
-        case LUA_ERRRUN:
-            {
-                const char* message = lua_tostring(l, -1);
-                FatalError("%s", message);
-                lua_pop(l, 1);
-            }
-
-        case LUA_ERRMEM:
-            FatalError("Lua encountered a memory allocation error.");
-
-        case LUA_ERRERR:
-            FatalError("Lua encountered an error while executing the error function.");
-
-        case 0:
-            return;
-
-        default:
-            FatalError("Unknown call result.");
-    }
-}
-
-static const int LOAD_BUFFER_SIZE = 1024;
-struct LoadState
-{
-    VfsFile* file;
-    char buffer[LOAD_BUFFER_SIZE];
-};
-
-static const char* ReadLuaChunk( lua_State* l, void* userData, size_t* bytesRead )
-{
-    LoadState* state = (LoadState*)userData;
-    *bytesRead = ReadVfsFile(state->file, state->buffer, LOAD_BUFFER_SIZE);
-    return state->buffer;
-}
-
-void RunLuaScript( lua_State* l, const char* vfsPath )
-{
-    LogNotice("Running %s ...", vfsPath);
-
-    lua_pushcfunction(l, Lua_ErrorProxy);
-
-    VfsFile* file = OpenVfsFile(vfsPath, VFS_OPEN_READ);
-    LoadState state;
-    state.file = file;
-    if(lua_load(l, ReadLuaChunk, &state, vfsPath, "t") == LUA_OK)
-    {
-        g_LuaRunning = true;
-        const int callResult = lua_pcall(l, 0, 0, -2);
-        g_LuaRunning = false;
-        HandleLuaCallResult(l, callResult);
-    }
-    else
-    {
-        FatalError("%s", lua_tostring(l, -1));
-        lua_pop(l, 2); // pop error function and error message
-    }
-    CloseVfsFile(file);
-}
-
-static int FindLuaEventByName( const char* name )
-{
-    assert(name != NULL);
-    for(size_t i = 0; i < g_LuaEvents.size(); i++)
-        if(strncmp(name, g_LuaEvents[i].name, MAX_LUA_EVENT_NAME_SIZE-1) == 0)
-            return i;
-    return -1;
-}
+// --- LuaEvent ---
 
 int RegisterLuaEvent( const char* name )
 {
-    assert(FindLuaEventByName(name) == -1);
-    assert(strlen(name) < MAX_LUA_EVENT_NAME_SIZE-1);
-
-    LuaEvent event;
-    memset(&event, 0, sizeof(event));
-    CopyString(name, event.name, sizeof(event.name));
-    event.callbackReference = LUA_NOREF;
-
-    g_LuaEvents.push_back(event);
-
-    const int id = (int)g_LuaEvents.size()-1;
-    if(id < 0)
-        FatalError("RegisterLuaEvent");
-
-    return id;
+    return 0;
 }
 
 int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues )
 {
-    assert(id >= 0 && id < (int)g_LuaEvents.size());
-    assert(argumentCount >= 0);
-
-    LuaEvent* event = &g_LuaEvents[id];
-
-    if((event->callbackReference == LUA_NOREF) ||
-       (event->callbackReference == LUA_REFNIL))
-    {
-        lua_pop(l, argumentCount);
-        return 0;
-    }
-
-    lua_pushcfunction(l, Lua_ErrorProxy);
-    lua_insert(l, -(argumentCount+1)); // Move before arguments
-
-    lua_rawgeti(l, LUA_REGISTRYINDEX, event->callbackReference);
-    lua_insert(l, -(argumentCount+1)); // Move before arguments
-
-    // The stack should now look like this:
-    // error function
-    // callback
-    // arg 1
-    // ...
-    // arg n
-
-    const int stackSizeBeforeCall = lua_gettop(l);
-    g_LuaRunning = true;
-    const int callResult = lua_pcall(
-        l, argumentCount,
-        pushReturnValues ? LUA_MULTRET : 0, // return value count
-        -(argumentCount+2) // error func
-    );
-    g_LuaRunning = false;
-    const int stackSizeAfterCall = lua_gettop(l);
-
-    const int poppedValueCount = argumentCount + 1;
-    const int returnValueCount =
-        stackSizeAfterCall - (stackSizeBeforeCall-poppedValueCount);
-    lua_remove(l, -(returnValueCount+1)); // Remove error function
-
-    HandleLuaCallResult(l, callResult);
-
-    return returnValueCount;
-}
-
-static int Lua_SetEventCallback( lua_State* l )
-{
-    const char* name = luaL_checkstring(l, 1);
-    const int id = FindLuaEventByName(name);
-    if(id < 0)
-        return luaL_error(l, "No event called '%s' exists.", name);
-
-    luaL_checktype(l, 2, LUA_TFUNCTION);
-    lua_pushvalue(l, 2); // duplicate callback, because luaL_ref pops it
-    g_LuaEvents[id].callbackReference = luaL_ref(l, LUA_REGISTRYINDEX);
     return 0;
 }
 
-static int Lua_Log( lua_State* l )
-{
-    static const char* levelNames[] =
-    {
-        "info",
-        "notice",
-        "warning",
-        "error",
-        "fatal error"
-    };
-    const LogLevel level = (LogLevel)luaL_checkoption(l, 1, NULL, levelNames);
-    const char* message = luaL_checkstring(l, 2);
-    Log(level, "%s", message);
-    return 0;
-}
+

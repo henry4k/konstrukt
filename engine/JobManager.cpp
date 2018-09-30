@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <tinycthread.h>
 
 #include "Common.h"
@@ -6,8 +7,6 @@
 #include "FixedArray.h"
 #include "JobManager.h"
 
-
-static const int INVALID_JOB_ID = -1;
 
 struct Job
 {
@@ -47,6 +46,8 @@ static int WorkerThreadFn( void* arg );
 
 void InitJobManager( JobManagerConfig config )
 {
+    assert(InSerialPhase());
+
     InitCounter(JobCounter);
 
     Ensure(config.workerThreads >= 0);
@@ -77,6 +78,8 @@ void InitJobManager( JobManagerConfig config )
 
 void DestroyJobManager()
 {
+    assert(InSerialPhase());
+
     JobManager.isStopping = true;
     cnd_broadcast(&JobManager.updateCondition);
     UnlockJobManager();

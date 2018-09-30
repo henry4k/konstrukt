@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h> // NULL
 #include <float.h> // FLT_MAX
 
@@ -108,6 +109,7 @@ static void SetTextureOptions( int target, int options )
 
 static Texture* CreateTexture( GLenum target, int options )
 {
+    assert(InSerialPhase());
     Texture* texture = new Texture;
     InitReferenceCounter(&texture->refCounter);
     texture->target = target;
@@ -235,6 +237,7 @@ void BindTexture( const Texture* texture, int unit )
 
 static void FreeTexture( Texture* texture )
 {
+    assert(InSerialPhase());
     FreeReferenceCounter(&texture->refCounter);
     glDeleteTextures(1, &texture->handle);
     delete texture;

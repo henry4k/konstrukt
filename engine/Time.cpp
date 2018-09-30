@@ -27,12 +27,14 @@ static bool TimerIsActive( const Timer* timer );
 
 void InitTime()
 {
+    assert(InSerialPhase());
     Time = 0;
     memset(Timers, 0, sizeof(Timers));
 }
 
 void DestroyTime()
 {
+    assert(InSerialPhase());
 }
 
 void UpdateTime( double timeDelta )
@@ -79,6 +81,7 @@ static Timer* FindInactiveTimer()
 
 Timer* CreateTimer( double minDelay, void* context, TimerCallback callback )
 {
+    assert(InSerialPhase());
     assert(minDelay >= 0);
     assert(callback);
 
@@ -96,6 +99,7 @@ Timer* CreateTimer( double minDelay, void* context, TimerCallback callback )
 
 void DestroyTimer( Timer* timer )
 {
+    assert(InSerialPhase());
     assert(timer);
     memset(timer, 0, sizeof(Timer));
 }

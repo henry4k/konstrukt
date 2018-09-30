@@ -1,34 +1,34 @@
 --- @script core.bootstrap.init
 --- Executed during engine initialization.
 
--- luacheck: globals _engine taggedcoro
-local engine = _engine
+local modules, engine = ...
 
 
 -- Setup error handling
 
-engine.SetErrorFunction(function( message )
+engine.SetErrorHandler.fn(function( message )
     return debug.traceback(message, 2)
 end)
 
 
 -- Initialize random generator
 
-math.randomseed(engine.GetTime())
+math.randomseed(engine.GetTime.fn())
 
 
 -- Reimplement some functions
--- luacheck: globals coroutine print loadfile dofile
+-- luacheck: print loadfile dofile
 
-coroutine = taggedcoro.fortag'vanilla'
+coroutine = modules.taggedcoro.fortag'vanilla'
 
+local Log = engine.Log.fn
 function print( ... )
     local count = select('#', ...)
     local strings = {}
     for i = 1, count do
         strings[i] = tostring(select(i, ...))
     end
-    engine.Log('info', table.concat(strings, '\t'))
+    Log('info', table.concat(strings, '\t'))
 end
 
 function loadfile( fileName, ... )
@@ -39,30 +39,29 @@ function dofile( fileName )
     error('dofile is not available in Konstrukt, you must use Lua modules instead.')
 end
 
+local ReadFile = engine.ReadFile.fn
+
 local function _loadfile( fileName, ... )
-    local data = engine.ReadFile(fileName)
+    local data = ReadFile(fileName)
     return load(data, '@'..fileName, ...)
 end
 
-function _dofile( fileName )
-    local chunk, errorMessage = _loadfile(fileName)
-    if not chunk then
-        error(errorMessage)
-    end
-    return chunk()
+local function _dofile( fileName, ... )
+    local chunk = assert(_loadfile(fileName))
+    return chunk(...)
 end
 
 _dofile 'core/bootstrap/table.lua'
 _dofile 'core/bootstrap/math.lua'
 _dofile 'core/bootstrap/path.lua'
-_dofile 'core/bootstrap/require.lua'
-_dofile = nil
+_dofile('core/bootstrap/require.lua', modules, engine, _dofile)
 
 
 local Scheduler = require 'core/Scheduler'
 Scheduler._run(Scheduler.createScheduledCoroutine(function()
     -- Register exit key
 
+    local engine         = require 'engine'
     local Control        = require 'core/Control'
     local GlobalControls = require 'core/GlobalControls'
 
@@ -89,6 +88,7 @@ Scheduler._run(Scheduler.createScheduledCoroutine(function()
     local Scenario = require 'core/Scenario'
 
     -- luacheck: globals _scenario
+    -- TODO: This shall be done via an event
     if _scenario then
         Scenario.load(_scenario)
         _scenario = nil

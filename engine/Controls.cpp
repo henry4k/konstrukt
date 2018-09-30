@@ -38,6 +38,8 @@ static std::vector<Control> g_Controls;
 
 bool InitControls()
 {
+    assert(InSerialPhase());
+
     g_Controls.clear();
 
     return
@@ -48,6 +50,7 @@ bool InitControls()
 
 void DestroyControls()
 {
+    assert(InSerialPhase());
     DestroyKeyboardBindings();
     DestroyMouseBindings();
     DestroyJoystickBindings();
@@ -55,9 +58,11 @@ void DestroyControls()
 
 void UpdateControls( float timeFrame )
 {
+    assert(InSerialPhase());
+
     UpdateJoystickControls(timeFrame);
 
-    for(size_t i = 0; i < g_Controls.size(); ++i)
+    REPEAT(g_Controls.size(), i)
     {
         Control* control = &g_Controls[i];
 
@@ -94,6 +99,8 @@ static bool ControlNameIsOkay( const char* name )
 
 bool RegisterControl( const char* name, ControlActionFn callback, void* context )
 {
+    assert(InSerialPhase());
+
     if(!ControlNameIsOkay(name))
         return false;
 
@@ -147,6 +154,8 @@ bool RegisterControl( const char* name, ControlActionFn callback, void* context 
 
 void HandleControlEvent( int controlIndex, float value )
 {
+    assert(InSerialPhase());
+
     assert(controlIndex < (int)g_Controls.size());
     Control* control = &g_Controls[controlIndex];
 

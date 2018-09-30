@@ -14,28 +14,33 @@ enum
     INVALID_LUA_EVENT = -1
 };
 
-enum LuaArrayType
-{
-    LUA_BOOL_ARRAY,
-    LUA_DOUBLE_ARRAY,
-    LUA_LONG_ARRAY
-};
+struct LuaWorker;
 
+
+// --- General ---
 
 void InitLua();
 void DestroyLua();
 
-lua_State* GetLuaState();
-
-bool IsLuaRunning();
-
+/**
+ * Starts a job for each Lua worker in which they run their parallel/work
+ * phase.
+ */
 void BeginLuaUpdate();
+
+/**
+ * Await completion of all Lua worker jobs and run their
+ * synchronous/synchronization phases.
+ */
 void CompleteLuaUpdate();
 
 /**
  * Registers a native function in Lua.
  */
-void RegisterFunctionInLua( const char* name, lua_CFunction fn );
+void RegisterLuaFunction( const char* name, lua_CFunction fn );
+#define REGISTER_LUA_FUNCTION(Name) RegisterLuaFunction(#Name, Lua_##Name)
+#define RegisterFunctionInLua RegisterLuaFunction
+
 
 /**
  * Registers a user data type by name.
@@ -46,8 +51,25 @@ void RegisterFunctionInLua( const char* name, lua_CFunction fn );
  * @param gcCallback
  * Function that is called before Lua frees garbage collected user data.
  * May be `NULL` - in this case Lua doesn't notify you at all.
+ *
+ * TODO: Because gcCallbacks are now executed in the LuaWorkers thread
+ * they'd need to be thread-safe functions.  Maybe its better to decide these
+ * things in Lua directly as engine functions have thread-safety annotations
+ * now.
  */
-void RegisterUserDataTypeInLua( const char* name, lua_CFunction gcCallback );
+void RegisterLuaType( const char* name, lua_CFunction gcCallback );
+#define RegisterUserDataTypeInLua RegisterLuaType
+
+
+// --- LuaWorker ---
+
+/**
+ * Creates or destroys workers so there are exactly `count` living ones.
+ */
+void SetLuaWorkerCount( int count );
+
+
+// --- Utils ---
 
 /**
  * Allocates memory for a user defined data structure in Lua
@@ -135,10 +157,8 @@ void PushIdToLua( lua_State* l, unsigned int id );
 unsigned int GetIdFromLua( lua_State* l, int stackPosition );
 unsigned int CheckIdFromLua( lua_State* l, int stackPosition );
 
-/**
- * Loads a script from `vfsPath` and executes it.
- */
-void RunLuaScript( lua_State* l, const char* vfsPath );
+
+// --- Events ---
 
 /**
  * Registers a new event and returns its id.

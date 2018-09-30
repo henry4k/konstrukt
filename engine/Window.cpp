@@ -61,6 +61,8 @@ static void OnKeyAction( GLFWwindow* window, int key, int scancode, int action, 
 
 void InitWindow()
 {
+    assert(InSerialPhase());
+
     const int width  = GetConfigInt("window.width",  640);
     const int height = GetConfigInt("window.height", 480);
     const char* title = GetConfigString("window.title", "Konstrukt");
@@ -147,6 +149,7 @@ void InitWindow()
 
 void DestroyWindow()
 {
+    assert(InSerialPhase());
     assert(g_Window != NULL);
     glfwDestroyWindow(g_Window);
     glfwTerminate();
@@ -160,11 +163,13 @@ void SwapBuffers()
 
 void SetWindowTitle( const char* title )
 {
+    assert(InSerialPhase());
     glfwSetWindowTitle(g_Window, title);
 }
 
 void FlagWindowForClose()
 {
+    assert(InSerialPhase());
     glfwSetWindowShouldClose(g_Window, GL_TRUE);
 }
 
@@ -189,6 +194,7 @@ void GetFramebufferSize( int* width, int* height )
 
 void SetCursorMode( int mode )
 {
+    assert(InSerialPhase());
     glfwSetInputMode(g_Window, GLFW_CURSOR, mode);
 }
 
@@ -197,27 +203,32 @@ void SetCursorMode( int mode )
 
 void SetFrambufferFn( FramebufferResizeFn fn )
 {
+    assert(InSerialPhase());
     g_FramebufferResizeFn = fn;
     OnFramebufferResize(NULL, g_FramebufferWidth, g_FramebufferHeight);
 }
 
 void SetCursorMoveFn( CursorMoveFn fn )
 {
+    assert(InSerialPhase());
     g_CursorMoveFn = fn;
 }
 
 void SetMouseButtonActionFn( MouseButtonActionFn fn )
 {
+    assert(InSerialPhase());
     g_MouseButtonActionFn = fn;
 }
 
 void SetMouseScrollFn( MouseScrollFn fn )
 {
+    assert(InSerialPhase());
     g_MouseScrollFn = fn;
 }
 
 void SetKeyActionFn( KeyActionFn fn )
 {
+    assert(InSerialPhase());
     g_KeyActionFn = fn;
 }
 

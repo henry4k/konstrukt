@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <string.h> // memset
 
 #include "Common.h"
@@ -15,6 +16,7 @@ struct VoxelVolume
 
 VoxelVolume* CreateVoxelVolume( int width, int height, int depth )
 {
+    assert(InSerialPhase());
     VoxelVolume* volume = new VoxelVolume;
     memset(volume, 0, sizeof(VoxelVolume));
     InitReferenceCounter(&volume->refCounter);
@@ -28,6 +30,7 @@ VoxelVolume* CreateVoxelVolume( int width, int height, int depth )
 
 static void FreeVoxelVolume( VoxelVolume* volume )
 {
+    assert(InSerialPhase());
     delete[] volume->voxels;
     delete volume;
 }

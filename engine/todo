@@ -1,6 +1,34 @@
-  Config - um asynchron verwendet werden zu können, muss es readonly sein
-  Reference - darf nur synchron ausgeführt werden
-  Vfs - mounting/unmounting nur synchron!
+Format ausbügeln
+- Wo wird Format/FormatBuffer benutzt
+  - z.B. nur in synchronen Bereichen?
+- Macht es Sinn die Format threadsafe zu machen? Wenn ja, wie?
+  - via Thread-local storage? -> C++11 Abhängigkeit
+  - via Malloc/Free? -> Free muss überall eingebaut werden
+  - die Funktion nicht threadsafe machen?
+- FormatBuffer im Zusammenhang mit static char[...] hat die gleichen Probleme
+
+
+Kontext/Umgebung in der Funktionen ausgeführt werden dürfen sollte besser definiert werden
+- serielle Phase
+- im Reder-Thread
+- ...
+
+
+Render Thread
+- Es soll nicht in der seriellen Phase gerendert werden
+- Daher gibt es eine Graphics Command Queue
+  - Wie Jobs haben Graphics Commands ...
+    - eine ID
+    - ein Processing Callback
+    - ein Destruktor Callback
+  - der Status eines Kommandos kann abgrefragt werden
+  - das Ergebnis eines Kommandos kann abgefragt werden
+  - ähnelt stark der Job Queue
+
+
+[ ] Globale Variablen vermeiden
+    [ ] Über Metatable neue Variablen verbieten
+
   Time - müsste in SimulationGroup integriert werden
 
   Image (loading/postprocessing/resizing)

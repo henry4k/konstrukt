@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <string.h>
 
 #if defined(__APPLE__)
@@ -58,8 +59,15 @@ static JobId AudioUpdateJob;
 
 // --- Global ---
 
+static void AudioFatalErrorHandler()
+{
+    alureShutdownDevice();
+}
+
 void InitAudio()
 {
+    assert(InSerialPhase());
+
     InitCounter(AudioSourceCounter);
 
     if(GetConfigBool("audio.print-devices", false))
@@ -73,6 +81,9 @@ void InitAudio()
 
     if(!alureInitDevice(deviceName, NULL))
         FatalError("Failed to initialize audio device: %s", alureGetErrorString());
+
+    // Not really need - just gets rid of some error messages:
+    OnFatalError(AudioFatalErrorHandler);
 
     ALuint alureMajor = 0;
     ALuint alureMinor = 0;
@@ -106,6 +117,8 @@ void InitAudio()
 
 void DestroyAudio()
 {
+    assert(InSerialPhase());
+
     DestroyAttachmentTarget(&ListenerAttachmentTarget);
 
     for(int i = 0; i < AudioSourceCount; ++i)
@@ -122,18 +135,20 @@ static void UpdateAudio( void* _data )
 
     UpdateAudioListener();
 
-    for(int i = 0; i < AudioSourceCount; ++i)
+    REPEAT(AudioSourceCount, i)
         if(IsActiveAudioSource(&AudioSources[i]))
             UpdateAudioSource(&AudioSources[i]);
 }
 
 void BeginAudioUpdate()
 {
+    assert(InSerialPhase());
     AudioUpdateJob = CreateJob({"UpdateAudio", UpdateAudio});
 }
 
 void CompleteAudioUpdate()
 {
+    assert(InSerialPhase());
     WaitForJobs(&AudioUpdateJob, 1);
 }
 
@@ -142,16 +157,19 @@ void CompleteAudioUpdate()
 
 void SetAudioGain( float gain )
 {
+    assert(InSerialPhase());
     alListenerf(AL_GAIN, gain);
 }
 
 void SetAudioListenerAttachmentTarget( const AttachmentTarget* target )
 {
+    assert(InSerialPhase());
     CopyAttachmentTarget(&ListenerAttachmentTarget, target);
 }
 
 void SetAudioListenerTransformation( Mat4 transformation )
 {
+    assert(InSerialPhase());
     ListenerTransformation = transformation;
 }
 
@@ -223,6 +241,7 @@ static void DestroyAudioBufferLoadJob( void* _desc )
 
 JobId BeginLoadingAudioBuffer( const char* fileName )
 {
+    assert(InSerialPhase());
     AudioBufferLoadJobDesc* desc = NEW(AudioBufferLoadJobDesc);
     CopyString(fileName, desc->fileName, MAX_PATH_SIZE);
     desc->buffer = NULL;
@@ -234,6 +253,7 @@ JobId BeginLoadingAudioBuffer( const char* fileName )
 
 AudioBuffer* GetLoadedAudioBuffer( JobId job )
 {
+    assert(InSerialPhase());
     Ensure(GetJobStatus(job) == COMPLETED_JOB);
     AudioBufferLoadJobDesc* desc = (AudioBufferLoadJobDesc*)GetJobData(job);
     return desc->buffer;
@@ -241,6 +261,7 @@ AudioBuffer* GetLoadedAudioBuffer( JobId job )
 
 static void FreeAudioBuffer( AudioBuffer* buffer )
 {
+    assert(InSerialPhase());
     alDeleteBuffers(1, &buffer->handle);
     CheckALError("FreeAudioBuffer");
     delete buffer;
@@ -276,6 +297,8 @@ static AudioSource* FindFreeAudioSource()
 
 AudioSource* CreateAudioSource()
 {
+    assert(InSerialPhase());
+
     AudioSource* source = FindFreeAudioSource();
     if(!source)
         FatalError("Reached audio source limit! (%d sources)", AudioSourceCount);
@@ -296,6 +319,7 @@ AudioSource* CreateAudioSource()
 
 static void FreeAudioSource( AudioSource* source )
 {
+    assert(InSerialPhase());
     alDeleteSources(1, &source->handle);
     source->handle = AL_NONE;
     CheckALError("FreeAudioSourceAtIndex");
@@ -316,24 +340,28 @@ void ReleaseAudioSource( AudioSource* source )
 
 void SetAudioSourceRelative( AudioSource* source, bool relative )
 {
+    assert(InSerialPhase());
     alSourcei(source->handle, AL_SOURCE_RELATIVE, (relative ? AL_TRUE : AL_FALSE));
     CheckALError("SetAudioSourceRelative");
 }
 
 void SetAudioSourceLooping( AudioSource* source, bool loop )
 {
+    assert(InSerialPhase());
     alSourcei(source->handle, AL_LOOPING, (loop ? AL_TRUE : AL_FALSE));
     CheckALError("SetAudioSourceLooping");
 }
 
 void SetAudioSourcePitch( AudioSource* source, float pitch )
 {
+    assert(InSerialPhase());
     alSourcef(source->handle, AL_PITCH, pitch);
     CheckALError("SetAudioSourcePitch");
 }
 
 void SetAudioSourceGain( AudioSource* source, float gain )
 {
+    assert(InSerialPhase());
     alSourcef(source->handle, AL_GAIN, gain);
     CheckALError("SetAudioSourceGain");
 }
@@ -341,11 +369,13 @@ void SetAudioSourceGain( AudioSource* source, float gain )
 void SetAudioSourceAttachmentTarget( AudioSource* source,
                                      const AttachmentTarget* target )
 {
+    assert(InSerialPhase());
     CopyAttachmentTarget(&source->attachmentTarget, target);
 }
 
 void SetAudioSourceTransformation( AudioSource* source, Mat4 transformation )
 {
+    assert(InSerialPhase());
     source->transformation = transformation;
 }
 
@@ -396,18 +426,21 @@ static void UpdateAudioSource( AudioSource* source )
 
 void EnqueueAudioBuffer( AudioSource* source, AudioBuffer* buffer )
 {
+    assert(InSerialPhase());
     alSourceQueueBuffers(source->handle, 1, &buffer->handle);
     CheckALError("EnqueueAudioBuffer");
 }
 
 void PlayAudioSource( AudioSource* source )
 {
+    assert(InSerialPhase());
     alSourcePlay(source->handle);
     CheckALError("PlayAudioSource");
 }
 
 void PauseAudioSource( AudioSource* source )
 {
+    assert(InSerialPhase());
     alSourcePause(source->handle);
     CheckALError("PauseAudioSource");
 }

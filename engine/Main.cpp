@@ -39,6 +39,7 @@
 #include "lua_bindings/RenderTarget.h"
 #include "lua_bindings/ModelWorld.h"
 #include "lua_bindings/LightWorld.h"
+#include "lua_bindings/LuaBuffer.h"
 #include "lua_bindings/PhysicsWorld.h"
 #include "lua_bindings/Shader.h"
 #include "lua_bindings/Time.h"
@@ -79,6 +80,7 @@ static void RegisterAllModulesInLua()
     RegisterRenderTargetInLua();
     RegisterModelWorldInLua();
     RegisterLightWorldInLua();
+    RegisterLuaBufferInLua();
     RegisterPhysicsWorldInLua();
     RegisterShaderInLua();
     RegisterTimeInLua();
@@ -140,13 +142,14 @@ static void InitScript( const Arguments* args )
         MountPackage(package);
     }
 
-    if(args->packages.length >= 1)
-    {
-        lua_pushstring(GetLuaState(), args->packages.data[0]);
-        lua_setglobal(GetLuaState(), "_scenario");
-    }
+    // TODO: Run scenario initialization via event
+    //if(args->packages.length >= 1)
+    //{
+    //    lua_pushstring(GetLuaState(), args->packages.data[0]);
+    //    lua_setglobal(GetLuaState(), "_scenario");
+    //}
 
-    RunLuaScript(GetLuaState(), "core/bootstrap/init.lua");
+    SetLuaWorkerCount(1);
 }
 
 static void RunSimulation()
@@ -163,7 +166,7 @@ static void RunSimulation()
         UpdateControls(timeDelta);
         lastTime = curTime;
 
-        // (gesynctes zeugs hier tun)
+        // do serial stuff here
 
         BeginLuaUpdate();
         BeginAudioUpdate();

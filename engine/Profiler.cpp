@@ -40,6 +40,8 @@ Profiler _Profiler = NoOpProfiler;
 
 void InitProfiler()
 {
+    assert(InSerialPhase());
+
     const char* profilerName = GetConfigString("debug.profiler", "");
     if(strcmp(profilerName, "") == 0)
         _Profiler = NoOpProfiler;
@@ -71,15 +73,18 @@ void InitProfiler()
 
 void DestroyProfiler()
 {
+    assert(InSerialPhase());
     _Profiler.teardown();
 }
 
 void InitGPUProfiler()
 {
+    assert(InSerialPhase());
     _Profiler.setupGPU();
 }
 
 void DestroyGPUProfiler()
 {
+    assert(InSerialPhase());
     _Profiler.teardownGPU();
 }

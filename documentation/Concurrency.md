@@ -13,9 +13,9 @@ an arbitrary amount of worker threads processes them one after another.
 Simulation
 ----------
 
-A simulation tick consists of a sequential and a parallel phase.
+A simulation tick consists of a serial and a parallel phase.
 
-First the sequential phase is used for inter-module communication and
+First the serial phase is used for inter-module communication and
 synchronization.  At the end the modules can enqueue jobs, which will then do
 the heavy lifting concurrently - e. g. physics and graphics computations.
 

@@ -48,6 +48,7 @@ static void OnFramebufferResize( int width, int height );
 
 void InitDefaultRenderTarget()
 {
+    assert(InSerialPhase());
     RenderTarget* target = DefaultRenderTarget = new RenderTarget;
     memset(target, 0, sizeof(RenderTarget));
     InitReferenceCounter(&target->refCounter);
@@ -58,6 +59,7 @@ void InitDefaultRenderTarget()
 
 void DestroyDefaultRenderTarget()
 {
+    assert(InSerialPhase());
     FreeRenderTarget(DefaultRenderTarget);
     DefaultRenderTarget = NULL;
 }
@@ -69,6 +71,7 @@ RenderTarget* GetDefaultRenderTarget()
 
 RenderTarget* CreateTextureRenderTarget( Texture* texture )
 {
+    assert(InSerialPhase());
     RenderTarget* target = new RenderTarget;
     memset(target, 0, sizeof(RenderTarget));
     InitReferenceCounter(&target->refCounter);
@@ -83,7 +86,9 @@ RenderTarget* CreateTextureRenderTarget( Texture* texture )
 
 static void FreeRenderTarget( RenderTarget* target )
 {
-    for(int i = 0; i < MAX_CAMERAS; i++)
+    assert(InSerialPhase());
+
+    REPEAT(MAX_CAMERAS, i)
     {
         Camera* camera = target->cameras[i];
         if(camera)
@@ -143,6 +148,7 @@ static void OnFramebufferResize( int width, int height )
 
 void SetRenderTargetCamera( RenderTarget* target, Camera* camera, int layer )
 {
+    assert(InSerialPhase());
     assert(layer >= 0 && layer < MAX_CAMERAS);
 
     Camera* oldCamera = target->cameras[layer];
@@ -159,6 +165,7 @@ void SetRenderTargetCamera( RenderTarget* target, Camera* camera, int layer )
 
 void SetRenderTargetShaderProgramSet( RenderTarget* target, ShaderProgramSet* set )
 {
+    assert(InSerialPhase());
     if(target->shaderProgramSet)
         ReleaseShaderProgramSet(target->shaderProgramSet);
     target->shaderProgramSet = set;

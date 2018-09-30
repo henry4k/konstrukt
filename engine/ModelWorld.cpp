@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <string.h> // memset, strcmp
 #include <stdlib.h> // qsort
 #include <stdint.h> // uintptr_t
@@ -51,6 +52,7 @@ static int CompareModelDrawEntries( const void* a_, const void* b_ );
 
 ModelWorld* CreateModelWorld()
 {
+    assert(InSerialPhase());
     ModelWorld* world = new ModelWorld;
     memset(world, 0, sizeof(ModelWorld));
     InitReferenceCounter(&world->refCounter);
@@ -61,6 +63,7 @@ ModelWorld* CreateModelWorld()
 
 static void FreeModelWorld( ModelWorld* world )
 {
+    assert(InSerialPhase());
     REPEAT(MAX_MODELS, i)
     {
         Model* model = &world->models[i];
@@ -92,6 +95,8 @@ static int CurrentOverlayLevel = 0;
 
 static void SetOverlayLevel( int level )
 {
+    assert(InSerialPhase());
+
     if(level == CurrentOverlayLevel)
         return;
 
@@ -308,6 +313,8 @@ static Model* FindInactiveModel( ModelWorld* world )
 
 Model* CreateModel( ModelWorld* world )
 {
+    assert(InSerialPhase());
+
     Model* model = FindInactiveModel(world);
     if(!model)
         FatalError("Can't create more models.");
@@ -323,6 +330,7 @@ Model* CreateModel( ModelWorld* world )
 
 static void FreeModel( Model* model )
 {
+    assert(InSerialPhase());
     model->active = false;
     FreeReferenceCounter(&model->refCounter);
     FreeShaderVariableSet(model->shaderVariableSet);
@@ -345,21 +353,25 @@ void ReleaseModel( Model* model )
 
 void SetModelAttachmentTarget( Model* model, const AttachmentTarget* target )
 {
+    assert(InSerialPhase());
     CopyAttachmentTarget(&model->attachmentTarget, target);
 }
 
 void SetModelTransformation( Model* model, Mat4 transformation )
 {
+    assert(InSerialPhase());
     model->transformation = transformation;
 }
 
 void SetModelOverlayLevel( Model* model, int level )
 {
+    assert(InSerialPhase());
     model->overlayLevel = level;
 }
 
 void SetModelMesh( Model* model, Mesh* mesh )
 {
+    assert(InSerialPhase());
     if(model->mesh)
         ReleaseMesh(model->mesh);
     model->mesh = mesh;
@@ -369,6 +381,7 @@ void SetModelMesh( Model* model, Mesh* mesh )
 
 void SetModelProgramFamilyList( Model* model, const char* familyList )
 {
+    assert(InSerialPhase());
     CopyString(familyList,
                model->programFamilyList,
                sizeof(model->programFamilyList));

@@ -16,10 +16,11 @@ static int Lua_GetTime( lua_State* l )
 
 static void OnLuaTimerTriggered( Timer* timer, double timeDelta, void* context )
 {
-    lua_State* l = GetLuaState();
-    PushPointerToLua(l, timer);
-    lua_pushnumber(l, timeDelta);
-    FireLuaEvent(l, g_TimerTriggeredEvent, 2, false);
+    // TODO: Implement via new event system
+    //lua_State* l = GetLuaState();
+    //PushPointerToLua(l, timer);
+    //lua_pushnumber(l, timeDelta);
+    //FireLuaEvent(l, g_TimerTriggeredEvent, 2, false);
 }
 
 static int Lua_CreateTimer( lua_State* l )

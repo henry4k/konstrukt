@@ -1,6 +1,8 @@
 #ifndef __KONSTRUKT_JOB_MANAGER__
 #define __KONSTRUKT_JOB_MANAGER__
 
+static const int INVALID_JOB_ID = -1;
+
 typedef int JobId;
 
 enum JobStatus

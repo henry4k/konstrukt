@@ -9,11 +9,12 @@ static int g_ControlActionEvent = INVALID_LUA_EVENT;
 
 static void OnLuaControlAction( const char* name, float absolute, float delta, void* context)
 {
-    lua_State* l = GetLuaState();
-    lua_pushstring(l, name);
-    lua_pushnumber(l, absolute);
-    lua_pushnumber(l, delta);
-    FireLuaEvent(l, g_ControlActionEvent, 3, false);
+    // TODO: Implement via new event system
+    //lua_State* l = GetLuaState();
+    //lua_pushstring(l, name);
+    //lua_pushnumber(l, absolute);
+    //lua_pushnumber(l, delta);
+    //FireLuaEvent(l, g_ControlActionEvent, 3, false);
 }
 
 static int Lua_RegisterControl( lua_State* l )

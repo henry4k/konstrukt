@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <string.h> // memset
 
+#include "Common.h"
 #include "Math.h"
 #include "Reference.h"
 #include "ModelWorld.h"
@@ -34,6 +35,8 @@ struct Camera
 Camera* CreateCamera( ModelWorld* modelWorld,
                       LightWorld* lightWorld )
 {
+    assert(InSerialPhase());
+
     Camera* camera = new Camera;
     memset(camera, 0, sizeof(Camera));
 
@@ -63,6 +66,7 @@ Camera* CreateCamera( ModelWorld* modelWorld,
 
 static void FreeCamera( Camera* camera )
 {
+    assert(InSerialPhase());
     ReleaseModelWorld(camera->modelWorld);
     if(camera->lightWorld)
         ReleaseLightWorld(camera->lightWorld);
@@ -85,21 +89,25 @@ void ReleaseCamera( Camera* camera )
 
 void SetCameraAttachmentTarget( Camera* camera, const AttachmentTarget* target )
 {
+    assert(InSerialPhase());
     CopyAttachmentTarget(&camera->attachmentTarget, target);
 }
 
 void SetCameraModelTransformation( Camera* camera, Mat4 transformation )
 {
+    assert(InSerialPhase());
     camera->modelTransformation = transformation;
 }
 
 void SetCameraViewTransformation( Camera* camera, Mat4 transformation )
 {
+    assert(InSerialPhase());
     camera->viewTransformation = transformation;
 }
 
 void SetCameraAspect( Camera* camera, float aspect )
 {
+    assert(InSerialPhase());
     assert(aspect > 0);
     camera->aspect = aspect;
     camera->projectionTransformationNeedsUpdate = true;
@@ -107,6 +115,7 @@ void SetCameraAspect( Camera* camera, float aspect )
 
 void SetCameraNearAndFarPlanes( Camera* camera, float zNear, float zFar )
 {
+    assert(InSerialPhase());
     assert(zNear > 0);
     assert(zNear <= zFar);
     camera->zNear = zNear;
@@ -116,12 +125,14 @@ void SetCameraNearAndFarPlanes( Camera* camera, float zNear, float zFar )
 
 void SetCameraProjectionType( Camera* camera, CameraProjectionType type )
 {
+    assert(InSerialPhase());
     camera->projectionType = type;
     camera->projectionTransformationNeedsUpdate = true;
 }
 
 void SetCameraFieldOfView( Camera* camera, float fov )
 {
+    assert(InSerialPhase());
     assert(fov > 0);
     camera->fieldOfView = fov;
     camera->projectionTransformationNeedsUpdate = true;
@@ -129,6 +140,7 @@ void SetCameraFieldOfView( Camera* camera, float fov )
 
 void SetCameraScale( Camera* camera, float scale )
 {
+    assert(InSerialPhase());
     assert(scale > 0);
     camera->scale = scale;
     camera->projectionTransformationNeedsUpdate = true;

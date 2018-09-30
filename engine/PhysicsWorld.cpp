@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <string.h> // memset, memcpy
 
 #include "Warnings.h"
@@ -117,6 +118,8 @@ static inline Quat FromBulletQuat( const btQuaternion& q )
 
 PhysicsWorld* CreatePhysicsWorld()
 {
+    assert(InSerialPhase());
+
     const int version = btGetVersion();
     const int major = version/100;
     const int minor = (version-major*100)/10;
@@ -150,6 +153,8 @@ PhysicsWorld* CreatePhysicsWorld()
 
 void DestroyPhysicsWorld( PhysicsWorld* world )
 {
+    assert(InSerialPhase());
+
     DestroyObjectSystem(&world->solids);
     DestroyObjectSystem(&world->forces);
 
@@ -183,11 +188,13 @@ static void UpdatePhysicsWorld( void* _data )
 
 void BeginPhysicsWorldUpdate( PhysicsWorld* world, double duration )
 {
+    assert(InSerialPhase());
     world->updateJob = CreateJob({"UpdatePhysicsWorld", UpdatePhysicsWorld, NULL, world});
 }
 
 void CompletePhysicsWorldUpdate( PhysicsWorld* world )
 {
+    assert(InSerialPhase());
     WaitForJobs(&world->updateJob, 1);
     RemoveJob(world->updateJob);
     UpdateSolidMotionStates(world);
@@ -209,6 +216,7 @@ static void WorldTickCallback( btDynamicsWorld* dynamicsWorld, btScalar duration
 
 static CollisionShape* CreateCollisionShape( CollisionShapeType type, btCollisionShape* bulletInstance )
 {
+    assert(InSerialPhase());
     CollisionShape* shape = NEW(CollisionShape);
     shape->type = type;
     InitReferenceCounter(&shape->refCounter);
@@ -243,6 +251,7 @@ CollisionShape* CreateCapsuleCollisionShape( float radius, float height )
 
 CollisionShape* CreateCompoundCollisionShape( int shapeCount, CollisionShape** shapes, const Vec3* positions )
 {
+    assert(InSerialPhase());
     btCompoundShape* bulletInstance = new btCompoundShape(false);
     REPEAT(shapeCount, i)
     {
@@ -257,6 +266,7 @@ CollisionShape* CreateCompoundCollisionShape( int shapeCount, CollisionShape** s
 
 static void FreeCollisionShape( CollisionShape* shape )
 {
+    assert(InSerialPhase());
     if(shape->type == COMPOUND_SHAPE)
     {
         const btCompoundShape* compound = (btCompoundShape*)shape->bulletInstance;
@@ -349,6 +359,8 @@ SolidId CreateSolid( PhysicsWorld* world,
                      const SolidMotionState* motionState,
                      CollisionShape* shape )
 {
+    assert(InSerialPhase());
+
     SolidId id = AllocateObject(&world->solids);
     Solid* solid = GetObject(&world->solids, id);
     memset(solid, 0, sizeof(Solid));
@@ -378,6 +390,8 @@ static SolidId GetSolidIdFromCollisionObject( const btCollisionObject* co )
 
 static void RemoveSolid( PhysicsWorld* world, SolidId solidId, Solid* solid )
 {
+    assert(InSerialPhase());
+
     DestroyAllFocesOfSolid(world, solidId);
 
     world->dynamicsWorld->removeRigidBody(solid->rigidBody);
@@ -405,6 +419,8 @@ void SetSolidProperties( PhysicsWorld* world,
                          SolidId solidId,
                          const SolidProperties* properties )
 {
+    assert(InSerialPhase());
+
     Solid* solid = GetObject(&world->solids, solidId);
 
     // Mass:
@@ -467,6 +483,8 @@ void ApplySolidImpulse( PhysicsWorld* world,
                         Vec3 relativePosition,
                         bool useLocalCoordinates )
 {
+    assert(InSerialPhase());
+
     Solid* solid = GetObject(&world->solids, solidId);
     const bool isCentral = ArraysAreEqual(relativePosition._,
                                           Vec3Zero._,
@@ -505,6 +523,7 @@ static void DestroyAllFocesOfSolid( PhysicsWorld* world, SolidId solidId )
 
 ForceId CreateForce( PhysicsWorld* world, SolidId solidId )
 {
+    assert(InSerialPhase());
     Ensure(HasObject(&world->solids, solidId));
 
     ForceId id = AllocateObject(&world->forces);
@@ -522,6 +541,7 @@ void SetForce( PhysicsWorld* world,
                Vec3 relativePosition,
                bool useLocalCoordinates )
 {
+    assert(InSerialPhase());
     Force* force = GetObject(&world->forces, forceId);
     force->value = value;
     force->relativePosition = relativePosition;
@@ -530,6 +550,7 @@ void SetForce( PhysicsWorld* world,
 
 void DestroyForce( PhysicsWorld* world, ForceId forceId )
 {
+    assert(InSerialPhase());
     RemoveObject(&world->forces, forceId);
 }
 
@@ -568,6 +589,7 @@ static void ApplyForces( PhysicsWorld* world, float duration )
 
 void SetCollisionCallback( CollisionCallback callback )
 {
+    assert(InSerialPhase());
     CurrentCollisionCallback = callback;
 }
 

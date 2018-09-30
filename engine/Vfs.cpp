@@ -68,6 +68,8 @@ void InitVfs( const char* argv0,
               const char* stateDirectory,
               const char* sharedStateDirectory )
 {
+    assert(InSerialPhase());
+
     RealMountSystem = InitVfs_Real();
     PhysFSMountSystem = InitVfs_PhysFS(argv0);
 
@@ -97,6 +99,8 @@ static const char* VfsOpenModeToString( VfsOpenMode mode )
 
 void DestroyVfs()
 {
+    assert(InSerialPhase());
+
     if(OpenFiles.length > 0)
     {
         Log(LOG_FATAL_ERROR, "There are still files in use:");
@@ -162,6 +166,8 @@ void MountVfsDir( const char* vfsPath,
                   const char* realPath,
                   bool writingAllowed )
 {
+    assert(InSerialPhase());
+
     if(!IsValidMountPoint(vfsPath))
         FatalError("'%s' is not a valid mount point.", vfsPath);
 
@@ -188,6 +194,7 @@ void MountVfsDir( const char* vfsPath,
 
 void UnmountVfsDir( const char* vfsPath )
 {
+    assert(InSerialPhase());
     int mountIndex;
     Mount* mount = GetMountByVfsPath(vfsPath, &mountIndex);
     mount->mountSystem->unmount(mount);
@@ -200,6 +207,7 @@ void UnmountVfsDir( const char* vfsPath )
 
 void AddPackageSearchPath( const char* path )
 {
+    assert(InSerialPhase());
     Path* searchPath = AllocateAtEndOfArray(&SearchPaths, 1);
     CopyString(path, searchPath->str, sizeof(Path));
 }
@@ -278,6 +286,7 @@ static const char* ExtractPackageNameFromReference( const char* reference )
 
 void MountPackage( const char* reference )
 {
+    assert(InSerialPhase());
     const char* packagePath = ResolvePackageReference(reference);
     const char* name = ExtractPackageNameFromReference(reference);
     MountVfsDir(name, packagePath, false);

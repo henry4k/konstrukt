@@ -10,6 +10,8 @@
 void InitCommon();
 void DestroyCommon();
 
+bool InSerialPhase();
+
 
 // --- Memory allocation ---
 

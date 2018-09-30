@@ -127,22 +127,23 @@ static int CollisionEvent = INVALID_LUA_EVENT;
 
 static void LuaCollisionCallback( PhysicsWorld* world, const Collision* collision )
 {
-    lua_State* l = GetLuaState();
+    // TODO: Implement via new event system
+    //lua_State* l = GetLuaState();
 
-    PushIdToLua(l, collision->a); // 1
-    PushIdToLua(l, collision->b); // 2
-    lua_pushnumber(l, collision->pointOnA._[0]); // 3
-    lua_pushnumber(l, collision->pointOnA._[1]);
-    lua_pushnumber(l, collision->pointOnA._[2]);
-    lua_pushnumber(l, collision->pointOnB._[0]); // 6
-    lua_pushnumber(l, collision->pointOnB._[1]);
-    lua_pushnumber(l, collision->pointOnB._[2]);
-    lua_pushnumber(l, collision->normalOnB._[0]); // 9
-    lua_pushnumber(l, collision->normalOnB._[1]);
-    lua_pushnumber(l, collision->normalOnB._[2]);
-    lua_pushnumber(l, collision->impulse); // 12
+    //PushIdToLua(l, collision->a); // 1
+    //PushIdToLua(l, collision->b); // 2
+    //lua_pushnumber(l, collision->pointOnA._[0]); // 3
+    //lua_pushnumber(l, collision->pointOnA._[1]);
+    //lua_pushnumber(l, collision->pointOnA._[2]);
+    //lua_pushnumber(l, collision->pointOnB._[0]); // 6
+    //lua_pushnumber(l, collision->pointOnB._[1]);
+    //lua_pushnumber(l, collision->pointOnB._[2]);
+    //lua_pushnumber(l, collision->normalOnB._[0]); // 9
+    //lua_pushnumber(l, collision->normalOnB._[1]);
+    //lua_pushnumber(l, collision->normalOnB._[2]);
+    //lua_pushnumber(l, collision->impulse); // 12
 
-    FireLuaEvent(l, CollisionEvent, 12, false);
+    //FireLuaEvent(l, CollisionEvent, 12, false);
 }
 
 

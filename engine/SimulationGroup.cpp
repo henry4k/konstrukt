@@ -23,6 +23,7 @@ struct SimulationGroup
 
 SimulationGroup* CreateSimulationGroup()
 {
+    assert(InSerialPhase());
     SimulationGroup* group = NEW(SimulationGroup);
     group->timeFactor = 1.0;
     group->totalTime = 0.0;
@@ -33,6 +34,7 @@ SimulationGroup* CreateSimulationGroup()
 
 void DestroySimulationGroup( SimulationGroup* group )
 {
+    assert(InSerialPhase());
     DestroyObjectSystem(&group->simulations);
     DELETE(group);
 }
@@ -42,6 +44,8 @@ SimulationId AddSimulationToGroup( SimulationGroup* group,
                                    BeginUpdateFn beginUpdate,
                                    CompleteUpdateFn completeUpdate )
 {
+    assert(InSerialPhase());
+
     const SimulationId id = AllocateObject(&group->simulations);
     Simulation* simulation = GetObject(&group->simulations, id);
 
@@ -54,18 +58,21 @@ SimulationId AddSimulationToGroup( SimulationGroup* group,
 
 void RemoveSimulationFromGroup( SimulationGroup* group, SimulationId id )
 {
+    assert(InSerialPhase());
     Ensure(!group->updateRunning);
     RemoveObject(&group->simulations, id);
 }
 
 void SetSimulationTimeFactor( SimulationGroup* group, double factor )
 {
+    assert(InSerialPhase());
     Ensure(!group->updateRunning);
     group->timeFactor = factor;
 }
 
 void BeginSimulationGroupUpdate( SimulationGroup* group, double duration )
 {
+    assert(InSerialPhase());
     Ensure(!group->updateRunning);
     group->updateRunning = true;
 
@@ -84,6 +91,7 @@ void BeginSimulationGroupUpdate( SimulationGroup* group, double duration )
 
 void CompleteSimulationGroupUpdate( SimulationGroup* group )
 {
+    assert(InSerialPhase());
     Ensure(group->updateRunning);
 
     REPEAT(GetObjectCount(&group->simulations), i)

@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <string.h> // memset, strcmp
 #include <stdlib.h> // qsort
 
@@ -50,6 +51,8 @@ static void FreeLight( Light* light );
 LightWorld* CreateLightWorld( const char* lightCountUniformName,
                               const char* lightPositionName )
 {
+    assert(InSerialPhase());
+
     LightWorld* world = new LightWorld;
     memset(world, 0, sizeof(LightWorld));
     InitReferenceCounter(&world->refCounter);
@@ -66,6 +69,8 @@ LightWorld* CreateLightWorld( const char* lightCountUniformName,
 
 static void FreeLightWorld( LightWorld* world )
 {
+    assert(InSerialPhase());
+
     REPEAT(MAX_LIGHTS, i)
     {
         Light* light = &world->lights[i];
@@ -95,6 +100,7 @@ void ReleaseLightWorld( LightWorld* world )
 
 void SetMaxActiveLightCount( LightWorld* world, int count )
 {
+    assert(InSerialPhase());
     world->maxActiveLightCount = count;
 }
 
@@ -252,6 +258,8 @@ static Light* FindInactiveLight( LightWorld* world )
 
 Light* CreateLight( LightWorld* world, LightType type )
 {
+    assert(InSerialPhase());
+
     Light* light = FindInactiveLight(world);
     if(!light)
         FatalError("Can't create more lights.");
@@ -268,6 +276,7 @@ Light* CreateLight( LightWorld* world, LightType type )
 
 static void FreeLight( Light* light )
 {
+    assert(InSerialPhase());
     light->active = false;
     FreeReferenceCounter(&light->refCounter);
     FreeShaderVariableSet(light->shaderVariableSet);
@@ -288,11 +297,13 @@ void ReleaseLight( Light* light )
 
 void SetLightAttachmentTarget( Light* light, const AttachmentTarget* target )
 {
+    assert(InSerialPhase());
     CopyAttachmentTarget(&light->attachmentTarget, target);
 }
 
 void SetLightTransformation( Light* light, Mat4 transformation )
 {
+    assert(InSerialPhase());
     if(light->type == GLOBAL_LIGHT)
         FatalError("Global lights have no transformation.");
     else
@@ -301,11 +312,13 @@ void SetLightTransformation( Light* light, Mat4 transformation )
 
 void SetLightValue( Light* light, float value )
 {
+    assert(InSerialPhase());
     light->value = value;
 }
 
 void SetLightRange( Light* light, float range )
 {
+    assert(InSerialPhase());
     if(light->type == GLOBAL_LIGHT)
         FatalError("Global lights have no light range.");
     else

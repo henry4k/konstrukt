@@ -8,6 +8,7 @@
 #include <signal.h> // signal, raise, SIG*
 #include <stdarg.h>
 #include <assert.h>
+#include <tinycthread.h> // thrd_*
 
 #include "Constants.h" // KONSTRUKT_STACKTRACE_ENABLED, KONSTRUKT_PROFILER_ENABLED
 #include "Warnings.h"
@@ -34,8 +35,11 @@ static void InitMemoryAllocator();
 static void InitFatalErrorHandler();
 static void DestroyFatalErrorHandler();
 
+static thrd_t MainThread;
+
 void InitCommon()
 {
+    MainThread = thrd_current();
     InitMemoryAllocator();
     InitFatalErrorHandler();
 }
@@ -43,6 +47,11 @@ void InitCommon()
 void DestroyCommon()
 {
     DestroyFatalErrorHandler();
+}
+
+bool InSerialPhase()
+{
+    return thrd_equal(thrd_current(), MainThread) != 0;
 }
 
 
@@ -153,7 +162,9 @@ int FormatBuffer( char* buffer, int size, const char* format, ... )
 
 static const char* FormatV( const char* format, va_list va )
 {
+    assert(InSerialPhase());
     static char buffer[STRING_BUFFER_SIZE];
+    // TODO: Maybe use thread-specific storage here?
     FormatBufferV(buffer, STRING_BUFFER_SIZE, format, va);
     return buffer;
 }
@@ -384,18 +395,18 @@ void FatalError( const char* format, ... )
 {
     va_list vl;
     va_start(vl, format);
-    if(IsLuaRunning())
-    {
-        LogStackTrace(LOG_FATAL_ERROR, 1);
-        const char* message = FormatV(format, vl);
-        va_end(vl);
-        lua_pushstring(GetLuaState(), message);
-        lua_error(GetLuaState());
-        // TODO: I'm not sure whether this is the right solution.
-        // The intention is to make Lua print a stacktrace but this may
-        // not stop the simulation loop.
-    }
-    else
+    //if(IsLuaRunning())
+    //{
+    //    LogStackTrace(LOG_FATAL_ERROR, 1);
+    //    const char* message = FormatV(format, vl);
+    //    va_end(vl);
+    //    lua_pushstring(GetLuaState(), message);
+    //    lua_error(GetLuaState());
+    //    // TODO: I'm not sure whether this is the right solution.
+    //    // The intention is to make Lua print a stacktrace but this may
+    //    // not stop the simulation loop.
+    //}
+    //else
     {
         LogV(LOG_FATAL_ERROR, format, vl);
         va_end(vl);
