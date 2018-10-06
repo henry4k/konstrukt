@@ -3,6 +3,14 @@
 #include "TestTools.h"
 
 
+InlineTest("FormatBuffer writes zero byte")
+{
+    char buffer[8];
+    Require(FormatBuffer(buffer, sizeof(buffer), "foo") == 3);
+    Require(strcmp(buffer, "foo") == 0);
+    Require(buffer[3] == '\0');
+}
+
 InlineTest("Format")
 {
     Require(strcmp(Format("foo"), "foo") == 0);

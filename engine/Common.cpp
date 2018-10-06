@@ -143,11 +143,50 @@ void* Alloc( size_t size )
 
 // --- Strings ---
 
+struct FormatBufferContext
+{
+    char* targetBuffer;
+    int   targetBufferSize;
+    char  internalBuffer[STB_SPRINTF_MIN];
+};
+
+static char* GetNextFormatBuffer( char* buffer,
+                                  void* user,
+                                  int bufferLength )
+{
+    FormatBufferContext* c = (FormatBufferContext*)user;
+
+    if(bufferLength > c->targetBufferSize)
+        bufferLength = c->targetBufferSize;
+
+    if(bufferLength > 0)
+    {
+        if(buffer != c->targetBuffer)
+            memcpy(c->targetBuffer, buffer, bufferLength);
+        c->targetBuffer     += bufferLength;
+        c->targetBufferSize -= bufferLength;
+    }
+
+    if (c->targetBufferSize <= 0)
+        return NULL;
+
+    if(c->targetBufferSize >= STB_SPRINTF_MIN)
+        return c->targetBuffer; // go direct into targetBuffer if you can
+    else
+        return c->internalBuffer;
+}
+
 static int FormatBufferV( char* buffer, int size, const char* format, va_list va )
 {
-    const int length = stbsp_vsnprintf(buffer, size, format, va);
-    if(length >= size)
-        FatalError("Buffer size exceeded.");
+    FormatBufferContext c;
+    c.targetBuffer = buffer;
+    c.targetBufferSize = size;
+    stbsp_vsprintfcb(GetNextFormatBuffer, &c, GetNextFormatBuffer(NULL, &c, 0), format, va);
+
+    const int length = (int)(c.targetBuffer - buffer);
+    assert(length < size-1); // Buffer size exceeded!
+    buffer[length] = '\0';
+
     return length;
 }
 

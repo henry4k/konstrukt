@@ -29,7 +29,26 @@ void* Realloc( void* oldPointer, size_t size );
 
 // --- Strings ---
 
+/**
+ * Generates a string according to the given format by using a buffer provided
+ * by the user.
+ *
+ * The generated string always ends with a zero byte.  If the string would
+ * exceed the buffer length it shortened accordingly.
+ *
+ * @return Length of the generated string without the terminating zero byte.
+ */
 int FormatBuffer( char* buffer, int size, const char* format, ... );
+
+/**
+ * Generates a string according to the given format by using an internal
+ * buffer.
+ *
+ * @return A pointer to the formatted string.  Its valid till the next
+ * invocation of this function.
+ *
+ * @note Currently this is limited to the main thread.
+ */
 const char* Format( const char* format, ... );
 
 /**
