@@ -135,6 +135,7 @@ void ReadConfigString( const char* str )
            c == '\0')
         {
             strncpy(key, str, i);
+            key[i] = '\0';
             break;
         }
     }

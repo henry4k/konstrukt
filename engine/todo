@@ -2,9 +2,9 @@ Format ausbügeln
 - Wo wird Format/FormatBuffer benutzt
   - z.B. nur in synchronen Bereichen?
 - Macht es Sinn die Format threadsafe zu machen? Wenn ja, wie?
-  - via Thread-local storage? -> C++11 Abhängigkeit
+  - via Thread-local storage?
   - via Malloc/Free? -> Free muss überall eingebaut werden
-  - die Funktion nicht threadsafe machen?
+  - die Funktion nicht threadsafe machen? (Aktuelle Lösung)
 - FormatBuffer im Zusammenhang mit static char[...] hat die gleichen Probleme
 
 
@@ -31,10 +31,6 @@ Render Thread
 
   Time - müsste in SimulationGroup integriert werden
 
-  Image (loading/postprocessing/resizing)
-  MeshBuffer (normal + tangent calculations)
-  MeshChunkGenerator
-
 Tests:
 
 X Array
@@ -58,7 +54,7 @@ X Math
 X MeshBuffer
 - MeshChunkGenerator
 - ModelWorld
-- PhysicsWorld
+  PhysicsWorld
 - Profiler
 - Reference
 - RenderManager
@@ -71,3 +67,51 @@ X MeshBuffer
   Vfs
   VoxelVolume
 - Window
+
+
+
+
+---------------
+
+Parallel und Serial
+    Nicht als Event sondern als Callbacks implementieren.
+
+Shutdown
+    Event wird an alle LuaWorker gesendet.
+
+Scenario (Wenn das Szenario gestartet wird)
+    Event wird an den ersten LuaWorker gesendet.
+
+Collision (zwei Solids kollidieren)
+
+
+Timer
+
+Control Action (Taste wurde gedrückt oder Maus bewegt)
+
+
+
+
+
+
+
+
+---- V 1 ----
+
+Quelle speichert ID
+ID wird in Lua Modul auf Worker und Callback gemappt
+
+
+
+---- V 2 ----
+
+Quelle speichert Worker
+Callback wird über Worker und Event Typ in Lua ermittelt
+Solid wird in Lua aufgelöst
+
+
+---- V 3 ----
+
+Quelle speichert Objekt-spezifische Solid-IDs
+... ?
+

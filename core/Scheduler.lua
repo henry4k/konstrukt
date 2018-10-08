@@ -25,9 +25,9 @@ function CallQueue:execute()
 end
 
 
-local syncQueue = CallQueue()
-local workQueue = CallQueue()
-local syncing = true
+local serialQueue = CallQueue()
+local parallelQueue = CallQueue()
+local inSerialPhase = true
 
 local function awaitQueueExecution(queue)
     local coro = assert(Coroutine:running())
@@ -35,25 +35,25 @@ local function awaitQueueExecution(queue)
     Coroutine:yield()
 end
 
-local function awaitSync()
-    if not syncing then
-        return awaitQueueExecution(syncQueue)
+local function awaitSerialPhase()
+    if not inSerialPhase then
+        return awaitQueueExecution(serialQueue)
     end
 end
 
-local function awaitWork()
-    if syncing then
-        return awaitQueueExecution(workQueue)
+local function awaitParallelPhase()
+    if inSerialPhase then
+        return awaitQueueExecution(parallelQueue)
     end
 end
 
 local function awaitCall(fn, ...)
-    if syncing then
+    if inSerialPhase then
         return fn(...)
     else
-        awaitSync()
+        awaitSerialPhase()
         local results = {pcall(fn, ...)}
-        awaitWork()
+        awaitParallelPhase()
         local success = results[1]
         if success then
             return table.unpack(results, 2)
@@ -65,21 +65,21 @@ local function awaitCall(fn, ...)
 end
 
 local function blindCall(fn, ...)
-    if syncing then
+    if inSerialPhase then
         return fn(...)
     else
-        return syncQueue:enqueue(fn, ...)
+        return serialQueue:enqueue(fn, ...)
     end
 end
 
-engine.SetEventCallback('Sync', function()
-    syncing = true
-    syncQueue:execute()
+engine.SetCallback('serial', function()
+    inSerialPhase = true
+    serialQueue:execute()
 end)
 
-engine.SetEventCallback('Work', function()
-    syncing = false
-    workQueue:execute()
+engine.SetCallback('parallel', function(events)
+    inSerialPhase = false
+    parallelQueue:execute()
 end)
 
 local function createUserCoro(fn)
@@ -88,7 +88,7 @@ end
 
 local function run(coro)
     assert(coro:isInstanceOf(Coroutine))
-    workQueue:enqueue(coro.call, coro)
+    parallelQueue:enqueue(coro.call, coro)
 end
 
 return {awaitCall = awaitCall,

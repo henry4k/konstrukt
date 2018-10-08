@@ -6,8 +6,12 @@ local modules, engine = ...
 
 -- Setup error handling
 
-engine.SetErrorHandler.fn(function( message )
+engine.SetCallback.fn('error', function( message )
     return debug.traceback(message, 2)
+end)
+
+engine.SetCallback.fn('shutdown', function()
+    print('Lua shutdown callback')
 end)
 
 

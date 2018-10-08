@@ -15,6 +15,14 @@ enum
 };
 
 struct LuaWorker;
+struct LuaBuffer;
+
+struct LuaEventListener
+{
+    // Internal properties - do not use!
+    int worker;
+    const char* name;
+};
 
 
 // --- General ---
@@ -159,6 +167,33 @@ unsigned int CheckIdFromLua( lua_State* l, int stackPosition );
 
 
 // --- Events ---
+
+// Jeder LuaWorker hat einen LuaBuffer worin alle Events gespeichert werden.
+// Jeder Worker hat zwei Buffer.  Einer wird vom Worker-Thread ausgelesen und
+// einer von anderen Threads befüllt.  Im seriellen Teil werden sie getauscht.
+//
+// Für den öffentlichen Buffer gibt es einen Mutex.
+// Wenn ein Event im öffentlichen Buffer eingetragen werden soll, wird der
+// Mutex für diese Zeit vom jeweiligen Thread gelockt.
+//
+//
+
+/**
+ * Creates a new event for Lua.
+ *
+ * May block if other threads are currently creating events.
+ *
+ * @return A buffer which takes event parameters as values.
+ * It may only be used to add new values.
+ *
+ * @see CompleteLuaEvent
+ */
+LuaBuffer* BeginLuaEvent( LuaEventListener listener );
+
+/**
+ * After all parameters were added this is used to complete the event.
+ */
+void CompleteLuaEvent( LuaEventListener listener );
 
 /**
  * Registers a new event and returns its id.

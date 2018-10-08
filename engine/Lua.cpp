@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <string.h> // memcpy, strlen, strcmp
+#include <tinycthread.h> // mtx_*
 
 extern "C"
 {
@@ -15,9 +16,45 @@ extern "C"
 #include "JobManager.h"
 #include "Vfs.h"
 #include "Array.h"
+#include "LuaBuffer.h"
 #include "Lua.h"
 
 
+enum LuaCallbackType
+{
+    /**
+     * Used as message handler in lua_pcall.
+     */
+    ERROR_CALLBACK,
+
+    /**
+     * Called in every Lua worker during its serial phase.
+     * I.e. when it can call non-threadsafe engine functions.
+     */
+    SERIAL_CALLBACK,
+
+    /**
+     * Called in every Lua worker during its parallel phase.
+     * I.e. when it is executed inside a worker thread.
+     */
+    PARALLEL_CALLBACK,
+
+    /**
+     * Signals the Lua worker that the engine will stop now.
+     */
+    SHUTDOWN_CALLBACK,
+
+    CALLBACK_COUNT
+};
+
+static const char* CALLBACK_NAMES[] =
+{
+    "error",
+    "serial",
+    "parallel",
+    "shutdown",
+    NULL
+};
 static const int MAX_JOB_NAME_SIZE = 32;
 static const char* LUA_WORKER_KEY = "konstrukt_worker";
 
@@ -52,20 +89,25 @@ struct LuaFunctionDescription
 struct LuaWorker
 {
     lua_State* state;
-    int errorHandler;
+    int callbacks[CALLBACK_COUNT]; // references to Lua functions
     JobId job;
     char jobName[MAX_JOB_NAME_SIZE];
+    LuaBuffer* privateEventBuffer;
+    LuaBuffer* publicEventBuffer;
+    mtx_t publicEventBufferMutex;
 };
 
 
 static LuaWorker* GetLuaWorkerFromState( lua_State* l );
-static int Lua_SetErrorHandler( lua_State* l );
+static int Lua_SetCallback( lua_State* l );
 static int Lua_Log( lua_State* l );
 static void PushLuaScript( lua_State* l, const char* vfsPath );
 static int CallLuaFunction( lua_State* l, int argumentCount, int returnValueCount );
+static void SwapEventBuffers( LuaWorker* worker );
+static void PreparePublicBuffer(LuaBuffer* buffer);
 
 
-DefineCounter(MemoryCounter, "memory", BYTE_COUNTER);
+//DefineCounter(MemoryCounter, "memory", BYTE_COUNTER);
 static Array<LuaFunctionDescription> LuaFunctions;
 static Array<LuaTypeDescription> LuaTypes;
 static Array<LuaWorker> LuaWorkers;
@@ -90,7 +132,7 @@ void InitLua()
     InitArray(&LuaTypes);
     InitArray(&LuaWorkers);
 
-    REGISTER_LUA_FUNCTION(SetErrorHandler);
+    REGISTER_LUA_FUNCTION(SetCallback);
     REGISTER_LUA_FUNCTION(Log);
 }
 
@@ -124,29 +166,6 @@ void RegisterLuaType( const char* name, lua_CFunction gcCallback )
     desc->gcCallback = gcCallback;
 }
 
-static int Lua_SetErrorHandler( lua_State* l )
-{
-    luaL_checktype(l, 1, LUA_TFUNCTION);
-    lua_pushvalue(l, 1); // duplicate callback, because luaL_ref pops it
-
-    LuaWorker* worker = GetLuaWorkerFromState(l);
-
-    const int old = worker->errorHandler;
-    worker->errorHandler = luaL_ref(l, LUA_REGISTRYINDEX);
-
-    if((old != LUA_NOREF) &&
-       (old != LUA_REFNIL))
-    {
-        lua_rawgeti(l, LUA_REGISTRYINDEX, old);
-        luaL_unref(l, LUA_REGISTRYINDEX, old);
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
-}
-
 static int Lua_Log( lua_State* l )
 {
     static const char* levelNames[] =
@@ -161,61 +180,6 @@ static int Lua_Log( lua_State* l )
     const char* message = luaL_checkstring(l, 2);
     Log(level, "%s", message);
     return 0;
-}
-
-#if defined(KONSTRUKT_PROFILER_ENABLED)
-static int GetLuaMemoryInBytes()
-{
-    assert(g_LuaState);
-    return lua_gc(g_LuaState, LUA_GCCOUNT, 0)*1024 +
-           lua_gc(g_LuaState, LUA_GCCOUNTB, 0);
-}
-#endif
-
-static void UpdateLua( void* worker_ )
-{
-    LuaWorker* worker = (LuaWorker*)worker_;
-
-    {
-        ProfileScope("Lua parallel phase");
-        // TODO FireLuaEvent(worker->state, g_LuaParallelEvent, 0, false);
-    }
-
-    {
-        ProfileScope("Lua GC");
-        lua_gc(worker->state, LUA_GCCOLLECT, 0);
-        SetCounter(MemoryCounter, GetLuaMemoryInBytes());
-    }
-}
-
-void BeginLuaUpdate()
-{
-    assert(InSerialPhase());
-    LuaWorker* workers = LuaWorkers.data;
-    REPEAT(LuaWorkers.length, i)
-    {
-        assert(workers[i].job == INVALID_JOB_ID);
-        workers[i].job = CreateJob({workers[i].jobName, UpdateLua, NULL, &workers[i]});
-    }
-}
-
-void CompleteLuaUpdate()
-{
-    assert(InSerialPhase());
-
-    LuaWorker* workers = LuaWorkers.data;
-
-    REPEAT(LuaWorkers.length, i)
-    {
-        assert(workers[i].job != INVALID_JOB_ID);
-        WaitForJobs(&workers[i].job, 1);
-        workers[i].job = INVALID_JOB_ID;
-    }
-
-    ProfileScope("Lua serial phase");
-    // TODO
-    //REPEAT(LuaWorkers.length, i)
-    //    FireLuaEvent(g_LuaState, g_LuaSerialEvent, 0, false);
 }
 
 
@@ -271,9 +235,16 @@ static int PushBootstrapArguments( lua_State* l )
 static void InitLuaWorker( LuaWorker* worker, int index )
 {
     worker->state = luaL_newstate();
-    worker->errorHandler = LUA_NOREF;
+    REPEAT(CALLBACK_COUNT, i)
+        worker->callbacks[i] = LUA_NOREF;
     worker->job = INVALID_JOB_ID;
     FormatBuffer(worker->jobName, MAX_JOB_NAME_SIZE, "update lua worker %d", index);
+    worker->privateEventBuffer = CreateLuaBuffer(NATIVE_LUA_BUFFER);
+    worker->publicEventBuffer  = CreateLuaBuffer(NATIVE_LUA_BUFFER);
+    ReferenceLuaBuffer(worker->privateEventBuffer);
+    ReferenceLuaBuffer(worker->publicEventBuffer);
+    PreparePublicBuffer(worker->publicEventBuffer);
+    Ensure(mtx_init(&worker->publicEventBufferMutex, mtx_plain) == thrd_success);
 
     lua_State* l = worker->state;
 
@@ -312,7 +283,8 @@ static void InitLuaWorker( LuaWorker* worker, int index )
     const int argumentCount = PushBootstrapArguments(l);
     CallLuaFunction(l, argumentCount, 0);
 
-    assert(worker->errorHandler != LUA_NOREF);
+    REPEAT(CALLBACK_COUNT, i)
+        assert(worker->callbacks[i] != LUA_NOREF);
 }
 
 static void DestroyLuaWorker( LuaWorker* worker )
@@ -321,11 +293,18 @@ static void DestroyLuaWorker( LuaWorker* worker )
 
     lua_State* l = worker->state;
 
-    luaL_unref(l, LUA_REGISTRYINDEX, worker->errorHandler);
+    // Run shutdown callback:
+    lua_rawgeti(l, LUA_REGISTRYINDEX, worker->callbacks[SHUTDOWN_CALLBACK]);
+    CallLuaFunction(l, 0, 0);
 
-    //FireLuaEvent(l, g_LuaShutdownEvent, 0, false);
+    REPEAT(CALLBACK_COUNT, i)
+        luaL_unref(l, LUA_REGISTRYINDEX, worker->callbacks[i]);
 
     lua_close(l);
+
+    mtx_destroy(&worker->publicEventBufferMutex);
+    ReleaseLuaBuffer(worker->publicEventBuffer);
+    ReleaseLuaBuffer(worker->privateEventBuffer);
 }
 
 void SetLuaWorkerCount( int count )
@@ -356,6 +335,92 @@ static LuaWorker* GetLuaWorkerFromState( lua_State* l )
     lua_pop(l, 1);
     assert(worker);
     return worker;
+}
+
+static int Lua_SetCallback( lua_State* l )
+{
+    LuaCallbackType type =
+        (LuaCallbackType)luaL_checkoption(l, 1, NULL, CALLBACK_NAMES);
+    luaL_checktype(l, 2, LUA_TFUNCTION);
+
+    LuaWorker* worker = GetLuaWorkerFromState(l);
+
+    const int ref = worker->callbacks[type];
+    lua_pushvalue(l, 2); // duplicate callback, because luaL_ref/lua_rawseti pop it
+    if(ref == LUA_NOREF)
+        worker->callbacks[type] = luaL_ref(l, LUA_REGISTRYINDEX);
+    else // reuse existing reference id:
+        lua_rawseti(l, LUA_REGISTRYINDEX, ref);
+
+    return 0;
+}
+
+//#if defined(KONSTRUKT_PROFILER_ENABLED)
+//static int GetLuaMemoryInBytes()
+//{
+//    assert(g_LuaState);
+//    return lua_gc(g_LuaState, LUA_GCCOUNT, 0)*1024 +
+//           lua_gc(g_LuaState, LUA_GCCOUNTB, 0);
+//}
+//#endif
+
+static void UpdateLua( void* worker_ )
+{
+    LuaWorker* worker = (LuaWorker*)worker_;
+
+    {
+        ProfileScope("Lua parallel phase");
+
+        // Run parallel callback:
+        lua_State* l = worker->state;
+        lua_rawgeti(l, LUA_REGISTRYINDEX, worker->callbacks[PARALLEL_CALLBACK]);
+        const int args = PushLuaBufferToLua(worker->privateEventBuffer, l);
+        CallLuaFunction(l, args, 0);
+    }
+
+    {
+        ProfileScope("Lua GC");
+        lua_gc(worker->state, LUA_GCCOLLECT, 0);
+        //SetCounter(MemoryCounter, GetLuaMemoryInBytes());
+    }
+}
+
+void BeginLuaUpdate()
+{
+    assert(InSerialPhase());
+    LuaWorker* workers = LuaWorkers.data;
+    REPEAT(LuaWorkers.length, i)
+    {
+        assert(workers[i].job == INVALID_JOB_ID);
+        workers[i].job = CreateJob({workers[i].jobName, UpdateLua, NULL, &workers[i]});
+    }
+}
+
+void CompleteLuaUpdate()
+{
+    assert(InSerialPhase());
+
+    LuaWorker* workers = LuaWorkers.data;
+
+    REPEAT(LuaWorkers.length, i)
+    {
+        assert(workers[i].job != INVALID_JOB_ID);
+        WaitForJobs(&workers[i].job, 1);
+        workers[i].job = INVALID_JOB_ID;
+    }
+
+    ProfileScope("Lua serial phase");
+    REPEAT(LuaWorkers.length, i)
+    {
+        LuaWorker* worker = &LuaWorkers.data[i];
+
+        SwapEventBuffers(worker);
+
+        // Run serial callback:
+        lua_State* l = worker->state;
+        lua_rawgeti(l, LUA_REGISTRYINDEX, worker->callbacks[PARALLEL_CALLBACK]);
+        CallLuaFunction(l, 0, 0);
+    }
 }
 
 
@@ -420,9 +485,10 @@ static void HandleLuaCallResult( lua_State* l, int result )
 static int Lua_ErrorProxy( lua_State* l )
 {
     LuaWorker* worker = GetLuaWorkerFromState(l);
-    if(worker->errorHandler != LUA_NOREF)
+    const int errorCallback = worker->callbacks[ERROR_CALLBACK];
+    if(errorCallback != LUA_NOREF)
     {
-        lua_rawgeti(l, LUA_REGISTRYINDEX, worker->errorHandler);
+        lua_rawgeti(l, LUA_REGISTRYINDEX, errorCallback);
         lua_pushvalue(l, 1); // push message to the top
         lua_call(l, 1, 1);
     }
@@ -434,13 +500,30 @@ static int Lua_ErrorProxy( lua_State* l )
     return 1;
 }
 
+/**
+ * Behaves like lua_call, except that errors are will abort the process.
+ *
+ * The Lua stack should look like this:
+ *
+ * - function
+ * - arg 1
+ * - ...
+ * - arg n
+ *
+ * All of these are removed from the stack and replaced with the results.
+ *
+ * @pram expectedReturnValueCount
+ * Either an integer >= 0 or LUA_MULTRET.
+ *
+ * @return
+ * The number of results returned by the called function.
+ */
 static int CallLuaFunction( lua_State* l, int argumentCount, int expectedReturnValueCount )
 {
     assert(argumentCount >= 0);
     assert(expectedReturnValueCount >= 0 ||
            expectedReturnValueCount == LUA_MULTRET);
-
-    LuaWorker* worker = GetLuaWorkerFromState(l);
+    assert(lua_type(l, -(argumentCount+1)) == LUA_TFUNCTION);
 
     lua_pushcfunction(l, Lua_ErrorProxy);
     lua_insert(l, -(argumentCount+2)); // Move before function and arguments)
@@ -568,6 +651,77 @@ unsigned int CheckIdFromLua( lua_State* l, int stackPosition )
 
 
 // --- LuaEvent ---
+// The events are stored in a LuaBuffer.  It will look like this:
+// {
+//    { ... (event data) ... },
+//    { ... (event data) ... },
+//    ...
+// }
+
+LuaBuffer* BeginLuaEvent( LuaEventListener listener )
+{
+    assert(!InSerialPhase()); // Events should be queued in the parallel phase!
+                              // Albeit this shouldn't pose a problem.
+    LuaWorker* worker = GetArrayElement(&LuaWorkers, listener.worker);
+    Ensure(mtx_lock(&worker->publicEventBufferMutex) == thrd_success);
+    LuaBuffer* buffer = worker->publicEventBuffer;
+
+    // Prepare new event in buffer:
+    BeginListInLuaBuffer(buffer);
+
+    return buffer;
+}
+
+void CompleteLuaEvent( LuaEventListener listener )
+{
+    assert(!InSerialPhase()); // Events should be queued in the parallel phase!
+                              // Albeit this shouldn't pose a problem.
+    LuaWorker* worker = GetArrayElement(&LuaWorkers, listener.worker);
+    LuaBuffer* buffer = worker->publicEventBuffer;
+
+    // Complete event in buffer:
+    EndListInLuaBuffer(buffer);
+
+    Ensure(mtx_unlock(&worker->publicEventBufferMutex) == thrd_success);
+}
+
+static void PreparePublicBuffer(LuaBuffer* buffer)
+{
+    ClearLuaBuffer(buffer);
+    BeginListInLuaBuffer(buffer);
+}
+
+static void CompletePublicBuffer(LuaBuffer* buffer)
+{
+    EndListInLuaBuffer(buffer);
+}
+
+/**
+ * Swaps out public and private buffers.  So that the earlier public buffer
+ * becomes the new private buffer and is ready to be read by the Lua worker.
+ * The former private buffer consequently becomes the new public buffer and is
+ * ready to be filled with events.
+ */
+static void SwapEventBuffers( LuaWorker* worker )
+{
+    assert(InSerialPhase());
+    assert(worker->job == INVALID_JOB_ID);
+
+    LuaBuffer* publicBuffer  = worker->publicEventBuffer;
+    LuaBuffer* privateBuffer = worker->privateEventBuffer;
+
+    PreparePublicBuffer(privateBuffer); // prepare the new public buffer
+
+    Ensure(mtx_trylock(&worker->publicEventBufferMutex) == thrd_success);
+    // ^- More of a sanity check.
+
+    CompletePublicBuffer(publicBuffer); // complete the old public buffer
+
+    worker->publicEventBuffer  = privateBuffer;
+    worker->privateEventBuffer = publicBuffer;
+
+    Ensure(mtx_unlock(&worker->publicEventBufferMutex) == thrd_success);
+}
 
 int RegisterLuaEvent( const char* name )
 {

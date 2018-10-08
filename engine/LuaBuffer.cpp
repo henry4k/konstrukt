@@ -431,7 +431,10 @@ int PushLuaBufferToLua(LuaBuffer* buffer, lua_State* state)
 {
     const char* data;
     const int length = GetLuaBufferData(buffer, &data);
-    return PushLuaBufferDataToLua(buffer->type, data, length, state);
+    if(data && length > 0)
+        return PushLuaBufferDataToLua(buffer->type, data, length, state);
+    else
+        return 0;
 }
 
 int GetLuaBufferData(const LuaBuffer* buffer, const char** dataOut)
