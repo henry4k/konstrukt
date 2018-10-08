@@ -41,7 +41,7 @@ static int Lua_CreateLuaBuffer( lua_State* l )
             {
                 size_t length;
                 const char* string = lua_tolstring(l, i, &length);
-                AddStringToLuaBuffer(buffer, string, length);
+                AddStringToLuaBuffer(buffer, string, length, 0);
                 break;
             }
 

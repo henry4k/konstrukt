@@ -61,6 +61,8 @@ static void InitTestConfig( int argc, char const * const * argv )
 void InitTests( int argc, char const * const * argv )
 {
     InitTestConfig(argc, argv);
+    InitCommon();
+    atexit(DestroyCommon);
     SetLogHandler(TestLogHandler);
     dummyInit(dummyGetTAPReporter(stdout));
     dummyAddInlineTests();

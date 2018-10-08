@@ -13,6 +13,15 @@ enum LuaBufferType
     NATIVE_LUA_BUFFER
 };
 
+enum LuaBufferStringFlags
+{
+    /**
+     * Use this if the string pointer is valid at least while any Lua states
+     * it is passed to exist.
+     */
+    LUA_BUFFER_LITERAL_STRING = (1 << 0)
+};
+
 /**
  * Stores Lua values in various formats.
  *
@@ -32,10 +41,24 @@ void AddNumberToLuaBuffer(LuaBuffer* buffer, lua_Number value);
 
 /**
  * @param length
- * If 0 the string length will be computed automatically - assuming it is a
- * zero terminated string.
+ * If its 0 the string length will be computed automatically - assuming it is
+ * a zero terminated string.
+ *
+ * @param flags
+ * See #LuaBufferStringFlags
  */
-void AddStringToLuaBuffer(LuaBuffer* buffer, const char* string, int length);
+void AddStringToLuaBuffer(LuaBuffer* buffer,
+                          const char* string,
+                          int length,
+                          int flags);
+
+void BeginListInLuaBuffer(LuaBuffer* buffer);
+void EndListInLuaBuffer(LuaBuffer* buffer);
+
+/**
+ * Remove all elements from the buffer - this should be a fast action.
+ */
+void ClearLuaBuffer(LuaBuffer* buffer);
 
 /**
  * @param dataOut

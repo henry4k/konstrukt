@@ -41,3 +41,13 @@ benchmark('JobManager',
           executable('JobManagerBenchmark',
                      'JobManagerBenchmark.cpp',
                      dependencies: test_deps))
+
+benchmark('LuaBuffer',
+          executable('LuaBufferBenchmark',
+                     'LuaBufferBenchmark.cpp',
+                     dependencies: test_deps),
+          args: ['-Dtest.outer-loop-count=5000',
+                 '-Dtest.inner-loop-count=1',
+                 '-Dtest.value-count=1000',
+                 '-Dtest.list-start-chance=0',
+                 '-Dtest.list-end-chance=0.1'])
