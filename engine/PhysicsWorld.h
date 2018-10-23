@@ -3,6 +3,7 @@
 
 #include <float.h> // FLOAT_MAX
 #include "Math.h"
+#include "Lua.h" // LuaEventListener
 
 
 /**
@@ -81,26 +82,13 @@ struct SolidMotionState
     Vec3 angularVelocity;
 };
 
-struct Collision
-{
-    SolidId a;
-    SolidId b;
-    Vec3 pointOnA;
-    Vec3 pointOnB;
-    Vec3 normalOnB;
-    float impulse;
-};
-
 static const float INFINITE_COLLISION_THRESHOLD = FLT_MAX; // Safer than INFINITY
-
-typedef void (*CollisionCallback)( PhysicsWorld* world, const Collision* collision );
 
 
 PhysicsWorld* CreatePhysicsWorld();
 void DestroyPhysicsWorld( PhysicsWorld* world );
 void BeginPhysicsWorldUpdate( PhysicsWorld* world, double timeDelta );
 void CompletePhysicsWorldUpdate( PhysicsWorld* world );
-void SetCollisionCallback( CollisionCallback callback );
 void SetGravity( PhysicsWorld* world, Vec3 force );
 
 
@@ -123,6 +111,10 @@ SolidId CreateSolid( PhysicsWorld* world,
 
 void ReferenceSolid( PhysicsWorld* world, SolidId solid );
 void ReleaseSolid( PhysicsWorld* world, SolidId solid );
+
+void SetSolidCollisionListener( PhysicsWorld* world,
+                                SolidId solid,
+                                LuaEventListener listener );
 
 void SetSolidProperties( PhysicsWorld* world,
                          SolidId solid,

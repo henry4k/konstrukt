@@ -25,6 +25,7 @@ END_EXTERNAL_CODE
 #include "Math.h"
 #include "Reference.h"
 #include "JobManager.h"
+#include "LuaBuffer.h"
 #include "PhysicsWorld.h"
 
 
@@ -59,6 +60,7 @@ struct Solid
     CollisionShape* collisionShape;
     float collisionThreshold;
     SolidMotionState motionState;
+    LuaEventListener collisionListener;
 };
 
 struct PhysicsWorld
@@ -75,8 +77,6 @@ struct PhysicsWorld
     JobId updateJob;
     double updateDuration;
 };
-
-static CollisionCallback CurrentCollisionCallback = NULL;
 
 
 static void DestroyAllFocesOfSolid( PhysicsWorld* world, SolidId solidId );
@@ -371,6 +371,7 @@ SolidId CreateSolid( PhysicsWorld* world,
     solid->collisionShape = shape;
     solid->collisionThreshold = properties->collisionThreshold;
     solid->motionState = *motionState;
+    solid->collisionListener = INVALID_LUA_EVENT_LISTENER;
 
     SolidUserIndexHelper helper;
     helper.id = id;
@@ -413,6 +414,15 @@ void ReleaseSolid( PhysicsWorld* world, SolidId solidId )
     Release(&solid->refCounter);
     if(!HasReferences(&solid->refCounter))
         RemoveSolid(world, solidId, solid);
+}
+
+void SetSolidCollisionListener( PhysicsWorld* world,
+                                SolidId solidId,
+                                LuaEventListener listener )
+{
+    assert(InSerialPhase());
+    Solid* solid = GetObject(&world->solids, solidId);
+    solid->collisionListener = listener;
 }
 
 void SetSolidProperties( PhysicsWorld* world,
@@ -587,10 +597,39 @@ static void ApplyForces( PhysicsWorld* world, float duration )
 
 // --- Collisions ---
 
-void SetCollisionCallback( CollisionCallback callback )
+struct CollisionPoint
 {
-    assert(InSerialPhase());
-    CurrentCollisionCallback = callback;
+    Solid* solid;
+    SolidId solidId;
+    Vec3 point;
+    Vec3 normal;
+};
+
+static void HandleCollision( const CollisionPoint* a,
+                             const CollisionPoint* b,
+                             float impulse )
+{
+    LuaEventListener listener = a->solid->collisionListener;
+    if(!IsValidLuaEventListener(listener))
+        return;
+
+    LuaBuffer* buffer = BeginLuaEvent(listener);
+
+    AddIntegerToLuaBuffer(buffer, a->solidId);
+    REPEAT(3, i)
+        AddNumberToLuaBuffer(buffer, a->point._[i]);
+    REPEAT(3, i)
+        AddNumberToLuaBuffer(buffer, a->normal._[i]);
+
+    AddIntegerToLuaBuffer(buffer, b->solidId);
+    REPEAT(3, i)
+        AddNumberToLuaBuffer(buffer, b->point._[i]);
+    REPEAT(3, i)
+        AddNumberToLuaBuffer(buffer, b->normal._[i]);
+
+    AddNumberToLuaBuffer(buffer, impulse);
+
+    CompleteLuaEvent(listener);
 }
 
 static inline bool PropagateCollision( const btManifoldPoint& point,
@@ -605,9 +644,6 @@ static inline bool PropagateCollision( const btManifoldPoint& point,
 
 static void HandleCollisions( PhysicsWorld* world )
 {
-    if(!CurrentCollisionCallback)
-        return;
-
     btDispatcher* dispatcher = world->dynamicsWorld->getDispatcher();
     REPEAT(dispatcher->getNumManifolds(), i)
     {
@@ -627,19 +663,26 @@ static void HandleCollisions( PhysicsWorld* world )
             const btManifoldPoint& point = manifold->getContactPoint(j);
             if(PropagateCollision(point, solidA, solidB))
             {
-                const btVector3& pointOnA  = point.getPositionWorldOnA();
-                const btVector3& pointOnB  = point.getPositionWorldOnB();
-                const btVector3& normalOnB = point.m_normalWorldOnB;
+                const btVector3& pointOnA  =  point.getPositionWorldOnA();
+                const btVector3& pointOnB  =  point.getPositionWorldOnB();
+                const btVector3& normalOnB =  point.m_normalWorldOnB;
+                const btVector3  normalOnA = -point.m_normalWorldOnB;
+                const float impulse        =  point.m_appliedImpulse;
 
-                Collision collision;
-                collision.a = solidAId;
-                collision.b = solidBId;
-                collision.pointOnA  = FromBulletVec(pointOnA);
-                collision.pointOnB  = FromBulletVec(pointOnB);
-                collision.normalOnB = FromBulletVec(normalOnB);
-                collision.impulse = point.m_appliedImpulse;
+                CollisionPoint a;
+                a.solid = solidA;
+                a.solidId = solidAId;
+                a.point = FromBulletVec(pointOnA);
+                a.normal = FromBulletVec(normalOnA);
 
-                CurrentCollisionCallback(world, &collision);
+                CollisionPoint b;
+                b.solid = solidB;
+                b.solidId = solidBId;
+                b.point = FromBulletVec(pointOnB);
+                b.normal = FromBulletVec(normalOnB);
+
+                HandleCollision(&a, &b, impulse);
+                HandleCollision(&b, &a, impulse);
             }
         }
     }

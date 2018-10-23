@@ -1,6 +1,7 @@
 #include <string.h> // memset
 
 #include "../Lua.h"
+#include "../LuaBuffer.h"
 #include "../PhysicsWorld.h"
 #include "Math.h"
 #include "PhysicsWorld.h"
@@ -119,34 +120,6 @@ CollisionShape* CheckCollisionShapeFromLua( lua_State* l, int stackPosition )
 }
 
 
-// --- Collision ---
-
-const char* COLLISION_EVENT_NAME = "Collision";
-
-static int CollisionEvent = INVALID_LUA_EVENT;
-
-static void LuaCollisionCallback( PhysicsWorld* world, const Collision* collision )
-{
-    // TODO: Implement via new event system
-    //lua_State* l = GetLuaState();
-
-    //PushIdToLua(l, collision->a); // 1
-    //PushIdToLua(l, collision->b); // 2
-    //lua_pushnumber(l, collision->pointOnA._[0]); // 3
-    //lua_pushnumber(l, collision->pointOnA._[1]);
-    //lua_pushnumber(l, collision->pointOnA._[2]);
-    //lua_pushnumber(l, collision->pointOnB._[0]); // 6
-    //lua_pushnumber(l, collision->pointOnB._[1]);
-    //lua_pushnumber(l, collision->pointOnB._[2]);
-    //lua_pushnumber(l, collision->normalOnB._[0]); // 9
-    //lua_pushnumber(l, collision->normalOnB._[1]);
-    //lua_pushnumber(l, collision->normalOnB._[2]);
-    //lua_pushnumber(l, collision->impulse); // 12
-
-    //FireLuaEvent(l, CollisionEvent, 12, false);
-}
-
-
 // --- SolidProperties ---
 
 static const char* SOLID_PROPERTIES_TYPE = "SolidProperties";
@@ -210,6 +183,7 @@ static int Lua_PackSolidMotionState( lua_State* l )
     state->angularVelocity._[0] = luaL_checknumber(l, 8);
     state->angularVelocity._[1] = luaL_checknumber(l, 9);
     state->angularVelocity._[2] = luaL_checknumber(l, 10);
+
     return 1;
 }
 
@@ -231,7 +205,7 @@ static int Lua_UnpackSolidMotionState( lua_State* l )
     lua_pushnumber(l, state->angularVelocity._[1]);
     lua_pushnumber(l, state->angularVelocity._[2]);
 
-    return 1;
+    return 10;
 }
 
 SolidMotionState* GetSolidMotionStateFromLua( lua_State* l, int stackPosition )
@@ -265,6 +239,14 @@ static int Lua_DestroySolid( lua_State* l )
     PhysicsWorld* world = CheckPhysicsWorldFromLua(l, 1);
     SolidId solid = CheckSolidFromLua(l, 2);
     ReleaseSolid(world, solid);
+    return 0;
+}
+
+static int Lua_SetSolidCollisionListener( lua_State* l )
+{
+    PhysicsWorld* world = CheckPhysicsWorldFromLua(l, 1);
+    const SolidId solid = CheckSolidFromLua(l, 2);
+    SetSolidCollisionListener(world, solid, GetLuaEventListener(l, "SolidCollision"));
     return 0;
 }
 
@@ -371,9 +353,6 @@ void RegisterPhysicsWorldInLua()
     RegisterFunctionInLua("CreateCapsuleCollisionShape", Lua_CreateCapsuleCollisionShape);
     RegisterFunctionInLua("CreateCompoundCollisionShape", Lua_CreateCompoundCollisionShape);
 
-    CollisionEvent = RegisterLuaEvent(COLLISION_EVENT_NAME);
-    SetCollisionCallback(LuaCollisionCallback);
-
     RegisterUserDataTypeInLua(SOLID_PROPERTIES_TYPE, NULL);
     RegisterFunctionInLua("PackSolidProperties", Lua_PackSolidProperties);
     RegisterFunctionInLua("UnpackSolidProperties", Lua_UnpackSolidProperties);
@@ -384,6 +363,7 @@ void RegisterPhysicsWorldInLua()
 
     RegisterFunctionInLua("CreateSolid", Lua_CreateSolid);
     RegisterFunctionInLua("DestroySolid", Lua_DestroySolid);
+    RegisterFunctionInLua("SetSolidCollisionListener", Lua_SetSolidCollisionListener);
     RegisterFunctionInLua("SetSolidProperties", Lua_SetSolidProperties);
     RegisterFunctionInLua("GetSolidMotionState", Lua_GetSolidMotionState);
     RegisterFunctionInLua("ApplySolidImpulse", Lua_ApplySolidImpulse);

@@ -110,7 +110,7 @@ static void PreparePublicBuffer(LuaBuffer* buffer);
 //DefineCounter(MemoryCounter, "memory", BYTE_COUNTER);
 static Array<LuaFunctionDescription> LuaFunctions;
 static Array<LuaTypeDescription> LuaTypes;
-static Array<LuaWorker> LuaWorkers;
+static Array<LuaWorker*> LuaWorkers;
 
 
 // --- General ---
@@ -232,13 +232,15 @@ static int PushBootstrapArguments( lua_State* l )
     return 2;
 }
 
-static void InitLuaWorker( LuaWorker* worker, int index )
+static LuaWorker* CreateLuaWorker( int index )
 {
+    LuaWorker* worker = NEW(LuaWorker);
+
     worker->state = luaL_newstate();
     REPEAT(CALLBACK_COUNT, i)
         worker->callbacks[i] = LUA_NOREF;
     worker->job = INVALID_JOB_ID;
-    FormatBuffer(worker->jobName, MAX_JOB_NAME_SIZE, "update lua worker %d", index);
+    FormatBuffer(worker->jobName, MAX_JOB_NAME_SIZE, "update lua worker #%d (%p)", index, worker);
     worker->privateEventBuffer = CreateLuaBuffer(NATIVE_LUA_BUFFER);
     worker->publicEventBuffer  = CreateLuaBuffer(NATIVE_LUA_BUFFER);
     ReferenceLuaBuffer(worker->privateEventBuffer);
@@ -285,6 +287,8 @@ static void InitLuaWorker( LuaWorker* worker, int index )
 
     REPEAT(CALLBACK_COUNT, i)
         assert(worker->callbacks[i] != LUA_NOREF);
+
+    return worker;
 }
 
 static void DestroyLuaWorker( LuaWorker* worker )
@@ -305,6 +309,8 @@ static void DestroyLuaWorker( LuaWorker* worker )
     mtx_destroy(&worker->publicEventBufferMutex);
     ReleaseLuaBuffer(worker->publicEventBuffer);
     ReleaseLuaBuffer(worker->privateEventBuffer);
+
+    DELETE(worker);
 }
 
 void SetLuaWorkerCount( int count )
@@ -314,16 +320,17 @@ void SetLuaWorkerCount( int count )
     assert(count < 1024); // sanity check
     if(LuaWorkers.length < count) // add workers
     {
-        const int createdWorkers = count - LuaWorkers.length;
-        LuaWorker* workers = AllocateAtEndOfArray(&LuaWorkers, createdWorkers);
+        const int oldLength = LuaWorkers.length;
+        const int createdWorkers = count - oldLength;
+        LuaWorker** workers = AllocateAtEndOfArray(&LuaWorkers, createdWorkers);
         REPEAT(createdWorkers, i)
-            InitLuaWorker(&workers[i], i);
+            workers[i] = CreateLuaWorker(oldLength+i);
     }
     else if(LuaWorkers.length > count) // remove workers
     {
         const int removedWorkers = LuaWorkers.length - count;
         for(int i = count; i < LuaWorkers.length; i++)
-            DestroyLuaWorker(GetArrayElement(&LuaWorkers, i));
+            DestroyLuaWorker(LuaWorkers.data[i]);
         PopFromArray(&LuaWorkers, removedWorkers);
     }
 }
@@ -388,11 +395,11 @@ static void UpdateLua( void* worker_ )
 void BeginLuaUpdate()
 {
     assert(InSerialPhase());
-    LuaWorker* workers = LuaWorkers.data;
+    LuaWorker** workers = LuaWorkers.data;
     REPEAT(LuaWorkers.length, i)
     {
-        assert(workers[i].job == INVALID_JOB_ID);
-        workers[i].job = CreateJob({workers[i].jobName, UpdateLua, NULL, &workers[i]});
+        assert(workers[i]->job == INVALID_JOB_ID);
+        workers[i]->job = CreateJob({workers[i]->jobName, UpdateLua, NULL, workers[i]});
     }
 }
 
@@ -400,19 +407,19 @@ void CompleteLuaUpdate()
 {
     assert(InSerialPhase());
 
-    LuaWorker* workers = LuaWorkers.data;
+    LuaWorker** workers = LuaWorkers.data;
 
     REPEAT(LuaWorkers.length, i)
     {
-        assert(workers[i].job != INVALID_JOB_ID);
-        WaitForJobs(&workers[i].job, 1);
-        workers[i].job = INVALID_JOB_ID;
+        assert(workers[i]->job != INVALID_JOB_ID);
+        WaitForJobs(&workers[i]->job, 1);
+        workers[i]->job = INVALID_JOB_ID;
     }
 
     ProfileScope("Lua serial phase");
     REPEAT(LuaWorkers.length, i)
     {
-        LuaWorker* worker = &LuaWorkers.data[i];
+        LuaWorker* worker = LuaWorkers.data[i];
 
         SwapEventBuffers(worker);
 
@@ -658,11 +665,16 @@ unsigned int CheckIdFromLua( lua_State* l, int stackPosition )
 //    ...
 // }
 
+LuaEventListener GetLuaEventListener( lua_State* l, const char* name )
+{
+    return { GetLuaWorkerFromState(l), name };
+}
+
 LuaBuffer* BeginLuaEvent( LuaEventListener listener )
 {
     assert(!InSerialPhase()); // Events should be queued in the parallel phase!
                               // Albeit this shouldn't pose a problem.
-    LuaWorker* worker = GetArrayElement(&LuaWorkers, listener.worker);
+    LuaWorker* worker = listener.worker;
     Ensure(mtx_lock(&worker->publicEventBufferMutex) == thrd_success);
     LuaBuffer* buffer = worker->publicEventBuffer;
 
@@ -676,7 +688,7 @@ void CompleteLuaEvent( LuaEventListener listener )
 {
     assert(!InSerialPhase()); // Events should be queued in the parallel phase!
                               // Albeit this shouldn't pose a problem.
-    LuaWorker* worker = GetArrayElement(&LuaWorkers, listener.worker);
+    LuaWorker* worker = listener.worker;
     LuaBuffer* buffer = worker->publicEventBuffer;
 
     // Complete event in buffer:
@@ -722,15 +734,3 @@ static void SwapEventBuffers( LuaWorker* worker )
 
     Ensure(mtx_unlock(&worker->publicEventBufferMutex) == thrd_success);
 }
-
-int RegisterLuaEvent( const char* name )
-{
-    return 0;
-}
-
-int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues )
-{
-    return 0;
-}
-
-

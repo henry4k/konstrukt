@@ -20,7 +20,7 @@ struct LuaBuffer;
 struct LuaEventListener
 {
     // Internal properties - do not use!
-    int worker;
+    LuaWorker* worker;
     const char* name;
 };
 
@@ -168,15 +168,17 @@ unsigned int CheckIdFromLua( lua_State* l, int stackPosition );
 
 // --- Events ---
 
-// Jeder LuaWorker hat einen LuaBuffer worin alle Events gespeichert werden.
-// Jeder Worker hat zwei Buffer.  Einer wird vom Worker-Thread ausgelesen und
-// einer von anderen Threads befüllt.  Im seriellen Teil werden sie getauscht.
-//
-// Für den öffentlichen Buffer gibt es einen Mutex.
-// Wenn ein Event im öffentlichen Buffer eingetragen werden soll, wird der
-// Mutex für diese Zeit vom jeweiligen Thread gelockt.
-//
-//
+/**
+ * Use this constant to initialize unused event listeners.
+ */
+static const LuaEventListener INVALID_LUA_EVENT_LISTENER = {NULL, NULL};
+
+inline bool IsValidLuaEventListener( LuaEventListener listener )
+{
+    return listener.worker && listener.name;
+}
+
+LuaEventListener GetLuaEventListener( lua_State* l, const char* name );
 
 /**
  * Creates a new event for Lua.
@@ -194,38 +196,5 @@ LuaBuffer* BeginLuaEvent( LuaEventListener listener );
  * After all parameters were added this is used to complete the event.
  */
 void CompleteLuaEvent( LuaEventListener listener );
-
-/**
- * Registers a new event and returns its id.
- *
- * @note
- * An event may only be registered once.
- *
- * @return
- * The events id.
- */
-int RegisterLuaEvent( const char* name );
-
-/**
- * Runs the script callback associated with the given event.
- *
- * @note
- * If no callback was set for the event,
- * it will behave as if an empty function was called.
- *
- * @param id
- * Event id returned by #RegisterLuaEvent.
- *
- * @param argumentCount
- * Number of elements in the lua stack, that shall be used
- * as function parameters for the callback.
- *
- * @param pushReturnValues
- * Whether to push values returned by the callback in the stack.
- *
- * @return
- * Number of values that were pushed in the stack or 0.
- */
-int FireLuaEvent( lua_State* l, int id, int argumentCount, bool pushReturnValues );
 
 #endif

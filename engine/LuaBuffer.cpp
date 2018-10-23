@@ -17,6 +17,7 @@ enum TokenType
     INTEGER_TOKEN,
     NUMBER_TOKEN,
     STRING_TOKEN,
+    USER_DATA_TOKEN,
 #if defined(SIMPLE)
     LIST_START_TOKEN,
     LIST_END_TOKEN
@@ -38,6 +39,11 @@ struct Token
             int length;
             const char* data;
         } string;
+        struct
+        {
+            int size;
+            void* data;
+        } userData;
 #if !defined(SIMPLE)
         struct
         {
@@ -85,6 +91,7 @@ struct LuaBufferTypeDescription
                       const char* string,
                       int length,
                       int flags);
+    void (*addUserData)(void* buffer_, void* value, int size);
     void (*beginList)(void* buffer_);
     void (*endList)(void* buffer_);
     void (*clear)(void* buffer_);
@@ -192,6 +199,23 @@ static void NativeBuffer_AddString(void* buffer_,
     }
 }
 
+static void NativeBuffer_AddUserData(void* buffer_, void* value, int size)
+{
+    NativeBuffer* buffer = (NativeBuffer*)buffer_;
+    Token* token = CreateToken(buffer, USER_DATA_TOKEN);
+    token->data.userData.size = size;
+    if(size == 0)
+    {
+        token->data.userData.data = value;
+    }
+    else
+    {
+        void* dataBuffer = AllocateAtEndOfArray(&buffer->auxData, size);
+        memcpy(dataBuffer, value, size);
+        token->data.userData.data = dataBuffer;
+    }
+}
+
 #if defined(SIMPLE)
 static void NativeBuffer_BeginList(void* buffer_)
 {
@@ -270,6 +294,17 @@ static void NativeBuffer_PushTokenToLua(lua_State* l,
             lua_pushinteger(l, token->data.number);
             break;
 
+        case USER_DATA_TOKEN:
+            {
+                const int size = token->data.userData.size;
+                void* data = token->data.userData.data;
+                if(size == 0)
+                    lua_pushlightuserdata(l, data);
+                else
+                    memcpy(lua_newuserdata(l, size), data, size);
+                break;
+            }
+
         case STRING_TOKEN:
             lua_pushlstring(l, token->data.string.data, token->data.string.length);
             break;
@@ -335,6 +370,7 @@ static const LuaBufferTypeDescription BufferTypes[] =
         NativeBuffer_AddInteger,
         NativeBuffer_AddNumber,
         NativeBuffer_AddString,
+        NativeBuffer_AddUserData,
         NativeBuffer_BeginList,
         NativeBuffer_EndList,
         NativeBuffer_Clear,
@@ -410,6 +446,15 @@ void AddStringToLuaBuffer(LuaBuffer* buffer,
     if(length == 0)
         length = strlen(string);
     BufferTypes[buffer->type].addString(BufferImpl(buffer), string, length, flags);
+}
+
+void AddUserDataToLuaBuffer(LuaBuffer* buffer, void* value, int size)
+{
+    if(!value)
+        assert(size == 0);
+    else
+        assert(size >= 0);
+    BufferTypes[buffer->type].addUserData(BufferImpl(buffer), value, size);
 }
 
 void BeginListInLuaBuffer(LuaBuffer* buffer)

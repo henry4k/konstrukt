@@ -1,34 +1,34 @@
+#include "../Common.h"
 #include "../Lua.h"
+#include "../LuaBuffer.h"
 #include "../Controls.h"
-
-
-const char* CONTROL_ACTION_EVENT_NAME = "ControlAction";
-
-static int g_ControlActionEvent = INVALID_LUA_EVENT;
 
 
 static void OnLuaControlAction( const char* name, float absolute, float delta, void* context)
 {
-    // TODO: Implement via new event system
-    //lua_State* l = GetLuaState();
-    //lua_pushstring(l, name);
-    //lua_pushnumber(l, absolute);
-    //lua_pushnumber(l, delta);
-    //FireLuaEvent(l, g_ControlActionEvent, 3, false);
+    LuaEventListener listener = *(LuaEventListener*)context;
+    LuaBuffer* buffer = BeginLuaEvent(listener);
+    AddStringToLuaBuffer(buffer, name, 0, LUA_BUFFER_LITERAL_STRING);
+    AddNumberToLuaBuffer(buffer, absolute);
+    AddNumberToLuaBuffer(buffer, delta);
+    CompleteLuaEvent(listener);
 }
 
 static int Lua_RegisterControl( lua_State* l )
 {
     const char* name = luaL_checkstring(l, 1);
 
-    const bool success = RegisterControl(name, OnLuaControlAction, NULL);
+    LuaEventListener* listener = NEW(LuaEventListener);
+    // TODO: This allocation is *never* freed!
+    // The whole control system needs to be reworked soon anyway.
+    *listener = GetLuaEventListener(l, name);
+
+    const bool success = RegisterControl(name, OnLuaControlAction, listener);
     lua_pushboolean(l, success);
     return 1;
 }
 
 void RegisterControlsInLua()
 {
-    g_ControlActionEvent = RegisterLuaEvent(CONTROL_ACTION_EVENT_NAME);
-
     RegisterFunctionInLua("RegisterControl", Lua_RegisterControl);
 }

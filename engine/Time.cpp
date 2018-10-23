@@ -43,7 +43,7 @@ void UpdateTime( double timeDelta )
 
     assert(timeDelta >= 0);
     Time += timeDelta;
-    for(int i = 0; i < MAX_TIMERS; i++)
+    REPEAT(MAX_TIMERS, i)
     {
         Timer* timer = &Timers[i];
         if(TimerIsActive(timer))

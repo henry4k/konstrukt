@@ -52,6 +52,13 @@ void AddStringToLuaBuffer(LuaBuffer* buffer,
                           int length,
                           int flags);
 
+/**
+ * @param size
+ * If its 0 the user data will be treated as light user data.  This means that
+ * only the pointer is stored and no data is copied.
+ */
+void AddUserDataToLuaBuffer(LuaBuffer* buffer, void* value, int size);
+
 void BeginListInLuaBuffer(LuaBuffer* buffer);
 void EndListInLuaBuffer(LuaBuffer* buffer);
 

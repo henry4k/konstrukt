@@ -1,11 +1,8 @@
+#include "../Common.h"
 #include "../Lua.h"
+#include "../LuaBuffer.h"
 #include "../Time.h"
 #include "Time.h"
-
-
-const char* TIMER_TRIGGERED_EVENT_NAME = "TimerTriggered";
-
-int g_TimerTriggeredEvent = INVALID_LUA_EVENT;
 
 
 static int Lua_GetTime( lua_State* l )
@@ -16,42 +13,37 @@ static int Lua_GetTime( lua_State* l )
 
 static void OnLuaTimerTriggered( Timer* timer, double timeDelta, void* context )
 {
-    // TODO: Implement via new event system
-    //lua_State* l = GetLuaState();
-    //PushPointerToLua(l, timer);
-    //lua_pushnumber(l, timeDelta);
-    //FireLuaEvent(l, g_TimerTriggeredEvent, 2, false);
+    const LuaEventListener* listener = (LuaEventListener*)context;
+    LuaBuffer* buffer = BeginLuaEvent(*listener);
+    AddUserDataToLuaBuffer(buffer, timer, 0);
+    AddNumberToLuaBuffer(buffer, timeDelta);
+    CompleteLuaEvent(*listener);
 }
+
+struct LuaTimer
+{
+    Timer* timer;
+    LuaEventListener listener;
+};
 
 static int Lua_CreateTimer( lua_State* l )
 {
     const double minDelay = luaL_checknumber(l, 1);
-    Timer* timer = CreateTimer(minDelay, NULL, OnLuaTimerTriggered);
-    PushPointerToLua(l, timer);
+    LuaTimer* luaTimer = (LuaTimer*)lua_newuserdata(l, sizeof(LuaTimer));
+    luaTimer->timer = CreateTimer(minDelay, luaTimer, OnLuaTimerTriggered);
+    luaTimer->listener = GetLuaEventListener(l, "TimerTriggered");
     return 1;
 }
 
 static int Lua_DestroyTimer( lua_State* l )
 {
-    Timer* timer = CheckTimerFromLua(l, 1);
-    DestroyTimer(timer);
+    LuaTimer* luaTimer = (LuaTimer*)lua_touserdata(l, 1);
+    DestroyTimer(luaTimer->timer);
     return 0;
-}
-
-Timer* GetTimerFromLua( lua_State* l, int stackPosition )
-{
-    return (Timer*)GetPointerFromLua(l, stackPosition);
-}
-
-Timer* CheckTimerFromLua( lua_State* l, int stackPosition )
-{
-    return (Timer*)CheckPointerFromLua(l, stackPosition);
 }
 
 void RegisterTimeInLua()
 {
-    g_TimerTriggeredEvent = RegisterLuaEvent(TIMER_TRIGGERED_EVENT_NAME);
-
     RegisterFunctionInLua("GetTime", Lua_GetTime);
     RegisterFunctionInLua("CreateTimer", Lua_CreateTimer);
     RegisterFunctionInLua("DestroyTimer", Lua_DestroyTimer);
